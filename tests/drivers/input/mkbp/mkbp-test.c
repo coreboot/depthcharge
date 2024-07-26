@@ -224,6 +224,27 @@ static void test_key(void **state)
 	ASSERT_NO_MORE_CHAR();
 }
 
+static void test_key_v10(void **state)
+{
+	if (!CONFIG(DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD_V10))
+		skip();
+	test_key(state);
+}
+
+static void test_key_v30(void **state)
+{
+	if (!CONFIG(DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD_V30))
+		skip();
+	test_key(state);
+}
+
+static void test_key_v30_tkl(void **state)
+{
+	if (!CONFIG(DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD_V30_TKL))
+		skip();
+	test_key(state);
+}
+
 static void test_multiple_keys(void **state)
 {
 	press_key(1, 4);
@@ -251,6 +272,70 @@ static void test_ctrl_d(void **state)
 
 	release_key(2, 4);
 	release_key(14, 1);
+	ASSERT_NO_MORE_CHAR();
+}
+
+static void test_ctrl_r(void **state)
+{
+	if (CONFIG(DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD_V10))
+		skip();
+
+	press_key(14, 3);
+	ASSERT_NO_MORE_CHAR();
+
+	press_key(9, 7);
+	ASSERT_GETCHAR('R' & 0x1f);
+
+	release_key(9, 7);
+	release_key(14, 3);
+	ASSERT_NO_MORE_CHAR();
+}
+
+static void test_ctrl_r_v10(void **state)
+{
+	if (!CONFIG(DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD_V10))
+		skip();
+
+	press_key(0, 2);
+	ASSERT_NO_MORE_CHAR();
+
+	press_key(3, 7);
+	ASSERT_GETCHAR('R' & 0x1f);
+
+	release_key(3, 7);
+	release_key(0, 2);
+	ASSERT_NO_MORE_CHAR();
+}
+
+static void test_ctrl_u(void **state)
+{
+	if (CONFIG(DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD_V10))
+		skip();
+
+	press_key(14, 3);
+	ASSERT_NO_MORE_CHAR();
+
+	press_key(1, 7);
+	ASSERT_GETCHAR('U' & 0x1f);
+
+	release_key(1, 7);
+	release_key(14, 3);
+	ASSERT_NO_MORE_CHAR();
+}
+
+static void test_ctrl_u_v10(void **state)
+{
+	if (!CONFIG(DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD_V10))
+		skip();
+
+	press_key(0, 2);
+	ASSERT_NO_MORE_CHAR();
+
+	press_key(6, 7);
+	ASSERT_GETCHAR('U' & 0x1f);
+
+	release_key(6, 7);
+	release_key(0, 2);
 	ASSERT_NO_MORE_CHAR();
 }
 
@@ -413,9 +498,9 @@ static void test_key_hold_on_startup(void **state)
 	ASSERT_NO_MORE_CHAR();
 }
 
-#define MKBP_KEY_TEST(_col, _row, _expected_char) { \
-	.name = ("test_key-" #_expected_char), \
-	.test_func = test_key, \
+#define MKBP_KEY_TEST_HELPER(_func, _col, _row, _expected_char) { \
+	.name = (#_func "-" #_expected_char), \
+	.test_func = _func , \
 	.setup_func = setup, \
 	.teardown_func = NULL, \
 	.initial_state = (&(struct mkbp_key_test_state) { \
@@ -425,6 +510,16 @@ static void test_key_hold_on_startup(void **state)
 	}), \
 }
 
+#define MKBP_KEY_TEST(_col, _row, _expected_char) \
+	MKBP_KEY_TEST_HELPER(test_key, _col, _row, _expected_char)
+#define MKBP_V10_KEY_TEST(_col, _row, _expected_char) \
+	MKBP_KEY_TEST_HELPER(test_key_v10, _col, _row, _expected_char)
+#define MKBP_V30_KEY_TEST(_col, _row, _expected_char) \
+	MKBP_KEY_TEST_HELPER(test_key_v30, _col, _row, _expected_char)
+#define MKBP_V30_TKL_KEY_TEST(_col, _row, _expected_char) \
+	MKBP_KEY_TEST_HELPER(test_key_v30_tkl, _col, _row, \
+			_expected_char)
+
 #define MKBP_TEST(func) cmocka_unit_test_setup(func, setup)
 
 int main(void)
@@ -432,9 +527,7 @@ int main(void)
 	const struct CMUnitTest tests[] = {
 		/* Key matrix tests. */
 		MKBP_KEY_TEST(1, 1, 0x1b),	// ESC
-		MKBP_KEY_TEST(1, 5, 'z'),
 		MKBP_KEY_TEST(11, 4, '\n'),
-		MKBP_KEY_TEST(11, 5, ' '),
 		MKBP_KEY_TEST(11, 7, KEY_UP),
 		MKBP_KEY_TEST(11, 6, KEY_DOWN),
 		MKBP_KEY_TEST(12, 7, KEY_LEFT),
@@ -442,6 +535,19 @@ int main(void)
 		MKBP_TEST(test_multiple_keys),
 		MKBP_TEST(test_ctrl_d),
 		MKBP_TEST(test_shift_d),
+		/* Standard V1.0 Matrix only tests. */
+		MKBP_V10_KEY_TEST(1, 5, 'z'),
+		MKBP_V10_KEY_TEST(11, 5, ' '),
+		MKBP_TEST(test_ctrl_r_v10),
+		MKBP_TEST(test_ctrl_u_v10),
+		/* Standard V3.0 Matrix only tests. */
+		MKBP_V30_KEY_TEST(1, 6, 'z'),
+		MKBP_V30_KEY_TEST(6, 5, ' '),
+		MKBP_TEST(test_ctrl_r),
+		MKBP_TEST(test_ctrl_u),
+		/* Standard V3.0 TKL Matrix only tests. */
+		MKBP_V30_TKL_KEY_TEST(1, 6, 'z'),
+		MKBP_V30_TKL_KEY_TEST(6, 5, ' '),
 		/* Button tests. */
 		MKBP_TEST(test_power_short_press),
 		MKBP_TEST(test_vol_up_short_press),
