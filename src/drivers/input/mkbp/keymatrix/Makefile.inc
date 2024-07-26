@@ -12,3 +12,5 @@
 ##
 
 depthcharge-$(CONFIG_DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD_V10) += standard_v10.c
+depthcharge-$(CONFIG_DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD_V30) += standard_v30.c
+depthcharge-$(CONFIG_DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD_V30_TKL) += standard_v30_tkl.c
