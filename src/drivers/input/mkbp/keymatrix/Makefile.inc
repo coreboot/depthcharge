@@ -11,4 +11,4 @@
 ## GNU General Public License for more details.
 ##
 
-depthcharge-$(CONFIG_DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD) += standard.c
+depthcharge-$(CONFIG_DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD_V10) += standard_v10.c
