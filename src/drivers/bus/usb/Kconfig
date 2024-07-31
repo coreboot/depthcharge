@@ -52,3 +52,10 @@ config INTEL_TCSS_USE_PDC_PMC_MUX_CONFIG
 	  Select this to indicate PDC<->PMC direct connection. PDC communicates directly to PMC
 	  to configure the mux and there is no need to query the EC to get port mapping and send
 	  commands to PMC to configure the mux.
+
+config DRIVER_NO_INTEL_TCSS
+	bool "Disable Intel TCSS driver"
+	default n
+	help
+	  Select this to indicate that the platform doesn't have any Intel USB Type-C subsystem
+	  (TCSS).
