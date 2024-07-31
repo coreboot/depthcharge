@@ -34,3 +34,10 @@ config DRIVER_USB_INTEL_TCSS_DEBUG
 	bool "Enable Intel TCSS driver debugging"
 	default n
 	depends on DRIVER_USB_INTEL_TCSS
+
+config DRIVER_NO_INTEL_TCSS
+	bool "Disable Intel TCSS driver"
+	default n
+	help
+	  Select this to indicate that the platform doesn't have any Intel USB Type-C
+	  subsystem (TCSS).
