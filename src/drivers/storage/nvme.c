@@ -551,6 +551,56 @@ static lba_t nvme_write(BlockDevOps *me, lba_t start, lba_t count,
 	return nvme_rw(me, start, count, (void *)buffer, false);
 }
 
+static lba_t nvme_fill_write(BlockDevOps *me, lba_t start, lba_t count,
+			     uint32_t fill_pattern)
+{
+	const NvmeDrive *const drive = container_of(me, NvmeDrive, dev.ops);
+	const uint32_t block_size = drive->dev.block_size;
+
+	if (count <= 0)
+		/* Nothing to fill */
+		return 0;
+
+	/* Allocate max 4 MiB buffer on heap, because this value is used for mmc. */
+	const lba_t heap_lba = (4 * MiB) / block_size;
+	const lba_t buffer_lba = MIN(heap_lba, count);
+	lba_t todo = count;
+
+	const uint64_t buffer_bytes = buffer_lba * block_size;
+	uint64_t buffer_words = buffer_bytes / sizeof(uint32_t);
+	uint32_t *buffer = xmemalign(ARCH_DMA_MINALIGN, buffer_bytes);
+	uint32_t *ptr = buffer;
+
+	if (buffer == NULL) {
+		printf("%s: cannot allocate buffer\n", __func__);
+		return -1;
+	}
+
+	for ( ; buffer_words; buffer_words--)
+		*ptr++ = fill_pattern;
+
+	do {
+		const lba_t curr_lba = MIN(buffer_lba, todo);
+		const lba_t done = nvme_rw(me, start, curr_lba, buffer, false);
+
+		/* Error while writing */
+		if (done < 0)
+			goto cleanup;
+
+		todo -= done;
+		start += done;
+
+		/* Written less data than expected */
+		if (done != curr_lba)
+			goto cleanup;
+	} while (todo > 0);
+
+cleanup:
+	free(buffer);
+
+	return count - todo;
+}
+
 static NVME_STATUS nvme_read_log_page(NvmeDrive *drive, int log_page_id,
 				      void *data, size_t size)
 {
@@ -769,6 +819,7 @@ static NVME_STATUS nvme_create_drive(NvmeCtrlr *ctrlr, uint32_t namespace_id,
 	snprintf(name, name_size, "NVMe Namespace %d", namespace_id);
 	nvme_drive->dev.ops.read = &nvme_read;
 	nvme_drive->dev.ops.write = &nvme_write;
+	nvme_drive->dev.ops.fill_write = &nvme_fill_write;
 	nvme_drive->dev.ops.new_stream = &new_simple_stream;
 	nvme_drive->dev.ops.get_health_info = &nvme_read_smart_log;
 	if (ISSET(ctrlr->controller_data->oacs, NVME_OACS_DEVICE_SELF_TEST)) {
