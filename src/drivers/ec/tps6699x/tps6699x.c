@@ -9,6 +9,7 @@
 #include "drivers/ec/cros/ec.h"
 
 #include "tps6699x.h"
+#include "tps6699x_fwup.h"
 
 #define TPS6699X_RESTART_DELAY_US 7000000 /* 7s */
 #define TPS6699X_FW_HASH_FILE_SIZE 3
@@ -225,7 +226,13 @@ static vb2_error_t tps6699x_update_image(const VbootAuxfwOps *vbaux, const uint8
 
 	tps6699x_set_i2c_speed(me);
 
-	/* TODO - Call update code here */
+	ret = tps6699x_perform_fw_update(me);
+	if (ret == 0)
+		status = VB2_SUCCESS;
+
+	printf("%s: tps6699x_perform_fw_update return code: %d (vb2 status=%d)\n",
+	       me->chip_name, ret, status);
+
 	me->has_updated = true;
 
 	tps6699x_restore_i2c_speed(me);
