@@ -11,4 +11,4 @@
 ## GNU General Public License for more details.
 ##
 
-depthcharge-y += tps6699x.c
+depthcharge-y += tps6699x.c tps6699x_fwup.c tps6699x_i2c.c
