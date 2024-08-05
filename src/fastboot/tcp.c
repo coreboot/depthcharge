@@ -200,14 +200,6 @@ static void fastboot_tcp_recv(struct fastboot_tcp_session *tcp, char *buf,
 			       expected_length, available);
 			return;
 		}
-	} else if (available > expected_length) {
-		// This doesn't seem to happen, but if it does, we need to fail,
-		// because we don't handle the extra data and so might be
-		// missing something important.
-		FB_DEBUG("received extra data! expected=%llu available=%llu\n",
-			 expected_length, available);
-		uip_close();
-		return;
 	}
 
 	if (tcp->fb_session.state == DOWNLOAD) {
@@ -216,8 +208,16 @@ static void fastboot_tcp_recv(struct fastboot_tcp_session *tcp, char *buf,
 	} else {
 		FB_TRACE_IO("[from host] %.*s\n", (int)available, &buf[8]);
 	}
-	buf += sizeof(uint64_t);
-	fastboot_handle_packet(&tcp->fb_session, buf, available);
+	buf += sizeof(expected_length);
+
+	fastboot_handle_packet(&tcp->fb_session, buf, MIN(available, expected_length));
+
+	if (available > expected_length) {
+		FB_DEBUG("handle leftover data (datalen %llu, available %llu, expected %llu)\n",
+			 datalen, available, expected_length);
+		fastboot_tcp_recv(tcp, buf + expected_length,
+				  datalen - expected_length - sizeof(expected_length));
+	}
 }
 
 // Handle a packet received while in the PACKET_INCOMPLETE state.
