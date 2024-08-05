@@ -9,6 +9,7 @@
 #include "drivers/ec/cros/ec.h"
 
 #include "tps6699x.h"
+#include "tps6699x_fwup.h"
 
 #define TPS6699X_RESTART_DELAY_US 7000000 /* 7s */
 #define TPS6699X_FW_HASH_FILE_SIZE 3
@@ -76,7 +77,7 @@ static int tps6699x_construct_i2c_tunnel(Tps6699x *me)
 	printf("%s: Located chip at port %d, addr 0x%02x\n", me->chip_name,
 	       r.i2c_info.port, r.i2c_info.addr_flags);
 
-	me->bus = new_cros_ec_tunnel_i2c(r.i2c_info.port);
+	me->bus = new_cros_ec_tunnel_i2c(cros_ec_get(), r.i2c_info.port);
 	me->chip_info.i2c_addr = r.i2c_info.addr_flags;
 
 	return ret;
@@ -239,7 +240,14 @@ static vb2_error_t tps6699x_update_image(const VbootAuxfwOps *vbaux,
 
 	tps6699x_set_i2c_speed(me);
 
-	/* TODO - Call update code here */
+	ret = tps6699x_perform_fw_update(me);
+	if (ret == 0)
+		status = VB2_SUCCESS;
+
+	printf("%s: tps6699x_perform_fw_update return code: %d (vb2 "
+	       "status=%d)\n",
+	       me->chip_name, ret, status);
+
 	me->has_updated = true;
 
 	tps6699x_restore_i2c_speed(me);
