@@ -23,7 +23,7 @@ config DRIVER_USB_INTEL_TCSS
 	bool "Enable Intel TCSS driver"
 	default n
 	depends on DRIVER_EC_CROS
-	depends on DRIVER_SOC_INTEL_PMC
+	select DRIVER_SOC_INTEL_PMC
 	help
 	  Select this to enable support for the Intel USB Type-C subsystem
 	  (TCSS). A board_tcss_get_port_mapping() function must be provided to
@@ -34,6 +34,7 @@ config DRIVER_USB_INTEL_TCSS_DEBUG
 	bool "Enable Intel TCSS driver debugging"
 	default n
 	depends on DRIVER_USB_INTEL_TCSS
+	select DRIVER_SOC_INTEL_PMC_DEBUG
 
 config DRIVER_NO_INTEL_TCSS
 	bool "Disable Intel TCSS driver"
