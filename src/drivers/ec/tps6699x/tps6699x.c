@@ -12,7 +12,7 @@
 #include "tps6699x_fwup.h"
 
 #define TPS6699X_RESTART_DELAY_US 7000000 /* 7s */
-#define TPS6699X_FW_HASH_FILE_SIZE 3
+#define TPS6699X_FW_HASH_FILE_SIZE 11
 
 static void tps6699x_set_i2c_speed(Tps6699x *me)
 {
@@ -341,6 +341,7 @@ static const VbootAuxfwOps *new_tps6699x_from_chip_info(struct ec_response_pd_ch
 static CrosEcAuxfwChipInfo aux_fw_tps6699x_info[] = {
 	/* Default TI VID:PID for TPS6699x */
 	TPS6699X_CHIP_ENTRY(0x0451, 0x0000),
+	TPS6699X_CHIP_ENTRY(0x18d1, 0x506c),
 };
 
 static int tps6699x_register(void)
