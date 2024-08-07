@@ -25,10 +25,20 @@ void board_rts5453_get_image_paths(const char **image_path, const char **hash_pa
 	if (fw_config_probe(FW_CONFIG(PDC_CONTROL, PDC_RTS_BYPASS))) {
 		*image_path = "rts5453_retimer_bypass.bin";
 		*hash_path = "rts5453_retimer_bypass.hash";
-	} else if (fw_config_probe(FW_CONFIG(PDC_CONTROL, PDC_TI_BYPASS))) {
-		/* Will update path for TI PDC AU later */
+	} else {
+		/* Unknown configuration. Don't perform an update. */
 		*image_path = NULL;
 		*hash_path = NULL;
+	}
+}
+
+/* Override of func in src/drivers/ec/tps6699x/tps6699x.c */
+void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path)
+{
+	if (fw_config_probe(FW_CONFIG(PDC_CONTROL, PDC_TI_BYPASS))) {
+		/* Will update path for TI PDC AU later */
+		*image_path = "tps6699x.bin";
+		*hash_path = "tps6699x.hash";
 	} else {
 		/* Unknown configuration. Don't perform an update. */
 		*image_path = NULL;
