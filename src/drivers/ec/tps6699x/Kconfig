@@ -1,0 +1,40 @@
+##
+## Copyright 2024 Google LLC
+##
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; version 2 of the License.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+
+config DRIVER_EC_TPS6699X
+	bool "TPS6699X PDC"
+	depends on DRIVER_EC_CROS
+	default n
+	help
+	  Add support to update the firmware for TI TPS6699X PDC
+
+if DRIVER_EC_TPS6699X
+
+config DRIVER_EC_TPS6699X_I2C_SPEED_KHZ
+	int "I2C clock speed, in kHz"
+	default 1000
+	help
+	  The update driver can order the EC to adjust the I2C clock speed
+	  used for communication with the PDC. The original clock speed is
+	  captured and restored after the procedure completes. Set this to
+	  0 to disable bus speed adjustment.
+
+config DRIVER_EC_TPS6699X_FORCE_UPDATE
+	bool "Force TPS6699x firmware update"
+	default n
+	help
+	  If enabled, force the driver to always update the PDC FW, even if
+	  the incoming version matches the current version. Used for
+	  debugging. Note: this will block system boot due to the constant
+	  updating and rebooting of the system.
+
+endif
