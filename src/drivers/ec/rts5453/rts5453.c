@@ -8,6 +8,7 @@
 #include "base/init_funcs.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/ec/cros/ec.h"
+#include "drivers/ec/common/pdc_utils.h"
 #include "drivers/ec/vboot_auxfw.h"
 
 #include "rts5453.h"
