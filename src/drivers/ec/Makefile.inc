@@ -18,6 +18,7 @@ subdirs-$(CONFIG_DRIVER_EC_ANX7688) += anx7688
 subdirs-$(CONFIG_DRIVER_EC_CCGXXF) += ccgxxf
 subdirs-$(CONFIG_DRIVER_EC_PS8751) += ps8751
 subdirs-$(CONFIG_DRIVER_EC_RTS5453) += rts5453
+subdirs-$(CONFIG_DRIVER_EC_TPS6699X) += tps6699x
 subdirs-$(CONFIG_DRIVER_EC_WILCO) += wilco
 
 depthcharge-y += vboot_ec.c
