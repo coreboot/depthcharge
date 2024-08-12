@@ -420,3 +420,7 @@ fatcat:
   sdcard: False
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
   split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+rauru:
+  screen: [1920, 1200]
+  dpi: 96
