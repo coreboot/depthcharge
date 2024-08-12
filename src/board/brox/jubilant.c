@@ -15,8 +15,14 @@
 #define EN_SPK_PIN    GPP_F20
 
 static const struct storage_config storage_configs[] = {
-	{ .media = STORAGE_NVME, .pci_dev = SA_DEV_CPU_RP0 },
-	{ .media = STORAGE_UFS, .pci_dev = PCH_DEV_UFS1 },
+	{ .media = STORAGE_NVME, .pci_dev = SA_DEV_CPU_RP0,
+	  .fw_config = FW_CONFIG(STORAGE, STORAGE_NVME) },
+	{ .media = STORAGE_UFS, .pci_dev = PCH_DEV_UFS1,
+	  .fw_config = FW_CONFIG(STORAGE, STORAGE_UFS) },
+	{ .media = STORAGE_NVME, .pci_dev = SA_DEV_CPU_RP0,
+	  .fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN) },
+	{ .media = STORAGE_UFS, .pci_dev = PCH_DEV_UFS1,
+	  .fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN) },
 };
 
 const struct storage_config *variant_get_storage_configs(size_t *count)
