@@ -2,6 +2,8 @@
 # should know who their assigned reviewer is. For everyone else I'm happy to do
 # the triaging.
 jwerner@chromium.org
+lmajczak@google.com
+pbusse@google.com
 
 # All firmware and SIE team members can approve.
 include chromiumos/owners:v1:/firmware/OWNERS.cros_ap
