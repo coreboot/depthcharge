@@ -1,8 +1,1 @@
-# Most people committing to depthcharge (especially driver and board code)
-# should know who their assigned reviewer is. For everyone else I'm happy to do
-# the triaging.
-jwerner@chromium.org
-
-# All firmware and SIE team members can approve.
-include chromiumos/owners:v1:/firmware/OWNERS.cros_ap
-include chromiumos/owners:v1:/sie/OWNERS.chromeos_sie
+include chromiumos/owners:v1:/firmware/OWNERS.android
