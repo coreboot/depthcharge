@@ -472,8 +472,8 @@ static struct msdc_delay_phase get_best_delay(MtkMmcHost *host, u32 delay)
 		final_phase = (start_final + len_final / 3) % PAD_DELAY_MAX;
 	else
 		final_phase = (start_final + len_final / 2) % PAD_DELAY_MAX;
-	printf("phase: [map:%x] [maxlen:%d] [final:%d]\n",
-	       delay, len_final, final_phase);
+	mmc_info("phase: [map:%x] [maxlen:%d] [final:%d]\n",
+		 delay, len_final, final_phase);
 
 	delay_phase.maxlen = len_final;
 	delay_phase.start = start_final;
@@ -609,7 +609,7 @@ skip_fall:
 	msdc_set_cmd_delay(host, final_delay);
 	msdc_set_data_delay(host, final_delay);
 
-	printf("Final pad delay: %x\n", final_delay);
+	mmc_info("Final pad delay: %x\n", final_delay);
 	return final_delay == 0xff ? MMC_COMM_ERR : 0;
 }
 
