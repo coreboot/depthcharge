@@ -405,6 +405,7 @@ extern int __mmc_debug, __mmc_trace;
 		while (__mmc_debug) { printf("mmc: " format); break; }
 #define mmc_trace(format...) \
 		while (__mmc_trace) { printf(format); break; }
+#define mmc_info(format...) printf("mmc: " format)
 #define mmc_error(format...) printf("mmc: ERROR: " format)
 
 #endif /* __DRIVERS_STORAGE_MMC_H__ */
