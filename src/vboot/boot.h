@@ -28,6 +28,8 @@ struct boot_info {
 	void *ramdisk_addr;
 	size_t ramdisk_size;
 	VbSelectAndLoadKernelParams *kparams;
+	void *pvmfw_addr;
+	size_t pvmfw_size;
 };
 
 // To be implemented by each boot method.

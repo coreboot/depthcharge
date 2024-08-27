@@ -37,5 +37,9 @@ extern uint8_t _fit_fdt_start;
 extern uint8_t _fit_fdt_end;
 extern uint8_t _init_funcs_start;
 extern uint8_t _init_funcs_end;
+#if CONFIG(ANDROID_PVMFW)
+extern char _pvmfw_start[];
+extern char _pvmfw_end[];
+#endif /* CONFIG(ANDROID_PVMFW) */
 
 #endif /* __IMAGE_SYMBOLS_H__ */

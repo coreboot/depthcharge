@@ -79,3 +79,25 @@ config BOOTCONFIG
 	help
 	  Enable support for bootconfig feature which is another way to provide
 	  key=value parameters to the kernel besides commandline.
+
+config ANDROID_PVMFW
+	bool "Support for loading pvmfw into memory"
+	default n
+	help
+	  Enables loading pvmfw from AVB partition into memory and providing
+	  location and size information to Linux kernel.
+
+config ANDROID_PVMFW_START
+	hex "Physical address of the region the pvmfw image is loaded into"
+	depends on ANDROID_PVMFW
+	default 0x20100000
+	help
+	  The start of a region of memory the pvmfw image is loaded into from
+	  the disk.
+
+	  By default is set to be after default kernel image region.
+
+config ANDROID_PVMFW_SIZE
+	hex "The size of the region the pvmfw image is loaded into"
+	depends on ANDROID_PVMFW
+	default 0x400000
