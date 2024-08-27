@@ -153,6 +153,17 @@ int vboot_select_and_boot_kernel(void)
 		.kernel_buffer_size = CONFIG_KERNEL_SIZE - KERNEL_CMDLINE_BUF_SIZE,
 		.vboot_cmdline_buffer = (char *)_kernel_end - KERNEL_CMDLINE_BUF_SIZE,
 		.vboot_cmdline_size = KERNEL_CMDLINE_BUF_SIZE,
+
+#if CONFIG(ANDROID_PVMFW)
+		.pvmfw_buffer = _pvmfw_start,
+		.pvmfw_buffer_size = _pvmfw_end - _pvmfw_start,
+#else
+		/* Don't load pvmfw */
+		.pvmfw_buffer = NULL,
+		.pvmfw_buffer_size = 0,
+#endif /* CONFIG(ANDROID_PVMFW) */
+		/* Default to pvmfw not loaded */
+		.pvmfw_size = 0,
 	};
 	VbootEcOps *ec = vboot_get_ec();
 

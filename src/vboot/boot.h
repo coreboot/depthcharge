@@ -28,6 +28,8 @@ struct boot_info {
 	void *ramdisk_addr;
 	size_t ramdisk_size;
 	struct vb2_kernel_params *kparams;
+	void *pvmfw_addr;
+	size_t pvmfw_size;
 	size_t ramdisk_bootconfig_offset;
 };
 
