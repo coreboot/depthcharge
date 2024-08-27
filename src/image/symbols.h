@@ -42,6 +42,10 @@ extern char _kernel_start[];
 extern char _kernel_end[];
 extern char _fit_fdt_start[];
 extern char _fit_fdt_end[];
+#if CONFIG(ANDROID_PVMFW)
+extern char _pvmfw_start[];
+extern char _pvmfw_end[];
+#endif /* CONFIG(ANDROID_PVMFW) */
 extern char _init_funcs_start[];
 extern char _init_funcs_end[];
 

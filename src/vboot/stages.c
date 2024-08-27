@@ -146,6 +146,18 @@ int vboot_select_and_boot_kernel(void)
 	struct vb2_kernel_params kparams = {
 		.kernel_buffer = _kernel_start,
 		.kernel_buffer_size = _kernel_end - _kernel_start,
+
+
+#if CONFIG(ANDROID_PVMFW)
+		.pvmfw_buffer = _pvmfw_start,
+		.pvmfw_buffer_size = _pvmfw_end - _pvmfw_start,
+#else
+		/* Don't load pvmfw */
+		.pvmfw_buffer = NULL,
+		.pvmfw_buffer_size = 0,
+#endif /* CONFIG(ANDROID_PVMFW) */
+		/* Default to pvmfw not loaded */
+		.pvmfw_size = 0,
 	};
 	VbootEcOps *ec = vboot_get_ec();
 
