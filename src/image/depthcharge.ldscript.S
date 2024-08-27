@@ -40,6 +40,10 @@ SECTIONS
 	_fit_fdt_start = CONFIG_KERNEL_FIT_FDT_ADDR;
 	_fit_fdt_end = CONFIG_KERNEL_FIT_FDT_ADDR + 8M;
 
+#if CONFIG(ANDROID_PVMFW)
+    _pvmfw_start = CONFIG_ANDROID_PVMFW_START;
+    _pvmfw_end = CONFIG_ANDROID_PVMFW_START + CONFIG_ANDROID_PVMFW_SIZE;
+#endif /* CONFIG(ANDROID_PVMFW) */
 
 	/* The main portion of depthcharge. */
 	. = CONFIG_BASE_ADDRESS;
@@ -105,6 +109,16 @@ SECTIONS
 		    (_kernel_end <= _fit_fdt_start ||
 		     _fit_fdt_end <= _kernel_start)),
 		   "FDT buffer (8MB) must be placed before depthcharge image and not overlap kernel buffer!");
+
+#if CONFIG(ANDROID_PVMFW)
+	_ = ASSERT(_kernel_end <= _pvmfw_start || _pvmfw_end <= _kernel_start,
+		       "PVMFW buffer must not overlap with kernel buffer"),
+	_ = ASSERT(!CONFIG_KERNEL_FIT_FDT_ADDR ||
+	           (_fit_fdt_end <= _pvmfw_start || _pvmfw_end <= _fit_fdt_start),
+		       "PVMFW buffer must not overlap with FDT buffer"),
+	_ = ASSERT(_end <= _pvmfw_start || _pvmfw_end <= _start,
+		       "PVMFW buffer must not overlap with depthcharge image"),
+#endif /* CONFIG(ANDROID_PVMFW) */
 
 	/* Stuff we don't want in the final image. */
 	/DISCARD/ : {
