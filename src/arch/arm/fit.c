@@ -95,6 +95,18 @@ int boot(struct boot_info *bi)
 	if (bi->ramdisk_addr && bi->ramdisk_size)
 		fit_add_ramdisk(tree, bi->ramdisk_addr, bi->ramdisk_size);
 
+	/* Add DT node if pvmfw was loaded to memory */
+	if (CONFIG(ANDROID_PVMFW) && bi->pvmfw_addr && bi->pvmfw_size &&
+	    fit_add_pvmfw(tree, bi->pvmfw_addr, bi->pvmfw_size) != 0) {
+		/*
+		 * Failed to add pvmfw node, clear the pvmfw with secrects from
+		 * memory.
+		 */
+		printf("ERROR: Failed to add pvmfw reserved mem node!\n");
+		memset(bi->pvmfw_addr, 0, bi->pvmfw_size);
+		return 1;
+	}
+
 	if (dt_apply_fixups(tree))
 		return 1;
 

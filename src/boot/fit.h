@@ -85,6 +85,13 @@ void fit_add_compat(const char *compat);
 
 void fit_add_ramdisk(DeviceTree *tree, void *ramdisk_addr, size_t ramdisk_size);
 
+/*
+ * Add a node with linux,pkvm-guest-firmware-memory compatible under
+ * reserved-memory node reg pointing to the given address and size.
+ * This shall be ran after fit_load() has been called.
+ */
+int fit_add_pvmfw(DeviceTree *tree, void *pvmfw_addr, size_t pvmfw_size);
+
 size_t fit_decompress(FitImageNode *node, void *buffer, size_t bufsize);
 
 #endif /* __BOOT_FIT_H__ */
