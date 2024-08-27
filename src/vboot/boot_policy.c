@@ -207,6 +207,26 @@ static int fill_info_bootimg(struct boot_info *bi,
 #define ANDROID_SLOT_SUFFIX_KEY_STR "androidboot.slot_suffix"
 
 /*
+ * Fill struct boot_info with pvmfw information and fill pvmfw config.
+ */
+static void setup_pvmfw(struct boot_info *bi, struct vb2_kernel_params *kparams)
+{
+	if (kparams->pvmfw_size == 0) {
+		/* There is no pvmfw so don't do anything */
+		printf("PVMFW was not loaded, ignoring...\n");
+		return;
+	}
+
+	/* Consume the boot img header */
+	memmove(kparams->pvmfw_buffer,
+		kparams->pvmfw_buffer + ANDROID_GKI_BOOT_HDR_SIZE,
+		kparams->pvmfw_size - ANDROID_GKI_BOOT_HDR_SIZE);
+
+	bi->pvmfw_addr = kparams->pvmfw_buffer;
+	bi->pvmfw_size = kparams->pvmfw_size - ANDROID_GKI_BOOT_HDR_SIZE;
+}
+
+/*
  * Update cmdline with proper slot_suffix parameter
  */
 static int modify_android_slot_suffix(struct vb2_kernel_params *kparams,
@@ -416,6 +436,9 @@ static int fill_info_gki(struct boot_info *bi,
 		printf("Pointer to kernel buffer is not initialized\n");
 		return -1;
 	}
+
+	if (CONFIG(ANDROID_PVMFW))
+		setup_pvmfw(bi, kparams);
 
 	/* Kernel starts at the beginning of kernel buffer */
 	bi->kernel = kparams->kernel_buffer;
