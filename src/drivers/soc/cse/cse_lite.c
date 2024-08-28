@@ -1555,4 +1555,10 @@ static int cse_get_fpt_rw_version(struct LateInitFunc *init)
 	return 0;
 }
 
+static int cse_log_vboot_info(struct LateInitFunc *init)
+{
+	return elog_add_vboot_info();
+}
+
 LATE_INIT_FUNC(cse_get_fpt_rw_version);
+LATE_INIT_FUNC(cse_log_vboot_info);
