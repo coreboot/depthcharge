@@ -20,16 +20,20 @@ static int buzzer_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 {
 	GpioEdgeBuzzer *buzzer = container_of(me, GpioEdgeBuzzer, ops);
 	u64 start;
+	int period_us;
 	int i = 0;
 
 	if (!frequency)
 		return -1;
 
-	/* Using frequency ~2.7kHz, which is peak loudness */
+	/* Limiting frequency to 2.7kHz which is peak loudness */
+	period_us = 1000000 / frequency;
+	period_us = (period_us < 370) ? 370 : period_us;
+
 	start = timer_us(0);
 	while (timer_us(start)/1000 < msec) {
 		buzzer->gpio->set(buzzer->gpio, ++i & 1);
-		udelay(185);
+		udelay(period_us/2);
 	}
 	buzzer->gpio->set(buzzer->gpio, 0);
 
