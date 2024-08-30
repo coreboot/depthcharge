@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <libpayload.h>
+#include <lp_vboot.h>
 
 #include "base/elog.h"
 #include "drivers/flash/flash.h"
@@ -255,4 +256,18 @@ elog_error_t elog_add_event_word(uint8_t event_type, uint16_t data)
 elog_error_t elog_add_event_dword(uint8_t event_type, uint32_t data)
 {
 	return elog_add_event_raw(event_type, &data, sizeof(data));
+}
+
+elog_error_t elog_add_vboot_info(void)
+{
+	struct vb2_context *ctx = vboot_get_context();
+	if (!ctx)
+		return ELOG_ERR("Unable to get vboot context", ELOG_ERR_EX);
+	union vb2_fw_boot_info data = vb2api_get_fw_boot_info(ctx);
+	uint8_t width = offsetof(union vb2_fw_boot_info, recovery_reason);
+
+	if (vboot_recovery_mode_enabled())
+		width = sizeof(union vb2_fw_boot_info);
+
+	return elog_add_event_raw(ELOG_TYPE_FW_VBOOT_INFO, &data, width);
 }
