@@ -1545,20 +1545,14 @@ static void cse_ish_dump_version(void)
 		info->cse_fwp_version.ish_partition_info.cur_ish_fw_version.build);
 }
 
-static int cse_get_fpt_rw_version(struct LateInitFunc *init)
+static int cse_misc_ops(struct LateInitFunc *init)
 {
 	cse_dump_rw_version();
 
 	if (CONFIG(SOC_INTEL_STORE_ISH_FW_VERSION))
 		cse_ish_dump_version();
 
-	return 0;
-}
-
-static int cse_log_vboot_info(struct LateInitFunc *init)
-{
 	return elog_add_vboot_info();
 }
 
-LATE_INIT_FUNC(cse_get_fpt_rw_version);
-LATE_INIT_FUNC(cse_log_vboot_info);
+LATE_INIT_FUNC(cse_misc_ops);
