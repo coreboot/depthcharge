@@ -30,4 +30,5 @@ elog_error_t elog_add_event(uint8_t event_type);
 elog_error_t elog_add_event_byte(uint8_t event_type, uint8_t data);
 elog_error_t elog_add_event_word(uint8_t event_type, uint16_t data);
 elog_error_t elog_add_event_dword(uint8_t event_type, uint32_t data);
+elog_error_t elog_add_vboot_info(void);
 #endif /* __BASE_ELOG_H__ */
