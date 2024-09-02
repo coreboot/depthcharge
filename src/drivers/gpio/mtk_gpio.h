@@ -49,5 +49,7 @@ typedef struct {
 GpioOps *new_mtk_gpio_input(u32 pin);
 GpioOps *new_mtk_gpio_output(u32 pin);
 GpioOps *new_mtk_eint(u32 pin);
+void gpio_calc_eint_pos_bit(u32 pin, u32 *pos, u32 *bit);
+EintRegs *gpio_get_eint_reg(u32 pin);
 
 #endif /* __DRIVERS_MT_GPIO_H__ */
