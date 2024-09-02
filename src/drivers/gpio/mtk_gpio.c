@@ -18,7 +18,6 @@
 #include "drivers/gpio/mtk_gpio.h"
 
 static GpioRegs *gpio_reg = (GpioRegs *)(GPIO_BASE);
-static EintRegs *eint_reg = (EintRegs *)(EINT_BASE);
 
 static MtGpio *new_mtk_gpio(u32 pin)
 {
@@ -68,10 +67,10 @@ static int mt_eint_irq_status(GpioOps *me)
 	MtGpio *gpio = container_of(me, MtGpio, ops);
 	u32 pin = gpio->pin_num;
 	u32 pos, bit, status;
-	EintRegs *reg = eint_reg;
 
-	pos = pin / MAX_EINT_REG_BITS;
-	bit = pin % MAX_EINT_REG_BITS;
+	EintRegs *reg = gpio_get_eint_reg(pin);
+	assert(reg);
+	gpio_calc_eint_pos_bit(pin, &pos, &bit);
 
 	status = (((read32(&reg->sta[pos]) & (1L << bit)) != 0) ? 1 : 0);
 
