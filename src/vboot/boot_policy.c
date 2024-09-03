@@ -104,6 +104,7 @@ static int fill_info_multiboot(struct boot_info *bi,
 #define ANDROID_BOOT_A_PART_NUM 13
 #define ANDROID_BOOT_B_PART_NUM 14
 #define ANDROID_SLOT_SUFFIX_KEY_STR "androidboot.slot_suffix"
+#define ANDROID_FORCE_NORMAL_BOOT_KEY_STR "androidboot.force_normal_boot"
 
 /*
  * Update cmdline with proper slot_suffix parameter
@@ -133,6 +134,48 @@ static int modify_android_slot_suffix(struct bootconfig *bc, uint32_t partition_
 	return 0;
 }
 
+/*
+ * Update bootconfig with proper force_normal_boot parameter
+ */
+static int modify_android_force_normal_boot(struct bootconfig *bc, bool recovery_boot)
+{
+	char *str_to_insert;
+	int ret;
+
+	str_to_insert = recovery_boot ? "0" : "1";
+
+	ret = bootconfig_append_params(bc, ANDROID_FORCE_NORMAL_BOOT_KEY_STR, str_to_insert);
+	if (ret < 0) {
+		printf("Cannot set force normal boot property for Android GKI!\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+static bool gki_is_recovery_boot(struct vb2_kernel_params *kparams)
+{
+	switch (kparams->boot_command) {
+	case VB2_BOOT_CMD_NORMAL_BOOT:
+		return false;
+
+	case VB2_BOOT_CMD_BOOTLOADER_BOOT:
+		/*
+		 * TODO(b/358088653): We should enter fastboot mode and clear
+		 * BCB command in misc partition. For now ignore that and boot
+		 * to recovery where fastbootd should be available.
+		 */
+		return true;
+
+	case VB2_BOOT_CMD_RECOVERY_BOOT:
+		return true;
+
+	default:
+		printf("Unknown boot command, assume recovery boot is required\n");
+		return true;
+	}
+}
+
 static int gki_setup_ramdisk(struct boot_info *bi,
 			     struct vb2_kernel_params *kparams,
 			     int fill_cmdline)
@@ -143,6 +186,7 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 	uint8_t *init_boot_ramdisk_dst;
 	uint32_t vendor_ramdisk_section_offset;
 	struct bootconfig bc;
+	bool recovery_boot;
 	int ret;
 
 	vendor_hdr = (struct vendor_boot_img_hdr_v4 *)((uintptr_t)kparams->kernel_buffer +
@@ -226,6 +270,12 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 		ret = modify_android_slot_suffix(&bc, kparams->partition_number);
 		if (ret < 0)
 			return ret;
+
+		/* Select boot mode */
+		ret = modify_android_force_normal_boot(&bc, recovery_boot);
+		if (ret < 0)
+			return ret;
+
 	}
 
 	init_boot_ramdisk_dst = ((uint8_t *)vendor_hdr +
