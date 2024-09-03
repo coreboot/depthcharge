@@ -361,6 +361,25 @@ static bool gki_is_recovery_boot(struct vb2_kernel_params *kparams)
 	}
 }
 
+static bool gki_ramdisk_fragment_needed(struct vendor_ramdisk_table_entry_v4 *fragment,
+					bool recovery_boot)
+{
+	/* Ignore all other properties except ramdisk type */
+	switch (fragment->ramdisk_type) {
+	case VENDOR_RAMDISK_TYPE_PLATFORM:
+	case VENDOR_RAMDISK_TYPE_DLKM:
+		return true;
+
+	case VENDOR_RAMDISK_TYPE_RECOVERY:
+		return recovery_boot;
+
+	default:
+		printf("Unknown ramdisk type 0x%x\n", fragment->ramdisk_type);
+
+		return false;
+	}
+}
+
 static int gki_setup_ramdisk(struct boot_info *bi,
 			     struct vb2_kernel_params *kparams,
 			     int fill_cmdline)
@@ -368,7 +387,9 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 	struct vendor_boot_img_hdr_v4 *vendor_hdr;
 	struct boot_img_hdr_v4 *init_hdr;
 	uint8_t *init_boot_ramdisk_src;
-	uint8_t *init_boot_ramdisk_dst;
+	uint8_t *vendor_ramdisk;
+	uint8_t *vendor_ramdisk_end;
+	uint32_t vendor_ramdisk_table_section_offset;
 	uint32_t vendor_ramdisk_section_offset;
 	uint32_t bootconfig_section_offset;
 	uintptr_t bootc_ramdisk_addr;
@@ -379,16 +400,6 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 	init_hdr = (struct boot_img_hdr_v4 *)((uintptr_t)kparams->kernel_buffer +
 					      kparams->init_boot_offset);
 
-	/*
-	 * TODO: For now assuming single ramdisk in vendor_hdr, do not load more
-	 * than one ramdisk. This is a WIP solution, need to improve based on
-	 * mode.
-	 */
-	if (vendor_hdr->vendor_ramdisk_table_entry_num > 1) {
-		printf("GKI: Loading more than single ramdisk is not supported\n");
-		return -1;
-	}
-
 	if (init_hdr->kernel_size != 0) {
 		printf("GKI: Kernel size on init_boot partition has to be zero\n");
 		return -1;
@@ -397,21 +408,57 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 	/* Calculate address offset of vendor_ramdisk section on vendor_boot partition */
 	vendor_ramdisk_section_offset = ALIGN_UP(sizeof(struct vendor_boot_img_hdr_v4),
 						 vendor_hdr->page_size);
+	vendor_ramdisk_table_section_offset = vendor_ramdisk_section_offset +
+		ALIGN_UP(vendor_hdr->vendor_ramdisk_size, vendor_hdr->page_size) +
+		ALIGN_UP(vendor_hdr->dtb_size, vendor_hdr->page_size);
+
+	/* Check if vendor ramdisk table is correct */
+	if (vendor_hdr->vendor_ramdisk_table_size <
+	    vendor_hdr->vendor_ramdisk_table_entry_num *
+	    vendor_hdr->vendor_ramdisk_table_entry_size) {
+		printf("GKI: Too small vendor ramdisk table\n");
+		return -1;
+	}
+
+	recovery_boot = gki_is_recovery_boot(kparams);
+
+	vendor_ramdisk = (uint8_t *)vendor_hdr + vendor_ramdisk_section_offset;
+	vendor_ramdisk_end = vendor_ramdisk;
+
+	/* Go through all ramdisk fragments and keep only the required ones */
+	for (uintptr_t i = 0,
+	     fragment_ptr = (uintptr_t)vendor_hdr + vendor_ramdisk_table_section_offset;
+	     i < vendor_hdr->vendor_ramdisk_table_entry_num;
+	     fragment_ptr += vendor_hdr->vendor_ramdisk_table_entry_size, i++) {
+
+		struct vendor_ramdisk_table_entry_v4 *fragment;
+		uint8_t *fragment_src;
+
+		fragment = (struct vendor_ramdisk_table_entry_v4 *)fragment_ptr;
+		if (!gki_ramdisk_fragment_needed(fragment, recovery_boot))
+			/* Fragment not needed, skip it */
+			continue;
+
+		fragment_src = vendor_ramdisk + fragment->ramdisk_offset;
+		if (vendor_ramdisk_end != fragment_src)
+			/*
+			 * A fragment was skipped before, we need to move current one
+			 * at the correct place.
+			 */
+			memmove(vendor_ramdisk_end, fragment_src, fragment->ramdisk_size);
+
+		/* Update location of the end of vendor ramdisk */
+		vendor_ramdisk_end += fragment->ramdisk_size;
+	}
 
 	if (CONFIG(BOOTCONFIG)) {
 		/* Calculate offset of bootconfig section */
-		bootconfig_section_offset = vendor_ramdisk_section_offset +
-			ALIGN_UP(vendor_hdr->vendor_ramdisk_size,
-				 vendor_hdr->page_size) +
-			ALIGN_UP(vendor_hdr->dtb_size,
-				 vendor_hdr->page_size) +
+		bootconfig_section_offset = vendor_ramdisk_table_section_offset +
 			ALIGN_UP(vendor_hdr->vendor_ramdisk_table_size,
 				 vendor_hdr->page_size);
 
-		bootc_ramdisk_addr = (uintptr_t)vendor_hdr +
-				     vendor_ramdisk_section_offset +
-				     vendor_hdr->vendor_ramdisk_size +
-				     init_hdr->ramdisk_size;
+		/* Put bootconfig right after ramdisks */
+		bootc_ramdisk_addr = (uintptr_t)vendor_ramdisk_end + init_hdr->ramdisk_size;
 
 		if ((bootc_ramdisk_addr + vendor_hdr->bootconfig_size) >=
 		    ((uintptr_t)kparams->kernel_buffer + kparams->vboot_cmdline_offset)) {
@@ -458,7 +505,6 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 			return -1;
 
 		/* Select boot mode */
-		recovery_boot = gki_is_recovery_boot(kparams);
 		if (modify_android_force_normal_boot(kparams,
 						     bootc_ramdisk_addr,
 						     (size_t)(kparams->kernel_buffer +
@@ -467,10 +513,6 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 						     recovery_boot) < 0)
 			return -1;
 	}
-
-	init_boot_ramdisk_dst = ((uint8_t *)vendor_hdr +
-				vendor_ramdisk_section_offset +
-				vendor_hdr->vendor_ramdisk_size);
 
 	/* On init_boot there's no kernel, so ramdisk follows the header */
 	init_boot_ramdisk_src = (uint8_t *)init_hdr + ANDROID_GKI_BOOT_HDR_SIZE;
@@ -482,12 +524,12 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 	 * an initramfs, which results in a file structure that's a generic
 	 * ramdisk (from init_boot) overlaid on the vendor ramdisk (from
 	 * vendor_boot) file structure. */
-	memmove(init_boot_ramdisk_dst, init_boot_ramdisk_src, init_hdr->ramdisk_size);
+	memmove(vendor_ramdisk_end, init_boot_ramdisk_src, init_hdr->ramdisk_size);
 
 	/* Update ramdisk addr and size */
-	bi->ramdisk_addr = (uint8_t *)vendor_hdr + vendor_ramdisk_section_offset;
-	bi->ramdisk_size = vendor_hdr->vendor_ramdisk_size + init_hdr->ramdisk_size +
-			   vendor_hdr->bootconfig_size;
+	bi->ramdisk_addr = vendor_ramdisk;
+	bi->ramdisk_size = (uintptr_t)(vendor_ramdisk_end - vendor_ramdisk) +
+			   init_hdr->ramdisk_size + vendor_hdr->bootconfig_size;
 
 	if (fill_cmdline)
 		bi->cmd_line = (char *)vendor_hdr->cmdline;
