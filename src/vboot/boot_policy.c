@@ -204,6 +204,7 @@ static int fill_info_bootimg(struct boot_info *bi,
 #define ANDROID_BOOT_A_PART_NUM 13
 #define ANDROID_BOOT_B_PART_NUM 14
 #define ANDROID_SLOT_SUFFIX_KEY_STR "androidboot.slot_suffix"
+#define ANDROID_FORCE_NORMAL_BOOT_KEY_STR "androidboot.force_normal_boot"
 
 /*
  * Fill struct boot_info with pvmfw information and fill pvmfw config.
@@ -304,6 +305,61 @@ static int modify_android_boot_devices(struct vb2_kernel_params *kparams,
 	return 0;
 }
 
+/*
+ * Update bootconfig with proper force_normal_boot parameter
+ */
+static int modify_android_force_normal_boot(struct vb2_kernel_params *kparams,
+					    uintptr_t bootc_ramdisk_addr,
+					    size_t bootc_buffer_size,
+					    bool recovery_boot)
+{
+	char *str_to_insert;
+	struct vendor_boot_img_hdr_v4 *vendor_hdr;
+	int bootconfig_size;
+
+	vendor_hdr = (struct vendor_boot_img_hdr_v4 *)((uintptr_t)kparams->kernel_buffer +
+						       kparams->vendor_boot_offset);
+
+	str_to_insert = recovery_boot ? "0" : "1";
+
+	bootconfig_size = append_bootconfig_params(ANDROID_FORCE_NORMAL_BOOT_KEY_STR,
+						  str_to_insert,
+						  (void *)bootc_ramdisk_addr,
+						  vendor_hdr->bootconfig_size,
+						  bootc_buffer_size);
+	if (bootconfig_size < 0) {
+		printf("Cannot set force normal boot property for Android GKI!\n");
+		return -1;
+	}
+
+	vendor_hdr->bootconfig_size = bootconfig_size;
+
+	return 0;
+}
+
+static bool gki_is_recovery_boot(struct vb2_kernel_params *kparams)
+{
+	switch (kparams->boot_command) {
+	case VB2_BOOT_CMD_NORMAL_BOOT:
+		return false;
+
+	case VB2_BOOT_CMD_BOOTLOADER_BOOT:
+		/*
+		 * TODO(b/358088653): We should enter fastboot mode and clear
+		 * BCB command in misc partition. For now ignore that and boot
+		 * to recovery where fastbootd should be available.
+		 */
+		return true;
+
+	case VB2_BOOT_CMD_RECOVERY_BOOT:
+		return true;
+
+	default:
+		printf("Unknown boot command, assume recovery boot is required\n");
+		return true;
+	}
+}
+
 static int gki_setup_ramdisk(struct boot_info *bi,
 			     struct vb2_kernel_params *kparams,
 			     int fill_cmdline)
@@ -315,6 +371,7 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 	uint32_t vendor_ramdisk_section_offset;
 	uint32_t bootconfig_section_offset;
 	uintptr_t bootc_ramdisk_addr;
+	bool recovery_boot;
 
 	vendor_hdr = (struct vendor_boot_img_hdr_v4 *)((uintptr_t)kparams->kernel_buffer +
 						       kparams->vendor_boot_offset);
@@ -397,6 +454,16 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 					       (size_t)(kparams->kernel_buffer +
 					       kparams->kernel_buffer_size -
 					       bootc_ramdisk_addr)) < 0)
+			return -1;
+
+		/* Select boot mode */
+		recovery_boot = gki_is_recovery_boot(kparams);
+		if (modify_android_force_normal_boot(kparams,
+						     bootc_ramdisk_addr,
+						     (size_t)(kparams->kernel_buffer +
+							      kparams->kernel_buffer_size -
+							      bootc_ramdisk_addr),
+						     recovery_boot) < 0)
 			return -1;
 	}
 
