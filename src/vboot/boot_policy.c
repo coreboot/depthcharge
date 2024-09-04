@@ -20,17 +20,20 @@
 #include <libpayload.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <tss_constants.h>
 #include <vb2_android_bootimg.h>
 
 #include "base/gpt.h"
 #include "base/string_utils.h"
 #include "boot/android_bootconfig_params.h"
+#include "boot/android_pvmfw.h"
 #include "boot/bootconfig.h"
 #include "boot/commandline.h"
 #include "boot/multiboot.h"
 #include "drivers/storage/blockdev.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
+#include "vboot/secdata_tpm.h"
 
 /*
  * Boot policy settings. By default, we select CrOS image type and command line
@@ -215,19 +218,76 @@ static int fill_info_bootimg(struct boot_info *bi,
  */
 static void setup_pvmfw(struct boot_info *bi, VbSelectAndLoadKernelParams *kparams)
 {
-	if (kparams->pvmfw_size == 0) {
+	int ret;
+	uint32_t status;
+	size_t pvmfw_size, params_size;
+	void *pvmfw_addr, *params = NULL;
+	struct boot_img_hdr_v4 *boot_hdr = kparams->pvmfw_buffer;
+
+	if (!kparams->pvmfw_buffer || kparams->pvmfw_size == 0) {
 		/* There is no pvmfw so don't do anything */
 		printf("PVMFW was not loaded, ignoring...\n");
 		return;
 	}
 
-	/* Consume the boot img header */
-	memmove(kparams->pvmfw_buffer,
-		kparams->pvmfw_buffer + ANDROID_GKI_BOOT_HDR_SIZE,
-		kparams->pvmfw_size - ANDROID_GKI_BOOT_HDR_SIZE);
+	if (kparams->pvmfw_size < ANDROID_GKI_BOOT_HDR_SIZE) {
+		/* If loaded pvmfw is smaller then boot header, then fail */
+		printf("PVMFW size is too small\n");
+		ret = -1;
+		goto fail;
+	}
 
-	bi->pvmfw_addr = kparams->pvmfw_buffer;
-	bi->pvmfw_size = kparams->pvmfw_size - ANDROID_GKI_BOOT_HDR_SIZE;
+	/* Verify that boot header of pvmfw partition is valid */
+	if (memcmp(boot_hdr->magic, BOOT_MAGIC, BOOT_MAGIC_SIZE) ||
+	    boot_hdr->header_version < 3 || boot_hdr->ramdisk_size) {
+		printf("pvmfw's boot hdr is invalid\n");
+		ret = -1;
+		goto fail;
+	}
+
+	/* Get pvmfw code size */
+	pvmfw_size = boot_hdr->kernel_size;
+
+	/* Get pvmfw boot params from GSC */
+	status = secdata_get_pvmfw_params(&params, &params_size);
+	if (status != TPM_SUCCESS) {
+		printf("Failed to get pvmfw gsc boot params data. "
+		       "secdata_get_pvmfw_params returned %u\n", status);
+		ret = -1;
+		goto fail;
+	}
+
+	/* pvmfw code starts after the boot header. Discard the boot header */
+	pvmfw_addr = kparams->pvmfw_buffer + ANDROID_GKI_BOOT_HDR_SIZE;
+
+	/* Verify that pvmfw start address is aligned */
+	if (!IS_ALIGNED((uintptr_t)pvmfw_addr, ANDROID_PVMFW_CFG_ALIGN)) {
+		printf("Failed to setup pvmfw at aligned address\n");
+		ret = -1;
+		goto fail;
+	}
+
+	ret = setup_android_pvmfw(pvmfw_addr,
+				  kparams->pvmfw_buffer_size - ANDROID_GKI_BOOT_HDR_SIZE,
+				  &pvmfw_size, params, params_size);
+	if (ret != 0) {
+		printf("Failed to setup pvmfw\n");
+		goto fail;
+	}
+
+	bi->pvmfw_addr = pvmfw_addr;
+	bi->pvmfw_size = pvmfw_size;
+fail:
+	/* TODO(b/380002393): Clear the remains before jumping to kernel */
+	if (params) {
+		/* Make sure that secrets are no longer in memory */
+		memset(params, 0, params_size);
+		free(params);
+	}
+
+	/* If failed then clear the buffer */
+	if (ret != 0)
+		memset(kparams->pvmfw_buffer, 0, kparams->pvmfw_buffer_size);
 }
 
 /*
