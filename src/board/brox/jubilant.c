@@ -8,6 +8,7 @@
 #include "board/brox/include/variant.h"
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
+#include "drivers/ec/rts5453/rts5453.h"
 #include "drivers/gpio/alderlake.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/storage/storage_common.h"
@@ -25,6 +26,13 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 	return storage_configs;
 }
 
+/* Override of func in src/drivers/ec/rts5453/rts5453.c */
+void board_rts5453_get_image_paths(const char **image_path,
+				   const char **hash_path)
+{
+	*image_path = "rts5453_retimer_bypass.bin";
+	*hash_path = "rts5453_retimer_bypass.hash";
+}
 const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
