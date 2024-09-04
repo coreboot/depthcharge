@@ -31,4 +31,19 @@ uint32_t secdata_fwmp_read(struct vb2_context *ctx);
 uint32_t secdata_widevine_prepare(struct vb2_context *ctx);
 uint32_t secdata_extend_kernel_pcr(struct vb2_context *ctx);
 
+#define ANDROID_PVMFW_BOOT_PARAMS_NV_INDEX 0x3fff0a
+
+/**
+ * Gets the pvmfw boot parameters from GSC.
+ *
+ * @param boot_params	pointer where the buffer with pvmfw boot parameters
+ *			will be set if successful. Caller is responsible for
+ *			freeing the buffer.
+ * @param params_size	pointer where the size of the boot_params buffer will
+ *			be set if successful.
+ *
+ * @return TPM_SUCCESS if successful, error code otherwise.
+ */
+uint32_t secdata_get_pvmfw_params(void **boot_params, size_t *params_size);
+
 #endif  /* VBOOT_REFERENCE_SECDATA_TPM_H_ */
