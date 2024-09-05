@@ -110,7 +110,7 @@ static vb2_error_t init_screen(void)
 		return VB2_SUCCESS;
 
 	/* Make sure framebuffer is initialized before turning display on. */
-	clear_screen(&ui_color_bg);
+	clear_screen(&ui_color_black);
 	if (display_init())
 		return VB2_ERROR_UI_DISPLAY_INIT;
 
