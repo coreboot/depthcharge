@@ -11,7 +11,7 @@
 ## GNU General Public License for more details.
 ##
 
-depthcharge-y += commandline.c payload.c
+depthcharge-y += commandline.c payload.c android_kernel_cmdline.c
 depthcharge-$(CONFIG_BOOTCONFIG) += bootconfig.c
 depthcharge-$(CONFIG_KERNEL_DUMMY) += dummy.c
 depthcharge-$(CONFIG_KERNEL_FIT) += fit.c
