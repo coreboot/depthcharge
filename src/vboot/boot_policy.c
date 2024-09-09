@@ -24,6 +24,7 @@
 
 #include "base/gpt.h"
 #include "base/string_utils.h"
+#include "boot/android_bootconfig_params.h"
 #include "boot/bootconfig.h"
 #include "boot/commandline.h"
 #include "boot/multiboot.h"
@@ -326,6 +327,8 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 			printf("GKI: Cannot copy avb cmdline to bootconfig\n");
 			return -1;
 		}
+
+		append_android_bootconfig_params(&bc);
 
 		/* Update slot suffix */
 		ret = modify_android_slot_suffix(&bc, kparams->partition_number);
