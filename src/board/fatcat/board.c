@@ -94,7 +94,7 @@ __weak const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
 
-	printf("%s Empty stub. Please add varaint audio config\n", __func__);
+	printf("%s Empty stub. Please add variant audio config\n", __func__);
 	return &config;
 }
 
