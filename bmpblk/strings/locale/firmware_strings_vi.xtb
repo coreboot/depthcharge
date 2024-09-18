@@ -6,6 +6,7 @@
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1252150473073837888">Xác nhận quay lại chế độ bảo mật</translation>
 <translation id="1321620357351949170">Chọn loại hình kiểm tra mà bạn muốn chạy.</translation>
+<translation id="1327914510899744949">Chế độ khởi động nhanh của trình tải khởi động</translation>
 <translation id="1389402762514302384">Chọn Hủy để tiếp tục được bảo vệ.</translation>
 <translation id="1428255359211557126">Kiểm tra bộ nhớ (nhanh)</translation>
 <translation id="1483971085438511843">Dùng phím Enter để chọn một tùy chọn.</translation>
@@ -50,14 +51,17 @@ Vui long khong tat may.</translation>
 <translation id="5809240698077875994">Nhấn nút Nguồn để bật chế độ nhà phát triển hoặc chọn Hủy để tiếp tục được bảo vệ.</translation>
 <translation id="586317305889719987">Để quay lại chế độ bảo mật đề xuất, hãy chọn “Quay lại chế độ bảo mật” ở bên dưới.</translation>
 <translation id="5874367961304694171">Cắm thiết bị lưu trữ ngoài</translation>
+<translation id="589807000231180230">Đang chờ kết nối...</translation>
 <translation id="6172915643608608639">Khởi động từ ổ đĩa trong</translation>
 <translation id="6191358901427525316">Chuẩn bị khôi phục thiết bị. Bạn cần có:</translation>
 <translation id="635783852215913562">Sử dụng các phím mũi tên để di chuyển lên trên hoặc xuống dưới.</translation>
 <translation id="6393574457614848045">Phân vùng khôi phục bằng kết nối Internet có lỗi hoặc thiếu. Vui lòng khôi phục bằng bộ nhớ ngoài thay thế.</translation>
 <translation id="6448938863276324156">Bạn có thể khôi phục bằng thiết bị lưu trữ bên ngoài, chẳng hạn như ổ đĩa USB.</translation>
 <translation id="65237697078188559">Shell chương trình cơ sở</translation>
+<translation id="6933530204467815794">Đã kết nối qua TCP</translation>
 <translation id="6972383785688794804">Trang trên</translation>
 <translation id="7065553583078443466">Chọn trình tải khởi động thay thế</translation>
+<translation id="7071202423630761214">Đã kết nối qua USB</translation>
 <translation id="7126032376876878896">Dùng nút nguồn để chọn một tùy chọn.</translation>
 <translation id="7154775592215462674">1. Thiết bị lưu trữ ngoài, chẳng hạn như ổ đĩa USB</translation>
 <translation id="7157640574359006953">Cắm ổ đĩa ngoài có hình ảnh Chrome OS. Ổ đĩa này sẽ tự động khởi động.</translation>
@@ -78,6 +82,7 @@ Vui long khong tat may.</translation>
 <translation id="8101391381992690790">Đảm bảo ổ đĩa ngoài của bạn có hình ảnh khôi phục hợp lệ rồi cắm lại ổ đĩa này khi đã sẵn sàng.</translation>
 <translation id="8116993605321079294">Đã xảy ra lỗi khi chạy trình tải khởi động thay thế. Xem nhật ký của chương trình cơ sở để biết thông tin chi tiết.</translation>
 <translation id="8131740175452115882">Xác nhận</translation>
+<translation id="8182314305006465525">Bạn đang ở chế độ khởi động nhanh của trình tải khởi động</translation>
 <translation id="8199613549817472219">Chúng tôi sẽ hướng dẫn bạn thực hiện quy trình khôi phục</translation>
 <translation id="8377165353588213941">Bạn đã ở trang cuối cùng</translation>
 <translation id="8569584079758810124">Không nhận được thông tin gỡ lỗi.</translation>

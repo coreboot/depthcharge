@@ -6,6 +6,7 @@
 <translation id="1201402288615127009">Dalje</translation>
 <translation id="1252150473073837888">Potvrdite povratak u sigurni način</translation>
 <translation id="1321620357351949170">Odaberite test koji želite pokrenuti.</translation>
+<translation id="1327914510899744949">Brzo podizanje pokretača operativnog sustava</translation>
 <translation id="1389402762514302384">Odaberite "Odustani" da biste ostali zaštićeni.</translation>
 <translation id="1428255359211557126">Provjera memorije (brza)</translation>
 <translation id="1483971085438511843">Za odabir opcije koristite se tipkom Enter.</translation>
@@ -49,14 +50,17 @@
 <translation id="5809240698077875994">Pritisnite tipku za uključivanje/isključivanje da biste omogućili način rada razvojnog programera ili odaberite "Odustani" da biste ostali zaštićeni.</translation>
 <translation id="586317305889719987">Da biste se vratili u preporučeni sigurni način, odaberite "Povratak u siguran način" u nastavku.</translation>
 <translation id="5874367961304694171">Povežite uređaj za vanjsku pohranu</translation>
+<translation id="589807000231180230">Čeka se na uspostavu veze…</translation>
 <translation id="6172915643608608639">Pokretanje s unutarnjeg diska</translation>
 <translation id="6191358901427525316">Spremite se za oporavak svojeg uređaja. Potrebno vam je sljedeće:</translation>
 <translation id="635783852215913562">Za kretanje prema gore i dolje koristite se tipkama sa strelicama.</translation>
 <translation id="6393574457614848045">Particija za oporavak interneta oštećena je ili nedostaje. Umjesto toga oporavite pomoću vanjske pohrane.</translation>
 <translation id="6448938863276324156">Možete oporaviti pomoću vanjske pohrane kao što je USB disk.</translation>
 <translation id="65237697078188559">Ljuska opreme</translation>
+<translation id="6933530204467815794">Povezano putem TCP-a</translation>
 <translation id="6972383785688794804">Stranica prema gore</translation>
 <translation id="7065553583078443466">Odaberite zamjenski početni program za pokretanje</translation>
+<translation id="7071202423630761214">Povezano putem USB-a</translation>
 <translation id="7126032376876878896">Za odabir opcije upotrijebite tipku za uključivanje/isključivanje.</translation>
 <translation id="7154775592215462674">1. Uređaj za vanjsku pohranu kao što je USB disk</translation>
 <translation id="7157640574359006953">Priključite vanjski disk sa slikom OS-a Chrome. Pokrenut će se automatski.</translation>
@@ -77,6 +81,7 @@
 <translation id="8101391381992690790">Provjerite ima li vaš vanjski disk valjanu sliku za oporavak i ponovno umetnite disk kad budete spremni.</translation>
 <translation id="8116993605321079294">Došlo je do pogreške prilikom pokretanja alternativnog početnog programa za pokretanje. Pojedinosti potražite u zapisniku opreme.</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
+<translation id="8182314305006465525">U načinu ste brzog podizanja pokretača operativnog sustava</translation>
 <translation id="8199613549817472219">Provest ćemo vas kroz postupak oporavka</translation>
 <translation id="8377165353588213941">Stigli ste do kraja</translation>
 <translation id="8569584079758810124">Dohvaćanje informacija o otklanjanju pogrešaka nije uspjelo.</translation>

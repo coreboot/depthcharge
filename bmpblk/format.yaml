@@ -20,6 +20,11 @@ localized_files:
   # firmware sync
   firmware_sync_title: title
   firmware_sync_desc: desc
+  # fastboot screen
+  fastboot_title: title
+  fastboot_wait_conn_desc: one_line_desc
+  fastboot_tcp_conn_desc: one_line_desc
+  fastboot_usb_conn_desc: one_line_desc
   # broken screen
   broken_title: title
   broken_desc: desc
@@ -29,6 +34,7 @@ localized_files:
   adv_options_title: title
   btn_dev_mode: primary_button
   btn_debug_info: primary_button
+  btn_fastboot: primary_button
   btn_firmware_log: primary_button
   btn_firmware_shell: primary_button
   btn_rec_by_internet_old: primary_button

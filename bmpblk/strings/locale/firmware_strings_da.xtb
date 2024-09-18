@@ -6,6 +6,7 @@
 <translation id="1201402288615127009">Næste</translation>
 <translation id="1252150473073837888">Bekræft, at du vil vende tilbage til sikker tilstand</translation>
 <translation id="1321620357351949170">Vælg den test, du vil køre.</translation>
+<translation id="1327914510899744949">Fastboot for bootloader</translation>
 <translation id="1389402762514302384">Vælg "Annuller" for at forblive beskyttet.</translation>
 <translation id="1428255359211557126">Hukommelsestjek (hurtigt)</translation>
 <translation id="1483971085438511843">Brug Enter-tasten til at vælge en mulighed.</translation>
@@ -50,14 +51,17 @@ Undlad at slukke din enhed.</translation>
 <translation id="5809240698077875994">Tryk på afbryderknappen for at aktivere udviklertilstand, eller vælg "Annuller" for at forblive beskyttet.</translation>
 <translation id="586317305889719987">Hvis du vil vende tilbage til den anbefalede sikre tilstand, skal du vælge "Vend tilbage til sikker tilstand" nedenfor.</translation>
 <translation id="5874367961304694171">Tilslut din eksterne lagerenhed</translation>
+<translation id="589807000231180230">Venter på forbindelse…</translation>
 <translation id="6172915643608608639">Genstart fra intern disk</translation>
 <translation id="6191358901427525316">Gør klar til at gendanne din enhed. Du skal bruge:</translation>
 <translation id="635783852215913562">Brug piletasterne til at navigere op eller ned.</translation>
 <translation id="6393574457614848045">Partition til internetgendannelse mangler eller er beskadiget. Gendan ved hjælp af en ekstern lagerplads i stedet.</translation>
 <translation id="6448938863276324156">Du kan gendanne ved hjælp af en ekstern lagerenhed som f.eks. et USB-drev.</translation>
 <translation id="65237697078188559">Firmwareskal</translation>
+<translation id="6933530204467815794">Forbundet via TCP</translation>
 <translation id="6972383785688794804">Side op</translation>
 <translation id="7065553583078443466">Vælg alternativ bootloader</translation>
+<translation id="7071202423630761214">Forbundet via USB</translation>
 <translation id="7126032376876878896">Brug afbryderknappen til at vælge en mulighed.</translation>
 <translation id="7154775592215462674">1. En ekstern lagerenhed som f.eks. et USB-drev</translation>
 <translation id="7157640574359006953">Tilslut din eksterne disk, der har en afbildning af Chrome OS. Den genstarter automatisk.</translation>
@@ -78,6 +82,7 @@ Undlad at slukke din enhed.</translation>
 <translation id="8101391381992690790">Sørg for, at din eksterne disk har et gyldigt systembillede til gendannelse, og indsæt disken igen, når du er klar.</translation>
 <translation id="8116993605321079294">Der opstod en fejl ved opstarten af den alternative bootloader. Se oplysninger i firmwareloggen.</translation>
 <translation id="8131740175452115882">Bekræft</translation>
+<translation id="8182314305006465525">Du er i fastboot-tilstand (Fastboot mode) for bootloaderen</translation>
 <translation id="8199613549817472219">Lad os gennemgå gendannelsesprocessen</translation>
 <translation id="8377165353588213941">Du er kommet til slutningen</translation>
 <translation id="8569584079758810124">Fejretningsoplysningerne kunne ikke hentes.</translation>

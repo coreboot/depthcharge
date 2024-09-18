@@ -6,6 +6,7 @@
 <translation id="1201402288615127009">Înainte</translation>
 <translation id="1252150473073837888">Confirmă revenirea la modul sigur</translation>
 <translation id="1321620357351949170">Selectează testul pe care vrei să-l rulezi.</translation>
+<translation id="1327914510899744949">Fastboot pentru bootloader</translation>
 <translation id="1389402762514302384">Selectează „Anulează” ca să rămâi protejat(ă).</translation>
 <translation id="1428255359211557126">Verificare (rapidă) a memoriei</translation>
 <translation id="1483971085438511843">Folosește tasta Enter pentru a selecta o opțiune.</translation>
@@ -50,14 +51,17 @@ Nu inchideti dispozitivul.</translation>
 <translation id="5809240698077875994">Apasă butonul de pornire ca să activezi modul pentru dezvoltatori sau selectează „Anulează” ca să rămâi protejat(ă).</translation>
 <translation id="586317305889719987">Ca să revii la modul sigur recomandat, selectează „Revino la modul sigur” mai jos.</translation>
 <translation id="5874367961304694171">Conectează dispozitivul de stocare extern</translation>
+<translation id="589807000231180230">Se așteaptă conexiunea…</translation>
 <translation id="6172915643608608639">Pornește de pe un disc intern</translation>
 <translation id="6191358901427525316">Pregătește-te să recuperezi dispozitivul. Vei avea nevoie de:</translation>
 <translation id="635783852215913562">Folosește tastele săgeată pentru a naviga în sus sau în jos.</translation>
 <translation id="6393574457614848045">Partiția de recuperare de pe internet este deteriorată sau lipsește. Realizează recuperarea folosind stocarea externă.</translation>
 <translation id="6448938863276324156">Poți recupera folosind suporturi externe, precum o unitate USB.</translation>
 <translation id="65237697078188559">Shell firmware</translation>
+<translation id="6933530204467815794">Conectat prin TCP</translation>
 <translation id="6972383785688794804">O pagină mai sus</translation>
 <translation id="7065553583078443466">Selectează un bootloader alternativ</translation>
+<translation id="7071202423630761214">Conectat prin USB</translation>
 <translation id="7126032376876878896">Folosește butonul de pornire pentru a selecta o opțiune.</translation>
 <translation id="7154775592215462674">1. Un dispozitiv de stocare extern, precum o unitate USB.</translation>
 <translation id="7157640574359006953">Conectează discul extern care conține o imagine a sistemului de operare Chrome. Acesta va porni automat.</translation>
@@ -78,6 +82,7 @@ Nu inchideti dispozitivul.</translation>
 <translation id="8101391381992690790">Verifică dacă discul extern are o imagine de recuperare validă și reintrodu discul când ești gata.</translation>
 <translation id="8116993605321079294">A apărut o eroare la lansarea bootloaderului alternativ. Consultă jurnalul de firmware pentru detalii.</translation>
 <translation id="8131740175452115882">Confirmați</translation>
+<translation id="8182314305006465525">Sunteți în modul Fastboot pentru bootloader</translation>
 <translation id="8199613549817472219">Te vom ghida prin procesul de recuperare</translation>
 <translation id="8377165353588213941">Ai ajuns la final</translation>
 <translation id="8569584079758810124">Nu s-au putut obține informații de remediere a erorilor.</translation>

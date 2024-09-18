@@ -139,6 +139,9 @@ Enable developer mode
       <message name="btn_debug_info" desc="String for button to view the logs of debug info.">
 Debug info
       </message>
+      <message name="btn_fastboot" desc="Button for entering fastboot.">
+Bootloader fastboot
+      </message>
       <message name="btn_firmware_log" desc="String for button to view the firmware log.">
 Firmware log
       </message>
@@ -150,6 +153,18 @@ Debug info
       </message>
       <message name="firmware_log_title" desc="Title for the firmware log screen.">
 Firmware log
+      </message>
+      <message name="fastboot_title" desc="Title for the fastboot screen.">
+You're in bootloader fastboot mode
+      </message>
+      <message name="fastboot_wait_conn_desc" desc="Description of screen when fastboot isn't connected yet.">
+Waiting for connection...
+      </message>
+      <message name="fastboot_tcp_conn_desc" desc="Description of screen when fastboot uses network.">
+Connected via TCP
+      </message>
+      <message name="fastboot_usb_conn_desc" desc="Description of screen when fastboot uses H2H (Alink) cable.">
+Connected via USB
       </message>
       <message name="btn_page_up" desc="String for the page up button (please translate this)." meaning="verb">
 Page up

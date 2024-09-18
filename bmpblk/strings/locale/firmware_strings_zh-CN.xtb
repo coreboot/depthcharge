@@ -6,6 +6,7 @@
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1252150473073837888">确认返回到安全模式</translation>
 <translation id="1321620357351949170">选择您想运行的测试。</translation>
+<translation id="1327914510899744949">引导加载程序 fastboot</translation>
 <translation id="1389402762514302384">选择“取消”可保持受保护状态。</translation>
 <translation id="1428255359211557126">内存检查（快速）</translation>
 <translation id="1483971085438511843">使用 Enter 键可选择选项。</translation>
@@ -49,14 +50,17 @@
 <translation id="5809240698077875994">按下“电源”按钮可启用开发者模式，选择“取消”可保持受保护状态。</translation>
 <translation id="586317305889719987">如需返回到推荐的安全模式，请选择下方的“返回到安全模式”。</translation>
 <translation id="5874367961304694171">连接您的外部存储设备</translation>
+<translation id="589807000231180230">正在等待建立连接…</translation>
 <translation id="6172915643608608639">从内部磁盘启动</translation>
 <translation id="6191358901427525316">为恢复您的设备做好准备。您需要具备：</translation>
 <translation id="635783852215913562">使用箭头键可向上/向下移动。</translation>
 <translation id="6393574457614848045">互联网恢复分区已损坏或缺失。请改为使用外部存储空间进行恢复。</translation>
 <translation id="6448938863276324156">您可以使用外部存储设备（例如 U 盘）进行恢复。</translation>
 <translation id="65237697078188559">固件 shell</translation>
+<translation id="6933530204467815794">已通过 TCP 连接</translation>
 <translation id="6972383785688794804">向上翻页</translation>
 <translation id="7065553583078443466">选择备用的引导加载程序</translation>
+<translation id="7071202423630761214">已通过 USB 连接</translation>
 <translation id="7126032376876878896">使用电源按钮可选择选项。</translation>
 <translation id="7154775592215462674">1. 一个外部存储设备（例如 U 盘）</translation>
 <translation id="7157640574359006953">插入包含 Chrome 操作系统映像的外部磁盘。它会自动启动。</translation>
@@ -77,6 +81,7 @@
 <translation id="8101391381992690790">请确保您的外部磁盘包含有效的恢复映像，并在准备就绪后重新插入该磁盘。</translation>
 <translation id="8116993605321079294">启动备用的引导加载程序时出了点问题。如需了解详情，请查看固件日志。</translation>
 <translation id="8131740175452115882">确认</translation>
+<translation id="8182314305006465525">您已进入引导加载程序 fastboot 模式</translation>
 <translation id="8199613549817472219">下面我们会引导您完成恢复流程</translation>
 <translation id="8377165353588213941">您已到达最后一页</translation>
 <translation id="8569584079758810124">无法获取调试信息。</translation>
