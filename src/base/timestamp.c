@@ -64,3 +64,28 @@ void timestamp_mix_in_randomness(u8 *buffer, size_t size)
 	for (size_t i = 0; i < size && i < ts_table->num_entries; i++)
 		buffer[i] ^= (u8)ts_table->entries[i].entry_stamp;
 }
+
+uint64_t get_us_since_pre_cpu_reset(void)
+{
+	if(!ts_table)
+		return timer_us(0);
+
+	uint64_t tick_freq_mhz = ts_table->tick_freq_mhz;
+	if (!tick_freq_mhz)
+		tick_freq_mhz = timer_hz() / 1000000;
+
+	if (!tick_freq_mhz)
+		tick_freq_mhz = 1;
+
+	int64_t earliest_stamp = 0;
+	for (uint32_t i = 0; i < ts_table->num_entries; i++) {
+		if (ts_table->entries[i].entry_stamp < earliest_stamp)
+			earliest_stamp = ts_table->entries[i].entry_stamp;
+	}
+
+	if (CONFIG(TIMESTAMP_RAW))
+		return (timer_raw_value() - ts_table->base_time - earliest_stamp) /
+									tick_freq_mhz;
+
+	return timer_us(0) - (ts_table->base_time - earliest_stamp) / tick_freq_mhz;
+}
