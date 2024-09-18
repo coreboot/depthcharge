@@ -19,7 +19,7 @@
 
 struct timestamp_entry {
 	uint32_t	entry_id;
-	uint64_t	entry_stamp;
+	int64_t		entry_stamp;
 } __attribute__((packed));
 
 struct timestamp_table {
