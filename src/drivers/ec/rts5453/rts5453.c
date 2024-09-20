@@ -408,7 +408,7 @@ static bool is_rts545x_device_present(Rts545x *me, int live)
 	struct ec_response_pd_chip_info r;
 	int status;
 
-	if (!me->chip_info.vid && !live)
+	if (me->chip_info.vid && !live)
 		return true;
 
 	status = cros_ec_pd_chip_info(me->ec_pd_id, live, &r);
