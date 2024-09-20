@@ -106,9 +106,9 @@ config DRIVER_GPIO_MT8195
 	depends on ARCH_ARM
 
 config DRIVER_GPIO_MT8196
-        bool "MediaTek MT8196 GPIO driver"
-        default n
-        depends on ARCH_ARM
+	bool "MediaTek MT8196 GPIO driver"
+	default n
+	depends on ARCH_ARM
 
 config DRIVER_GPIO_MVMAP2315
 	bool "Marvell MVMAP2315 GPIO driver"
