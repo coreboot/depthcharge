@@ -22,6 +22,7 @@
 #include <stdlib.h>
 
 #include "base/string_utils.h"
+#include "boot/android_bootconfig_params.h"
 #include "boot/bootconfig.h"
 #include "boot/commandline.h"
 #include "boot/multiboot.h"
@@ -486,6 +487,16 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 			printf("GKI: Cannot copy avb cmdline to bootconfig\n");
 			return -1;
 		}
+
+		if (append_android_bootconfig_params(kparams, (void *)bootc_ramdisk_addr) < 0)
+			/*
+			 * On error, just log a message and continue with the rest of the
+			 * bootflow. The  idea is to get as many run-time bootconfig params
+			 * filled up as possible without halting the bootflow and let the OS
+			 * decide rather than FW blocking the boot to OS.
+			 */
+			printf("GKI: Cannot append all android bootconfig params\n");
+
 		/* Update boot device */
 		if (modify_android_boot_devices(kparams,
 						(uintptr_t)bootc_ramdisk_addr,

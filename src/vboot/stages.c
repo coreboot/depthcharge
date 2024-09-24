@@ -25,7 +25,6 @@
 #include "base/cleanup_funcs.h"
 #include "base/timestamp.h"
 #include "base/vpd_util.h"
-#include "boot/android_kernel_cmdline.h"
 #include "boot/commandline.h"
 #include "boot/multiboot.h"
 #include "drivers/ec/vboot_ec.h"
@@ -302,8 +301,6 @@ void vboot_boot_kernel(struct vb2_kernel_params *kparams)
 	};
 
 	if (bi.cmd_line) {
-		/* Fixup any kernel commandline parameters before cmdline_subst */
-		android_kernel_cmdline_fixup(kparams);
 		if (commandline_subst(bi.cmd_line, cmd_line_buf,
 				      sizeof(cmd_line_buf), &info))
 			return;
