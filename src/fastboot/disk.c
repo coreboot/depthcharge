@@ -67,20 +67,26 @@ void fastboot_disk_destroy(struct fastboot_disk *disk)
 	free_gpt(disk->disk, disk->gpt);
 }
 
+char *fastboot_get_entry_name(GptEntry *e)
+{
+	if (IsUnusedEntry(e))
+		return NULL;
+
+	return utf16le_to_ascii(e->name, ARRAY_SIZE(e->name));
+}
+
 bool fastboot_disk_foreach_partition(struct fastboot_disk *disk,
 				     disk_foreach_callback_t cb, void *ctx)
 {
 	GptHeader *h = (GptHeader *)disk->gpt->primary_header;
 	GptEntry *e;
-	Guid empty;
-	memset(&empty, 0, sizeof(empty));
 	bool stop = false;
 	for (int i = 0; !stop && i < h->number_of_entries; i++) {
 		e = (GptEntry *)&disk->gpt
 			    ->primary_entries[i * h->size_of_entry];
-		if (!memcmp(&e->type, &empty, sizeof(empty)))
+		char *name = fastboot_get_entry_name(e);
+		if (name == NULL)
 			continue;
-		char *name = utf16le_to_ascii(e->name, 36);
 		stop = cb(ctx, i, e, name);
 		free(name);
 	}
@@ -115,6 +121,24 @@ GptEntry *fastboot_find_partition(struct fastboot_disk *disk,
 	fastboot_disk_foreach_partition(disk, find_partition_callback, &fp);
 	return fp.result;
 }
+
+int fastboot_get_number_of_partitions(struct fastboot_disk *disk)
+{
+	GptHeader *h = (GptHeader *)disk->gpt->primary_header;
+
+	return h->number_of_entries;
+}
+
+GptEntry *fastboot_get_partition(struct fastboot_disk *disk, unsigned int index)
+{
+	GptHeader *h = (GptHeader *)disk->gpt->primary_header;
+
+	if (index >= h->number_of_entries)
+		return NULL;
+
+	return (GptEntry *)&disk->gpt->primary_entries[index * h->size_of_entry];
+}
+
 
 void fastboot_write(fastboot_session_t *fb, struct fastboot_disk *disk,
 		    const char *partition_name, size_t name_len, void *data,
