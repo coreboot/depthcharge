@@ -24,6 +24,7 @@
 
 typedef enum fastboot_var {
 	VAR_DOWNLOAD_SIZE,
+	VAR_PARTITION_SIZE,
 	VAR_PRODUCT,
 	VAR_SECURE,
 	VAR_SLOT_COUNT,
@@ -34,6 +35,8 @@ typedef enum fastboot_getvar_result {
 	STATE_OK,
 	STATE_UNKNOWN_VAR,
 	STATE_DISK_ERROR,
+	STATE_TRY_NEXT,
+	STATE_LAST,
 } fastboot_getvar_result_t;
 
 typedef struct fastboot_getvar_info {
