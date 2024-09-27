@@ -33,6 +33,7 @@
 	}
 static fastboot_getvar_info_t fastboot_vars[] = {
 	VAR_NO_ARGS("max-download-size", VAR_DOWNLOAD_SIZE),
+	VAR_ARGS("partition-size", ':', VAR_PARTITION_SIZE),
 	VAR_NO_ARGS("product", VAR_PRODUCT),
 	VAR_NO_ARGS("secure", VAR_SECURE),
 	VAR_NO_ARGS("slot-count", VAR_SLOT_COUNT),
@@ -47,9 +48,17 @@ static void fastboot_getvar_all(fastboot_session_t *fb)
 		fastboot_getvar_info_t *var = &fastboot_vars[i];
 
 		if (var->has_args) {
-			// TODO(fxbug.dev/80267): enumerate arguments.
-			fastboot_info(fb, "%s:not yet supported", var->name);
-			continue;
+			fastboot_getvar_result_t state;
+			int arg = 0;
+
+			do {
+				size_t len = FASTBOOT_MSG_MAX;
+
+				state = fastboot_getvar(var->var, NULL, arg++, var_buf, &len);
+				if (state == STATE_OK)
+					fastboot_info(fb, "%s:%.*s", var->name, (int)len,
+						      var_buf);
+			} while (state == STATE_OK || state == STATE_TRY_NEXT);
 		} else {
 			size_t len = FASTBOOT_MSG_MAX;
 			fastboot_getvar(var->var, NULL, 0, var_buf, &len);
@@ -112,6 +121,42 @@ fastboot_getvar_result_t fastboot_getvar(fastboot_var_t var, const char *arg,
 		used_len = snprintf(outbuf, *outbuf_len, "%llu",
 				    FASTBOOT_MAX_DOWNLOAD_SIZE);
 		break;
+	case VAR_PARTITION_SIZE: {
+		struct fastboot_disk disk;
+		GptEntry *part = NULL;
+
+		if (!fastboot_disk_init(&disk))
+			return STATE_DISK_ERROR;
+		if (arg != NULL) {
+			part = fastboot_find_partition(&disk, arg, arg_len);
+			if (part == NULL)
+				return STATE_UNKNOWN_VAR;
+		} else {
+			char *name;
+
+			/* There is no more partitions to get */
+			if (fastboot_get_number_of_partitions(&disk) <= arg_len)
+				return STATE_LAST;
+
+			part = fastboot_get_partition(&disk, arg_len);
+			if (part == NULL)
+				return STATE_TRY_NEXT;
+
+			name = fastboot_get_entry_name(part);
+			if (name == NULL)
+				return STATE_TRY_NEXT;
+
+			used_len = snprintf(outbuf, *outbuf_len, "%s:", name);
+			outbuf += used_len;
+			*outbuf_len -= used_len;
+			free(name);
+		}
+
+		used_len += snprintf(outbuf, *outbuf_len, "0x%llx",
+				     GptGetEntrySizeBytes(disk.gpt, part));
+		fastboot_disk_destroy(&disk);
+		break;
+	}
 	case VAR_PRODUCT: {
 		struct cb_mainboard *mainboard =
 			phys_to_virt(lib_sysinfo.cb_mainboard);
