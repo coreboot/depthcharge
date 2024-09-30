@@ -115,5 +115,8 @@ ui-diagnostic-test-srcs += tests/mocks/base/elog.c
 ui-diagnostic-test-srcs += tests/mocks/diag/report.c
 ui-diagnostic-test-srcs += tests/vboot/ui-diagnostic-test.c
 ui-diagnostic-test-srcs += src/vboot/ui.c
-ui-diagnostic-test-srcs := $(filter-out tests/stubs/base/elog.c \
-	tests/stubs/diag/report.c, $(ui-diagnostic-test-srcs))
+ui-diagnostic-test-srcs := $(filter-out \
+	tests/stubs/base/elog.c \
+	tests/stubs/diag/report.c \
+	tests/stubs/libpayload/cache.c \
+	, $(ui-diagnostic-test-srcs))
