@@ -12,6 +12,11 @@
 #include <vboot/stages.h>
 
 /* Mock functions */
+void dcache_clean_all(void)
+{
+	function_called();
+}
+
 int ui_is_lid_open(void)
 {
 	return mock();
@@ -170,6 +175,7 @@ static void test_diagnostics_screen(void **state)
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DIAGNOSTICS, MOCK_IGNORE, 6);
+	expect_function_call_any(dcache_clean_all);
 
 	will_return_maybe(ui_is_lid_open, 1);
 	will_return_maybe(ui_keyboard_read, 0);
