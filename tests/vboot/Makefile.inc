@@ -48,6 +48,7 @@ ui-test-common-srcs += tests/stubs/base/elog.c
 ui-test-common-srcs += tests/stubs/boot/payload.c
 ui-test-common-srcs += tests/stubs/diag/report.c
 ui-test-common-srcs += tests/stubs/drivers/storage/blockdev.c
+ui-test-common-srcs += tests/stubs/libpayload/cache.c
 ui-test-common-srcs += tests/stubs/vboot/firmware_id.c
 ui-test-common-srcs += tests/stubs/vboot/ui/draw.c
 ui-test-common-srcs += src/debug/stubs.c
