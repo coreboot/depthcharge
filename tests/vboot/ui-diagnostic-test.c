@@ -11,10 +11,12 @@
 #include <vb2_api.h>
 #include <vboot/stages.h>
 
+static bool ui_display_log_in_dcache;
+
 /* Mock functions */
 void dcache_clean_all(void)
 {
-	function_called();
+	ui_display_log_in_dcache = false;
 }
 
 int ui_is_lid_open(void)
@@ -35,6 +37,13 @@ int ui_is_physical_presence_pressed(void)
 int has_external_display(void)
 {
 	return 0;
+}
+
+/* Override the weak ui_display_side_effect. */
+void ui_display_side_effect(void)
+{
+	/* The ui_display log will need to be flushed to memory. */
+	ui_display_log_in_dcache = true;
 }
 
 /* Helper functions */
@@ -90,6 +99,8 @@ static int setup_context(void **state)
 	expected_event_data[0] = ELOG_CROS_DIAGNOSTICS_LOGS;
 	memcpy(expected_event_data + 1, mock_report_data,
 	       sizeof(mock_report_data));
+
+	ui_display_log_in_dcache = false;
 
 	return 0;
 }
@@ -175,7 +186,6 @@ static void test_diagnostics_screen(void **state)
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DIAGNOSTICS, MOCK_IGNORE, 6);
-	expect_function_call_any(dcache_clean_all);
 
 	will_return_maybe(ui_is_lid_open, 1);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -230,6 +240,34 @@ static void test_diagnostics_screen_no_storage_extended_test(void **state)
 			 VB2_REQUEST_SHUTDOWN);
 }
 
+static void test_diagnostics_screen_dcache_flush_after_ui_display(void **state)
+{
+	struct ui_context *ui = *state;
+
+	WILL_CLOSE_LID_IN(10);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DIAGNOSTICS, MOCK_IGNORE, 1);
+	/* Run Storage health screen and exit. */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DIAGNOSTICS_STORAGE_HEALTH);
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_DIAG_REPORT(ELOG_CROS_DIAG_TYPE_STORAGE_HEALTH,
+			   ELOG_CROS_DIAG_RESULT_PASSED);
+	/* Ensure that dcache_clean_all is called after ui_display. */
+	will_return_maybe(ui_is_lid_open, 1);
+	will_return_maybe(ui_keyboard_read, 0);
+	will_return_maybe(vb2api_gbb_get_flags, 0);
+	will_return_maybe(ui_get_locale_count, 10);
+	SET_LOG_DIMENSIONS(40, 20);
+	will_return_always(diag_storage_test_supported, 3);
+	WILL_DUMP_REPORT(mock_report_data);
+	EXPECT_DIAG_DUMP_AND_ELOG();
+
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
+	assert_false(ui_display_log_in_dcache);
+}
+
 #define UI_TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup_context)
 
@@ -240,6 +278,7 @@ int main(void)
 		UI_TEST(test_diagnostics_screen),
 		UI_TEST(test_diagnostics_screen_no_storage_self_test),
 		UI_TEST(test_diagnostics_screen_no_storage_extended_test),
+		UI_TEST(test_diagnostics_screen_dcache_flush_after_ui_display),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }

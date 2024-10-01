@@ -486,6 +486,13 @@ enum ui_menu_item_flag {
 	UI_MENU_ITEM_FLAG_NO_ARROW		= 1 << 0,
 };
 
+enum ui_dcache_state {
+	UI_DCACHE_STATE_UNKNOWN = 0,
+	UI_DCACHE_STATE_CLEANED = 0,
+	UI_DCACHE_STATE_NEED_CLEAN_AFTER_UI_DISPLAY,
+	UI_DCACHE_STATE_SCHEDULE_CLEAN,
+};
+
 /* Menu item. */
 struct ui_menu_item {
 	/*
@@ -585,6 +592,9 @@ struct ui_context {
 
 	/* For loading the kernel. */
 	struct vb2_kernel_params *kparams;
+
+	/* For indicating dcache clean is required after test exit. */
+	enum ui_dcache_state dcache_state;
 };
 
 struct ui_screen_info {
