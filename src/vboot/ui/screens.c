@@ -1825,6 +1825,14 @@ static vb2_error_t diagnostics_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
+static vb2_error_t diagnostics_reinit(struct ui_context *ui)
+{
+	/* We can't call dcache_clean_all here because the ui_display
+	   is not yet called for the diagnostics screen. */
+	ui->dcache_state = UI_DCACHE_STATE_SCHEDULE_CLEAN;
+	return VB2_SUCCESS;
+}
+
 static vb2_error_t diagnostics_exit(struct ui_context *ui)
 {
 	uint8_t event_data[ELOG_MAX_EVENT_DATA_SIZE] = {0};
@@ -1838,6 +1846,20 @@ static vb2_error_t diagnostics_exit(struct ui_context *ui)
 
 	/* Report diagnostics logs. */
 	elog_add_event_raw(ELOG_TYPE_CROS_DIAGNOSTICS, event_data, data_size);
+
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t diagnostics_action(struct ui_context *ui)
+{
+	if (ui->dcache_state == UI_DCACHE_STATE_SCHEDULE_CLEAN) {
+		ui->dcache_state = UI_DCACHE_STATE_NEED_CLEAN_AFTER_UI_DISPLAY;
+	} else if (ui->dcache_state == UI_DCACHE_STATE_NEED_CLEAN_AFTER_UI_DISPLAY) {
+		/* Now ui_display must have been called for this screen, because
+		   we've stayed in this screen for an entire UI iteration. */
+		dcache_clean_all();
+		ui->dcache_state = UI_DCACHE_STATE_CLEANED;
+	}
 
 	return VB2_SUCCESS;
 }
@@ -1884,7 +1906,9 @@ static const struct ui_screen_info diagnostics_screen = {
 	.desc = UI_DESC(diagnostics_desc),
 	.menu = UI_MENU(diagnostics_items),
 	.init = diagnostics_init,
+	.reinit = diagnostics_reinit,
 	.exit = diagnostics_exit,
+	.action = diagnostics_action,
 	.mesg = "Select the component you'd like to check",
 };
 
