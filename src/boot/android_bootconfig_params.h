@@ -17,4 +17,15 @@
 int append_android_bootconfig_params(struct VbSelectAndLoadKernelParams *kparams,
 				     void *bootc_start);
 
+/*
+ * Fixup boottime in android bootconfig section.
+ *
+ * @param ramdisk - Ramdisk address which includes the bootconfig section at the end
+ * @param ramdisk_size - Total size of the ramdisk
+ * @param bootc_off - Offset of the bootconfig section within the ramdisk
+ *
+ * Return: 0 on success, -1 in case of errors
+ */
+int fixup_android_boottime(void *ramdisk, size_t ramdisk_size, size_t bootc_off);
+
 #endif /* _ANDROID_BOOTCONFIG_PARAMS_H_ */
