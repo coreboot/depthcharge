@@ -24,6 +24,7 @@
 
 typedef enum fastboot_var {
 	VAR_DOWNLOAD_SIZE,
+	VAR_IS_USERSPACE,
 	VAR_PARTITION_SIZE,
 	VAR_PRODUCT,
 	VAR_SECURE,
