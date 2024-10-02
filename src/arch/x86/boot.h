@@ -20,6 +20,7 @@
 
 #include "arch/x86/boot/bootparam.h"
 
-int boot_x86_linux(struct boot_params *boot_base, char *cmd_line, void *entry);
+int boot_x86_linux(struct boot_params *boot_base, char *cmd_line,
+		   size_t bootconfig_offset, void *entry);
 
 #endif /* __ARCH_X86_BOOT_H__ */
