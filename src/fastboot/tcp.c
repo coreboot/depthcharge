@@ -16,6 +16,7 @@
  */
 
 #include "fastboot/tcp.h"
+#include <libpayload.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -318,6 +319,13 @@ static void fastboot_tcp_net_callback(void)
 
 void fastboot_over_tcp(void)
 {
+	/* TODO(b/370988331): Replace this with actual UI */
+	video_init();
+	video_console_clear();
+	/* Print red "Fastboot" on the top */
+	video_console_set_cursor(0, 0);
+	video_printf(1, 0, VIDEO_PRINTF_ALIGN_LEFT, "Fastboot\n");
+
 	net_wait_for_link();
 
 	// Set up the network stack.
@@ -327,6 +335,10 @@ void fastboot_over_tcp(void)
 	const char *dhcp_bootfile;
 	while (try_dhcp(&my_ip, &next_ip, &server_ip, &dhcp_bootfile))
 		printf("Dhcp failed, retrying.\n");
+
+	video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "IP: %d.%d.%d.%d\n",
+		     uip_ipaddr1(&my_ip), uip_ipaddr2(&my_ip),
+		     uip_ipaddr3(&my_ip), uip_ipaddr4(&my_ip));
 
 	memset(&tcp_session, 0, sizeof(tcp_session));
 	printf("fastboot starting.\n");
