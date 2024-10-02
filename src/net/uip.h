@@ -1212,6 +1212,11 @@ extern uint16_t uip_len;
  * The length of the extension headers
  */
 extern uint8_t uip_ext_len;
+
+/**
+ * The TCP receive window size
+ */
+extern uint16_t uip_recv_window;
 /** @} */
 
 
