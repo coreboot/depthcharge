@@ -43,6 +43,7 @@ screenshot-srcs += screenshot/mocks/boot/payload.c
 screenshot-srcs += screenshot/mocks/cbmem_console.c
 screenshot-srcs += screenshot/mocks/vb2api.c
 screenshot-srcs += screenshot/stubs/beep.c
+screenshot-srcs += screenshot/stubs/cache.c
 screenshot-srcs += screenshot/stubs/diag.c
 screenshot-srcs += screenshot/stubs/display.c
 screenshot-srcs += screenshot/stubs/elog.c
