@@ -107,6 +107,11 @@ void net_wait_for_link(void)
 			new_device->ready(new_device, &ready);
 			if (ready) {
 				net_device = new_device;
+				/* Set TCP receive window supported by the device */
+				if (net_device->recv_window != 0)
+					uip_recv_window = net_device->recv_window;
+				else
+					uip_recv_window = CONFIG_UIP_RECEIVE_WINDOW;
 				/*
 				 * Just in case, to accommodate some dongles
 				 * which need more time than they think

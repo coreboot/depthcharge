@@ -286,6 +286,13 @@ enum {
 
 #define RX_PKT_SIZE		1518
 
+/*
+ * It was tested that 8K-32K TCP window range gives optimum transfer rates for multiple
+ * r8152 dongles in USB2 mode including the one embedded in Servo v4p1. 32K-64K range
+ * was optimal in USB3 mode. 32K value is enough for both, USB2 and USB3.
+ */
+#define R8152_RECV_WINDOW	32768
+
 typedef struct R8152Dev {
 	UsbEthDevice usb_eth_dev;
 	endpoint_t *bulk_in;

@@ -41,6 +41,7 @@ typedef struct NetDevice {
 	int (*init)(struct NetDevice *dev);
 	void *dev_data;
 	NetDeviceInitStatus init_status;
+	uint16_t recv_window;
 } NetDevice;
 
 typedef struct NetPoller {

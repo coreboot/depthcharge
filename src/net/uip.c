@@ -118,6 +118,8 @@ uint16_t uip_len, uip_slen;
 				depending on the maximum packet
 				size. */
 
+uint16_t uip_recv_window = CONFIG_UIP_RECEIVE_WINDOW;
+
 uint8_t uip_flags;     /* The uip_flags variable is used for
 				communication between the TCP/IP stack
 				and the application program. */
@@ -1641,8 +1643,8 @@ uip_process(uint8_t flag)
        window so that the remote host will stop sending data. */
     BUF->wnd[0] = BUF->wnd[1] = 0;
   } else {
-    BUF->wnd[0] = ((CONFIG_UIP_RECEIVE_WINDOW) >> 8);
-    BUF->wnd[1] = ((CONFIG_UIP_RECEIVE_WINDOW) & 0xff);
+    BUF->wnd[0] = ((uip_recv_window) >> 8);
+    BUF->wnd[1] = ((uip_recv_window) & 0xff);
   }
   
  tcp_send_noconn:
