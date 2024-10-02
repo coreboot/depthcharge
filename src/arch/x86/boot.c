@@ -25,6 +25,7 @@
 #include "base/cleanup_funcs.h"
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
+#include "boot/android_bootconfig_params.h"
 #include "vboot/boot.h"
 
 static void * const ParamsBuff = (void *)(uintptr_t)0x1000;
@@ -55,7 +56,8 @@ static uint32_t lb_mem_type_to_e820(uint32_t lb_mem_type) {
 	}
 }
 
-int boot_x86_linux(struct boot_params *boot_params, char *cmd_line, void *entry)
+int boot_x86_linux(struct boot_params *boot_params, char *cmd_line,
+		   size_t bootconfig_offset, void *entry)
 {
 	// Move the boot_params structure and the command line to where Linux
 	// suggests and to where they'll be safe from being trampled by the
@@ -101,6 +103,10 @@ int boot_x86_linux(struct boot_params *boot_params, char *cmd_line, void *entry)
 	hdr->cmd_line_ptr = (uintptr_t)cmd_line;
 
 	run_cleanup_funcs(CleanupOnHandoff);
+	if (CONFIG(BOOTCONFIG) &&
+	    fixup_android_boottime((void *)hdr->ramdisk_image, hdr->ramdisk_size,
+				   bootconfig_offset))
+		return 1;
 
 	puts("\nStarting kernel ...\n\n");
 	timestamp_add_now(TS_START_KERNEL);

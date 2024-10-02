@@ -20,6 +20,7 @@
 #include "arch/arm/boot.h"
 #include "base/cleanup_funcs.h"
 #include "base/device_tree.h"
+#include "boot/android_bootconfig_params.h"
 #include "boot/commandline.h"
 #include "boot/fit.h"
 #include "drivers/storage/blockdev.h"
@@ -129,6 +130,10 @@ int boot(struct boot_info *bi)
 	dt_flatten(tree, fdt);
 
 	run_cleanup_funcs(CleanupOnHandoff);
+	if (CONFIG(BOOTCONFIG) &&
+	    fixup_android_boottime((void *)bi->ramdisk_addr, bi->ramdisk_size,
+				   bi->ramdisk_bootconfig_offset))
+		return 1;
 
 	return boot_arm_linux(fdt, kernel);
 }
