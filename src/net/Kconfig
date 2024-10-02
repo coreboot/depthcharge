@@ -149,7 +149,7 @@ config UIP_REASS_MAXAGE
 
 config UIP_LINK_MTU
 	int "Maximum transmission unit at the IP layer"
-	default 1280
+	default 1500
 
 endmenu
 
