@@ -18,9 +18,11 @@
 #ifndef __ARCH_ARM_BOOT_H__
 #define __ARCH_ARM_BOOT_H__
 
+#include "boot/android_bootconfig_params.h"
 #include "boot/fit.h"
+#include "vboot/boot.h"
 
-int boot_arm_linux(void *fdt, FitImageNode *kernel);
+int boot_arm_linux(struct boot_info *bi, void *fdt, FitImageNode *kernel);
 
 void boot_arm_linux_jump(void *fdt, void *entry) __attribute__((noreturn));
 

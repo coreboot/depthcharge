@@ -34,7 +34,7 @@ static inline void set_sctlr(uint32_t val)
 	asm volatile("" ::: "memory");
 }
 
-int boot_arm_linux(void *fdt, FitImageNode *kernel)
+int boot_arm_linux(struct boot_info *bi, void *fdt, FitImageNode *kernel)
 {
 	static const uint32_t SctlrM = (0x1 << 0);
 	static const uint32_t SctlrC = (0x1 << 2);
@@ -46,6 +46,9 @@ int boot_arm_linux(void *fdt, FitImageNode *kernel)
 	}
 
 	uint32_t sctlr = get_sctlr();
+
+	if (CONFIG(BOOTCONFIG))
+		append_android_bootconfig_boottime(bi);
 
 	timestamp_add_now(TS_START_KERNEL);
 

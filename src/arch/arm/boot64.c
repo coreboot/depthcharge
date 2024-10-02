@@ -77,7 +77,7 @@ static void *get_kernel_reloc_addr(Arm64KernelHeader *header, size_t image_size)
 	return 0;
 }
 
-int boot_arm_linux(void *fdt, FitImageNode *kernel)
+int boot_arm_linux(struct boot_info *bi, void *fdt, FitImageNode *kernel)
 {
 	size_t image_size = 64*MiB;	// default value for pre-3.17 headers
 	struct {
@@ -121,6 +121,9 @@ int boot_arm_linux(void *fdt, FitImageNode *kernel)
 		printf("ERROR: Kernel decompression failed!\n");
 		return 1;
 	}
+
+	if (CONFIG(BOOTCONFIG))
+		append_android_bootconfig_boottime(bi);
 
 	printf("jumping to kernel\n");
 

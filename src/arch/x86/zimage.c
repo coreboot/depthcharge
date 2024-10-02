@@ -56,6 +56,7 @@ int boot(struct boot_info *bi)
 			}
 
 			memcpy(ramdisk, bi->ramdisk_addr, bi->ramdisk_size);
+			bi->ramdisk_addr = ramdisk;
 			header->ramdisk_image = (uintptr_t)ramdisk;
 			header->ramdisk_size = bi->ramdisk_size;
 		}
@@ -78,5 +79,5 @@ int boot(struct boot_info *bi)
 		memmove(bi->kernel, (void *)pm_start, pm_size);
 	}
 
-	return boot_x86_linux(bi->params, bi->cmd_line, bi->kernel);
+	return boot_x86_linux(bi);
 }

@@ -19,7 +19,8 @@
 #define __ARCH_X86_BOOT_H__
 
 #include "arch/x86/boot/bootparam.h"
+#include "vboot/boot.h"
 
-int boot_x86_linux(struct boot_params *boot_base, char *cmd_line, void *entry);
+int boot_x86_linux(struct boot_info *bi);
 
 #endif /* __ARCH_X86_BOOT_H__ */

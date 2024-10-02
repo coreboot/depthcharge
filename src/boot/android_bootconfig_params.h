@@ -8,6 +8,9 @@
 
 #include "bootconfig.h"
 
+#define BOOTCONFIG_BOOTTIME_KEY_STR "androidboot.boottime"
+#define BOOTCONFIG_MAX_BOOTTIME_STR "firmware:18446744073709551615"
+
 /*
  * Append androidboot bootconfig parameters to bootconfig section.
  *
@@ -17,5 +20,12 @@
  * Return: Return 0 on success, -1 in case of errors
  */
 int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_params *kp);
+
+/*
+ * Append Android bootconfig boottime.
+ *
+ * @param bi - pointer to boot_info structure
+ */
+int append_android_bootconfig_boottime(struct boot_info *bi);
 
 #endif /* _ANDROID_BOOTCONFIG_PARAMS_H_ */

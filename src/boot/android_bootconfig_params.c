@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <inttypes.h>
 #include <libpayload.h>
 
 #include "base/cleanup_funcs.h"
@@ -71,4 +72,32 @@ int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_pa
 	return append_serial_num(bc, kp) ||
 	       append_display_orientation(bc, kp) ||
 	       append_boot_part_uuid(bc, kp);
+}
+
+int append_android_bootconfig_boottime(struct boot_info *bi)
+{
+	struct bootconfig bc;
+	struct bootconfig_trailer *bc_trailer;
+
+	if (!bi->ramdisk_size)
+		return -1;
+
+	bc_trailer = (struct bootconfig_trailer *)((uintptr_t)bi->ramdisk_addr +
+		      bi->ramdisk_size - sizeof(*bc_trailer));
+
+	if (bootconfig_reinit(&bc, bc_trailer))
+		return -1;
+
+	/* Append current boottime */
+	uint64_t boot_time_ms = get_us_since_pre_cpu_reset() / USECS_PER_MSEC;
+	char boottime[sizeof(BOOTCONFIG_MAX_BOOTTIME_STR)];
+	snprintf(boottime, sizeof(boottime), "firmware:%"PRIu64, boot_time_ms);
+	if (bootconfig_append(&bc, BOOTCONFIG_BOOTTIME_KEY_STR, boottime)) {
+		printf("%s: Cannot append boottime", __func__);
+		return -1;
+	}
+	/* Recalculate bootconfig checksum after changes */
+	bootconfig_checksum_recalculate(&bc, bc_trailer);
+
+	return 0;
 }
