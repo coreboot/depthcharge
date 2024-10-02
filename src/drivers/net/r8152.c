@@ -1125,6 +1125,7 @@ static R8152Dev r8152_dev = {
 			.get_mac = &rtl8152_get_mac,
 			.mdio_read = &rtl8152_mdio_read,
 			.mdio_write = &rtl8152_mdio_write,
+			.recv_window = R8152_RECV_WINDOW,
 		},
 		.supported_ids = r8152_supported_ids,
 		.num_supported_ids = ARRAY_SIZE(r8152_supported_ids),
