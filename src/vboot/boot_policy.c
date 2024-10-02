@@ -523,6 +523,9 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 							      bootc_ramdisk_addr),
 						     recovery_boot) < 0)
 			return -1;
+
+		/* Update bootconfig offset within ramdisk */
+		bi->ramdisk_bootconfig_offset = bootc_ramdisk_addr - (uintptr_t)vendor_ramdisk;
 	}
 
 	/* On init_boot there's no kernel, so ramdisk follows the header */
