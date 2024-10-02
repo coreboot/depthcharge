@@ -34,6 +34,7 @@
 	}
 static fastboot_getvar_info_t fastboot_vars[] = {
 	VAR_NO_ARGS("max-download-size", VAR_DOWNLOAD_SIZE),
+	VAR_NO_ARGS("is-userspace", VAR_IS_USERSPACE),
 	VAR_ARGS("partition-size", ':', VAR_PARTITION_SIZE),
 	VAR_NO_ARGS("product", VAR_PRODUCT),
 	VAR_NO_ARGS("secure", VAR_SECURE),
@@ -121,6 +122,9 @@ fastboot_getvar_result_t fastboot_getvar(fastboot_var_t var, const char *arg,
 	case VAR_DOWNLOAD_SIZE:
 		used_len = snprintf(outbuf, *outbuf_len, "%llu",
 				    FASTBOOT_MAX_DOWNLOAD_SIZE);
+		break;
+	case VAR_IS_USERSPACE:
+		used_len = snprintf(outbuf, *outbuf_len, "no");
 		break;
 	case VAR_PARTITION_SIZE: {
 		struct fastboot_disk disk;
