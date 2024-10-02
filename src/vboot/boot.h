@@ -28,6 +28,7 @@ struct boot_info {
 	void *ramdisk_addr;
 	size_t ramdisk_size;
 	struct vb2_kernel_params *kparams;
+	size_t ramdisk_bootconfig_offset;
 };
 
 // To be implemented by each boot method.

@@ -343,6 +343,10 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 		ret = add_android_boot_part_uuid(&bc, kparams->partition_guid);
 		if (ret < 0)
 			return ret;
+
+		/* Update bootconfig offset within ramdisk */
+		bi->ramdisk_bootconfig_offset = (uintptr_t)bc.bootc_start -
+			(uintptr_t)vendor_ramdisk;
 	}
 
 	/* On init_boot there's no kernel, so ramdisk follows the header */

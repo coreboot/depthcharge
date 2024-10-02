@@ -72,6 +72,47 @@ int append_android_bootconfig_params(struct bootconfig *bc)
 			printf("Cannot append %s to Android bootconfig!\n", params[i].name);
 			continue;
 		}
+		params[i].exists = true;
 	}
+	return 0;
+}
+
+int fixup_android_boottime(void *ramdisk, size_t ramdisk_size,
+			   size_t bootconfig_offset)
+{
+	struct bootconfig bc;
+	int ret;
+
+	if (!params[BOOTTIME].exists) {
+		/*
+		 * Boottime parameter could not be added earlier either because we are booting
+		 * non-Android OS or some other failure. Do not return error, just log a message
+		 * and continue the bootflow.
+		 */
+		printf("Boottime parameter does not exist in bootconfig. No need to fix it.\n");
+		return 0;
+	}
+
+	if (!ramdisk || !ramdisk_size || !bootconfig_offset ||
+	    (bootconfig_offset >= ramdisk_size)) {
+		printf("%s: Invalid parameters - ramdisk:%p, size:%zu, bootconfig offset:%zu\n",
+			__func__, ramdisk, ramdisk_size, bootconfig_offset);
+		return -1;
+	}
+
+	bc.bootc_start = (void *)((uintptr_t)ramdisk + bootconfig_offset);
+	bc.bootc_size = ramdisk_size - bootconfig_offset;
+	/*
+	 * Boottime is already in bootconfig space, it will be modified only, buffer limit
+	 * should be the same as buffer size.
+	 */
+	bc.bootc_limit = bc.bootc_size;
+
+	ret = append_boottime(&bc);
+	if (ret < 0) {
+		printf("Failed to fixup boottime in Android bootconfig!\n");
+		return -1;
+	}
+
 	return 0;
 }
