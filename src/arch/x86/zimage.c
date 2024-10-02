@@ -89,5 +89,6 @@ int boot(struct boot_info *bi)
 		memmove(bi->kernel, (void *)pm_start, pm_size);
 	}
 
-	return boot_x86_linux(bi->params, bi->cmd_line, bi->kernel);
+	return boot_x86_linux(bi->params, bi->cmd_line,
+			      bi->ramdisk_bootconfig_offset, bi->kernel);
 }

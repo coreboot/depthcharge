@@ -37,17 +37,32 @@ static int append_boottime(void *bootc_start, size_t bootc_size, size_t buf_size
 	uint64_t boot_time_ns = get_us_since_pre_cpu_reset() * NSECS_PER_USEC;
 	char boottime[MAX_BOOTTIME_LENGTH];
 
-	snprintf(boottime, sizeof(boottime), "firmware:%lld", boot_time_ns);
+	/* Reserve 20 digits to record maximum value of uint64_t (18446744073709551615). */
+	snprintf(boottime, sizeof(boottime), "firmware:%-20lld", boot_time_ns);
 	return append_bootconfig_params(BOOTTIME_KEY_STR, boottime,
 					bootc_start, bootc_size, buf_size);
 }
 
-static const struct {
+enum bootconfig_param_index {
+	SERIAL_NUM,
+	BOOTTIME,
+};
+
+static struct {
 	const char *name;
-	int (*append)(void *bootc_start, size_t bootc_size, size_t buf_size);
+	int (*const append)(void *bootc_start, size_t bootc_size, size_t buf_size);
+	bool exists;
 } params[] = {
-	{ .name = SERIAL_NUM_KEY_STR, .append = append_serial_num, },
-	{ .name = BOOTTIME_KEY_STR, .append = append_boottime, },
+	[SERIAL_NUM] = {
+		.name = SERIAL_NUM_KEY_STR,
+		.append = append_serial_num,
+		.exists = false,
+	},
+	[BOOTTIME] = {
+		.name = BOOTTIME_KEY_STR,
+		.append = append_boottime,
+		.exists = false,
+	},
 };
 
 int append_android_bootconfig_params(struct vb2_kernel_params *kparams, void *bootc_start)
@@ -72,6 +87,44 @@ int append_android_bootconfig_params(struct vb2_kernel_params *kparams, void *bo
 			continue;
 		}
 		vendor_hdr->bootconfig_size = bootconfig_size;
+		params[i].exists = true;
 	}
+	return 0;
+}
+
+int fixup_android_boottime(void *ramdisk, size_t ramdisk_size,
+			   size_t bootconfig_offset)
+{
+	void *bootc_start;
+	size_t prior_bootc_size, updated_bootc_size;
+
+	if (!params[BOOTTIME].exists) {
+		/*
+		 * Boottime parameter could not be added earlier either because we are booting
+		 * non-Android OS or some other failure. Do not return error, just log a message
+		 * and continue the bootflow.
+		 */
+		printf("Boottime parameter does not exist in bootconfig. No need to fix it.\n");
+		return 0;
+	}
+
+	if (!ramdisk || !ramdisk_size || !bootconfig_offset ||
+	    (bootconfig_offset >= ramdisk_size)) {
+		printf("%s: Invalid parameters - ramdisk:%p, size:%zu, bootconfig offset:%zu\n",
+			__func__, ramdisk, ramdisk_size, bootconfig_offset);
+		return -1;
+	}
+
+	bootc_start = (void *)((uintptr_t)ramdisk + bootconfig_offset);
+	prior_bootc_size = ramdisk_size - bootconfig_offset;
+
+	updated_bootc_size = append_boottime(bootc_start, prior_bootc_size, prior_bootc_size);
+	if (updated_bootc_size != prior_bootc_size) {
+		printf("Failed to fixup boottime in Android bootconfig!\n"
+		       "Updated bootconfig size(%zu) != Prior bootconfig size(%zu)\n",
+		       updated_bootc_size, prior_bootc_size);
+		return -1;
+	}
+
 	return 0;
 }
