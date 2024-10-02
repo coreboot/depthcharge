@@ -33,6 +33,7 @@ typedef struct NetDevice {
 	int (*mdio_write)(struct NetDevice *dev, uint8_t loc, uint16_t val);
 	const uip_eth_addr *(*get_mac)(struct NetDevice *dev);
 	void *dev_data;
+	uint16_t recv_window;
 } NetDevice;
 
 typedef struct NetPoller {
