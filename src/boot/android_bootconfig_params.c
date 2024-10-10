@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <libpayload.h>
+#include <vb2_android_bootimg.h>
 
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
@@ -8,7 +9,6 @@
 #include "boot/android_bootconfig_params.h"
 #include "boot/bootconfig.h"
 #include "boot/commandline.h"
-#include "vboot/android_image_hdr.h"
 #include "vboot/boot_policy.h"
 
 #define SERIAL_NUM_KEY_STR "androidboot.serialno"
