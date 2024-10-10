@@ -20,6 +20,7 @@
 #include <libpayload.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <vb2_android_bootimg.h>
 
 #include "base/string_utils.h"
 #include "boot/android_bootconfig_params.h"
@@ -27,7 +28,6 @@
 #include "boot/commandline.h"
 #include "boot/multiboot.h"
 #include "drivers/storage/blockdev.h"
-#include "vboot/android_image_hdr.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
 
