@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <libpayload.h>
+#include <vb2_android_bootimg.h>
 
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
@@ -8,7 +9,6 @@
 #include "boot/android_bootconfig_params.h"
 #include "boot/bootconfig.h"
 #include "boot/commandline.h"
-#include "vboot/android_image_hdr.h"
 #include "vboot/boot_policy.h"
 
 #define SERIAL_NUM_KEY_STR "androidboot.serialno"
@@ -46,6 +46,23 @@ static int append_boottime(void *bootc_start, size_t bootc_size, size_t buf_size
 enum bootconfig_param_index {
 	SERIAL_NUM,
 	BOOTTIME,
+};
+
+static struct {
+	const char *name;
+	int (*const append)(void *bootc_start, size_t bootc_size, size_t buf_size);
+	bool exists;
+} params[] = {
+	[SERIAL_NUM] = {
+		.name = SERIAL_NUM_KEY_STR,
+		.append = append_serial_num,
+		.exists = false,
+	},
+	[BOOTTIME] = {
+		.name = BOOTTIME_KEY_STR,
+		.append = append_boottime,
+		.exists = false,
+	},
 };
 
 static struct {
