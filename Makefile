@@ -71,6 +71,14 @@ endif
 SCREENSHOT := 1
 endif
 
+MAKE_CONFIG :=
+ifneq ($(filter %config,$(MAKECMDGOALS)),)
+ifneq ($(filter-out %config, $(MAKECMDGOALS)),)
+$(error Cannot mix config targets with other targets)
+endif
+MAKE_CONFIG := 1
+endif
+
 LIBPAYLOAD_DIR ?= ../libpayload/install/libpayload
 
 # Run genconfig before including the config
@@ -78,7 +86,7 @@ $(shell [ -d "$(obj)" ] || mkdir -p "$(obj)")
 
 run_kconfig_tool = KCONFIG_CONFIG="$(KCONFIG_CONFIG)" $(1)
 
-ifeq ($(UNIT_TEST)$(SCREENSHOT),)
+ifeq ($(UNIT_TEST)$(SCREENSHOT)$(MAKE_CONFIG),)
 _ := $(shell $(call run_kconfig_tool, \
 	genconfig --header-path "$(KCONFIG_AUTOHEADER).unused" \
 	--config-out "$(KCONFIG_CONFIG_OUT)" "$(KCONFIG_FILE)"))
@@ -90,20 +98,26 @@ include $(KCONFIG_CONFIG_OUT)
 include $(LIBPAYLOAD_DIR)/libpayload.config
 include $(LIBPAYLOAD_DIR)/libpayload.xcompile
 
-ifeq ($(CONFIG_ARCH_X86),y)
-ARCH = x86
+# Function to check architecture configuration and set ARCH and ARCH_DIR variables
+define define_arch
+ifeq ($($(1)),y)
+ifneq ($($(2)),y)
+$$(error $(1) is set but $(2) is not in $(LIBPAYLOAD_DIR))
 endif
-ifeq ($(CONFIG_ARCH_ARM),y)
-ARCH = arm
+ARCH = $(3)
+ARCH_DIR = $(4)
 endif
-ifeq ($(CONFIG_ARCH_ARM_V8),y)
-ARCH = arm64
-ARCH_DIR = arm
-else ifeq ($(CONFIG_ARCH_X86_64),y)
-ARCH = x86_64
-ARCH_DIR = x86
-else
-ARCH_DIR = $(ARCH)
+endef
+
+# Verify configuration for each architecture and select corresponding ARCH
+# and ARCH_DIR variables
+$(eval $(call define_arch,CONFIG_ARCH_X86_32,CONFIG_LP_ARCH_X86_32,x86,x86))
+$(eval $(call define_arch,CONFIG_ARCH_ARM_V7,CONFIG_LP_ARCH_ARM,arm,arm))
+$(eval $(call define_arch,CONFIG_ARCH_ARM_V8,CONFIG_LP_ARCH_ARM64,arm64,arm))
+$(eval $(call define_arch,CONFIG_ARCH_X86_64,CONFIG_LP_ARCH_X86_64,x86_64,x86))
+
+ifndef ARCH_DIR
+$(error ARCH_DIR is not defined)
 endif
 
 ARCH_TO_TOOLCHAIN_x86    := i386
@@ -165,7 +179,7 @@ coverage-init: depthcharge
 		-b $(src) --gcov-tool $(GCOV) -i
 endif
 
-endif # ifeq ($(UNIT_TEST)$(SCREENSHOT),)
+endif # ifeq ($(UNIT_TEST)$(SCREENSHOT)$(MAKE_CONFIG),)
 
 all:
 	@echo  'You must specify one of the following targets to build:'
