@@ -17,6 +17,8 @@
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"
+#include "drivers/video/display.h"
+#include "drivers/video/mtk_ddp.h"
 #include "vboot/util/flag.h"
 
 static int tpm_irq_status(void)
@@ -57,6 +59,11 @@ static void sound_setup(void)
 
 	nau8318Codec *nau8318 = new_nau8318_codec(spk_en, beep_en);
         sound_set_ops(&nau8318->ops);
+}
+
+static int board_backlight_update(DisplayOps *me, uint8_t enable)
+{
+	return 0;
 }
 
 static int board_setup(void)
@@ -114,6 +121,14 @@ static int board_setup(void)
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x16700000);
 	set_usb_init_callback(usb_host, enable_usb_vbus);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	/* Set display ops */
+	if (display_init_required()) {
+		display_set_ops(new_mtk_display(board_backlight_update,
+						0x32850000, 2, 0x328e0000));
+	} else {
+		printf("[%s] no display_init_required()!\n", __func__);
+	}
 
 	return 0;
 }
