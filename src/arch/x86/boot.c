@@ -103,8 +103,8 @@ int boot_x86_linux(struct boot_params *boot_params, char *cmd_line,
 
 	run_cleanup_funcs(CleanupOnHandoff);
 	if (CONFIG(BOOTCONFIG) &&
-	    fixup_android_boottime((void *)hdr->ramdisk_image, hdr->ramdisk_size,
-				   bootconfig_offset))
+	    fixup_android_boottime((void *)(uintptr_t)hdr->ramdisk_image,
+				   hdr->ramdisk_size, bootconfig_offset))
 		return 1;
 
 	puts("\nStarting kernel ...\n\n");
