@@ -18,6 +18,9 @@
 /* 20 characters are sufficient for max uint64 18446744073709551615. Prepend with "firmware:" */
 #define MAX_BOOTTIME_LENGTH 32
 
+#define DISPLAY_ORIENTATION_KEY_STR "androidboot.surface_flinger.primary_display_orientation"
+#define MAX_DISPLAY_ORIENTATION_LENGTH sizeof("ORIENTATION_xxx")
+
 static int append_serial_num(void *bootc_start, size_t bootc_size, size_t buf_size)
 {
 	char serial_num[MAX_SERIAL_NUM_LENGTH];
@@ -43,9 +46,29 @@ static int append_boottime(void *bootc_start, size_t bootc_size, size_t buf_size
 					bootc_start, bootc_size, buf_size);
 }
 
+static int append_display_orientation(void *bootc_start, size_t bootc_size, size_t buf_size)
+{
+	char orientation_map[][MAX_DISPLAY_ORIENTATION_LENGTH] = {
+		[CB_FB_ORIENTATION_NORMAL] = "ORIENTATION_0",
+		[CB_FB_ORIENTATION_BOTTOM_UP] = "ORIENTATION_180",
+		[CB_FB_ORIENTATION_LEFT_UP] = "ORIENTATION_270",
+		[CB_FB_ORIENTATION_RIGHT_UP] = "ORIENTATION_90",
+	};
+	uint8_t orientation = lib_sysinfo.framebuffer.orientation;
+
+	if (orientation >= ARRAY_SIZE(orientation_map)) {
+		printf("%s: Unexpected display orientation: %d\n", __func__, orientation);
+		return -1;
+	}
+	return append_bootconfig_params(DISPLAY_ORIENTATION_KEY_STR,
+					orientation_map[orientation],
+					bootc_start, bootc_size, buf_size);
+}
+
 enum bootconfig_param_index {
 	SERIAL_NUM,
 	BOOTTIME,
+	DISPLAY_ORIENTATION,
 };
 
 static struct {
@@ -63,21 +86,9 @@ static struct {
 		.append = append_boottime,
 		.exists = false,
 	},
-};
-
-static struct {
-	const char *name;
-	int (*const append)(void *bootc_start, size_t bootc_size, size_t buf_size);
-	bool exists;
-} params[] = {
-	[SERIAL_NUM] = {
-		.name = SERIAL_NUM_KEY_STR,
-		.append = append_serial_num,
-		.exists = false,
-	},
-	[BOOTTIME] = {
-		.name = BOOTTIME_KEY_STR,
-		.append = append_boottime,
+	[DISPLAY_ORIENTATION] = {
+		.name = DISPLAY_ORIENTATION_KEY_STR,
+		.append = append_display_orientation,
 		.exists = false,
 	},
 };
