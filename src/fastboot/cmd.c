@@ -15,12 +15,14 @@
  * GNU General Public License for more details.
  */
 
+#include <stdlib.h>
+#include <vb2_android_misc.h>
+
 #include "fastboot/cmd.h"
 #include "fastboot/disk.h"
 #include "fastboot/fastboot.h"
 #include "fastboot/vars.h"
 #include "gpt_misc.h"
-#include <stdlib.h>
 
 static int parse_hex(const char *str, size_t len, uint32_t *ret)
 {
@@ -154,6 +156,45 @@ static void fastboot_cmd_oem_get_kernels(struct FastbootOps *fb,
 	fastboot_succeed(fb);
 }
 
+#define BCB_RECOVERY_ARG0 "recovery"
+#define BCB_RECOVERY_ARG_FASTBOOT "--fastboot"
+
+static void fastboot_cmd_reboot_to_recovery(struct FastbootOps *fb, const char *arg,
+					    uint64_t arg_len)
+{
+	struct fastboot_disk disk;
+	struct vb2_bootloader_message bcb;
+
+	memset(&bcb, 0, sizeof(bcb));
+	strcpy(bcb.command, "boot-recovery");
+
+	/* Setup recovery arguments depending on the target */
+	if (!strncmp("fastboot", arg, arg_len)) {
+		snprintf(bcb.recovery, sizeof(bcb.recovery), "%s\n%s\n", BCB_RECOVERY_ARG0,
+			 BCB_RECOVERY_ARG_FASTBOOT);
+	} else if (!strncmp("recovery", arg, arg_len)) {
+		snprintf(bcb.recovery, sizeof(bcb.recovery), "%s\n", BCB_RECOVERY_ARG0);
+	} else {
+		fastboot_fail(fb, "Unknown reboot target");
+		return;
+	}
+
+	if (!fastboot_disk_init(&disk)) {
+		fastboot_fail(fb, "Failed to init disk");
+		return;
+	}
+
+	fastboot_write(fb, &disk, GPT_ENT_NAME_ANDROID_MISC,
+		       sizeof(GPT_ENT_NAME_ANDROID_MISC), &bcb, sizeof(bcb));
+
+	fastboot_disk_destroy(&disk);
+	/*
+	 * TODO(b/370988331): We should force boot from internal drive without rebooting
+	 *                    to speed up this.
+	 */
+	fb->state = REBOOT;
+}
+
 static void fastboot_cmd_reboot(struct FastbootOps *fb, const char *arg,
 				uint64_t arg_len)
 {
@@ -198,6 +239,7 @@ struct fastboot_cmd fastboot_cmds[] = {
 	CMD_ARGS("flash", ':', fastboot_cmd_flash),
 	CMD_ARGS("getvar", ':', fastboot_cmd_getvar),
 	CMD_NO_ARGS("oem get-kernels", fastboot_cmd_oem_get_kernels),
+	CMD_ARGS("reboot", '-', fastboot_cmd_reboot_to_recovery),
 	CMD_NO_ARGS("reboot", fastboot_cmd_reboot),
 	CMD_ARGS("set_active", ':', fastboot_cmd_set_active),
 	{
