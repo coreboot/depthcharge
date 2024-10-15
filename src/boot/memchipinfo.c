@@ -14,6 +14,9 @@ static int lpddr_type_num(enum mem_chip_type type)
 	case MEM_CHIP_LPDDR4:
 	case MEM_CHIP_LPDDR4X:
 		return 4;
+	case MEM_CHIP_LPDDR5:
+	case MEM_CHIP_LPDDR5X:
+		return 5;
 	default:
 		return 0;
 	}
