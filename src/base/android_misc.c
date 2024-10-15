@@ -35,16 +35,19 @@ static int android_misc_write(BlockDev *disk, GptData *gpt, size_t blocks_offset
 
 int android_misc_bcb_write(BlockDev *disk, GptData *gpt, struct bootloader_message *bcb)
 {
-	android_misc_write(disk, gpt, 0, bcb, sizeof(*bcb));
+	return android_misc_write(disk, gpt, 0, bcb, sizeof(*bcb));
+}
 
-	return 0;
+int android_misc_bcb_read(BlockDev *disk, GptData *gpt, struct bootloader_message *bcb)
+{
+	return android_misc_read(disk, gpt, 0, bcb, sizeof(*bcb));
 }
 
 enum android_misc_bcb_command android_misc_get_bcb_command(BlockDev *disk, GptData *gpt)
 {
 	struct bootloader_message bcb;
 
-	if (android_misc_read(disk, gpt, 0, &bcb, sizeof(bcb)))
+	if (android_misc_bcb_read(disk, gpt, &bcb))
 		return MISC_BCB_DISK_ERROR;
 
 	/* BCB command field is for the bootloader */
