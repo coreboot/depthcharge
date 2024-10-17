@@ -17,10 +17,17 @@
 #include <libpayload.h>
 #include "mtk_ddp.h"
 
+enum ovl_type {
+	DISP_OVL = 0,
+	DISP_EXDMA,
+};
+
 typedef struct {
 	DisplayOps ops;
 	uintptr_t ovl_base;
+	uintptr_t blender_base;
 	int lanes;
+	enum ovl_type type;
 } MtkDisplay;
 
 enum {
@@ -28,6 +35,8 @@ enum {
 	DISP_REG_OVL_EN      = 0x000C,
 	DISP_REG_OVL_L0_ADDR = 0x0f40,
 	DISP_REG_OVL0_2L_EN  = 0x100C,
+	DISP_REG_EXDMA_EN    = 0x0020,
+	DISP_REG_EXDMA_L_EN  = 0x0040,
 };
 
 static int mtk_display_init(DisplayOps *me)
@@ -35,10 +44,17 @@ static int mtk_display_init(DisplayOps *me)
 	uintptr_t phys_addr = lib_sysinfo.framebuffer.physical_address;
 	MtkDisplay *mtk = container_of(me, MtkDisplay, ops);
 
-	write32((void *)(mtk->ovl_base + DISP_REG_OVL_L0_ADDR), phys_addr);
-	write32((void *)(mtk->ovl_base + DISP_REG_OVL_EN), 1);
-	if (mtk->lanes == 2)
-		write32((void *)(mtk->ovl_base + DISP_REG_OVL0_2L_EN), 1);
+	if (mtk->type == DISP_OVL) {
+		write32p(mtk->ovl_base + DISP_REG_OVL_L0_ADDR, phys_addr);
+		write32p(mtk->ovl_base + DISP_REG_OVL_EN, 1);
+		if (mtk->lanes == 2)
+			write32p(mtk->ovl_base + DISP_REG_OVL0_2L_EN, 1);
+	} else {
+		write32p(mtk->ovl_base + DISP_REG_OVL_L0_ADDR, phys_addr);
+		setbits32p(mtk->ovl_base + DISP_REG_EXDMA_EN, BIT(0));
+		setbits32p(mtk->ovl_base + DISP_REG_EXDMA_L_EN, BIT(0));
+		setbits32p(mtk->blender_base + DISP_REG_EXDMA_L_EN, BIT(0));
+	}
 
 	return 0;
 }
@@ -47,21 +63,31 @@ static int mtk_display_stop(DisplayOps *me)
 {
 	MtkDisplay *mtk = container_of(me, MtkDisplay, ops);
 
-	write32((void *)(mtk->ovl_base + DISP_REG_OVL_EN), 0);
-	if (mtk->lanes == 2)
-		write32((void *)(mtk->ovl_base + DISP_REG_OVL0_2L_EN), 0);
+	if (mtk->type == DISP_OVL) {
+		write32p(mtk->ovl_base + DISP_REG_OVL_EN, 0);
+		if (mtk->lanes == 2)
+			write32p(mtk->ovl_base + DISP_REG_OVL0_2L_EN, 0);
+	} else {
+		clrbits32p(mtk->blender_base + DISP_REG_EXDMA_L_EN, BIT(0));
+		clrbits32p(mtk->ovl_base + DISP_REG_EXDMA_EN, BIT(0));
+		clrbits32p(mtk->ovl_base + DISP_REG_EXDMA_L_EN, BIT(0));
+	}
 
 	return 0;
 }
 
 DisplayOps *new_mtk_display(int (*backlight_update_fn)
 			    (DisplayOps *me, uint8_t enable),
-			    uintptr_t ovl_base, int lanes)
+			    uintptr_t ovl_base, int lanes,
+			    uintptr_t blender_base)
 {
 	MtkDisplay *display = xzalloc(sizeof(MtkDisplay));
 
 	display->ops.init = mtk_display_init;
 	display->ops.stop = mtk_display_stop;
+
+	display->type = blender_base ? DISP_EXDMA : DISP_OVL;
+	display->blender_base = blender_base;
 	display->ovl_base = ovl_base;
 	display->lanes = lanes;
 	if (backlight_update_fn)
