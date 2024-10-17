@@ -12,8 +12,8 @@
 #include "drivers/storage/storage_common.h"
 
 static const struct storage_config storage_configs[] = {
-	{ .media = STORAGE_NVME, .pci_dev = SA_DEV_CPU_RP0 },
 	{ .media = STORAGE_UFS, .pci_dev = PCH_DEV_UFS1 },
+	{ .media = STORAGE_NVME, .pci_dev = SA_DEV_CPU_RP0 },
 	{ .media = STORAGE_RTKMMC, .pci_dev = PCH_DEV_PCIE5 },
 };
 
