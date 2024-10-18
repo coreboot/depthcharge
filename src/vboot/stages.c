@@ -71,13 +71,13 @@ int vboot_check_enable_usb(void)
 	/* Initialize USB in developer, recovery mode or diagnostics mode,
 	   skip in normal mode. */
 	switch (vboot_get_context()->boot_mode) {
-		case VB2_BOOT_MODE_MANUAL_RECOVERY:
-		case VB2_BOOT_MODE_BROKEN_SCREEN:
-		case VB2_BOOT_MODE_DIAGNOSTICS:
-		case VB2_BOOT_MODE_DEVELOPER:
-			dc_usb_initialize();
-		default:
-			break;
+	case VB2_BOOT_MODE_MANUAL_RECOVERY:
+	case VB2_BOOT_MODE_BROKEN_SCREEN:
+	case VB2_BOOT_MODE_DIAGNOSTICS:
+	case VB2_BOOT_MODE_DEVELOPER:
+		dc_usb_initialize();
+	default:
+		break;
 	}
 	return 0;
 }

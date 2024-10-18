@@ -160,7 +160,7 @@ vb2_error_t ui_get_bitmap_width(const struct ui_bitmap *bitmap,
  * value depends on the application that creates the image". So
  * as the bmpblk scripts create these images, they will store the number of
  * text lines at offset 6.
- * See b/158634754 for discussion of alternatives. 
+ * See b/158634754 for discussion of alternatives.
  * https://en.wikipedia.org/wiki/BMP_file_format#Bitmap_file_header
  */
 uint32_t ui_get_bitmap_num_lines(const struct ui_bitmap *bitmap)

@@ -592,7 +592,7 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
 	 * here.
 	 */
 	for (ptr = buf; *ptr != '\0'; ptr++)
-		if (*ptr =='\t')
+		if (*ptr == '\t')
 			*ptr = ' ';
 
 	num_lines = MAX(count_lines(buf), min_lines);
