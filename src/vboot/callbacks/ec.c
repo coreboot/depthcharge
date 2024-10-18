@@ -147,7 +147,7 @@ vb2_error_t vb2ex_ec_vboot_done(struct vb2_context *ctx)
 	int in_recovery = !!(ctx->flags & VB2_CONTEXT_RECOVERY_MODE);
 
 	/* Ensure we have enough power to continue booting */
-	while(1) {
+	while (1) {
 		if (ec->check_limit_power(ec, &limit_power)) {
 			printf("Failed to check EC limit power flag.\n");
 			return VB2_ERROR_UNKNOWN;
