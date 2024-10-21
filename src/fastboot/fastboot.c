@@ -26,10 +26,35 @@
 #include "image/symbols.h"
 #include "stdarg.h"
 
-static char msg_buf[FASTBOOT_MSG_MAX];
-void fastboot_fail(struct FastbootOps *fb, const char *msg)
+void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t,
+		       const char *fmt, ...)
 {
-	int len = snprintf(msg_buf, FASTBOOT_MSG_MAX, "FAIL%s", msg);
+	static const char response_prefix[][4] = {
+		[FASTBOOT_RES_OKAY] = "OKAY",
+		[FASTBOOT_RES_FAIL] = "FAIL",
+		[FASTBOOT_RES_DATA] = "DATA",
+		[FASTBOOT_RES_INFO] = "INFO",
+		[FASTBOOT_RES_TEXT] = "TEXT",
+	};
+	char msg_buf[FASTBOOT_MSG_MAX];
+	const int prefix_len = sizeof(response_prefix[t]);
+	va_list ap;
+	va_start(ap, fmt);
+	memcpy(msg_buf, response_prefix[t], prefix_len);
+	int len = prefix_len + vsnprintf(&msg_buf[prefix_len],
+					 FASTBOOT_MSG_MAX - prefix_len, fmt, ap);
+	va_end(ap);
+	if (len < prefix_len) {
+		/* For some reason vsnprintf failed, send response prefix anyway */
+		printf("fastboot send vsnprintf failed (%d)\n", len - prefix_len);
+		len = prefix_len;
+		/* Make sure that message is ended with NULL char */
+		msg_buf[len] = '\0';
+	} else if (len >= FASTBOOT_MSG_MAX) {
+		printf("fastboot send message truncated\n");
+		/* vsnprintf sets msg_buf[FASTBOOT_MSG_MAX - 1] to '\0' in that case */
+		len = FASTBOOT_MSG_MAX - 1;
+	}
 	fb->send_packet(fb, msg_buf, len + 1);
 }
 
@@ -38,37 +63,6 @@ void fastboot_prepare_download(struct FastbootOps *fb, uint32_t bytes) {
 	fb->download_progress = 0;
 	fb->has_staged_data = false;
 	fb->state = DOWNLOAD;
-}
-
-void fastboot_data(struct FastbootOps *fb, uint32_t bytes)
-{
-	int len = snprintf(msg_buf, FASTBOOT_MSG_MAX, "DATA%08x", bytes);
-	fb->send_packet(fb, msg_buf, len + 1);
-}
-
-void fastboot_okay(struct FastbootOps *fb, const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	memcpy(msg_buf, "OKAY", 4);
-	int len = 4 + vsnprintf(&msg_buf[4], FASTBOOT_MSG_MAX - 4, fmt, ap);
-	va_end(ap);
-	fb->send_packet(fb, msg_buf, len + 1);
-}
-
-void fastboot_info(struct FastbootOps *fb, const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	memcpy(msg_buf, "INFO", 4);
-	int len = 4 + vsnprintf(&msg_buf[4], FASTBOOT_MSG_MAX - 4, fmt, ap);
-	va_end(ap);
-	fb->send_packet(fb, msg_buf, len + 1);
-}
-
-void fastboot_succeed(struct FastbootOps *fb)
-{
-	fb->send_packet(fb, "OKAY", 5);
 }
 
 bool fastboot_is_finished(struct FastbootOps *fb)

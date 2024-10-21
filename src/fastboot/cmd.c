@@ -78,7 +78,7 @@ static void fastboot_cmd_upload(struct FastbootOps *fb, const char *arg)
 		return;
 	}
 
-	fastboot_data(fb, len);
+	fastboot_data(fb, (uint32_t)len);
 	fb->send_packet(fb, buf, len);
 	fastboot_succeed(fb);
 

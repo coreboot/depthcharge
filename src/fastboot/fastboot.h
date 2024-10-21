@@ -91,6 +91,14 @@ struct FastbootOps {
 	void (*release)(struct FastbootOps *fb);
 };
 
+enum fastboot_response_type {
+	FASTBOOT_RES_OKAY = 0,
+	FASTBOOT_RES_FAIL,
+	FASTBOOT_RES_DATA,
+	FASTBOOT_RES_INFO,
+	FASTBOOT_RES_TEXT,
+};
+
 /* Have we exited fastboot? (e.g. user ran `fastboot continue)` */
 bool fastboot_is_finished(struct FastbootOps *fb);
 /* Handle a single fastboot packet, or a chunk of data in a download */
@@ -106,16 +114,26 @@ void fastboot_reset_session(struct FastbootOps *fb);
 /* Resets the state of the data staging area */
 void fastboot_reset_staging(struct FastbootOps *fb);
 
-
 /* Responses to the client */
-void fastboot_fail(struct FastbootOps *fb, const char *msg);
-void fastboot_data(struct FastbootOps *fb, uint32_t bytes);
-void fastboot_upload_data(struct FastbootOps *fb, uint32_t bytes);
-void fastboot_okay(struct FastbootOps *fb, const char *fmt, ...)
-	__attribute__((format(printf, 2, 3)));
-void fastboot_info(struct FastbootOps *fb, const char *fmt, ...)
-	__attribute__((format(printf, 2, 3)));
+void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t,
+		       const char *fmt, ...) __attribute__((format(printf, 3, 4)));
+
+#define fastboot_okay(fb, fmt, ...) \
+	fastboot_send_fmt((fb), FASTBOOT_RES_OKAY, (fmt), ##__VA_ARGS__)
+
+#define fastboot_fail(fb, fmt, ...) \
+	fastboot_send_fmt((fb), FASTBOOT_RES_FAIL, (fmt), ##__VA_ARGS__)
+
+#define fastboot_info(fb, fmt, ...) \
+	fastboot_send_fmt((fb), FASTBOOT_RES_INFO, (fmt), ##__VA_ARGS__)
+
+#define fastboot_text(fb, fmt, ...) \
+	fastboot_send_fmt((fb), FASTBOOT_RES_TEXT, (fmt), ##__VA_ARGS__)
+
 /* Sends an empty OKAY */
-void fastboot_succeed(struct FastbootOps *fb);
+#define fastboot_succeed(fb) fastboot_send_fmt((fb), FASTBOOT_RES_OKAY, "")
+
+/* Sends DATA with the length */
+#define fastboot_data(fb, len) fastboot_send_fmt((fb), FASTBOOT_RES_DATA, "%08x", (len))
 
 #endif /* __FASTBOOT_FASTBOOT_H__ */
