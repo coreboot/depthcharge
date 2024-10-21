@@ -52,27 +52,33 @@ static void append_bootconfig_trailer(void *bootc_start, size_t params_size)
 
 int bootconfig_append_cmdline(char *cmdline_string, void *bootc_start, size_t bootc_size)
 {
-	char *p, *p_prev, *tmp;
+	char *p, *next_non_space, *tmp;
 	size_t len, bootparams_size;
+	bool in_quote = false;
 
 	/* Make a copy for modifications */
 	tmp = strdup(cmdline_string);
 	if (tmp == NULL)
 		return -1;
 
-	p = p_prev = tmp;
-	while(p) {
-		p = strstr(tmp, " ");
-		if (p == NULL)
-			break;
-		*p = '\n';
-		/* Check for the case with multiple consecutive spaces */
-		if (p - p_prev == 1) {
-			memmove(p, p + 1, strlen(p + 1));
-			*(p + strlen(p) - 1) = '\0';
+	/* Replace spaces with newlines */
+	for (p = tmp; *p; p++) {
+		if (*p == '"') {
+			in_quote = !in_quote;
 			continue;
 		}
-		p_prev = p;
+		if (in_quote)
+			continue;
+		if (isspace(*p)) {
+			*p = '\n';
+			next_non_space = p;
+			while (isspace(*(++next_non_space)));
+			/* Check for the case with multiple consecutive spaces */
+			if (next_non_space - p > 1) {
+				/* memmove over consecuteive spaces, include null-char */
+				memmove(p + 1, next_non_space, strlen(next_non_space) + 1);
+			}
+		}
 	}
 
 	len = strlen(tmp);
