@@ -27,10 +27,22 @@
 #include "image/symbols.h"
 #include "stdarg.h"
 
-static char msg_buf[FASTBOOT_MSG_MAX];
-void fastboot_fail(struct FastbootOps *fb, const char *msg)
+void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t,
+		       const char *fmt, ...)
 {
-	int len = snprintf(msg_buf, FASTBOOT_MSG_MAX, "FAIL%s", msg);
+	static const char *const response_prefix[] = {
+		[FASTBOOT_RES_OKAY] = "OKAY",
+		[FASTBOOT_RES_FAIL] = "FAIL",
+		[FASTBOOT_RES_DATA] = "DATA",
+		[FASTBOOT_RES_INFO] = "INFO",
+		[FASTBOOT_RES_TEXT] = "TEXT",
+	};
+	char msg_buf[FASTBOOT_MSG_MAX];
+	va_list ap;
+	va_start(ap, fmt);
+	memcpy(msg_buf, response_prefix[t], 4);
+	int len = 4 + vsnprintf(&msg_buf[4], FASTBOOT_MSG_MAX - 4, fmt, ap);
+	va_end(ap);
 	fb->send_packet(fb, msg_buf, len + 1);
 }
 
@@ -42,33 +54,7 @@ void fastboot_data(struct FastbootOps *fb, uint32_t bytes)
 	fb->has_download = false;
 	fb->state = DOWNLOAD;
 	/* Send acknowledgment to host */
-	int len = snprintf(msg_buf, FASTBOOT_MSG_MAX, "DATA%08x", bytes);
-	fb->send_packet(fb, msg_buf, len + 1);
-}
-
-void fastboot_okay(struct FastbootOps *fb, const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	memcpy(msg_buf, "OKAY", 4);
-	int len = 4 + vsnprintf(&msg_buf[4], FASTBOOT_MSG_MAX - 4, fmt, ap);
-	va_end(ap);
-	fb->send_packet(fb, msg_buf, len + 1);
-}
-
-void fastboot_info(struct FastbootOps *fb, const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	memcpy(msg_buf, "INFO", 4);
-	int len = 4 + vsnprintf(&msg_buf[4], FASTBOOT_MSG_MAX - 4, fmt, ap);
-	va_end(ap);
-	fb->send_packet(fb, msg_buf, len + 1);
-}
-
-void fastboot_succeed(struct FastbootOps *fb)
-{
-	fb->send_packet(fb, "OKAY", 5);
+	fastboot_send_fmt(fb, FASTBOOT_RES_DATA, "%08x", bytes);
 }
 
 bool fastboot_is_finished(struct FastbootOps *fb)
