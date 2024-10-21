@@ -35,13 +35,13 @@ static int append_serial_num(void *bootc_start, size_t bootc_size, size_t buf_si
 
 static int append_boottime(void *bootc_start, size_t bootc_size, size_t buf_size)
 {
-	/* Need to record boot time in ns as per
-	   https://android.googlesource.com/platform/system/core/+/HEAD/init/README.md#boot-timing */
-	uint64_t boot_time_ns = get_us_since_pre_cpu_reset() * NSECS_PER_USEC;
+	/* Need to record boot time in ms. This is the requirement on bootloader from utilities
+	   like bootanalyze.py and aligns with other Android platforms. */
+	uint64_t boot_time_ms = get_us_since_pre_cpu_reset() / USECS_PER_MSEC;
 	char boottime[MAX_BOOTTIME_LENGTH];
 
 	/* Reserve 20 digits to record maximum value of uint64_t (18446744073709551615). */
-	snprintf(boottime, sizeof(boottime), "firmware:%-20lld", boot_time_ns);
+	snprintf(boottime, sizeof(boottime), "firmware:%-20lld", boot_time_ms);
 	return append_bootconfig_params(BOOTTIME_KEY_STR, boottime,
 					bootc_start, bootc_size, buf_size);
 }
