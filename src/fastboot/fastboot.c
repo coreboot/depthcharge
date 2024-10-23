@@ -160,4 +160,8 @@ void fastboot_handle_packet(fastboot_session_t *fb, void *data, uint64_t len)
 	}
 }
 
-void fastboot(void) { fastboot_over_tcp(); }
+void fastboot(void)
+{
+	if (CONFIG(FASTBOOT_TCP))
+		fastboot_over_tcp();
+}
