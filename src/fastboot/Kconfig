@@ -9,3 +9,16 @@
 ## but WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
+
+config FASTBOOT_IN_PROD
+	bool "Enable fastboot in production (default depthcharge binary)"
+	default n
+	help
+	  Enable this to compile in support for fastboot into default depthcharge
+	  binary. If disabled, fastboot is still available in developer builds.
+
+config FASTBOOT_TCP
+	bool "Enable fastboot over TCP"
+	default y
+	help
+	  Enable this to include code for fastboot over TCP.

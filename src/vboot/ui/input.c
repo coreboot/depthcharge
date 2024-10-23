@@ -91,9 +91,6 @@ static uint32_t keyboard_get_key(void)
 	case UI_KEY_CTRL('G'):
 		dc_dev_gdb_enter();	// CTRL+G: remote GDB mode
 		break;
-	case UI_KEY_CTRL('F'):
-		dc_dev_fastboot();	// CTRL+F: fastboot
-		break;
 	}
 
 	return ch;
