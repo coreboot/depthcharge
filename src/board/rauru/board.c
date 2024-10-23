@@ -4,6 +4,7 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
+#include "boot/commandline.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/i2s/mtk_v3.h"
@@ -188,6 +189,9 @@ static int board_setup(void)
 	} else {
 		printf("[%s] no display_init_required()!\n", __func__);
 	}
+
+	/* Disable MTE support for ChromeOS. b:375543707 */
+	commandline_append("arm64.nomte");
 
 	return 0;
 }
