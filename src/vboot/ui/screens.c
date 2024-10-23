@@ -24,6 +24,7 @@
 
 #include "base/elog.h"
 #include "boot/payload.h"
+#include "debug/dev.h"
 #include "debug/firmware_shell/common.h"
 #include "diag/common.h"
 #include "diag/health_info.h"
@@ -33,6 +34,7 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/display.h"
+#include "fastboot/fastboot.h"
 #include "vboot/firmware_id.h"
 #include "vboot/load_kernel.h"
 #include "vboot/stages.h"
@@ -673,6 +675,25 @@ vb2_error_t ui_developer_mode_enter_fwshell_action(struct ui_context *ui)
 
 	video_console_clear();
 	dc_dev_enter_firmware_shell();
+	ui->force_display = 1;
+	return VB2_SUCCESS;
+}
+
+/* TODO(b/370988331): Implement UI for this action */
+vb2_error_t ui_developer_mode_enter_fastboot_action(struct ui_context *ui)
+{
+	if (CONFIG(FASTBOOT_IN_PROD))
+		fastboot();
+	else
+		dc_dev_fastboot();
+
+	/*
+	 * The only way to get here is via "fastboot continue". Drain any
+	 * pending characters (because the user probably spammed ctrl-f).
+	 */
+	while (havechar())
+		getchar();
+
 	ui->force_display = 1;
 	return VB2_SUCCESS;
 }

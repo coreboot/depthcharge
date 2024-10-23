@@ -53,9 +53,4 @@ void dc_dev_netboot(void)
 void dc_dev_fastboot(void)
 {
 	fastboot();
-
-	// The only way to get here is via "fastboot continue". Drain any
-	// pending characters (because the user probably spammed ctrl-f).
-	while (havechar())
-		getchar();
 }

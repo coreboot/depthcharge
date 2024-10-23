@@ -203,6 +203,8 @@
 #define UI_KEY_PREV_ANCHOR		UI_KEY_CTRL('Z')
 /* Jump to the next anchor in the log screen */
 #define UI_KEY_NEXT_ANCHOR		UI_KEY_CTRL('X')
+/* Enter fastboot */
+#define UI_KEY_DEV_FASTBOOT		UI_KEY_CTRL('F')
 
 /*
  * Screens
@@ -1115,6 +1117,7 @@ vb2_error_t ui_developer_mode_boot_internal_action(struct ui_context *ui);
 vb2_error_t ui_developer_mode_boot_external_action(struct ui_context *ui);
 vb2_error_t ui_developer_mode_boot_altfw_action(struct ui_context *ui);
 vb2_error_t ui_developer_mode_enter_fwshell_action(struct ui_context *ui);
+vb2_error_t ui_developer_mode_enter_fastboot_action(struct ui_context *ui);
 
 /******************************************************************************/
 /* log.c */
