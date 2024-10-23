@@ -23,6 +23,7 @@
 #include "base/elog.h"
 #include "base/list.h"
 #include "boot/payload.h"
+#include "debug/dev.h"
 #include "diag/common.h"
 #include "diag/health_info.h"
 #include "diag/memory.h"
@@ -30,6 +31,7 @@
 #include "drivers/ec/cros/ec.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/tpm/tpm.h"
+#include "fastboot/fastboot.h"
 #include "vboot/firmware_id.h"
 #include "vboot/load_kernel.h"
 #include "vboot/stages.h"
@@ -577,6 +579,25 @@ vb2_error_t advanced_options_init(struct ui_context *ui)
 		UI_SET_BIT(ui->state->hidden_item_mask,
 			   ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY);
 
+	return VB2_SUCCESS;
+}
+
+/* TODO(b/370988331): Implement UI for this action */
+vb2_error_t ui_developer_mode_enter_fastboot_action(struct ui_context *ui)
+{
+	if (CONFIG(FASTBOOT_IN_PROD))
+		fastboot();
+	else
+		dc_dev_fastboot();
+
+	/*
+	 * The only way to get here is via "fastboot continue". Drain any
+	 * pending characters (because the user probably spammed ctrl-f).
+	 */
+	while (havechar())
+		getchar();
+
+	ui->force_display = 1;
 	return VB2_SUCCESS;
 }
 
