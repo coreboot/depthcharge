@@ -93,6 +93,8 @@ static vb2_error_t developer_action(struct ui_context *ui)
 		return ui_developer_mode_boot_internal_action(ui);
 	if (ui->key == UI_KEY_DEV_BOOT_ALTFW)
 		return ui_developer_mode_boot_altfw_action(ui);
+	if (ui->key == UI_KEY_DEV_FASTBOOT)
+		return ui_developer_mode_enter_fastboot_action(ui);
 
 	return VB2_SUCCESS;
 }
