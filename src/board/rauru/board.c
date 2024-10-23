@@ -64,6 +64,20 @@ static void sound_setup(void)
 
 static int board_backlight_update(DisplayOps *me, bool enable)
 {
+	GpioOps *pwm_control = sysinfo_lookup_gpio("PWM control", 1,
+						    new_mtk_gpio_output);
+	GpioOps *backlight_en = sysinfo_lookup_gpio("backlight enable", 1,
+						    new_mtk_gpio_output);
+
+	/* TODO: Add eDP AUX for backlight control */
+	if (pwm_control)
+		gpio_set(pwm_control, enable);
+	else
+		printf("%s: Use eDP AUX to control panel backlight\n", __func__);
+
+	if (backlight_en)
+		gpio_set(backlight_en, enable);
+
 	return 0;
 }
 
