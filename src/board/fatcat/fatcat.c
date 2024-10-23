@@ -61,3 +61,10 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
         *count = ARRAY_SIZE(storage_configs);
         return storage_configs;
 }
+
+/* Override of func in src/drivers/ec/rts5453/rts5453.c */
+void board_rts5453_get_image_paths(const char **image_path, const char **hash_path)
+{
+	*image_path = "rts5453_retimer_jhl9040.bin";
+	*hash_path = "rts5453_retimer_jhl9040.hash";
+}
