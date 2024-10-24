@@ -26,9 +26,9 @@
 #include "drivers/power/power.h"
 #include "endian.h"
 #include "fastboot/fastboot.h"
+#include "net/dhcp.h"
 #include "net/net.h"
 #include "net/uip.h"
-#include "netboot/dhcp.h"
 
 static struct fastboot_tcp_session tcp_session;
 

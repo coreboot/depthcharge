@@ -20,11 +20,11 @@
 #include <libpayload.h>
 
 #include "drivers/net/net.h"
+#include "net/dhcp.h"
 #include "net/net.h"
 #include "net/uip.h"
 #include "net/uip_arp.h"
 #include "net/uip_udp_packet.h"
-#include "netboot/dhcp.h"
 
 typedef enum DhcpOpcode
 {

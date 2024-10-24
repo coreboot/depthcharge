@@ -8,7 +8,7 @@
 
 #include "drivers/bus/usb/usb.h"
 #include "drivers/net/net.h"
-#include "netboot/dhcp.h"
+#include "net/dhcp.h"
 
 /* Wait for the device to show up for no longer than 5 seconds. */
 #define DEV_TIMEOUT_US 5000000
