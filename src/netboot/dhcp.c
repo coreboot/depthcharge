@@ -417,9 +417,16 @@ static void dhcp_add_option(uint8_t **options, uint8_t tag, void *value,
 	*options += length + 2;
 }
 
+static void print_mac_addr(const uip_eth_addr *mac)
+{
+	for (int i = 0; i < ARRAY_SIZE(mac->addr); i++)
+		printf("%s%02x", i ? ":" : "", mac->addr[i]);
+}
+
 int dhcp_request(uip_ipaddr_t *next_ip, uip_ipaddr_t *server_ip,
 		 const char **bootfile)
 {
+	static int mac_addr_set = 0;
 	DhcpPacket out, in;
 	uint8_t byte;
 	uint8_t *options;
@@ -430,6 +437,18 @@ int dhcp_request(uip_ipaddr_t *next_ip, uip_ipaddr_t *server_ip,
 	uint8_t client_id[1 + sizeof(uip_ethaddr)];
 	client_id[0] = DhcpEthernet;
 	memcpy(client_id + 1, &uip_ethaddr, sizeof(uip_ethaddr));
+
+	if (!mac_addr_set) {
+		// Plug in the MAC address.
+		const uip_eth_addr *mac_addr = net_get_mac();
+		if (!mac_addr)
+			halt();
+		printf("MAC: ");
+		print_mac_addr(mac_addr);
+		printf("\n");
+		uip_setethaddr(*mac_addr);
+		mac_addr_set = 1;
+	}
 
 	// Set up the UDP connection.
 	uip_ipaddr_t addr;
@@ -525,6 +544,9 @@ int dhcp_request(uip_ipaddr_t *next_ip, uip_ipaddr_t *server_ip,
 	uip_ipaddr(&my_ip, in.your_ip >> 0, in.your_ip >> 8,
 			   in.your_ip >> 16, in.your_ip >> 24);
 	uip_sethostaddr(&my_ip);
+
+	printf("My ip is %d.%d.%d.%d\n", uip_ipaddr_to_quad(&my_ip));
+	printf("The DHCP server ip is %d.%d.%d.%d\n", uip_ipaddr_to_quad(server_ip));
 
 	return 0;
 }
