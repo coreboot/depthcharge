@@ -8,7 +8,7 @@
 
 #include "drivers/bus/usb/usb.h"
 #include "drivers/net/net.h"
-#include "netboot/netboot.h"
+#include "netboot/dhcp.h"
 
 /* Wait for the device to show up for no longer than 5 seconds. */
 #define DEV_TIMEOUT_US 5000000
@@ -60,10 +60,10 @@ static int do_enet(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	}
 
 	if (!strcmp(argv[1], "dhcp")) {
-		uip_ipaddr_t my_ip, next_ip, server_ip;
+		uip_ipaddr_t next_ip, server_ip;
 		const char *dhcp_bootfile;
 
-		if (!try_dhcp(&my_ip, &next_ip, &server_ip, &dhcp_bootfile))
+		if (!dhcp_request(&next_ip, &server_ip, &dhcp_bootfile))
 			return CMD_RET_SUCCESS;
 
 	}
