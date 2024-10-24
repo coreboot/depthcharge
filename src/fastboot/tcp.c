@@ -28,7 +28,7 @@
 #include "fastboot/fastboot.h"
 #include "net/net.h"
 #include "net/uip.h"
-#include "netboot/netboot.h"
+#include "netboot/dhcp.h"
 
 static struct fastboot_tcp_session tcp_session;
 
@@ -333,12 +333,12 @@ void fastboot_over_tcp(void)
 
 	uip_ipaddr_t my_ip, next_ip, server_ip;
 	const char *dhcp_bootfile;
-	while (try_dhcp(&my_ip, &next_ip, &server_ip, &dhcp_bootfile))
+	while (dhcp_request(&next_ip, &server_ip, &dhcp_bootfile))
 		printf("Dhcp failed, retrying.\n");
+	uip_gethostaddr(&my_ip);
 
 	video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "IP: %d.%d.%d.%d\n",
-		     uip_ipaddr1(&my_ip), uip_ipaddr2(&my_ip),
-		     uip_ipaddr3(&my_ip), uip_ipaddr4(&my_ip));
+		     uip_ipaddr_to_quad(&my_ip));
 
 	memset(&tcp_session, 0, sizeof(tcp_session));
 	printf("fastboot starting.\n");
