@@ -20,3 +20,4 @@ uip-y += uiplib.c
 uip-$(CONFIG_UIP_UDP) += uip_udp_packet.c
 
 net-y += net.c
+net-y += dhcp.c

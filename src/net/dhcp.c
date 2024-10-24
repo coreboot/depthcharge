@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Google Inc.
+ * Copyright 2013 Google LLC
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,11 +20,11 @@
 #include <libpayload.h>
 
 #include "drivers/net/net.h"
+#include "net/dhcp.h"
 #include "net/net.h"
 #include "net/uip.h"
 #include "net/uip_arp.h"
 #include "net/uip_udp_packet.h"
-#include "netboot/dhcp.h"
 
 typedef enum DhcpOpcode
 {
