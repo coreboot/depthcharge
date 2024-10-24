@@ -11,7 +11,6 @@
 ## GNU General Public License for more details.
 ##
 
-netboot-y += dhcp.c
 netboot-y += netboot.c
 netboot-y += params.c
 netboot-y += tftp.c
