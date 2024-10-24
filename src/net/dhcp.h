@@ -15,8 +15,8 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __NETBOOT_DHCP_H__
-#define __NETBOOT_DHCP_H__
+#ifndef __NET_DHCP_H__
+#define __NET_DHCP_H__
 
 #include <stdint.h>
 
@@ -26,4 +26,4 @@ int dhcp_request(uip_ipaddr_t *next_ip, uip_ipaddr_t *server_ip,
 		 const char **bootfile);
 int dhcp_release(uip_ipaddr_t server_ip);
 
-#endif /* __NETBOOT_DHCP_H__ */
+#endif /* __NET_DHCP_H__ */
