@@ -49,6 +49,17 @@ void display_set_ops(DisplayOps *ops)
 
 int display_init(void)
 {
+	/*
+	 * If the framebuffer is unavailable (e.g., no display hardware
+	 * detected in the device tree), skip probing the display. This
+	 * avoids calls to various display related functions and
+	 * preventing redundant errors in boot log.
+	 */
+	if (!display_init_required()) {
+		printf("display is not available hence, skip calling other display functions.\n");
+		return -1;
+	}
+
 	if (display_ops && display_ops->init) {
 		if (display_ops->init(display_ops))
 			return -1;
