@@ -6,6 +6,7 @@
 #include "base/init_funcs.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
 #include "drivers/bus/spi/mtk.h"
+#include "drivers/bus/i2s/mtk_v3.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/spi.h"
@@ -14,7 +15,9 @@
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/sound/i2s.h"
 #include "drivers/sound/nau8318.h"
+#include "drivers/sound/tas2563.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/storage/mtk_ufs.h"
 #include "drivers/tpm/google/i2c.h"
@@ -58,17 +61,45 @@ static void enable_usb_vbus(struct UsbHostController *usb_host)
 	}
 }
 
+static void setup_tas2563(GpioOps *spk_rst_l)
+{
+	MtkI2s *i2so1 = new_mtk_i2s(0x1A110000, 2, 32 * KHz, 16, 16);
+	I2sSource *i2s_source = new_i2s_source(&i2so1->ops, 32 * KHz, 2, 8000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	MTKI2c *i2c3 = new_mtk_i2c(0x13150000, 0x163c0000, I2C_APDMA_ASYNC);
+	Tas2563Codec *speaker_r = new_tas2563_codec(&i2c3->ops, 0x4c, 1, 0);
+	Tas2563Codec *speaker_l = new_tas2563_codec(&i2c3->ops, 0x4f, 0, 0);
+
+	gpio_set(spk_rst_l, 0);
+
+	/* Delay 1ms for I2C ready */
+	mdelay(1);
+	list_insert_after(&speaker_l->component.list_node,
+			  &sound_route->components);
+	list_insert_after(&speaker_r->component.list_node,
+			  &sound_route->components);
+	sound_set_ops(&sound_route->ops);
+}
+
 static void sound_setup(void)
 {
+	GpioOps *spk_reset = sysinfo_lookup_gpio("speaker reset", 1,
+						 new_mtk_gpio_output);
 	GpioOps *spk_en = sysinfo_lookup_gpio("speaker enable", 1,
 					      new_mtk_gpio_output);
 	GpioOps *beep_en = sysinfo_lookup_gpio("beep enable", 1,
 					       new_mtk_gpio_output);
-	if (!spk_en || !beep_en)
-		return;
 
-	nau8318Codec *nau8318 = new_nau8318_codec(spk_en, beep_en);
-        sound_set_ops(&nau8318->ops);
+	if (spk_en && beep_en) {
+		printf("setup amps nau8318\n");
+		nau8318Codec *nau8318 = new_nau8318_codec(spk_en, beep_en);
+		sound_set_ops(&nau8318->ops);
+	} else if (spk_reset) {
+		printf("setup amps tas2563\n");
+		setup_tas2563(spk_reset);
+	} else {
+		printf("no amps found\n");
+	}
 }
 
 static int board_backlight_update(DisplayOps *me, bool enable)
