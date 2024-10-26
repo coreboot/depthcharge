@@ -15,6 +15,7 @@
 #include "drivers/power/psci.h"
 #include "drivers/sound/nau8318.h"
 #include "drivers/storage/mtk_mmc.h"
+#include "drivers/storage/mtk_ufs.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/display.h"
@@ -116,6 +117,10 @@ static int board_setup(void)
 		list_insert_after(&sd_card->mmc.ctrlr.list_node,
 				  &removable_block_dev_controllers);
 	}
+
+	/* Set up UFS ops */
+	MtkUfsCtlr *ufs_host = new_mtk_ufs_ctlr(0x16810000, 0);
+	list_insert_after(&ufs_host->ufs.bctlr.list_node, &fixed_block_dev_controllers);
 
 	/* Set up USB */
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x16700000);
