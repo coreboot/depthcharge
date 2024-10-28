@@ -28,7 +28,7 @@ static int display_cleanup(struct CleanupFunc *cleanup, CleanupType type)
 {
 	int err = ui_display_clear();
 	if (type != CleanupOnLegacy) {
-		err |= backlight_update(0);
+		err |= backlight_update(false);
 		if (display_ops && display_ops->stop)
 			err |= display_ops->stop(display_ops);
 	}
@@ -82,7 +82,7 @@ int has_external_display(void)
 	return lib_sysinfo.framebuffer.flags.has_external_display;
 }
 
-int backlight_update(uint8_t enable)
+int backlight_update(bool enable)
 {
 	if (display_ops && display_ops->backlight_update)
 		return display_ops->backlight_update(display_ops, enable);

@@ -184,7 +184,7 @@ static TegraI2c *get_backlight_i2c(void)
 }
 
 /* Turn on or turn off the backlight */
-static int ryu_backlight_update(DisplayOps *me, uint8_t enable)
+static int ryu_backlight_update(DisplayOps *me, bool enable)
 {
 	struct bl_reg {
 		uint8_t reg;

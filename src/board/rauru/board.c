@@ -62,7 +62,7 @@ static void sound_setup(void)
         sound_set_ops(&nau8318->ops);
 }
 
-static int board_backlight_update(DisplayOps *me, uint8_t enable)
+static int board_backlight_update(DisplayOps *me, bool enable)
 {
 	return 0;
 }

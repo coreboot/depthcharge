@@ -86,7 +86,7 @@ static int gsc_irq_status(void)
 	return gpio_get(tpm_int);
 }
 
-static int board_backlight_update(DisplayOps *me, uint8_t enable)
+static int board_backlight_update(DisplayOps *me, bool enable)
 {
 	static GpioOps *disp_pwm, *backlight_en;
 
@@ -94,9 +94,6 @@ static int board_backlight_update(DisplayOps *me, uint8_t enable)
 		disp_pwm = new_mtk_gpio_output(GPIO_BL_PWM_1V8);
 		backlight_en = new_mtk_gpio_output(GPIO_AP_EDP_BKLTEN);
 	}
-
-	/* Enforce enable to be either 0 or 1. */
-	enable = !!enable;
 
 	gpio_set(disp_pwm, enable);
 	gpio_set(backlight_en, enable);

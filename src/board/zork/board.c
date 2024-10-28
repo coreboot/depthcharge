@@ -88,7 +88,7 @@ static int gsc_irq_status(void)
 	return gpio_get(&tpm_gpio->ops);
 }
 
-static int zork_backlight_update(DisplayOps *me, uint8_t enable)
+static int zork_backlight_update(DisplayOps *me, bool enable)
 {
 	/* Backlight signal is active low */
 	static KernGpio *backlight;

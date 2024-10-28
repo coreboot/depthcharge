@@ -27,7 +27,7 @@ struct uint32_t *timing_engine_en = (void *)0x0AE6B800;
 struct uint32_t *sspp_src_addr = (void *)0x0AE05014;
 struct uint32_t *dsi_ctrl = (void *)0x0AE94004;
 
-static int sc7180_backlight_update(DisplayOps *me, uint8_t enable)
+static int sc7180_backlight_update(DisplayOps *me, bool enable)
 {
 	SC7180Display *display = container_of(me, SC7180Display, ops);
 

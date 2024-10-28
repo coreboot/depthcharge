@@ -7,6 +7,8 @@
 #include <libpayload.h>
 #include <cbfs.h>
 #include <coreboot_tables.h>
+#include <stdbool.h>
+
 #include "common.h"
 #include "drivers/video/display.h"
 #include "drivers/video/coreboot_fb.h"
@@ -19,7 +21,7 @@ static int init_display(void)
 		return 0;
 	if (display_init())
 		return -1;
-	if (backlight_update(1))
+	if (backlight_update(true))
 		return -1;
 	/* initialize video console */
 	video_init();

@@ -17,6 +17,7 @@
  */
 
 #include <libpayload.h>
+#include <stdbool.h>
 #include <vb2_api.h>
 
 #include "drivers/ec/cros/ec.h"
@@ -115,7 +116,7 @@ static vb2_error_t init_screen(void)
 		return VB2_ERROR_UI_DISPLAY_INIT;
 
 	enable_graphics_buffer();
-	backlight_update(1);
+	backlight_update(true);
 
 	initialized = 1;
 	return VB2_SUCCESS;

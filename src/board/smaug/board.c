@@ -178,7 +178,7 @@ static int board_setup(void)
 INIT_FUNC(board_setup);
 
 /* Turn on or turn off the backlight */
-static int smaug_backlight_update(DisplayOps *me, uint8_t enable)
+static int smaug_backlight_update(DisplayOps *me, bool enable)
 {
 	struct bl_reg {
 		uint8_t reg;
