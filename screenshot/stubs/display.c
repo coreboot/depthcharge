@@ -19,7 +19,7 @@ int display_init_required(void)
 	return 0;
 }
 
-int backlight_update(uint8_t enable)
+int backlight_update(bool enable)
 {
 	return 0;
 }

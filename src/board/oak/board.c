@@ -60,7 +60,7 @@ static GpioOps *oak_get_panel_lcd_power_en(void)
 	}
 }
 
-int oak_backlight_update(DisplayOps *me, uint8_t enable)
+static int oak_backlight_update(DisplayOps *me, bool enable)
 {
 	static GpioOps *panel_lcd_power_en, *disp_pwm0, *panel_power_en;
 

@@ -18,11 +18,13 @@
 #ifndef __DRIVERS_VIDEO_MTK_H__
 #define __DRIVERS_VIDEO_MTK_H__
 
+#include <stdbool.h>
+
 #include "drivers/video/display.h"
 
 /* If blender_base is 0, use legacy disp_ovl. Otherwise use disp_exdma. */
 DisplayOps *new_mtk_display(int (*backlight_update_fn)
-			    (DisplayOps *me, uint8_t enable),
+			    (DisplayOps *me, bool enable),
 			    uintptr_t ovl_base, int lanes,
 			    uintptr_t blender_base);
 

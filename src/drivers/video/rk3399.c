@@ -68,7 +68,7 @@ static int edp_enable(void)
 /*
  * callback to turn on/off the backlight
  */
-static int rk3399_backlight_update(DisplayOps *me, uint8_t enable)
+static int rk3399_backlight_update(DisplayOps *me, bool enable)
 {
 	RkDisplay *display = container_of(me, RkDisplay, ops);
 	gpio_set(display->backlight_gpio, enable);

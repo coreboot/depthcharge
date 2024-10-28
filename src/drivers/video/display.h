@@ -18,6 +18,8 @@
 #ifndef __DRIVERS_VIDEO_DISPLAY_H__
 #define __DRIVERS_VIDEO_DISPLAY_H__
 
+#include <stdbool.h>
+
 #include "vboot/ui.h"
 
 typedef struct DisplayOps {
@@ -36,7 +38,7 @@ typedef struct DisplayOps {
 	 * @param enable	1 for backlight on, 0 for backlight off
 	 * @return 0 on success, non-zero on error
 	 */
-	int (*backlight_update)(struct DisplayOps *me, uint8_t enable);
+	int (*backlight_update)(struct DisplayOps *me, bool enable);
 
 	/**
 	 * Stop the display in preparation for kernel boot.
@@ -80,7 +82,7 @@ int display_init_required(void);
  */
 int has_external_display(void);
 
-int backlight_update(uint8_t enable);
+int backlight_update(bool enable);
 
 int display_screen(enum ui_screen screen);
 

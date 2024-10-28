@@ -179,7 +179,7 @@ static void audio_setup(uint32_t skuid)
 	sound_set_ops(&sound_route->ops);
 }
 
-static int grunt_backlight_update(DisplayOps *me, uint8_t enable)
+static int grunt_backlight_update(DisplayOps *me, bool enable)
 {
 	/* Backlight signal is active low */
 	static KernGpio *backlight;

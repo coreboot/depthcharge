@@ -17,6 +17,7 @@
 
 #include <libpayload.h>
 #include <lp_vboot.h>
+#include <stdbool.h>
 #include <vb2_api.h>
 
 #include "base/init_funcs.h"
@@ -41,7 +42,7 @@ static void enable_graphics(void)
 {
 	struct vb2_context *ctx = vboot_get_context();
 	display_init();
-	backlight_update(1);
+	backlight_update(true);
 
 	if (!vb2api_need_reboot_for_display(ctx))
 		return;

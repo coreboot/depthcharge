@@ -28,7 +28,7 @@ typedef struct {
 static uint32_t *vop0_sys_ctrl = (uint32_t *)0xff930008;
 static uint32_t *vop1_sys_ctrl = (uint32_t *)0xff940008;
 
-static int rk3288_backlight_update(DisplayOps *me, uint8_t enable)
+static int rk3288_backlight_update(DisplayOps *me, bool enable)
 {
 	RkDisplay *display = container_of(me, RkDisplay, ops);
 	gpio_set(display->backlight_gpio, enable);

@@ -53,15 +53,12 @@ static int tpm_irq_status(void)
 	return gpio_get(tpm_int);
 }
 
-static int board_backlight_update(DisplayOps *me, uint8_t enable)
+static int board_backlight_update(DisplayOps *me, bool enable)
 {
 	GpioOps *pwm_control = sysinfo_lookup_gpio("PWM control", 1,
 						   new_mtk_gpio_output);
 	GpioOps *backlight_en = sysinfo_lookup_gpio("backlight enable", 1,
 						    new_mtk_gpio_output);
-
-	/* Enforce enable to be either 0 or 1. */
-	enable = !!enable;
 
 	/* TODO: Add eDP AUX for backlight control */
 	if (pwm_control)
