@@ -43,6 +43,12 @@
 #include "vboot/util/flag.h"
 #include "vboot/util/memory.h"
 
+/* Size of the buffer to convey cmdline properties to bootloader */
+#define KERNEL_CMDLINE_BUF_SIZE 1024
+
+_Static_assert(KERNEL_CMDLINE_BUF_SIZE < CONFIG_KERNEL_SIZE,
+	      "Command line buffer too big");
+
 int vboot_in_recovery(void)
 {
 	return !!(vboot_get_context()->flags & VB2_CONTEXT_RECOVERY_MODE);
@@ -144,8 +150,9 @@ int vboot_select_and_boot_kernel(void)
 
 	struct vb2_kernel_params kparams = {
 		.kernel_buffer = _kernel_start,
-		.kernel_buffer_size = _kernel_end - _kernel_start,
-
+		.kernel_buffer_size = CONFIG_KERNEL_SIZE - KERNEL_CMDLINE_BUF_SIZE,
+		.kernel_cmdline_buffer = (char *)_kernel_end - KERNEL_CMDLINE_BUF_SIZE,
+		.kernel_cmdline_size = KERNEL_CMDLINE_BUF_SIZE,
 
 #if CONFIG(ANDROID_PVMFW)
 		.pvmfw_buffer = _pvmfw_start,
