@@ -123,11 +123,11 @@ param define end
 *******************************************************************************/
 static inline uint32_t spi_reg_read(uint32_t reg)
 {
-	return read32((void *)reg);
+	return read32p(reg);
 }
 static inline void spi_reg_write(uint32_t reg, uint32_t val)
 {
-	write32((void *)reg, val);
+	write32p(reg, val);
 }
 static inline void spi_reg_bit_set(uint32_t reg, uint32_t bitMask)
 {

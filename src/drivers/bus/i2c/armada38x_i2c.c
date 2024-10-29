@@ -191,11 +191,11 @@ static uint32_t who_am_i(void);
 
 static inline uint32_t i2c_reg_read(uint32_t reg)
 {
-	return read32((void *)reg);
+	return read32p(reg);
 }
 static inline void i2c_reg_write(uint32_t reg, uint32_t val)
 {
-	write32((void *)reg, val);
+	write32p(reg, val);
 }
 static inline void i2c_reg_bit_set(uint32_t reg, uint32_t bit_mask)
 {

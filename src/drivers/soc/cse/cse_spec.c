@@ -60,7 +60,7 @@ static uintptr_t get_spi_bar(pcidev_t dev)
 
 static uint32_t spi_read_bar(pcidev_t dev, uint32_t offset)
 {
-	return read32((void *)get_spi_bar(dev) + offset);
+	return read32p(get_spi_bar(dev) + offset);
 }
 static uint32_t spi_read_bios_gpr0(void)
 {

@@ -92,12 +92,12 @@ static uintptr_t get_cse_bar(pcidev_t dev)
 
 static uint32_t read_bar(pcidev_t dev, uint32_t offset)
 {
-	return read32((void *)get_cse_bar(dev) + offset);
+	return read32p(get_cse_bar(dev) + offset);
 }
 
 static void write_bar(pcidev_t dev, uint32_t offset, uint32_t val)
 {
-	return write32((void *)get_cse_bar(dev) + offset, val);
+	return write32p(get_cse_bar(dev) + offset, val);
 }
 
 static uint32_t read_cse_csr(void)
