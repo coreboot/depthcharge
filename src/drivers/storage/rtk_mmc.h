@@ -882,12 +882,12 @@ typedef struct {
 
 static inline void rtsx_writel(RtkMmcHost *host, u32 reg, u32 val)
 {
-	write32((void *)((uintptr_t)host->ioaddr + reg), val);
+	write32(host->ioaddr + reg, val);
 }
 
 static inline u32 rtsx_readl(RtkMmcHost *host, u32 reg)
 {
-	return read32((void *)((uintptr_t)host->ioaddr + reg));
+	return read32(host->ioaddr + reg);
 }
 
 int rtsx_write_register(RtkMmcHost *host, u16 addr, u8 mask, u8 data);

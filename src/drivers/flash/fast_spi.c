@@ -24,16 +24,16 @@
 /* Read register from the FAST_SPI flash controller. */
 static uint32_t fast_spi_flash_ctrlr_reg_read(FastSpiFlash *flash, uint16_t reg)
 {
-	uintptr_t addr =  ALIGN_DOWN(flash->mmio_base + reg, sizeof(uint32_t));
-	return read32((void *)addr);
+	uintptr_t addr = ALIGN_DOWN(flash->mmio_base + reg, sizeof(uint32_t));
+	return read32p(addr);
 }
 
 /* Write to register in FAST_SPI flash controller. */
 static void fast_spi_flash_ctrlr_reg_write(FastSpiFlash *flash,
 					   uint16_t reg, uint32_t val)
 {
-	uintptr_t addr =  ALIGN_DOWN(flash->mmio_base + reg, sizeof(uint32_t));
-	write32((void *)addr, val);
+	uintptr_t addr = ALIGN_DOWN(flash->mmio_base + reg, sizeof(uint32_t));
+	write32p(addr, val);
 }
 
 /* Fill FDATAn FIFO in preparation for a write transaction. */
@@ -283,7 +283,7 @@ static void fast_spi_fill_regions(FastSpiFlash *flash)
 	/* Go through each flash region */
 	for (i = 0; i < FLASH_REGION_MAX; i++, region++) {
 		uintptr_t reg = flash->mmio_base + SPIBAR_FREG(i);
-		uint32_t freg = read32((void *)reg);
+		uint32_t freg = read32p(reg);
 
 		/* Extract region offset and size from FREG */
 		region->offset = (freg & SPIBAR_FREG_BASE_MASK) * 4 * KiB;
@@ -303,7 +303,7 @@ FastSpiFlash *new_fast_spi_flash(uintptr_t mmio_base)
 	uint32_t rom_size = lib_sysinfo.spi_flash.size;
 	uint32_t sector_size = lib_sysinfo.spi_flash.sector_size;
 
-	uint32_t val = read32((void *)(mmio_base + SPIBAR_BIOS_BFPREG));
+	uint32_t val = read32p(mmio_base + SPIBAR_BIOS_BFPREG);
 
 	uintptr_t mmap_start;
 	size_t bios_base, bios_end, mmap_size;

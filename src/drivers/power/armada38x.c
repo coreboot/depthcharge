@@ -25,10 +25,8 @@
 static int armada38x_reboot(struct PowerOps *me)
 {
 	//software reset
-	write32((void *)CPU_RSTOUTN_MASK_REG,
-		(read32((void *)CPU_RSTOUTN_MASK_REG) | (1 << 0)));
-	write32((void *)CPU_SYS_SOFT_RST_REG,
-		(read32((void *)CPU_SYS_SOFT_RST_REG) | (1 << 0)));
+	setbits32p(CPU_RSTOUTN_MASK_REG, 1 << 0);
+	setbits32p(CPU_SYS_SOFT_RST_REG, 1 << 0);
 	for (;;)
 		;
 	return 0;

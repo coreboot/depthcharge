@@ -114,14 +114,14 @@ typedef struct intel_gspi_xfer_params {
 static uint32_t gspi_read_mmio_reg(const IntelGspi *dev, uint32_t offset)
 {
 	assert(dev->mmio_base != 0);
-	return read32((void *)(dev->mmio_base + offset));
+	return read32p(dev->mmio_base + offset);
 }
 
 static void gspi_write_mmio_reg(const IntelGspi *dev, uint32_t offset,
 				uint32_t value)
 {
 	assert(dev->mmio_base != 0);
-	write32((void *)(dev->mmio_base + offset), value);
+	write32p(dev->mmio_base + offset, value);
 }
 
 enum cs_assert {

@@ -99,7 +99,7 @@ static void audio_bt_i2s_setup(void)
 	uintptr_t gmm_base = pci_read_config32(PCI_DEV(0, 0x1, 0), 0x24);
 	gmm_base &= 0xfffffff0;
 
-	write32((void *)gmm_base + GMMx1475C, 0x00);
+	write32p(gmm_base + GMMx1475C, 0x00);
 }
 
 static int (*gpio_i2s_play)(struct SoundOps *me, uint32_t msec,
