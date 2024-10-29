@@ -491,7 +491,7 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 		bootc_ramdisk_addr = (uintptr_t)vendor_ramdisk_end + init_hdr->ramdisk_size;
 
 		if ((bootc_ramdisk_addr + vendor_hdr->bootconfig_size) >=
-		    ((uintptr_t)kparams->kernel_buffer + kparams->vboot_cmdline_offset)) {
+		    ((uintptr_t)kparams->kernel_buffer + kparams->kernel_buffer_size)) {
 			printf("GKI: Not enough space for bootconfig\n");
 			return -1;
 		}
@@ -509,8 +509,7 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 		}
 
 		vendor_hdr->bootconfig_size = bootconfig_append_cmdline(
-		    (char *)kparams->kernel_buffer +
-			kparams->vboot_cmdline_offset,
+		    kparams->kernel_cmdline_buffer,
 		    (void *)bootc_ramdisk_addr,
 		    vendor_hdr->bootconfig_size);
 		if (vendor_hdr->bootconfig_size < 0) {
