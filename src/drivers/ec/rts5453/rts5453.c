@@ -14,10 +14,6 @@
 #include "rts5453.h"
 #include "rts5453_internal.h"
 
-#define GOOGLE_BROX_VENDOR_ID 0x18d1
-#define GOOGLE_BROX_PRODUCT_ID 0x5065
-
-#define RTS545X_I2C_ADDR 0x67
 #define RTS_I2C_WINDOW_SPEED_KHZ 400
 #define FW_MAJOR_VERSION_SHIFT 16
 #define FW_MINOR_VERSION_SHIFT 8
@@ -108,7 +104,7 @@ static int rts545x_ping_status(Rts545x *me, uint8_t *status_byte)
 	int ret;
 
 	while (timer_us(start) < PING_STATUS_TIMEOUT_US) {
-		ret = i2c_read_raw(&me->bus->ops, RTS545X_I2C_ADDR, status_byte, 1);
+		ret = i2c_read_raw(&me->bus->ops, CONFIG_DRIVER_EC_RTS545X_I2C_ADDR, status_byte, 1);
 		if (ret < 0) {
 			printf("%s: Error %d reading ping_status\n", me->chip_name, ret);
 			return ret;
@@ -141,7 +137,7 @@ static int rts545x_block_out_transfer(Rts545x *me, uint8_t cmd_code, size_t len,
 	write_buf[1] = len;
 	memcpy(&write_buf[2], write_data, len);
 
-	ret = i2c_write_raw(&me->bus->ops, RTS545X_I2C_ADDR, write_buf, len + 2);
+	ret = i2c_write_raw(&me->bus->ops, CONFIG_DRIVER_EC_RTS545X_I2C_ADDR, write_buf, len + 2);
 	if (ret < 0) {
 		printf("%s: Error %d sending command %#02x\n", me->chip_name, ret, cmd_code);
 		return ret;
@@ -155,7 +151,7 @@ static int rts545x_block_out_transfer(Rts545x *me, uint8_t cmd_code, size_t len,
 
 static int rts545x_block_in_transfer(Rts545x *me, size_t len, uint8_t *read_data)
 {
-	return i2c_readblock(&me->bus->ops, RTS545X_I2C_ADDR, RTS545X_READ_DATA_CMD, read_data,
+	return i2c_readblock(&me->bus->ops, CONFIG_DRIVER_EC_RTS545X_I2C_ADDR, RTS545X_READ_DATA_CMD, read_data,
 			     len);
 }
 
@@ -798,7 +794,7 @@ static const VbootAuxfwOps *new_rts545x_from_chip_info(struct ec_response_pd_chi
 	}
 
 	switch (r->product_id) {
-	case GOOGLE_BROX_PRODUCT_ID:
+	case CONFIG_DRIVER_EC_RTS545X_PID:
 		rts545x = new_rts5453(NULL, ec_pd_id);
 		if (rts545x == NULL) {
 			printf("Error instantiating RTS5453 driver. Skipping FW update.\n");
@@ -818,8 +814,8 @@ static const VbootAuxfwOps *new_rts545x_from_chip_info(struct ec_response_pd_chi
 }
 
 static CrosEcAuxfwChipInfo aux_fw_rts5453_info = {
-	.vid = GOOGLE_BROX_VENDOR_ID,
-	.pid = GOOGLE_BROX_PRODUCT_ID,
+	.vid = CONFIG_DRIVER_EC_RTS545X_VID,
+	.pid = CONFIG_DRIVER_EC_RTS545X_PID,
 	.new_chip_aux_fw_ops = new_rts545x_from_chip_info,
 };
 
