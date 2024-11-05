@@ -9,6 +9,7 @@
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/spi.h"
+#include "drivers/ec/rts5453/rts5453.h"
 #include "drivers/flash/mtk_snfc.h"
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
@@ -21,6 +22,14 @@
 #include "drivers/video/display.h"
 #include "drivers/video/mtk_ddp.h"
 #include "vboot/util/flag.h"
+
+/* Override of func in src/drivers/ec/rts5453/rts5453.c */
+void board_rts5453_get_image_paths(const char **image_path, const char **hash_path)
+{
+	/* TODO(b:365670650): Evaluate if a separate name is needed. */
+	*image_path = "rts5453_retimer_bypass.bin";
+	*hash_path = "rts5453_retimer_bypass.hash";
+}
 
 static int tpm_irq_status(void)
 {
