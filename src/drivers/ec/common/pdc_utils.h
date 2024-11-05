@@ -18,6 +18,7 @@ typedef uint32_t pdc_fw_ver_t;
 #define PDC_FWVER_MINOR(VER) (((VER) >> 8) & 0xFF)
 #define PDC_FWVER_PATCH(VER) ((VER) & 0xFF)
 
-#define PDC_FWVER_TYPE_RELEASE (0)
+#define PDC_FWVER_TYPE_BRINGUP (0)
 #define PDC_FWVER_TYPE_TEST (1)
 #define PDC_FWVER_TYPE_BASE (2)
+#define PDC_FWVER_TYPE_PROD_MASK (0xF0)
