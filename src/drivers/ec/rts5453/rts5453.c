@@ -431,6 +431,35 @@ static bool is_rts545x_device_present(Rts545x *me, int live)
 }
 
 /**
+ * @brief Check if a firmware version supports the new GOOGnnnn config/project
+ *        name scheme. Older firmware that does not will not accept an upgrade
+ *        to a version that does.
+ *
+ * @param ver Input version to check
+ * @return true  Given firmware version \p ver would accept an update to a
+ *               version using the new config scheme.
+ * @return false The firmware uses the old scheme and would reject an update
+ *               to a version that uses the new scheme.
+ */
+static bool rts545x_fw_uses_new_config_name_scheme(pdc_fw_ver_t ver)
+{
+	if (PDC_FWVER_MAJOR(ver) == PDC_FWVER_TYPE_BRINGUP) {
+		return ver >= PDC_FWVER_TO_INT(0, 20, 1);
+	} else if (PDC_FWVER_MAJOR(ver) == PDC_FWVER_TYPE_TEST) {
+		return ver > PDC_FWVER_TO_INT(1, 22, 1);
+	} else if (PDC_FWVER_MAJOR(ver) == PDC_FWVER_TYPE_BASE) {
+		return (ver == PDC_FWVER_TO_INT(2, 0, 1) || ver == PDC_FWVER_TO_INT(2, 2, 1));
+	} else if (PDC_FWVER_MAJOR(ver) & PDC_FWVER_TYPE_PROD_MASK) {
+		/* Production firmware always has the new scheme */
+		return true;
+	}
+
+	/* Unknown version */
+	printf("Cannot parse FW version 0x%06x. Reject update.\n", ver);
+	return false;
+}
+
+/**
  * @brief Check if the new PDC FW version is compatible with the currently running PDC FW
  *
  * @param current FW version currently installed on the PDC
@@ -440,12 +469,20 @@ static bool is_rts545x_device_present(Rts545x *me, int live)
  */
 bool rts545x_check_update_compatibility(pdc_fw_ver_t current, pdc_fw_ver_t new)
 {
-	switch (PDC_FWVER_MAJOR(new)) {
-	case PDC_FWVER_TYPE_BASE:
+	if ((PDC_FWVER_MAJOR(current) & PDC_FWVER_TYPE_PROD_MASK) &&
+	    !(PDC_FWVER_MAJOR(new) & PDC_FWVER_TYPE_PROD_MASK)) {
+		/* No downgrade to an internal version from a production
+		 * version.
+		 */
+		printf("Cannot replace prod PDC FW with internal FW\n");
+		return false;
+	}
+
+	if (PDC_FWVER_MAJOR(new) == PDC_FWVER_TYPE_BASE) {
 		/* We do not flash base FWs through Depthcharge */
 		printf("Upgrading to base FW (0x%06x) not supported\n", new);
 		return false;
-	case PDC_FWVER_TYPE_TEST:
+	} else if (PDC_FWVER_MAJOR(new) == PDC_FWVER_TYPE_TEST) {
 		if (new <= PDC_FWVER_TO_INT(1, 22, 1)) {
 			/* Versions up to and including 1.22 use the legacy
 			 * proj naming scheme and can always be flashed.
@@ -457,24 +494,10 @@ bool rts545x_check_update_compatibility(pdc_fw_ver_t current, pdc_fw_ver_t new)
 		/* Versions after 1.22 have the new config format
 		 * and will only work if current image uses prefix-based
 		 * proj name verification or no proj name verification.
-		 *
-		 * Break this check down by the current firmware type.
 		 */
-		switch (PDC_FWVER_MAJOR(current)) {
-		case PDC_FWVER_TYPE_BASE:
-			return current == PDC_FWVER_TO_INT(2, 0, 1) ||
-			       current == PDC_FWVER_TO_INT(2, 2, 1);
-		case PDC_FWVER_TYPE_TEST:
-			return current > PDC_FWVER_TO_INT(1, 22, 1);
-		case PDC_FWVER_TYPE_RELEASE:
-			return current >= PDC_FWVER_TO_INT(0, 20, 1);
-		}
+		return rts545x_fw_uses_new_config_name_scheme(current);
 
-		/* All other cases are invalid */
-		printf("Cannot parse current FW version 0x%06x (new FW is test)\n", current);
-		break;
-
-	case PDC_FWVER_TYPE_RELEASE:
+	} else if (PDC_FWVER_MAJOR(new) == PDC_FWVER_TYPE_BRINGUP) {
 		if (new <= PDC_FWVER_TO_INT(0, 20, 1)) {
 			/* Versions up to and including 0.20 use the legacy
 			 * proj naming scheme and can always be flashed.
@@ -486,31 +509,32 @@ bool rts545x_check_update_compatibility(pdc_fw_ver_t current, pdc_fw_ver_t new)
 		/* Versions after 0.20 have the new config format
 		 * and will only work if current image uses prefix-based
 		 * proj name verification or no proj name verification.
-		 *
-		 * Break this check down by the current firmware type.
 		 */
-		switch (PDC_FWVER_MAJOR(current)) {
-		case PDC_FWVER_TYPE_BASE:
-			return current == PDC_FWVER_TO_INT(2, 0, 1) ||
-			       current == PDC_FWVER_TO_INT(2, 2, 1);
-		case PDC_FWVER_TYPE_TEST:
-			return current > PDC_FWVER_TO_INT(1, 22, 1);
-		case PDC_FWVER_TYPE_RELEASE:
-			return current >= PDC_FWVER_TO_INT(0, 20, 1);
+		return rts545x_fw_uses_new_config_name_scheme(current);
+
+	} else if (PDC_FWVER_MAJOR(new) & PDC_FWVER_TYPE_PROD_MASK) {
+		/* New FW is production firmware (major version >= 16) */
+
+		if (PDC_FWVER_MAJOR(current) & PDC_FWVER_TYPE_PROD_MASK) {
+			/* Current FW is production (>=16) */
+
+			/* Allow upgrade/downgrade within a major prod version,
+			 * but not downgrade to a previous prod major version.
+			 */
+			bool allowed = PDC_FWVER_MAJOR(new) >= PDC_FWVER_MAJOR(current);
+
+			printf("PDC anti-rollback check result: %s\n",
+			       allowed ? "allowed" : "rejected");
+			return allowed;
 		}
 
-		/* All other cases are invalid */
-		printf("Cannot parse current FW version 0x%06x (new FW is release)\n", current);
-		break;
+		/* Current FW is internal (<16) */
+		return rts545x_fw_uses_new_config_name_scheme(current);
 
-	default:
+	} else {
 		printf("Cannot parse new FW version 0x%06x\n", new);
 		return false;
 	}
-
-	/* Other upgrade paths are not supported. */
-	printf("Cannot match an upgrade path from 0x%06x to 0x%06x\n", current, new);
-	return false;
 }
 
 /*
