@@ -23,6 +23,8 @@ struct rtk_upgrade_test_case {
 	{PDC_FWVER_TO_INT(0, 19, 1), PDC_FWVER_TO_INT(2, 0, 1), false},
 	{PDC_FWVER_TO_INT(0, 19, 1), PDC_FWVER_TO_INT(2, 1, 1), false},
 	{PDC_FWVER_TO_INT(0, 19, 1), PDC_FWVER_TO_INT(2, 2, 1), false},
+	/* Would fail due to config name scheme mismatch */
+	{PDC_FWVER_TO_INT(0, 19, 1), PDC_FWVER_TO_INT(16, 0, 1), false},
 
 	/* From == 0.20 */
 	{PDC_FWVER_TO_INT(0, 20, 1), PDC_FWVER_TO_INT(0, 19, 1), true},
@@ -35,6 +37,8 @@ struct rtk_upgrade_test_case {
 	{PDC_FWVER_TO_INT(0, 20, 1), PDC_FWVER_TO_INT(2, 0, 1), false},
 	{PDC_FWVER_TO_INT(0, 20, 1), PDC_FWVER_TO_INT(2, 1, 1), false},
 	{PDC_FWVER_TO_INT(0, 20, 1), PDC_FWVER_TO_INT(2, 2, 1), false},
+	/* Update to prod version OK */
+	{PDC_FWVER_TO_INT(0, 20, 1), PDC_FWVER_TO_INT(16, 0, 1), true},
 
 	/* From > 0.20 */
 	{PDC_FWVER_TO_INT(0, 21, 1), PDC_FWVER_TO_INT(0, 19, 1), true},
@@ -47,6 +51,8 @@ struct rtk_upgrade_test_case {
 	{PDC_FWVER_TO_INT(0, 21, 1), PDC_FWVER_TO_INT(2, 0, 1), false},
 	{PDC_FWVER_TO_INT(0, 21, 1), PDC_FWVER_TO_INT(2, 1, 1), false},
 	{PDC_FWVER_TO_INT(0, 21, 1), PDC_FWVER_TO_INT(2, 2, 1), false},
+	/* Update to prod version OK */
+	{PDC_FWVER_TO_INT(0, 21, 1), PDC_FWVER_TO_INT(16, 0, 1), true},
 
 	/* From < 1.22 */
 	{PDC_FWVER_TO_INT(1, 21, 1), PDC_FWVER_TO_INT(0, 19, 1), true},
@@ -59,6 +65,8 @@ struct rtk_upgrade_test_case {
 	{PDC_FWVER_TO_INT(1, 21, 1), PDC_FWVER_TO_INT(2, 0, 1), false},
 	{PDC_FWVER_TO_INT(1, 21, 1), PDC_FWVER_TO_INT(2, 1, 1), false},
 	{PDC_FWVER_TO_INT(1, 21, 1), PDC_FWVER_TO_INT(2, 2, 1), false},
+	/* Would fail due to config name scheme mismatch */
+	{PDC_FWVER_TO_INT(1, 21, 1), PDC_FWVER_TO_INT(16, 0, 1), false},
 
 	/* From == 1.22 */
 	{PDC_FWVER_TO_INT(1, 22, 1), PDC_FWVER_TO_INT(0, 19, 1), true},
@@ -71,6 +79,8 @@ struct rtk_upgrade_test_case {
 	{PDC_FWVER_TO_INT(1, 22, 1), PDC_FWVER_TO_INT(2, 0, 1), false},
 	{PDC_FWVER_TO_INT(1, 22, 1), PDC_FWVER_TO_INT(2, 1, 1), false},
 	{PDC_FWVER_TO_INT(1, 22, 1), PDC_FWVER_TO_INT(2, 2, 1), false},
+	/* Would fail due to config name scheme mismatch */
+	{PDC_FWVER_TO_INT(1, 22, 1), PDC_FWVER_TO_INT(16, 0, 1), false},
 
 	/* From > 1.22 */
 	{PDC_FWVER_TO_INT(1, 23, 1), PDC_FWVER_TO_INT(0, 19, 1), true},
@@ -83,6 +93,8 @@ struct rtk_upgrade_test_case {
 	{PDC_FWVER_TO_INT(1, 23, 1), PDC_FWVER_TO_INT(2, 0, 1), false},
 	{PDC_FWVER_TO_INT(1, 23, 1), PDC_FWVER_TO_INT(2, 1, 1), false},
 	{PDC_FWVER_TO_INT(1, 23, 1), PDC_FWVER_TO_INT(2, 2, 1), false},
+	/* Update to prod version OK */
+	{PDC_FWVER_TO_INT(1, 23, 1), PDC_FWVER_TO_INT(16, 0, 1), true},
 
 	/* From == 2.0 */
 	{PDC_FWVER_TO_INT(2, 0, 1), PDC_FWVER_TO_INT(0, 19, 1), true},
@@ -95,6 +107,8 @@ struct rtk_upgrade_test_case {
 	{PDC_FWVER_TO_INT(2, 0, 1), PDC_FWVER_TO_INT(2, 0, 1), false},
 	{PDC_FWVER_TO_INT(2, 0, 1), PDC_FWVER_TO_INT(2, 1, 1), false},
 	{PDC_FWVER_TO_INT(2, 0, 1), PDC_FWVER_TO_INT(2, 2, 1), false},
+	/* Update to prod version OK */
+	{PDC_FWVER_TO_INT(2, 0, 1), PDC_FWVER_TO_INT(16, 0, 1), true},
 
 	/* From == 2.1 */
 	{PDC_FWVER_TO_INT(2, 1, 1), PDC_FWVER_TO_INT(0, 19, 1), true},
@@ -107,6 +121,8 @@ struct rtk_upgrade_test_case {
 	{PDC_FWVER_TO_INT(2, 1, 1), PDC_FWVER_TO_INT(2, 0, 1), false},
 	{PDC_FWVER_TO_INT(2, 1, 1), PDC_FWVER_TO_INT(2, 1, 1), false},
 	{PDC_FWVER_TO_INT(2, 1, 1), PDC_FWVER_TO_INT(2, 2, 1), false},
+	/* Would fail due to config name scheme mismatch */
+	{PDC_FWVER_TO_INT(2, 1, 1), PDC_FWVER_TO_INT(16, 0, 1), false},
 
 	/* From == 2.2 */
 	{PDC_FWVER_TO_INT(2, 2, 1), PDC_FWVER_TO_INT(0, 19, 1), true},
@@ -119,6 +135,33 @@ struct rtk_upgrade_test_case {
 	{PDC_FWVER_TO_INT(2, 2, 1), PDC_FWVER_TO_INT(2, 0, 1), false},
 	{PDC_FWVER_TO_INT(2, 2, 1), PDC_FWVER_TO_INT(2, 1, 1), false},
 	{PDC_FWVER_TO_INT(2, 2, 1), PDC_FWVER_TO_INT(2, 2, 1), false},
+	/* Update to prod version OK */
+	{PDC_FWVER_TO_INT(2, 2, 1), PDC_FWVER_TO_INT(16, 0, 1), true},
+
+	/* Production FW */
+
+	/* Downgrade from prod to internal blocked */
+	{PDC_FWVER_TO_INT(16, 0, 1), PDC_FWVER_TO_INT(0, 0, 1), false},
+	{PDC_FWVER_TO_INT(16, 0, 1), PDC_FWVER_TO_INT(0, 20, 1), false},
+	{PDC_FWVER_TO_INT(16, 0, 1), PDC_FWVER_TO_INT(1, 0, 1), false},
+	{PDC_FWVER_TO_INT(16, 0, 1), PDC_FWVER_TO_INT(1, 22, 1), false},
+	{PDC_FWVER_TO_INT(16, 0, 1), PDC_FWVER_TO_INT(2, 0, 1), false},
+	{PDC_FWVER_TO_INT(16, 0, 1), PDC_FWVER_TO_INT(2, 2, 1), false},
+	{PDC_FWVER_TO_INT(16, 0, 1), PDC_FWVER_TO_INT(3, 0, 1), false},
+
+	/* Upgrade/downgrade within a major version OK */
+	{PDC_FWVER_TO_INT(16, 0, 1), PDC_FWVER_TO_INT(16, 0, 1), true},
+	{PDC_FWVER_TO_INT(16, 0, 1), PDC_FWVER_TO_INT(16, 1, 1), true},
+	{PDC_FWVER_TO_INT(16, 1, 1), PDC_FWVER_TO_INT(16, 0, 1), true},
+	{PDC_FWVER_TO_INT(16, 1, 1), PDC_FWVER_TO_INT(16, 1, 1), true},
+
+	/* Upgrading major version OK */
+	{PDC_FWVER_TO_INT(16, 0, 1), PDC_FWVER_TO_INT(17, 0, 1), true},
+	{PDC_FWVER_TO_INT(16, 1, 1), PDC_FWVER_TO_INT(17, 0, 1), true},
+
+	/* Downgrade major prod version blocked */
+	{PDC_FWVER_TO_INT(17, 0, 1), PDC_FWVER_TO_INT(16, 0, 1), false},
+	{PDC_FWVER_TO_INT(17, 1, 1), PDC_FWVER_TO_INT(16, 0, 1), false},
 };
 
 static void test_rtk_upgrade_compatibility(void **state)
