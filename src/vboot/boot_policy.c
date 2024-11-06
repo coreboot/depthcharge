@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <vb2_android_bootimg.h>
 
+#include "base/gpt.h"
 #include "base/string_utils.h"
 #include "boot/android_bootconfig_params.h"
 #include "boot/bootconfig.h"
@@ -202,6 +203,7 @@ static int fill_info_bootimg(struct boot_info *bi,
 /************************* Android GKI *******************************/
 #define ANDROID_GKI_BOOT_HDR_SIZE 4096
 #define ANDROID_BDEV_KEY_STR "androidboot.boot_devices"
+#define ANDROID_BOOT_PART_UUID_KEY_STR "androidboot.boot_part_uuid"
 #define ANDROID_BOOT_A_PART_NUM 13
 #define ANDROID_BOOT_B_PART_NUM 14
 #define ANDROID_SLOT_SUFFIX_KEY_STR "androidboot.slot_suffix"
@@ -359,6 +361,33 @@ static bool gki_is_recovery_boot(struct vb2_kernel_params *kparams)
 		printf("Unknown boot command, assume recovery boot is required\n");
 		return true;
 	}
+}
+
+static int add_android_boot_part_uuid(struct vb2_kernel_params *kparams,
+				      uintptr_t bootc_ramdisk_addr,
+				      size_t bootc_buffer_size)
+{
+	struct vendor_boot_img_hdr_v4 *vendor_hdr;
+	int bootconfig_size;
+	char guid_str[GUID_STRLEN];
+
+	vendor_hdr = (struct vendor_boot_img_hdr_v4 *)((uintptr_t)kparams->kernel_buffer +
+						       kparams->vendor_boot_offset);
+
+	guid_to_string(kparams->partition_guid, guid_str, ARRAY_SIZE(guid_str));
+	bootconfig_size = append_bootconfig_params(ANDROID_BOOT_PART_UUID_KEY_STR,
+						  guid_str,
+						  (void *)bootc_ramdisk_addr,
+						  vendor_hdr->bootconfig_size,
+						  bootc_buffer_size);
+	if (bootconfig_size < 0) {
+		printf("Cannot modify boot device for android GKI!\n");
+		return -1;
+	}
+
+	vendor_hdr->bootconfig_size = bootconfig_size;
+
+	return 0;
 }
 
 static bool gki_ramdisk_fragment_needed(struct vendor_ramdisk_table_entry_v4 *fragment,
@@ -520,6 +549,13 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 							      kparams->kernel_buffer_size -
 							      bootc_ramdisk_addr),
 						     recovery_boot) < 0)
+			return -1;
+
+		if (add_android_boot_part_uuid(kparams,
+					       bootc_ramdisk_addr,
+					       (size_t)(kparams->kernel_buffer +
+							kparams->kernel_buffer_size -
+							bootc_ramdisk_addr)) < 0)
 			return -1;
 
 		/* Update bootconfig offset within ramdisk */
