@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <vb2_android_bootimg.h>
 
+#include "base/gpt.h"
 #include "base/string_utils.h"
 #include "boot/bootconfig.h"
 #include "boot/commandline.h"
@@ -101,6 +102,7 @@ static int fill_info_multiboot(struct boot_info *bi,
 
 /************************* Android GKI *******************************/
 #define ANDROID_GKI_BOOT_HDR_SIZE 4096
+#define ANDROID_BOOT_PART_UUID_KEY_STR "androidboot.boot_part_uuid"
 #define ANDROID_BOOT_A_PART_NUM 13
 #define ANDROID_BOOT_B_PART_NUM 14
 #define ANDROID_SLOT_SUFFIX_KEY_STR "androidboot.slot_suffix"
@@ -174,6 +176,21 @@ static bool gki_is_recovery_boot(struct vb2_kernel_params *kparams)
 		printf("Unknown boot command, assume recovery boot is required\n");
 		return true;
 	}
+}
+
+static int add_android_boot_part_uuid(struct bootconfig *bc, const uint8_t *guid)
+{
+	char guid_str[GUID_STRLEN];
+	int ret;
+
+	guid_to_string(guid, guid_str, ARRAY_SIZE(guid_str));
+	ret = bootconfig_append_params(bc, ANDROID_BOOT_PART_UUID_KEY_STR, guid_str);
+	if (ret < 0) {
+		printf("Cannot modify boot device for android GKI!\n");
+		return -1;
+	}
+
+	return 0;
 }
 
 static bool gki_ramdisk_fragment_needed(struct vendor_ramdisk_table_entry_v4 *fragment,
@@ -320,6 +337,9 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 		if (ret < 0)
 			return ret;
 
+		ret = add_android_boot_part_uuid(&bc, kparams->partition_guid);
+		if (ret < 0)
+			return ret;
 	}
 
 	/* On init_boot there's no kernel, so ramdisk follows the header */
