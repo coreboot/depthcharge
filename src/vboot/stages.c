@@ -43,7 +43,7 @@
 #include "vboot/util/memory.h"
 
 /* Size of the buffer to convey cmdline properties to bootloader */
-#define KERNEL_CMDLINE_BUF_SIZE 1024
+#define KERNEL_CMDLINE_BUF_SIZE 3072
 
 _Static_assert(KERNEL_CMDLINE_BUF_SIZE < CONFIG_KERNEL_SIZE,
 	      "Command line buffer too big");
