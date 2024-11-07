@@ -16,6 +16,7 @@
  */
 
 #include "fastboot/fastboot.h"
+#include <libpayload.h>
 
 #include <stdlib.h>
 #include "die.h"
@@ -28,7 +29,7 @@ static char msg_buf[FASTBOOT_MSG_MAX];
 void fastboot_fail(fastboot_session_t *fb, const char *msg)
 {
 	int len = snprintf(msg_buf, FASTBOOT_MSG_MAX, "FAIL%s", msg);
-	fastboot_send(msg_buf, len + 1);
+	fb->transport->send_packet(fb, msg_buf, len + 1);
 }
 
 void fastboot_data(fastboot_session_t *fb, uint32_t bytes)
@@ -40,7 +41,7 @@ void fastboot_data(fastboot_session_t *fb, uint32_t bytes)
 	fb->state = DOWNLOAD;
 	// Send acknowledgement to host.
 	int len = snprintf(msg_buf, FASTBOOT_MSG_MAX, "DATA%08x", bytes);
-	fastboot_send(msg_buf, len + 1);
+	fb->transport->send_packet(fb, msg_buf, len + 1);
 }
 
 void fastboot_okay(fastboot_session_t *fb, const char *fmt, ...)
@@ -50,7 +51,7 @@ void fastboot_okay(fastboot_session_t *fb, const char *fmt, ...)
 	memcpy(msg_buf, "OKAY", 4);
 	int len = 4 + vsnprintf(&msg_buf[4], FASTBOOT_MSG_MAX - 4, fmt, ap);
 	va_end(ap);
-	fastboot_send(msg_buf, len + 1);
+	fb->transport->send_packet(fb, msg_buf, len + 1);
 }
 
 void fastboot_info(fastboot_session_t *fb, const char *fmt, ...)
@@ -60,10 +61,13 @@ void fastboot_info(fastboot_session_t *fb, const char *fmt, ...)
 	memcpy(msg_buf, "INFO", 4);
 	int len = 4 + vsnprintf(&msg_buf[4], FASTBOOT_MSG_MAX - 4, fmt, ap);
 	va_end(ap);
-	fastboot_send(msg_buf, len + 1);
+	fb->transport->send_packet(fb, msg_buf, len + 1);
 }
 
-void fastboot_succeed(fastboot_session_t *fb) { fastboot_send("OKAY", 5); }
+void fastboot_succeed(fastboot_session_t *fb)
+{
+	fb->transport->send_packet(fb, "OKAY", 5);
+}
 
 bool fastboot_is_finished(fastboot_session_t *fb)
 {
@@ -160,8 +164,56 @@ void fastboot_handle_packet(fastboot_session_t *fb, void *data, uint64_t len)
 	}
 }
 
+void fastboot_reset_session(fastboot_session_t *fb)
+{
+	struct fastboot_transport *transport = fb->transport;
+
+	memset(fb, 0, sizeof(struct fastboot_session));
+
+	fb->transport = transport;
+	if (transport->reset)
+		transport->reset(fb);
+}
+
 void fastboot(void)
 {
-	if (CONFIG(FASTBOOT_TCP))
-		fastboot_over_tcp();
+	struct fastboot_session fb_session;
+	struct fastboot_transport *transport = NULL;
+
+	/* TODO(b/370988331): Replace this with actual UI */
+	video_init();
+	video_console_clear();
+	/* Print red "Fastboot" on the top */
+	video_console_set_cursor(0, 0);
+	video_printf(1, 0, VIDEO_PRINTF_ALIGN_LEFT, "Fastboot\n");
+
+	if (CONFIG(FASTBOOT_TCP)) {
+		video_console_set_cursor(0, 1);
+		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for network");
+		transport = fastboot_setup_tcp();
+		if (transport) {
+			video_console_set_cursor(0, 1);
+			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Network connected");
+		}
+	}
+
+	if (transport == NULL) {
+		video_console_set_cursor(0, 1);
+		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "No fastboot device");
+		return;
+	}
+
+	fb_session.transport = transport;
+	fastboot_reset_session(&fb_session);
+
+	printf("fastboot starting.\n");
+	while (!fastboot_is_finished(&fb_session))
+		fb_session.transport->poll(&fb_session);
+
+	printf("fastboot done.\n");
+	if (fb_session.transport->release)
+		fb_session.transport->release(&fb_session);
+
+	if (fb_session.state == REBOOT)
+		reboot();
 }

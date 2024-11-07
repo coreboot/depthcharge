@@ -82,7 +82,7 @@ static void fastboot_tcp_reset_session(struct fastboot_tcp_session *tcp)
 	}
 
 	// Reset everything to its initial state.
-	memset(tcp, 0, sizeof(*tcp));
+	fastboot_reset_session(tcp->fb_session);
 }
 
 // Send a single packet from the packet queue if we can.
@@ -124,7 +124,7 @@ static bool fastboot_tcp_is_valid_conn(struct fastboot_tcp_session *tcp)
 }
 
 // Send some data. This is used by the protocol-layer code in fastboot.c
-void fastboot_send(void *data, uint64_t datalen)
+int fastboot_tcp_send(struct fastboot_session *fb, void *data, uint16_t datalen)
 {
 	uint64_t size = htobe64(datalen);
 	void *packet_data = xmalloc(sizeof(size) + datalen);
@@ -135,7 +135,9 @@ void fastboot_send(void *data, uint64_t datalen)
 	memset(p, 0, sizeof(*p));
 	p->data = packet_data;
 	p->len = datalen + sizeof(size);
-	fastboot_tcp_txq_append(&tcp_session, p);
+	fastboot_tcp_txq_append((struct fastboot_tcp_session *)fb->transport->data, p);
+
+	return 0;
 }
 
 /******************** PROTOCOL HANDLING *******************/
@@ -191,7 +193,7 @@ static void fastboot_tcp_recv(struct fastboot_tcp_session *tcp, char *buf,
 			 expected_length, available, datalen);
 		tcp->data_left_to_receive = expected_length - available;
 		tcp->state = PACKET_INCOMPLETE;
-		if (tcp->fb_session.state != DOWNLOAD) {
+		if (tcp->fb_session->state != DOWNLOAD) {
 			// TODO(simonshields): this means that the packet we
 			// received was smaller than 68 bytes. Do we need to
 			// handle this?
@@ -203,7 +205,7 @@ static void fastboot_tcp_recv(struct fastboot_tcp_session *tcp, char *buf,
 		}
 	}
 
-	if (tcp->fb_session.state == DOWNLOAD) {
+	if (tcp->fb_session->state == DOWNLOAD) {
 		FB_TRACE_IO("[from host] %llu/%llu bytes\n", available,
 			    tcp->data_left_to_receive);
 	} else {
@@ -211,7 +213,7 @@ static void fastboot_tcp_recv(struct fastboot_tcp_session *tcp, char *buf,
 	}
 	buf += sizeof(expected_length);
 
-	fastboot_handle_packet(&tcp->fb_session, buf, MIN(available, expected_length));
+	fastboot_handle_packet(tcp->fb_session, buf, MIN(available, expected_length));
 
 	if (available > expected_length) {
 		FB_DEBUG("handle leftover data (datalen %llu, available %llu, expected %llu)\n",
@@ -234,12 +236,12 @@ static void fastboot_tcp_recv_incomplete(struct fastboot_tcp_session *tcp)
 		FB_DEBUG("got too much data! (%u received, expecting only "
 			 "%llu, read %llu, underlying session wanted %llu)\n",
 			 uip_datalen(), tcp->data_left_to_receive,
-			 tcp->fb_session.download_progress,
-			 tcp->fb_session.download_len);
+			 tcp->fb_session->download_progress,
+			 tcp->fb_session->download_len);
 		data_to_handle = tcp->data_left_to_receive;
 	}
 	tcp->data_left_to_receive -= data_to_handle;
-	fastboot_handle_packet(&tcp->fb_session, uip_appdata, data_to_handle);
+	fastboot_handle_packet(tcp->fb_session, uip_appdata, data_to_handle);
 	if (tcp->data_left_to_receive == 0) {
 		tcp->state = WAIT_FOR_PACKET;
 	}
@@ -317,15 +319,35 @@ static void fastboot_tcp_net_callback(void)
 	fastboot_tcp_send_packet(tcp);
 }
 
-void fastboot_over_tcp(void)
+static void fastboot_tcp_reset(struct fastboot_session *fb)
 {
-	/* TODO(b/370988331): Replace this with actual UI */
-	video_init();
-	video_console_clear();
-	/* Print red "Fastboot" on the top */
-	video_console_set_cursor(0, 0);
-	video_printf(1, 0, VIDEO_PRINTF_ALIGN_LEFT, "Fastboot\n");
+	struct fastboot_tcp_session *tcp = (struct fastboot_tcp_session *)fb->transport->data;
 
+	memset(tcp, 0, sizeof(tcp_session));
+
+	tcp->fb_session = fb;
+}
+
+static void fastboot_tcp_poll(struct fastboot_session *fb)
+{
+	net_poll();
+}
+
+static void fastboot_tcp_release(struct fastboot_session *fb)
+{
+	net_set_callback(NULL);
+}
+
+struct fastboot_transport net_fastboot_transport_layer = {
+	.poll = fastboot_tcp_poll,
+	.send_packet = fastboot_tcp_send,
+	.reset = fastboot_tcp_reset,
+	.release = fastboot_tcp_release,
+	.data = &tcp_session,
+};
+
+struct fastboot_transport *fastboot_setup_tcp(void)
+{
 	net_wait_for_link();
 
 	// Set up the network stack.
@@ -337,18 +359,13 @@ void fastboot_over_tcp(void)
 		printf("Dhcp failed, retrying.\n");
 	uip_gethostaddr(&my_ip);
 
+	video_console_set_cursor(0, 2);
 	video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "IP: %d.%d.%d.%d\n",
 		     uip_ipaddr_to_quad(&my_ip));
 
-	memset(&tcp_session, 0, sizeof(tcp_session));
-	printf("fastboot starting.\n");
 	uip_listen(uip_htons(FASTBOOT_PORT));
 
 	net_set_callback(fastboot_tcp_net_callback);
-	while (!fastboot_is_finished(&tcp_session.fb_session))
-		net_poll();
-	net_set_callback(NULL);
-	printf("fastboot done.\n");
-	if (tcp_session.fb_session.state == REBOOT)
-		reboot();
+
+	return &net_fastboot_transport_layer;
 }

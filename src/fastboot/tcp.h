@@ -39,7 +39,7 @@ enum fastboot_tcp_state {
 
 struct fastboot_tcp_session {
 	// Transport-agnostic fastboot session information.
-	struct fastboot_session fb_session;
+	struct fastboot_session *fb_session;
 	// Current state of this session.
 	enum fastboot_tcp_state state;
 	// Details about the remote end of the connection.
@@ -67,7 +67,6 @@ struct fastboot_tcp_packet {
 	struct list_node node;
 };
 
-void fastboot_send(void *data, uint64_t len);
-void fastboot_over_tcp(void);
+struct fastboot_transport *fastboot_setup_tcp(void);
 
 #endif // __FASTBOOT_TCP_H__
