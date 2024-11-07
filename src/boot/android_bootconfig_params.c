@@ -2,6 +2,7 @@
 
 #include <libpayload.h>
 #include <vb2_android_bootimg.h>
+#include <vb2_api.h>
 
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
@@ -10,6 +11,7 @@
 #include "boot/bootconfig.h"
 #include "boot/commandline.h"
 #include "vboot/boot_policy.h"
+#include "vboot/util/commonparams.h"
 
 #define SERIAL_NUM_KEY_STR "androidboot.serialno"
 #define MAX_SERIAL_NUM_LENGTH CB_MAX_SERIALNO_LENGTH
@@ -20,6 +22,21 @@
 
 #define DISPLAY_ORIENTATION_KEY_STR "androidboot.surface_flinger.primary_display_orientation"
 #define MAX_DISPLAY_ORIENTATION_LENGTH sizeof("ORIENTATION_xxx")
+
+#define HWID_KEY_STR "androidboot.product.hardware.id"
+
+static int append_hwid(void *bootc_start, size_t bootc_size, size_t buf_size)
+{
+	char hwid[VB2_GBB_HWID_MAX_SIZE];
+	uint32_t hwid_size = sizeof(hwid);
+
+	if (vb2api_gbb_read_hwid(vboot_get_context(), hwid, &hwid_size)) {
+		printf("No HWID in GBB\n");
+		return -1;
+	}
+	return append_bootconfig_params(HWID_KEY_STR, hwid,
+					bootc_start, bootc_size, buf_size);
+}
 
 static int append_serial_num(void *bootc_start, size_t bootc_size, size_t buf_size)
 {
@@ -69,6 +86,7 @@ enum bootconfig_param_index {
 	SERIAL_NUM,
 	BOOTTIME,
 	DISPLAY_ORIENTATION,
+	HWID,
 };
 
 static struct {
@@ -89,6 +107,11 @@ static struct {
 	[DISPLAY_ORIENTATION] = {
 		.name = DISPLAY_ORIENTATION_KEY_STR,
 		.append = append_display_orientation,
+		.exists = false,
+	},
+	[HWID] = {
+		.name = HWID_KEY_STR,
+		.append = append_hwid,
 		.exists = false,
 	},
 };
