@@ -22,3 +22,9 @@ config FASTBOOT_TCP
 	default y
 	help
 	  Enable this to include code for fastboot over TCP.
+
+config FASTBOOT_USB_ALINK
+	bool "Enable fastboot over USB ALink cable"
+	default y
+	help
+	  Enable this to include code for fastboot over USB ALink cable.
