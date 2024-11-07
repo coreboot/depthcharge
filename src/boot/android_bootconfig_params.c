@@ -2,6 +2,8 @@
 
 #include <inttypes.h>
 #include <libpayload.h>
+#include <lp_vboot.h>
+#include <vb2_api.h>
 
 #include "base/cleanup_funcs.h"
 #include "base/gpt.h"
@@ -9,6 +11,20 @@
 #include "base/vpd_util.h"
 #include "boot/android_bootconfig_params.h"
 #include "boot/bootconfig.h"
+
+#define HWID_KEY_STR "androidboot.product.hardware.id"
+
+static int append_hwid(struct bootconfig *bc)
+{
+	char hwid[VB2_GBB_HWID_MAX_SIZE];
+	uint32_t hwid_size = sizeof(hwid);
+
+	if (vb2api_gbb_read_hwid(vboot_get_context(), hwid, &hwid_size)) {
+		printf("Failed to read HWID in GBB\n");
+		return -1;
+	}
+	return bootconfig_append(bc, HWID_KEY_STR, hwid);
+}
 
 #define SERIAL_NUM_KEY_STR "androidboot.serialno"
 #define MAX_SERIAL_NUM_LENGTH CB_MAX_SERIALNO_LENGTH
@@ -69,7 +85,8 @@ static int append_boot_part_uuid(struct bootconfig *bc, struct vb2_kernel_params
 
 int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_params *kp)
 {
-	return append_serial_num(bc, kp) ||
+	return append_hwid(bc) ||
+	       append_serial_num(bc, kp) ||
 	       append_display_orientation(bc, kp) ||
 	       append_boot_part_uuid(bc, kp);
 }
