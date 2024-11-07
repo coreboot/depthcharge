@@ -23,6 +23,7 @@
 #include "fastboot/cmd.h"
 #include "fastboot/fastboot.h"
 #include "fastboot/tcp.h"
+#include "fastboot/usb.h"
 #include "image/symbols.h"
 #include "stdarg.h"
 
@@ -188,7 +189,17 @@ void fastboot(void)
 	video_console_set_cursor(0, 0);
 	video_printf(1, 0, VIDEO_PRINTF_ALIGN_LEFT, "Fastboot\n");
 
-	if (CONFIG(FASTBOOT_TCP)) {
+	if (CONFIG(FASTBOOT_USB_ALINK)) {
+		video_console_set_cursor(0, 1);
+		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for USB");
+		fb_session = fastboot_setup_usb();
+		if (fb_session) {
+			video_console_set_cursor(0, 1);
+			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "USB connected");
+		}
+	}
+
+	if (CONFIG(FASTBOOT_TCP) && fb_session == NULL) {
 		video_console_set_cursor(0, 1);
 		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for network");
 		fb_session = fastboot_setup_tcp();
