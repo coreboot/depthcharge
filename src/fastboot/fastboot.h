@@ -55,6 +55,8 @@ enum fastboot_state {
 	REBOOT,
 };
 
+struct fastboot_transport;
+
 // State of a fastboot session.
 typedef struct fastboot_session {
 	// State of the session.
@@ -67,7 +69,29 @@ typedef struct fastboot_session {
 	uint64_t download_len;
 	// If state == DOWNLOAD, how much data have we received?
 	uint64_t download_progress;
+	// Fastboot transport layer used for this session
+	struct fastboot_transport *transport;
 } fastboot_session_t;
+
+/* Set of functions that abstract fastboot transport layer */
+struct fastboot_transport {
+	/*
+	 * Poll for new fastboot messages. This function should call
+	 * fastboot_handle_packet(). This function is required.
+	 */
+	void (*poll)(struct fastboot_session *fb);
+	/* Send fastboot response. This function is required. */
+	int (*send_packet)(struct fastboot_session *fb, void *buf, uint16_t len);
+	/* Called on fastboot_reset_session(). This function is optional. */
+	void (*reset)(struct fastboot_session *fb);
+	/*
+	 * Called on fastboot exit. After this function, any function from
+	 * fastboot_transport shouldn't be called. This function is optional.
+	 */
+	void (*release)(struct fastboot_session *fb);
+	/* Pointer for internal data of fastboot_transport */
+	void *data;
+};
 
 // Have we exited fastboot? (e.g. user ran `fastboot continue`)
 bool fastboot_is_finished(fastboot_session_t *fb);
@@ -77,6 +101,8 @@ void fastboot_handle_packet(fastboot_session_t *fb, void *data, uint64_t len);
 void fastboot(void);
 // Get the download buffer and the length of the download if a download exists.
 void *fastboot_get_download_buffer(fastboot_session_t *fb, uint64_t *len);
+// Reset fastboot session to initial state.
+void fastboot_reset_session(fastboot_session_t *fb);
 
 // Responses to the client.
 void fastboot_fail(fastboot_session_t *fb, const char *msg);
