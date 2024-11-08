@@ -19,6 +19,7 @@
 #include <libpayload.h>
 #include <stdint.h>
 
+#include "base/gpt.h"
 #include "boot/commandline.h"
 
 typedef struct {
@@ -33,37 +34,6 @@ static char *itoa(char *dest, int val)
 	if (val > 9)
 		*dest++ = '0' + val / 10;
 	*dest++ = '0' + val % 10;
-	return dest;
-}
-
-static void one_byte(char *dest, uint8_t val)
-{
-	dest[0] = "0123456789abcdef"[(val >> 4) & 0x0F];
-	dest[1] = "0123456789abcdef"[val & 0x0F];
-}
-
-static char *emit_guid(char *dest, uint8_t *guid)
-{
-	one_byte(dest, guid[3]); dest += 2;
-	one_byte(dest, guid[2]); dest += 2;
-	one_byte(dest, guid[1]); dest += 2;
-	one_byte(dest, guid[0]); dest += 2;
-	*dest++ = '-';
-	one_byte(dest, guid[5]); dest += 2;
-	one_byte(dest, guid[4]); dest += 2;
-	*dest++ = '-';
-	one_byte(dest, guid[7]); dest += 2;
-	one_byte(dest, guid[6]); dest += 2;
-	*dest++ = '-';
-	one_byte(dest, guid[8]); dest += 2;
-	one_byte(dest, guid[9]); dest += 2;
-	*dest++ = '-';
-	one_byte(dest, guid[10]); dest += 2;
-	one_byte(dest, guid[11]); dest += 2;
-	one_byte(dest, guid[12]); dest += 2;
-	one_byte(dest, guid[13]); dest += 2;
-	one_byte(dest, guid[14]); dest += 2;
-	one_byte(dest, guid[15]); dest += 2;
 	return dest;
 }
 
@@ -149,9 +119,8 @@ int commandline_subst(const char *src, char *dest, size_t dest_size,
 			dest = itoa(dest, partnum);
 			break;
 		case 'U':
-			/* GUID replacement needs 36 bytes */
-			CHECK_SPACE(36 + 1);
-			dest = emit_guid(dest, info->guid);
+			CHECK_SPACE(GUID_STRLEN);
+			dest = guid_to_string(info->guid, dest, GUID_STRLEN);
 			break;
 		case 'R':
 			/*
@@ -176,10 +145,10 @@ int commandline_subst(const char *src, char *dest, size_t dest_size,
 					end[] = "/PARTNROFF=1";
 				size_t start_size = sizeof(start) - 1,
 					end_size = sizeof(end) - 1;
-				CHECK_SPACE(start_size + 36 + 1 + end_size);
+				CHECK_SPACE(start_size + GUID_STRLEN + end_size);
 				memcpy(dest, start, start_size);
 				dest += start_size;
-				dest = emit_guid(dest, info->guid);
+				dest = guid_to_string(info->guid, dest, GUID_STRLEN);
 				memcpy(dest, end, end_size);
 				dest += end_size;
 			}
