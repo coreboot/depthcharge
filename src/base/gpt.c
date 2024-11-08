@@ -50,3 +50,40 @@ void free_gpt(BlockDev *bdev, GptData *gpt)
 	WriteAndFreeGptData(bdev, gpt);
 	free(gpt);
 }
+
+static void one_byte(char *dest, uint8_t val)
+{
+	dest[0] = "0123456789abcdef"[(val >> 4) & 0x0F];
+	dest[1] = "0123456789abcdef"[val & 0x0F];
+}
+
+char *guid_to_string(const uint8_t *guid, char *dest, size_t dest_size)
+{
+	if (dest_size < GUID_STRLEN)
+		return NULL;
+
+	one_byte(dest, guid[3]); dest += 2;
+	one_byte(dest, guid[2]); dest += 2;
+	one_byte(dest, guid[1]); dest += 2;
+	one_byte(dest, guid[0]); dest += 2;
+	*dest++ = '-';
+	one_byte(dest, guid[5]); dest += 2;
+	one_byte(dest, guid[4]); dest += 2;
+	*dest++ = '-';
+	one_byte(dest, guid[7]); dest += 2;
+	one_byte(dest, guid[6]); dest += 2;
+	*dest++ = '-';
+	one_byte(dest, guid[8]); dest += 2;
+	one_byte(dest, guid[9]); dest += 2;
+	*dest++ = '-';
+	one_byte(dest, guid[10]); dest += 2;
+	one_byte(dest, guid[11]); dest += 2;
+	one_byte(dest, guid[12]); dest += 2;
+	one_byte(dest, guid[13]); dest += 2;
+	one_byte(dest, guid[14]); dest += 2;
+	one_byte(dest, guid[15]); dest += 2;
+
+	*dest = '\0';
+
+	return dest;
+}

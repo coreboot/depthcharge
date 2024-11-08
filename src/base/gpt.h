@@ -34,4 +34,18 @@ GptData *alloc_gpt(BlockDev *bdev);
 /* Free the allocated GPT pointer. */
 void free_gpt(BlockDev *bdev, GptData *gpt);
 
+/*
+ * Write a GUID to a string.
+ *
+ * The GUID will be 36 characters long and '\0' terminated. It will look like:
+ *   12345678-9abc-def0-1234-56789abcdef0
+ *
+ * If the destination string is not big enough to hold 36 characters (plus
+ * '\0' termination) then we'll return NULL
+ *
+ * Returns a pointer to the '\0' character at the end of the string or NULL
+ * if there was not enough room.
+ */
+char *guid_to_string(const uint8_t *guid, char *dest, size_t dest_size);
+
 #endif /* __BASE_GPT_H__ */
