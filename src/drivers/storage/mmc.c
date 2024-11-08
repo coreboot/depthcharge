@@ -1507,64 +1507,6 @@ lba_t block_mmc_erase(BlockDevOps *me, lba_t start, lba_t count)
 	return count;
 }
 
-lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
-			   uint32_t fill_pattern)
-{
-	if (block_mmc_setup(me, start, count, 0) == 0)
-		return 0;
-
-	MmcMedia *media = mmc_media(me);
-	MmcCtrlr *ctrlr = mmc_ctrlr(media);
-	uint64_t block_size = media->dev.block_size;
-	/*
-	 * We allocate max 4 MiB buffer on heap and set it to fill_pattern and
-	 * perform mmc_write operation using this 4MiB buffer until requested
-	 * size on disk is written by the fill byte.
-	 *
-	 * 4MiB was chosen after repeating several experiments with the max
-	 * buffer size to be used. Using 1 lba i.e. block_size buffer results in
-	 * very large fill_write time. On the other hand, choosing 4MiB, 8MiB or
-	 * even 128 Mib resulted in similar write times. With 2MiB, the
-	 * fill_write time increased by several seconds. So, 4MiB was chosen as
-	 * the default max buffer size.
-	 */
-	lba_t heap_lba = (4 * MiB) / block_size;
-	/*
-	 * Actual allocated buffer size is minimum of three entities:
-	 * 1) 4MiB equivalent in lba
-	 * 2) count: Number of lbas to overwrite
-	 * 3) ctrlr->b_max: Max lbas that the block device allows write
-	 * operation on at a time.
-	 */
-	lba_t buffer_lba = MIN(MIN(heap_lba, count), ctrlr->b_max);
-
-	uint64_t buffer_bytes = buffer_lba * block_size;
-	uint64_t buffer_words = buffer_bytes / sizeof(uint32_t);
-	uint32_t *buffer = xmemalign(ARCH_DMA_MINALIGN, buffer_bytes);
-	uint32_t *ptr = buffer;
-
-	for ( ; buffer_words ; buffer_words--)
-		*ptr++ = fill_pattern;
-
-	lba_t todo = count;
-	int ret = 0;
-
-	do {
-		lba_t curr_lba = MIN(buffer_lba, todo);
-
-		if (mmc_write(media, start, curr_lba, buffer) != curr_lba)
-			goto cleanup;
-		todo -= curr_lba;
-		start += curr_lba;
-	} while (todo > 0);
-
-	ret = count;
-
- cleanup:
-	free(buffer);
-	return ret;
-}
-
 int block_mmc_get_health_info(BlockDevOps *me, HealthInfo *health)
 {
 	MmcMedia *media = mmc_media(me);

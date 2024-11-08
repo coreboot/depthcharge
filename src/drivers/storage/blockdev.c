@@ -21,6 +21,8 @@
 #include <libpayload.h>
 #include <stdio.h>
 
+#include "drivers/storage/bouncebuf.h"
+
 ListNode fixed_block_devices;
 ListNode removable_block_devices;
 
@@ -82,6 +84,60 @@ StreamOps *new_simple_stream(BlockDevOps *me, lba_t start, lba_t count)
 	/* Check that block size is a power of 2 */
 	assert((blockdev->block_size & (blockdev->block_size - 1)) == 0);
 	return &stream->stream;
+}
+
+lba_t blockdev_fill_write(BlockDevOps *me, lba_t start, lba_t count, uint32_t fill_pattern)
+{
+	BlockDev *blockdev = (BlockDev *)me;
+	const uint32_t block_size = blockdev->block_size;
+
+	if (count <= 0)
+		/* Nothing to fill */
+		return 0;
+
+	/*
+	 * We allocate max 4 MiB buffer on heap and set it to fill_pattern and
+	 * perform write operation using this 4MiB buffer until requested
+	 * size on disk is written by the fill byte.
+	 *
+	 * 4MiB was chosen after repeating several experiments on MMC with the max
+	 * buffer size to be used. Using 1 lba i.e. block_size buffer results in
+	 * very large fill_write time. On the other hand, choosing 4MiB, 8MiB or
+	 * even 128 Mib resulted in similar write times. With 2MiB, the
+	 * fill_write time increased by several seconds. So, 4MiB was chosen as
+	 * the default max buffer size.
+	 */
+	const lba_t heap_blocks = (4 * MiB) / block_size;
+	const lba_t buffer_blocks = MIN(heap_blocks, count);
+	lba_t todo = count;
+
+	const uint64_t buffer_bytes = buffer_blocks * block_size;
+	uint64_t buffer_words = buffer_bytes / sizeof(uint32_t);
+	uint32_t *buffer = xmemalign(ARCH_DMA_MINALIGN, buffer_bytes);
+	uint32_t *ptr = buffer;
+
+	if (buffer == NULL) {
+		printf("%s: cannot allocate buffer\n", __func__);
+		return 0;
+	}
+
+	while (buffer_words--)
+		*ptr++ = fill_pattern;
+
+	lba_t blocks_to_write;
+	lba_t done;
+
+	do {
+		blocks_to_write = MIN(buffer_blocks, todo);
+		done = me->write(me, start, blocks_to_write, buffer);
+
+		todo -= done;
+		start += done;
+	} while (todo > 0 && done == blocks_to_write);
+
+	free(buffer);
+
+	return count - todo;
 }
 
 int get_all_bdevs(blockdev_type_t type, ListNode **bdevs)
