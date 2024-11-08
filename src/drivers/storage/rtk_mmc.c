@@ -1331,7 +1331,6 @@ static int rtk_update(BlockDevCtrlrOps *me)
 		host->mmc_ctrlr.slot_type == MMC_SLOT_TYPE_REMOVABLE;
 	host->mmc_ctrlr.media->dev.ops.read = block_mmc_read;
 	host->mmc_ctrlr.media->dev.ops.write = block_mmc_write;
-	host->mmc_ctrlr.media->dev.ops.fill_write = block_mmc_fill_write;
 	host->mmc_ctrlr.media->dev.ops.new_stream = new_simple_stream;
 	host->mmc_ctrlr.media->dev.ops.get_health_info =
 		block_mmc_get_health_info;

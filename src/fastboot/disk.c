@@ -166,9 +166,8 @@ void fastboot_erase(fastboot_session_t *fb, struct fastboot_disk *disk,
 	lba_t space = GptGetEntrySizeLba(e);
 	if ((disk->disk->ops.erase == NULL) ||
 	    disk->disk->ops.erase(&disk->disk->ops, e->starting_lba, space)) {
-		if (disk->disk->ops.fill_write(&disk->disk->ops,
-					       e->starting_lba, space,
-					       0xffffffff) != space) {
+		if (blockdev_fill_write(&disk->disk->ops, e->starting_lba, space,
+					0xffffffff) != space) {
 			fastboot_fail(fb, "Failed to erase");
 			return;
 		}

@@ -373,8 +373,6 @@ static int dwmci_update(BlockDevCtrlrOps *me)
 			host->mmc.media->dev.ops.read = &block_mmc_read;
 			host->mmc.media->dev.ops.write = &block_mmc_write;
 			host->mmc.media->dev.ops.erase = &block_mmc_erase;
-			host->mmc.media->dev.ops.fill_write =
-				&block_mmc_fill_write;
 			host->mmc.media->dev.ops.new_stream =
 						&new_simple_stream;
 			host->mmc.media->dev.ops.get_health_info =
@@ -395,8 +393,6 @@ static int dwmci_update(BlockDevCtrlrOps *me)
 		host->mmc.media->dev.ops.read = &block_mmc_read;
 		host->mmc.media->dev.ops.write = &block_mmc_write;
 		host->mmc.media->dev.ops.erase = &block_mmc_erase;
-		host->mmc.media->dev.ops.fill_write =
-			&block_mmc_fill_write;
 		host->mmc.media->dev.ops.new_stream = &new_simple_stream;
 		host->mmc.media->dev.ops.get_health_info =
 			block_mmc_get_health_info;

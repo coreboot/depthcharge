@@ -38,8 +38,6 @@ typedef struct BlockDevOps {
 		      void *buffer);
 	lba_t (*write)(struct BlockDevOps *me, lba_t start, lba_t count,
 		       const void *buffer);
-	lba_t (*fill_write)(struct BlockDevOps *me, lba_t start, lba_t count,
-			    uint32_t fill_pattern);
 	lba_t (*erase)(struct BlockDevOps *me, lba_t start, lba_t count);
 	StreamOps *(*new_stream)(struct BlockDevOps *me, lba_t start,
 				 lba_t count);
@@ -101,5 +99,12 @@ typedef enum {
 } blockdev_type_t;
 
 int get_all_bdevs(blockdev_type_t type, ListNode **bdevs);
+
+/*
+ * Fill 'count' blocks from 'start' with repeated 'fill_pattern'.
+ * It creates up to 4MiB buffer with 'fill_pattern' and then calls
+ * write function in the loop.
+ */
+lba_t blockdev_fill_write(BlockDevOps *me, lba_t start, lba_t count, uint32_t fill_pattern);
 
 #endif /* __DRIVERS_STORAGE_BLOCKDEV_H__ */

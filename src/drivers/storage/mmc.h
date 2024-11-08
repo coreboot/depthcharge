@@ -392,8 +392,6 @@ lba_t block_mmc_read(BlockDevOps *me, lba_t start, lba_t count, void *buffer);
 lba_t block_mmc_write(BlockDevOps *me, lba_t start, lba_t count,
 		      const void *buffer);
 lba_t block_mmc_erase(BlockDevOps *me, lba_t start, lba_t count);
-lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
-			   uint32_t fill_pattern);
 int block_mmc_get_health_info(BlockDevOps *me, struct HealthInfo *health);
 int block_mmc_is_bdev_owned(BlockDevCtrlrOps *me, BlockDev *bdev);
 
