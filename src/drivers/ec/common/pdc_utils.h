@@ -1,6 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /* Copyright 2024 Google LLC.  */
 
+#ifndef __DRIVERS_EC_COMMON_PDC_UTILS_H__
+#define __DRIVERS_EC_COMMON_PDC_UTILS_H__
+
 /** Type for storing a 3-byte PDC FW version tuple. Bits 23:16 = Major,
  *  15:8 = Minor, 7:0 = Patch versions. Simplifies comparisons of two
  *  version values.
@@ -21,3 +24,6 @@ typedef uint32_t pdc_fw_ver_t;
 #define PDC_FWVER_TYPE_RELEASE (0)
 #define PDC_FWVER_TYPE_TEST (1)
 #define PDC_FWVER_TYPE_BASE (2)
+#define PDC_FWVER_TYPE_PROD_MASK (0xF0)
+
+#endif /* __DRIVERS_EC_COMMON_PDC_UTILS_H__ */
