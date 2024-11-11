@@ -15,6 +15,9 @@
  * GNU General Public License for more details.
  */
 
+#ifndef __BASE_GPT_H__
+#define __BASE_GPT_H__
+
 /* Headers from vboot for GPT manipulation. */
 #include <gpt.h>
 #include <gpt_misc.h>

@@ -1,5 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 
+#ifndef __TESTS__MOCKS__CALLBACKS_H__
+#define __TESTS__MOCKS__CALLBACKS_H__
+
 #define FIRMWARE_LOG_BUFFER_LEN 16
 
 extern uint32_t mock_time_ms;
@@ -10,3 +13,5 @@ extern uint32_t mock_time_ms;
  */
 extern char firmware_log_buf[FIRMWARE_LOG_BUFFER_LEN];
 extern int firmware_log_snapshots_count;
+
+#endif /* __TESTS__MOCKS__CALLBACKS_H__ */

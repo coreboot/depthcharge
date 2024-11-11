@@ -12,6 +12,9 @@
  * GNU General Public License for more details.
  */
 
+#ifndef __DRIVERS_SOUND_GPIO_I2S_H__
+#define __DRIVERS_SOUND_GPIO_I2S_H__
+
 #include <stdbool.h>
 
 #include "drivers/gpio/gpio.h"
@@ -45,3 +48,5 @@ typedef struct GpioI2s {
 GpioI2s *new_gpio_i2s(GpioOps *bclk_gpio, GpioOps *sfrm_gpio,
 		      GpioOps *data_gpio, uint16_t sample_rate,
 		      uint8_t channels, int16_t volume, bool sync);
+
+#endif /* __DRIVERS_SOUND_GPIO_I2S_H__ */
