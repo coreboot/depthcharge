@@ -12,7 +12,7 @@
 
 config FASTBOOT_IN_PROD
 	bool "Enable fastboot in production (default depthcharge binary)"
-	default n
+	default y
 	help
 	  Enable this to compile in support for fastboot into default depthcharge
 	  binary. If disabled, fastboot is still available in developer builds.
