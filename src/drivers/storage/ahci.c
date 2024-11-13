@@ -341,7 +341,7 @@ static lba_t ahci_read(BlockDevOps *me, lba_t start, lba_t count, void *buffer)
 	SataDrive *drive = container_of(me, SataDrive, dev.ops);
 	if (ahci_read_write(drive, start, count, buffer, 0)) {
 		printf("AHCI: Read failed.\n");
-		return -1;
+		return 0;
 	}
 	return count;
 }
@@ -352,7 +352,7 @@ static lba_t ahci_write(BlockDevOps *me, lba_t start, lba_t count,
 	SataDrive *drive = container_of(me, SataDrive, dev.ops);
 	if (ahci_read_write(drive, start, count, (void *)buffer, 1)) {
 		printf("AHCI: Write failed.\n");
-		return -1;
+		return 0;
 	}
 	return count;
 }
