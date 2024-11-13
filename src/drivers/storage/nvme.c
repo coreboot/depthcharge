@@ -535,7 +535,7 @@ out:
 	      block_size, status);
 
 	if (NVME_ERROR(status))
-		return -1;
+		return 0;
 	else
 		return orig_count - count;
 }
