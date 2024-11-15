@@ -9,6 +9,22 @@
 
 #define EC_PCH_INT_ODL		GPP_B05
 
+const struct audio_config *variant_probe_audio_config(void)
+{
+	static struct audio_config config;
+
+	config = (struct audio_config){
+		.bus = {
+			.type = AUDIO_HDA,
+		},
+		.codec = {
+			.type = AUDIO_ALC256,
+		},
+	};
+
+	return &config;
+}
+
 int gsc_irq_status(void)
 {
 	return pantherlake_get_gpe(GPE0_DW0_11); /* GPP_H11 */
