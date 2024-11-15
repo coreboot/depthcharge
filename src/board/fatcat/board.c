@@ -9,7 +9,7 @@
 #include <pci/pci.h>
 
 #include "base/init_funcs.h"
-#include "board/rex/include/variant.h"
+#include "board/fatcat/include/variant.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
@@ -79,7 +79,7 @@ __weak const struct tpm_config *variant_get_tpm_config(void)
 	return &config;
 }
 
-static int gsc_irq_status(void)
+__weak int gsc_irq_status(void)
 {
 	return pantherlake_get_gpe(GPE0_DW1_15); /* GPP_D15 */
 }
