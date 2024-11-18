@@ -42,9 +42,10 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 	{.name = NULL},
 };
 
-static char var_buf[FASTBOOT_MSG_MAX];
 static void fastboot_getvar_all(fastboot_session_t *fb)
 {
+	char var_buf[FASTBOOT_MSG_MAX];
+
 	for (int i = 0; fastboot_vars[i].name != NULL; i++) {
 		fastboot_getvar_info_t *var = &fastboot_vars[i];
 
@@ -73,6 +74,8 @@ static void fastboot_getvar_all(fastboot_session_t *fb)
 void fastboot_cmd_getvar(fastboot_session_t *fb, const char *args,
 			 uint64_t arg_len)
 {
+	char var_buf[FASTBOOT_MSG_MAX];
+
 	if (arg_len == strlen("all") && !strncmp(args, "all", strlen("all"))) {
 		fastboot_getvar_all(fb);
 		return;
