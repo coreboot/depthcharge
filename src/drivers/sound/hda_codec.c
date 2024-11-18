@@ -170,7 +170,7 @@ static void *get_hda_base(void)
 	for (int i = 0; i < ARRAY_SIZE(supported); i++) {
 		if (pci_find_device(supported[i].vendor, supported[i].device,
 			            &hda_dev)) {
-			return (void *)(pci_read_resource(hda_dev, 0) & ~0xf);
+			return (void *)(uintptr_t)(pci_read_resource(hda_dev, 0) & ~0xf);
 		}
 	}
 
