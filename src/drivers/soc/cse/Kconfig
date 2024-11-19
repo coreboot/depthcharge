@@ -151,13 +151,21 @@ config SOC_INTEL_COMMON_BLOCK_ME_SPEC_18
 	  This config will enable 'ME specification version 18'. It will ensure ME specific
 	  declaration and uses of required data structures for Host firmware status registers.
 
+config SOC_INTEL_COMMON_BLOCK_ME_SPEC_21
+	bool "Intel ME spec 21"
+	help
+	  This config will enable 'ME specification version 21'. It will ensure ME specific
+	  declaration and uses of required data structures for Host firmware status registers.
+	  This version of ME is compatible with ME version 18 in terms of Host firmware
+	  status registers.
+
 config ME_SPEC
 	int
 	default 12 if SOC_INTEL_COMMON_BLOCK_ME_SPEC_12
 	default 13 if SOC_INTEL_COMMON_BLOCK_ME_SPEC_13
 	default 15 if SOC_INTEL_COMMON_BLOCK_ME_SPEC_15
 	default 16 if SOC_INTEL_COMMON_BLOCK_ME_SPEC_16
-	default 18 if SOC_INTEL_COMMON_BLOCK_ME_SPEC_18
+	default 18 if SOC_INTEL_COMMON_BLOCK_ME_SPEC_18 || SOC_INTEL_COMMON_BLOCK_ME_SPEC_21
 	help
 	  This config holds the ME spec version if defined.
 
