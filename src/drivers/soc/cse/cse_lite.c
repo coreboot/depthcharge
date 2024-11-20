@@ -512,10 +512,8 @@ static void cse_fw_update_misc_oper(void)
 {
 	struct ui_context ui;
 	struct vb2_context *ctx = vboot_get_context();
-	if (ui_init_context(&ui, ctx, UI_SCREEN_FIRMWARE_SYNC) == VB2_SUCCESS) {
+	if (ui_init_context(&ui, ctx, UI_SCREEN_FIRMWARE_SYNC) == VB2_SUCCESS)
 		ui_display(&ui, NULL);
-		elog_add_event_byte(ELOG_TYPE_FW_LATE_SOL, ELOG_FW_LATE_SOL_CSE_SYNC);
-	}
 }
 
 /* Set the CSE's next boot partition and issues system reset */
@@ -809,6 +807,7 @@ static enum cb_err cse_write_rw_region(const struct region *target_region,
 		return CB_ERR;
 
 	printk(BIOS_INFO, "cse_lite: CSE RW Update Successful\n");
+	elog_add_event_byte(ELOG_TYPE_FW_CSE_SYNC, ELOG_FW_CSE_SYNC_AT_PAYLOAD);
 	return CB_SUCCESS;
 }
 
