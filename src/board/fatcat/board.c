@@ -13,6 +13,7 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/flash/fast_spi.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
@@ -106,13 +107,27 @@ __weak const struct audio_config *variant_probe_audio_config(void)
 	return &config;
 }
 
+static void flash_setup(void)
+{
+	if(CONFIG(DRIVER_FLASH_FAST_SPI)) {
+		/* 32MB SPI Flash */
+		uintptr_t mmio_base = pci_read_config32(PCI_DEV_SPI,
+							PCI_BASE_ADDRESS_0);
+		mmio_base &= PCI_BASE_ADDRESS_MEM_MASK;
+		FastSpiFlash *spi = new_fast_spi_flash(mmio_base);
+		flash_set_ops(&spi->ops);
+	} else {
+		flash_set_ops(&new_mmap_flash()->ops);
+	}
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
 	ec_setup();
 	tpm_setup();
 	power_set_ops(&pantherlake_power_ops);
-	flash_set_ops(&new_mmap_flash()->ops);
+	flash_setup();
 	common_audio_setup(variant_probe_audio_config());
 
 	return 0;
