@@ -440,7 +440,7 @@ static bool is_rts545x_device_present(Rts545x *me, int live)
 static bool rts545x_fw_uses_new_config_name_scheme(pdc_fw_ver_t ver)
 {
 	if (PDC_FWVER_MAJOR(ver) == PDC_FWVER_TYPE_BRINGUP) {
-		return ver >= PDC_FWVER_TO_INT(0, 20, 1);
+		return ver >= PDC_FWVER_TO_INT(0, 20, 1) || !ver;
 	} else if (PDC_FWVER_MAJOR(ver) == PDC_FWVER_TYPE_TEST) {
 		return ver > PDC_FWVER_TO_INT(1, 22, 1);
 	} else if (PDC_FWVER_MAJOR(ver) == PDC_FWVER_TYPE_BASE) {
@@ -500,6 +500,10 @@ bool rts545x_check_update_compatibility(pdc_fw_ver_t current, pdc_fw_ver_t new)
 			 */
 			return true;
 		}
+		/* Due to 0.35.1 PDC version reporting as 0.0.0 in PDCs without
+		   retimer (b/379992872), skip PDC FW update to avoid looping forever. */
+		if (!current && (new == PDC_FWVER_TO_INT(0, 35, 1)))
+			return false;
 		/* new > PDC_FWVER_TO_INT(0, 20, 1) */
 
 		/* Versions after 0.20 have the new config format
