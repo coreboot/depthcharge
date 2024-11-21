@@ -12,6 +12,22 @@ struct rtk_upgrade_test_case {
 	pdc_fw_ver_t new;
 	bool success;
 } upgrade_test_cases[] = {
+	/* From == 0.0.0 */
+	{PDC_FWVER_TO_INT(0, 0, 0), PDC_FWVER_TO_INT(0, 19, 1), true},
+	{PDC_FWVER_TO_INT(0, 0, 0), PDC_FWVER_TO_INT(0, 20, 1), true},
+	{PDC_FWVER_TO_INT(0, 0, 0), PDC_FWVER_TO_INT(0, 21, 1), true},
+	/* No upgrade from 0.0.0 to 0.35.1 to avoid update loop */
+	{PDC_FWVER_TO_INT(0, 0, 0), PDC_FWVER_TO_INT(0, 35, 1), false},
+	{PDC_FWVER_TO_INT(0, 0, 0), PDC_FWVER_TO_INT(1, 21, 1), true},
+	{PDC_FWVER_TO_INT(0, 0, 0), PDC_FWVER_TO_INT(1, 22, 1), true},
+	{PDC_FWVER_TO_INT(0, 0, 0), PDC_FWVER_TO_INT(1, 23, 1), true},
+	/* No upgrade to base FW (2.x) in DC */
+	{PDC_FWVER_TO_INT(0, 0, 0), PDC_FWVER_TO_INT(2, 0, 1), false},
+	{PDC_FWVER_TO_INT(0, 0, 0), PDC_FWVER_TO_INT(2, 1, 1), false},
+	{PDC_FWVER_TO_INT(0, 0, 0), PDC_FWVER_TO_INT(2, 2, 1), false},
+	/* Update to prod version OK */
+	{PDC_FWVER_TO_INT(0, 0, 0), PDC_FWVER_TO_INT(16, 0, 1), true},
+
 	/* From < 0.20 */
 	{PDC_FWVER_TO_INT(0, 19, 1), PDC_FWVER_TO_INT(0, 19, 1), true},
 	{PDC_FWVER_TO_INT(0, 19, 1), PDC_FWVER_TO_INT(0, 20, 1), true},
