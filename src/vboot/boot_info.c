@@ -149,6 +149,29 @@ static int setup_pvmfw(struct boot_info *bi, struct vb2_kernel_params *kparams)
 		goto fail;
 	}
 
+	/* Add pvmfw to kernel cmdline on x86 */
+	if (CONFIG(ARCH_X86)) {
+		char str_to_insert[100];
+		uint64_t addr = (uintptr_t)pvmfw_addr;
+		uint64_t size = (uint64_t)pvmfw_size;
+
+		/*
+		 * Set pvmfw to point kernel to where to find pvmfw payload and
+		 * memmap to protected the memory to make sure that kernel will
+		 * not overwrite the pvmfw with its data.
+		 */
+		if (snprintf(str_to_insert, sizeof(str_to_insert),
+			     "memmap=0x%" PRIx64 "$0x%" PRIx64
+			     " pvmfw=0x%" PRIx64 "@0x%" PRIx64,
+			     size, addr, size, addr) < 0) {
+			printf("Failed to snprintf a pvmfw command line\n");
+			ret = -1;
+			goto fail;
+		}
+
+		commandline_append(str_to_insert);
+	}
+
 	bi->pvmfw_addr = pvmfw_addr;
 	bi->pvmfw_size = pvmfw_size;
 fail:
