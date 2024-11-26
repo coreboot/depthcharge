@@ -29,6 +29,10 @@ static int install_coreboot_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	DeviceTreeNode *firmware_node = dt_find_node(tree->root,
 		firmware_path, &addr_cells, &size_cells, 1);
 
+	// Need to add '#address-cells' and '#size-cells'
+	dt_add_u32_prop(firmware_node, "#address-cells", addr_cells);
+	dt_add_u32_prop(firmware_node, "#size-cells", size_cells);
+
 	// Need to add 'ranges' to the intermediate node to make 'reg' work.
 	dt_add_bin_prop(firmware_node, "ranges", NULL, 0);
 
