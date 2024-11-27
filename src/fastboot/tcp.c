@@ -142,115 +142,214 @@ int fastboot_tcp_send(struct fastboot_session *fb, void *data, uint16_t datalen)
 
 /******************** PROTOCOL HANDLING *******************/
 
-// Handles the initial FB01 packet.
-static const char *handshake = "FB01";
-static void fastboot_tcp_handshake(struct fastboot_tcp_session *tcp)
+/**
+ * Enter specified state and perform setup if necessary
+ */
+static void fastboot_tcp_enter_state(struct fastboot_tcp_session *tcp,
+				     enum fastboot_tcp_state new_state)
 {
-	if (uip_datalen() < 4) {
+	switch (new_state) {
+	case WAIT_FOR_HEADER:
+		tcp->state_data.wait_for_header.header_bytes_collected = 0;
+		break;
+	case WAIT_FOR_COMMAND_SEGMENT:
+		tcp->state_data.wait_for_data.segment_offset = 0;
+		break;
+	default:
+		/* No extra setup */
+		break;
+	}
+
+	tcp->state = new_state;
+}
+
+/* Handles the initial FB01 packet */
+static const char handshake[] = "FB01";
+static const size_t handshake_len = sizeof(handshake) - 1;
+static uint64_t fastboot_tcp_handshake(struct fastboot_tcp_session *tcp, char *buf,
+				       uint64_t datalen)
+{
+	if (datalen < handshake_len) {
 		FB_DEBUG("Invalid handshake!");
 		uip_close();
-		return;
+		return 0;
 	}
 
-	if (strncmp(uip_appdata, handshake, 4) != 0) {
+	if (memcmp(buf, handshake, handshake_len) != 0) {
 		FB_DEBUG("Invalid handshake received, closing connection.\n");
 		uip_close();
-		return;
+		return 0;
 	}
 
-	// Looks good, reply.
+	/* Looks good, reply */
 	struct fastboot_tcp_packet *p = xmalloc(sizeof(*p));
 	memset(p, 0, sizeof(*p));
 	p->data = handshake;
-	p->len = 4;
+	p->len = handshake_len;
 	fastboot_tcp_txq_append(tcp, p);
 
-	// Take note of the remote end's information.
+	/* Take note of the remote end's information */
 	tcp->ripaddr = uip_conn->ripaddr;
 	tcp->rport = uip_conn->rport;
-	tcp->state = WAIT_FOR_PACKET;
+	fastboot_tcp_enter_state(tcp, WAIT_FOR_HEADER);
 	FB_DEBUG("Established fastboot connection with %d.%d.%d.%d\n",
 		 uip_ipaddr_to_quad(&tcp->ripaddr));
+
+	return handshake_len;
 }
 
-// Handle a packet received while in the WAIT_FOR_PACKET state.
+/**
+ * Extract header (expected length of the message) from the buffer
+ *
+ * Returns number of bytes consumed in the last call to obtain amount of data
+ * to receive. Result of data_left_to_receive is valid when tcp state is changed
+ * to WAIT_FOR_COMMAND or WAIT_FOR_DOWNLOAD.
+ *
+ * Returns number of bytes consumed from buf.
+ */
+static uint64_t fastboot_tcp_recv_header(struct fastboot_tcp_session *tcp,
+					 const char *buf, uint64_t datalen)
+{
+	struct fastboot_tcp_header_state_data *const state_data =
+		&tcp->state_data.wait_for_header;
+	const uint64_t bytes_to_collect =
+		MIN(datalen, sizeof(state_data->header) - state_data->header_bytes_collected);
+
+	memcpy(state_data->header + state_data->header_bytes_collected, buf, bytes_to_collect);
+
+	state_data->header_bytes_collected += bytes_to_collect;
+	if (state_data->header_bytes_collected == sizeof(state_data->header)) {
+		/* Whole header received, move to waiting for data */
+		tcp->state_data.wait_for_data.data_left_to_receive =
+			be64dec(state_data->header);
+		/* Choose next state based on fastboot session state */
+		fastboot_tcp_enter_state(tcp, tcp->fb_session->state == DOWNLOAD ?
+					      WAIT_FOR_DOWNLOAD : WAIT_FOR_COMMAND);
+	} else {
+		FB_DEBUG("short packet of %llu bytes, so far received %d\n",
+			 datalen, state_data->header_bytes_collected);
+	}
+
+	return bytes_to_collect;
+}
+
+/**
+ * Handle packet if all data are in the buf. Otherwise switch to WAIT_FOR_COMMAND_SEGMENT
+ * if packet can be handled in segments. If packet cannot be handled, connection is closed.
+ *
+ * Returns number of bytes consumed from buf.
+ */
+static uint64_t fastboot_tcp_recv_command(struct fastboot_tcp_session *tcp, char *buf,
+					  uint64_t datalen)
+{
+	struct fastboot_tcp_data_state_data *const state_data = &tcp->state_data.wait_for_data;
+
+	/* We have the whole packet, handle it */
+	if (datalen >= state_data->data_left_to_receive) {
+		const uint64_t packet_len = state_data->data_left_to_receive;
+
+		FB_TRACE_IO("[from host] %.*s\n", packet_len, buf);
+		fastboot_handle_packet(tcp->fb_session, buf, packet_len);
+		fastboot_tcp_enter_state(tcp, WAIT_FOR_HEADER);
+
+		return packet_len;
+	}
+
+	/* Check if we can handle this packet using segment method */
+	if (state_data->data_left_to_receive <= FASTBOOT_MSG_MAX) {
+		fastboot_tcp_enter_state(tcp, WAIT_FOR_COMMAND_SEGMENT);
+		return 0;
+	}
+
+	/* We don't have full packet in buffer and it is too big to handle in segments */
+	uip_close();
+	printf("drop connection because cannot collect segmented packet of %llu size\n",
+	       state_data->data_left_to_receive);
+	fastboot_tcp_enter_state(tcp, WAIT_FOR_HANDSHAKE);
+
+	return 0;
+}
+
+/**
+ * Collect all segments of the fastboot packet. Handle it when it is ready.
+ *
+ * Returns number of bytes consumed from buf.
+ */
+static uint64_t fastboot_tcp_recv_segment(struct fastboot_tcp_session *tcp, char *buf,
+					  uint64_t datalen)
+{
+	struct fastboot_tcp_data_state_data *const state_data = &tcp->state_data.wait_for_data;
+	const uint64_t bytes_consumed = MIN(state_data->data_left_to_receive, datalen);
+
+	memcpy(state_data->segment_buf + state_data->segment_offset, buf, bytes_consumed);
+	state_data->segment_offset += bytes_consumed;
+	state_data->data_left_to_receive -= bytes_consumed;
+
+	if (state_data->data_left_to_receive == 0) {
+		/* We received the whole packet, handle it */
+		FB_TRACE_IO("[from host] %.*s\n", state_data->segment_offset,
+			    state_data->segment_buf);
+		fastboot_handle_packet(tcp->fb_session, state_data->segment_buf,
+				       state_data->segment_offset);
+		fastboot_tcp_enter_state(tcp, WAIT_FOR_HEADER);
+	}
+
+	return bytes_consumed;
+}
+
+/**
+ * Handle data in fastboot download state.
+ *
+ * Returns number of bytes consumed from buf.
+ */
+static uint64_t fastboot_tcp_recv_download(struct fastboot_tcp_session *tcp, char *buf,
+					   uint64_t datalen)
+{
+	struct fastboot_tcp_data_state_data *const state_data = &tcp->state_data.wait_for_data;
+	const uint64_t bytes_consumed = MIN(state_data->data_left_to_receive, datalen);
+
+	FB_TRACE_IO("[from host] download %llu/%llu bytes\n", bytes_consumed,
+		    state_data->data_left_to_receive);
+
+	state_data->data_left_to_receive -= bytes_consumed;
+	fastboot_handle_packet(tcp->fb_session, buf, bytes_consumed);
+
+	/* Whole packet received, wait for new packet. */
+	if (state_data->data_left_to_receive == 0)
+		fastboot_tcp_enter_state(tcp, WAIT_FOR_HEADER);
+
+	return bytes_consumed;
+}
+
+/* Consume all fastboot packets in buf and handle them */
 static void fastboot_tcp_recv(struct fastboot_tcp_session *tcp, char *buf,
 			      uint64_t datalen)
 {
-	uint64_t expected_length;
-	if (uip_datalen() < sizeof(expected_length)) {
-		FB_DEBUG("Fastboot packet was too short!\n");
-		uip_close();
-		return;
-	}
-	memcpy(&expected_length, buf, sizeof(expected_length));
-	expected_length = be64toh(expected_length);
+	uint64_t consumed;
 
-	uint64_t available = datalen - sizeof(expected_length);
-	if (available < expected_length) {
-		FB_DEBUG("expected %llu but only got %llu full packet len "
-			 "%llu\n",
-			 expected_length, available, datalen);
-		tcp->data_left_to_receive = expected_length - available;
-		tcp->state = PACKET_INCOMPLETE;
-		if (tcp->fb_session->state != DOWNLOAD) {
-			// TODO(simonshields): this means that the packet we
-			// received was smaller than 68 bytes. Do we need to
-			// handle this?
-			uip_close();
-			printf("drop connection because expected=%llu but "
-			       "available=%llu and not in download state.\n",
-			       expected_length, available);
-			return;
+	while (datalen && !uip_closed()) {
+		switch (tcp->state) {
+		case WAIT_FOR_HANDSHAKE:
+			consumed = fastboot_tcp_handshake(tcp, buf, datalen);
+			break;
+		case WAIT_FOR_HEADER:
+			consumed = fastboot_tcp_recv_header(tcp, buf, datalen);
+			break;
+		case WAIT_FOR_COMMAND:
+			consumed = fastboot_tcp_recv_command(tcp, buf, datalen);
+			break;
+		case WAIT_FOR_COMMAND_SEGMENT:
+			consumed = fastboot_tcp_recv_segment(tcp, buf, datalen);
+			break;
+		case WAIT_FOR_DOWNLOAD:
+			consumed = fastboot_tcp_recv_download(tcp, buf, datalen);
+			break;
+		default:
+			/* Should never happen */
+			die("invalid tcp session state\n");
 		}
-	}
-
-	if (tcp->fb_session->state == DOWNLOAD) {
-		FB_TRACE_IO("[from host] %llu/%llu bytes\n", available,
-			    tcp->data_left_to_receive);
-	} else {
-		FB_TRACE_IO("[from host] %.*s\n", (int)available, &buf[8]);
-	}
-	buf += sizeof(expected_length);
-
-	fastboot_handle_packet(tcp->fb_session, buf, MIN(available, expected_length));
-
-	if (available > expected_length) {
-		FB_DEBUG("handle leftover data (datalen %llu, available %llu, expected %llu)\n",
-			 datalen, available, expected_length);
-		fastboot_tcp_recv(tcp, buf + expected_length,
-				  datalen - expected_length - sizeof(expected_length));
-	}
-}
-
-// Handle a packet received while in the PACKET_INCOMPLETE state.
-static void fastboot_tcp_recv_incomplete(struct fastboot_tcp_session *tcp)
-{
-	FB_TRACE_IO("[from host] incomplete %u/%llu bytes\n", uip_datalen(),
-		    tcp->data_left_to_receive);
-	uint64_t data_to_handle = uip_datalen();
-	// If we receive too much data, just handle the chunk we expected in
-	// this fastboot packet first. The rest is the start of the next
-	// fastboot packet.
-	if (data_to_handle > tcp->data_left_to_receive) {
-		FB_DEBUG("got too much data! (%u received, expecting only "
-			 "%llu, read %llu, underlying session wanted %llu)\n",
-			 uip_datalen(), tcp->data_left_to_receive,
-			 tcp->fb_session->download_progress,
-			 tcp->fb_session->download_len);
-		data_to_handle = tcp->data_left_to_receive;
-	}
-	tcp->data_left_to_receive -= data_to_handle;
-	fastboot_handle_packet(tcp->fb_session, uip_appdata, data_to_handle);
-	if (tcp->data_left_to_receive == 0) {
-		tcp->state = WAIT_FOR_PACKET;
-	}
-
-	char *buf = uip_appdata;
-	// Was there any data left over? If yes, start handling the next packet.
-	if (uip_datalen() > data_to_handle && tcp->state == WAIT_FOR_PACKET) {
-		fastboot_tcp_recv(tcp, &buf[data_to_handle],
-				  ((uint64_t)uip_datalen()) - data_to_handle);
+		datalen -= consumed;
+		buf += consumed;
 	}
 }
 
@@ -299,20 +398,7 @@ static void fastboot_tcp_net_callback(void)
 		return;
 	}
 
-	switch (tcp->state) {
-	case WAIT_FOR_HANDSHAKE:
-		fastboot_tcp_handshake(tcp);
-		break;
-	case WAIT_FOR_PACKET:
-		fastboot_tcp_recv(tcp, uip_appdata, uip_datalen());
-		break;
-	case PACKET_INCOMPLETE:
-		fastboot_tcp_recv_incomplete(tcp);
-		break;
-	default:
-		// Should never happen.
-		die("invalid tcp session state\n");
-	}
+	fastboot_tcp_recv(tcp, uip_appdata, uip_datalen());
 
 	// Try again to send a packet, in case there wasn't one before
 	// but we just enqueued one.
