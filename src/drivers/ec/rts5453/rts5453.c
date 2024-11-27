@@ -85,6 +85,7 @@ typedef struct Rts545x {
 	struct {
 		uint16_t vid;
 		uint16_t pid;
+		uint8_t i2c_addr;
 	} chip_info;
 
 	struct {
@@ -104,7 +105,7 @@ static int rts545x_ping_status(Rts545x *me, uint8_t *status_byte)
 	int ret;
 
 	while (timer_us(start) < PING_STATUS_TIMEOUT_US) {
-		ret = i2c_read_raw(&me->bus->ops, CONFIG_DRIVER_EC_RTS545X_I2C_ADDR, status_byte, 1);
+		ret = i2c_read_raw(&me->bus->ops, me->chip_info.i2c_addr, status_byte, 1);
 		if (ret < 0) {
 			printf("%s: Error %d reading ping_status\n", me->chip_name, ret);
 			return ret;
@@ -137,7 +138,7 @@ static int rts545x_block_out_transfer(Rts545x *me, uint8_t cmd_code, size_t len,
 	write_buf[1] = len;
 	memcpy(&write_buf[2], write_data, len);
 
-	ret = i2c_write_raw(&me->bus->ops, CONFIG_DRIVER_EC_RTS545X_I2C_ADDR, write_buf, len + 2);
+	ret = i2c_write_raw(&me->bus->ops, me->chip_info.i2c_addr, write_buf, len + 2);
 	if (ret < 0) {
 		printf("%s: Error %d sending command %#02x\n", me->chip_name, ret, cmd_code);
 		return ret;
@@ -151,7 +152,7 @@ static int rts545x_block_out_transfer(Rts545x *me, uint8_t cmd_code, size_t len,
 
 static int rts545x_block_in_transfer(Rts545x *me, size_t len, uint8_t *read_data)
 {
-	return i2c_readblock(&me->bus->ops, CONFIG_DRIVER_EC_RTS545X_I2C_ADDR, RTS545X_READ_DATA_CMD, read_data,
+	return i2c_readblock(&me->bus->ops, me->chip_info.i2c_addr, RTS545X_READ_DATA_CMD, read_data,
 			     len);
 }
 
@@ -344,6 +345,7 @@ static int rts545x_construct_i2c_tunnel(Rts545x *me)
 	       r.i2c_info.addr_flags);
 
 	me->bus = new_cros_ec_tunnel_i2c(r.i2c_info.port);
+	me->chip_info.i2c_addr = r.i2c_info.addr_flags;
 	return ret;
 }
 

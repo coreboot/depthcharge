@@ -7,4 +7,3 @@ rts5453-test-srcs += tests/drivers/rts5453/rts5453-test.c
 
 rts5453-test-config += CONFIG_DRIVER_EC_RTS545X_VID=0
 rts5453-test-config += CONFIG_DRIVER_EC_RTS545X_PID=0
-rts5453-test-config += CONFIG_DRIVER_EC_RTS545X_I2C_ADDR=0
