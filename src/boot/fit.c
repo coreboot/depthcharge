@@ -444,7 +444,7 @@ static void update_memory(struct device_tree *tree)
 	Ranges mem;
 	Ranges reserved;
 	struct device_tree_node *node;
-	u32 addr_cells = 1, size_cells = 1;
+	u32 addr_cells = 2, size_cells = 1;
 	dt_read_cell_props(tree->root, &addr_cells, &size_cells);
 
 	// First remove all existing device_type="memory" nodes, then add ours.
