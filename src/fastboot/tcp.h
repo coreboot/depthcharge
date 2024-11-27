@@ -26,14 +26,43 @@
 #define FASTBOOT_PORT 5554
 
 enum fastboot_tcp_state {
-	// Waiting for the "FB01" handshake.
+	/* Waiting for the "FB01" handshake */
 	WAIT_FOR_HANDSHAKE = 0,
-	// Waiting for the start of a new fastboot packet.
-	WAIT_FOR_PACKET = 1,
-	// Start of a fastboot packet has been received, but it is split over
-	// multiple
-	// TCP packets.
-	PACKET_INCOMPLETE = 2,
+	/* Waiting for the start of a new fastboot packet */
+	WAIT_FOR_HEADER,
+	/* Waiting for the fastboot command data after receiving header */
+	WAIT_FOR_COMMAND,
+	/* Waiting for the fastboot command data if it was split over multiple TCP packets */
+	WAIT_FOR_COMMAND_SEGMENT,
+	/* Waiting for the fastboot download data after receiving header */
+	WAIT_FOR_DOWNLOAD,
+};
+
+/* State data structure used in WAIT_FOR_HEADER state */
+struct fastboot_tcp_header_state_data {
+	/* Amount of bytes already collected */
+	uint8_t header_bytes_collected;
+	/* Buffer for collecting a header */
+	char header[sizeof(uint64_t)];
+};
+
+/*
+ * State data structure used in WAIT_FOR_COMMAND, WAIT_FOR_COMMAND_SEGMENT and
+ * WAIT_FOR_DOWNLOAD states
+ */
+struct fastboot_tcp_data_state_data {
+	/* Amount of data left to receive */
+	uint64_t data_left_to_receive;
+	/* Amount of bytes already collected in segment_buf in WAIT_FOR_COMMAND_SEGMENT state */
+	size_t segment_offset;
+	/* The buffer for storing fastboot packet segments in WAIT_FOR_COMMAND_SEGMENT state */
+	char segment_buf[FASTBOOT_MSG_MAX];
+};
+
+/* Union of all state specific data */
+union fastboot_tcp_state_data {
+	struct fastboot_tcp_header_state_data wait_for_header;
+	struct fastboot_tcp_data_state_data wait_for_data;
 };
 
 struct fastboot_tcp_session {
@@ -41,6 +70,8 @@ struct fastboot_tcp_session {
 	struct fastboot_session *fb_session;
 	// Current state of this session.
 	enum fastboot_tcp_state state;
+	// Data specific for the current state
+	union fastboot_tcp_state_data state_data;
 	// Details about the remote end of the connection.
 	// We use this to make sure we ignore packets that aren't from the
 	// machine that initiated our connection.
@@ -54,9 +85,6 @@ struct fastboot_tcp_session {
 	// This is necessary because uIP only sends a packet once per callback.
 	ListNode *txq_top;
 	ListNode *txq_bottom;
-
-	// Amount of data left to receive when in the PACKET_INCOMPLETE state.
-	uint64_t data_left_to_receive;
 };
 
 // These are entries in the packet queue.
