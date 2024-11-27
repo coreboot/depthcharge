@@ -13,6 +13,7 @@
 
 #define TPS6699X_RESTART_DELAY_US 7000000 /* 7s */
 #define TPS6699X_FW_HASH_FILE_SIZE 11
+#define TPS6699X_PROJECT_NAME_LENGTH 8
 
 static void tps6699x_set_i2c_speed(Tps6699x *me)
 {
@@ -103,10 +104,11 @@ static vb2_error_t tps6699x_ec_tunnel_status(const VbootAuxfwOps *vbaux, int *pr
  */
 static bool tps6699x_query_chip_host_cmd(Tps6699x *me)
 {
-	struct ec_response_pd_chip_info r;
+	struct ec_response_pd_chip_info_v2 r;
 	int status;
 
-	status = cros_ec_pd_chip_info(me->ec_pd_id, /* live= */ true, &r);
+	status = cros_ec_pd_chip_info(me->ec_pd_id, /* live= */ true,
+			(struct ec_response_pd_chip_info *) &r);
 	if (status < 0) {
 		printf("%s: could not get chip info (%d)\n", me->chip_name, status);
 		return false;
@@ -115,6 +117,7 @@ static bool tps6699x_query_chip_host_cmd(Tps6699x *me)
 	me->chip_info.vid = r.vendor_id;
 	me->chip_info.pid = r.product_id;
 	me->chip_info.fw_version = (pdc_fw_ver_t)r.fw_version_number;
+	memcpy(me->chip_info.fw_name_str, r.fw_name_str, TPS6699X_PROJECT_NAME_LENGTH);
 
 	return true;
 }
@@ -145,17 +148,23 @@ static vb2_error_t tps6699x_check_hash(const VbootAuxfwOps *vbaux, const uint8_t
 	pdc_fw_ver_t ver_current = me->chip_info.fw_version;
 	pdc_fw_ver_t ver_new = PDC_FWVER_TO_INT(hash[0], hash[1], hash[2]);
 	int ret;
+	char hash_fw_name_str[TPS6699X_PROJECT_NAME_LENGTH + 1] = {0};
 
 	if (hash_size != TPS6699X_FW_HASH_FILE_SIZE) {
 		debug("%s: hash_size of %zu unexpected\n", me->chip_name, hash_size);
 		return VB2_ERROR_INVALID_PARAMETER;
 	}
 
+	memcpy(hash_fw_name_str, &hash[3], TPS6699X_PROJECT_NAME_LENGTH);
 	/* Check if an update is needed (or if one is being forced)*/
-	if (ver_current == ver_new && !force_update(me)) {
-		printf("No upgrade necessary for %s. Already at %u.%u.%u.\n", me->chip_name,
-		       PDC_FWVER_MAJOR(ver_current), PDC_FWVER_MINOR(ver_current),
-		       PDC_FWVER_PATCH(ver_current));
+	if ((ver_current == ver_new && !memcmp(hash_fw_name_str, me->chip_info.fw_name_str,
+					       TPS6699X_PROJECT_NAME_LENGTH)) &&
+	    !force_update(me)) {
+		printf("No upgrade necessary for %s. Already at "
+		       "%u.%u.%u(%s).\n",
+		       me->chip_name, PDC_FWVER_MAJOR(ver_current),
+		       PDC_FWVER_MINOR(ver_current), PDC_FWVER_PATCH(ver_current),
+		       me->chip_info.fw_name_str);
 		*severity = VB2_AUXFW_NO_UPDATE;
 		return VB2_SUCCESS;
 	}
@@ -181,10 +190,11 @@ static vb2_error_t tps6699x_check_hash(const VbootAuxfwOps *vbaux, const uint8_t
 		return VB2_SUCCESS;
 	}
 
-	printf("%s: Update FW from %u.%u.%u to %u.%u.%u\n", me->chip_name,
+	printf("%s: Update FW from %u.%u.%u (%s) to %u.%u.%u (%s)\n", me->chip_name,
 	       PDC_FWVER_MAJOR(ver_current), PDC_FWVER_MINOR(ver_current),
-	       PDC_FWVER_PATCH(ver_current), PDC_FWVER_MAJOR(ver_new), PDC_FWVER_MINOR(ver_new),
-	       PDC_FWVER_PATCH(ver_new));
+	       PDC_FWVER_PATCH(ver_current), me->chip_info.fw_name_str,
+	       PDC_FWVER_MAJOR(ver_new), PDC_FWVER_MINOR(ver_new), PDC_FWVER_PATCH(ver_new),
+	       hash_fw_name_str);
 
 	*severity = VB2_AUXFW_SLOW_UPDATE;
 	debug("update severity %d\n", *severity);
@@ -321,6 +331,7 @@ static const VbootAuxfwOps *new_tps6699x_from_chip_info(struct ec_response_pd_ch
 	tps6699x->chip_info.vid = r->vendor_id;
 	tps6699x->chip_info.pid = r->product_id;
 	tps6699x->chip_info.fw_version = (pdc_fw_ver_t)r->fw_version_number;
+	memcpy(tps6699x->chip_info.fw_name_str, r->fw_name_str, TPS6699X_PROJECT_NAME_LENGTH);
 
 	printf("TPS6699x VID/PID %04x:%04x\n", tps6699x->chip_info.vid,
 	       tps6699x->chip_info.pid);

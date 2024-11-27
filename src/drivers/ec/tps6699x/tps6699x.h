@@ -30,6 +30,8 @@ typedef struct Tps6699x {
 		pdc_fw_ver_t fw_version;
 		/** I2C target address of this chip, use with Tps6699x::bus */
 		uint8_t i2c_addr;
+		/** Project Name */
+		char fw_name_str[USB_PD_CHIP_INFO_PROJECT_NAME_LEN + 1];
 	} chip_info;
 	/** PD chip index as used by the EC */
 	int ec_pd_id;
