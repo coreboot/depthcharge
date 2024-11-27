@@ -48,7 +48,7 @@ static int ramoops_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 	if (node)
 		list_remove(&node->list_node);
 
-	u32 addr_cells = 1, size_cells = 1;
+	u32 addr_cells = 2, size_cells = 1;
 	dt_read_cell_props(tree->root, &addr_cells, &size_cells);
 
 	// Create a ramoops node at the root of the tree.
