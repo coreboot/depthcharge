@@ -72,6 +72,29 @@ static int append_display_orientation(struct bootconfig *bc, struct vb2_kernel_p
 				 orientation_map[orientation]);
 }
 
+#define SKU_ID_KEY_STR "androidboot.product.hardware.sku"
+/* 20 characters for model name. Suffix with 12 characters for SKU ID */
+#define MAX_SKU_ID_LENGTH 32
+
+static int append_skuid(struct bootconfig *bc)
+{
+	char sku_id_str[MAX_SKU_ID_LENGTH];
+	uint32_t sku_id;
+	struct cb_mainboard *mainboard =
+		phys_to_virt(lib_sysinfo.cb_mainboard);
+	const char *mb_part_string = cb_mb_part_string(mainboard);
+
+	sku_id = lib_sysinfo.sku_id;
+	int len = snprintf(sku_id_str, sizeof(sku_id_str), "%s_%u", mb_part_string, sku_id);
+	if (len < 0 || len >= sizeof(sku_id_str))
+		return -1;
+
+	for (int i = 0; sku_id_str[i] != '\0'; i++)
+		sku_id_str[i] = tolower(sku_id_str[i]);
+
+	return bootconfig_append(bc, SKU_ID_KEY_STR, sku_id_str);
+}
+
 #define BOOT_PART_UUID_KEY_STR "androidboot.boot_part_uuid"
 
 static int append_boot_part_uuid(struct bootconfig *bc, struct vb2_kernel_params *kp)
@@ -88,6 +111,7 @@ int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_pa
 	return append_hwid(bc) ||
 	       append_serial_num(bc, kp) ||
 	       append_display_orientation(bc, kp) ||
+	       append_skuid(bc) ||
 	       append_boot_part_uuid(bc, kp);
 }
 
