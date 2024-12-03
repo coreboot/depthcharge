@@ -46,3 +46,9 @@ CONFIG_DRIVER_STORAGE_MMC_MTK=y
 CONFIG_DRIVER_TPM_GOOGLE_TI50=y
 CONFIG_DRIVER_TPM_SPI=y
 CONFIG_DRIVER_VIDEO_MTK=y
+
+# PVMFW region
+CONFIG_ANDROID_PVMFW=y
+# Move pvmfw buffer between between FDT buffer and deptharge to avoid
+# fragmenting the memory
+CONFIG_ANDROID_PVMFW_START=0xF0800000
