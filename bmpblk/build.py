@@ -52,7 +52,6 @@ KEY_FONTS = 'fonts'
 KEY_RW_ONLY = 'rw_only'
 
 # Board config YAML key names.
-KEY_SCREEN = 'screen'
 KEY_SDCARD = 'sdcard'
 KEY_DPI = 'dpi'
 KEY_RTL = 'rtl'
@@ -198,12 +197,23 @@ class Converter:
             depthcharge. For example, if SCALE_BASE is 1000, then height = 200
             means 20% of the screen height. Also see the 'styles' section in
             format.yaml.
+        SPRITE_ASSUMED_RESOLUTION (int): Screen resolution to decide the size of
+            sprite images.
+        GLYPH_ASSUMED_RESOLUTION (int): Screen resolution to decide the size of
+            glyph images.
         SPRITE_MAX_COLORS (int): Maximum colors to use for converting image
             sprites to bitmaps.
         GLYPH_MAX_COLORS (int): Maximum colors to use for glyph bitmaps.
     """
 
     SCALE_BASE = 1000
+
+    # Assumed screen resolutions for sprite and glyph images, which should be
+    # good enough to render the images clearly on the screen, while not taking
+    # too much storage space.  We don't need the screen resolution for text
+    # images here, because the image size only depends on the DPI.
+    SPRITE_ASSUMED_RESOLUTION = 2160
+    GLYPH_ASSUMED_RESOLUTION = 2160
 
     # Max colors
     SPRITE_MAX_COLORS = 128
@@ -222,7 +232,6 @@ class Converter:
         self.formats = formats
         self.config = board_config
         self.set_dirs(output)
-        self.set_screen()
         self.set_rename_map()
         self.set_locales()
         self.text_max_colors = self.get_text_colors(self.config[KEY_DPI])
@@ -244,12 +253,6 @@ class Converter:
         self.stage_locale_dir = os.path.join(self.stage_dir, 'locale')
         self.stage_glyph_dir = os.path.join(self.stage_dir, 'glyph')
         self.stage_sprite_dir = os.path.join(self.stage_dir, 'sprite')
-
-    def set_screen(self):
-        """Sets screen width and height."""
-        self.screen_width, self.screen_height = self.config[KEY_SCREEN]
-        # Set up square drawing area
-        self.canvas_px = min(self.screen_width, self.screen_height)
 
     def set_rename_map(self):
         """Initializes a dict `self.rename_map` for image renaming.
@@ -379,16 +382,10 @@ class Converter:
             return 6
         return 7
 
-    def _to_px(self, length, num_lines=1):
+    @classmethod
+    def _to_px(cls, length, screen_resolution, num_lines=1):
         """Converts the relative coordinate to absolute one in pixels."""
-        return int(self.canvas_px * length / self.SCALE_BASE) * num_lines
-
-    def _get_runtime_width_px(self, height, num_lines, file):
-        """Gets the width in pixels `file` will be rendered at runtime."""
-        # This is different from _to_px(height, num_lines)
-        height_px = self._to_px(height * num_lines)
-        with Image.open(file) as image:
-            return height_px * image.size[0] // image.size[1]
+        return int(length * screen_resolution / cls.SCALE_BASE) * num_lines
 
     @classmethod
     def _get_png_height(cls, png_file):
@@ -412,7 +409,7 @@ class Converter:
         return int(round(height / line_height))
 
     def convert_svg_to_png(
-        self, svg_file, png_file, height, bgcolor, num_lines=1
+        self, svg_file, png_file, height, resolution, bgcolor, num_lines=1
     ):
         """Converts SVG to PNG file."""
         # If the width/height of the SVG file is specified in points, the
@@ -432,7 +429,7 @@ class Converter:
             '-o',
             png_file,
         ]
-        height_px = self._to_px(height, num_lines)
+        height_px = self._to_px(height, resolution, num_lines)
         if height_px <= 0:
             raise BuildImageError(
                 f'Height of {os.path.basename(svg_file)!r} '
@@ -464,67 +461,13 @@ class Converter:
             f.write(bytearray([num_lines]))
 
     @classmethod
-    def _bisect_dpi(cls, max_dpi, initial_dpi, max_height_px, get_height):
-        """Bisects to find the DPI that produces image height `max_height_px`.
-
-        Args:
-            max_dpi: Maximum DPI for binary search.
-            initial_dpi: Initial DPI to try with in binary search.
-                If specified, the value must be no larger than `max_dpi`.
-            max_height_px: Maximum (target) height to search for.
-            get_height: A function converting DPI to height. The function is
-                called once before returning.
-
-        Returns:
-            The best integer DPI within [1, `max_dpi`].
-        """
-        min_dpi = 1
-        first_iter = True
-
-        min_height_px = get_height(min_dpi)
-        if min_height_px > max_height_px:
-            # For some font such as "Noto Sans CJK SC", the generated height
-            # cannot go below a certain value. In this case, find max DPI with
-            # height_px <= min_height_px.
-            while min_dpi < max_dpi:
-                if first_iter and initial_dpi:
-                    mid_dpi = initial_dpi
-                else:
-                    mid_dpi = (min_dpi + max_dpi + 1) // 2
-                height_px = get_height(mid_dpi)
-                if height_px > min_height_px:
-                    max_dpi = mid_dpi - 1
-                else:
-                    min_dpi = mid_dpi
-                first_iter = False
-            get_height(max_dpi)
-            return max_dpi
-
-        # Find min DPI with height_px == max_height_px
-        while min_dpi < max_dpi:
-            if first_iter and initial_dpi:
-                mid_dpi = initial_dpi
-            else:
-                mid_dpi = (min_dpi + max_dpi) // 2
-            height_px = get_height(mid_dpi)
-            if height_px == max_height_px:
-                return mid_dpi
-            if height_px < max_height_px:
-                min_dpi = mid_dpi + 1
-            else:
-                max_dpi = mid_dpi
-            first_iter = False
-        get_height(min_dpi)
-        return min_dpi
-
-    @classmethod
-    def _bisect_width(cls, initial_width_pt, max_width_px, get_width_px):
-        """Bisects to find the width that produces image width `max_width_px`.
+    def _bisect_width(cls, initial_width_pt, max_width, get_width):
+        """Bisects to find the width that produces image width `max_width`.
 
         Args:
             initial_width_pt: Initial width_pt to try with in binary search.
-            max_width_px: Maximum (target) width to search for.
-            get_width_px: A function converting width_pt to width_px. The
+            max_width: Maximum (target) relative width to search for.
+            get_width: A function converting width_pt to relative width. The
                 function is called once before returning.
 
         Returns:
@@ -532,24 +475,24 @@ class Converter:
         """
         min_width_pt = 1
         width_pt = initial_width_pt
-        width_px = get_width_px(width_pt)
-        while width_px < max_width_px:
+        width = get_width(width_pt)
+        while width < max_width:
             min_width_pt = width_pt
             width_pt *= 2
-            width_px = get_width_px(width_pt)
-        if width_px == max_width_px:
+            width = get_width(width_pt)
+        if width == max_width:
             return width_pt
 
         max_width_pt = width_pt
-        # Find maximum width_pt with get_width_px(width_pt) <= max_width_px
+        # Find maximum width_pt with get_width(width_pt) <= max_width
         while min_width_pt < max_width_pt:
             width_pt = (min_width_pt + max_width_pt + 1) // 2
-            width_px = get_width_px(width_pt)
-            if width_px > max_width_px:
+            width = get_width(width_pt)
+            if width > max_width:
                 max_width_pt = width_pt - 1
             else:
                 min_width_pt = width_pt
-        get_width_px(max_width_pt)
+        get_width(max_width_pt)
         return max_width_pt
 
     def convert_text_to_image(
@@ -564,7 +507,7 @@ class Converter:
         max_width=None,
         initial_width_pt=None,
         dpi=None,
-        initial_dpi=None,
+        screen_resolution=None,
         bgcolor='#000000',
         fgcolor='#ffffff',
         use_svg=False,
@@ -587,16 +530,15 @@ class Converter:
             max_width: Maximum image width relative to the screen resolution.
             initial_width_pt: Initial width_pt to try with in binary search.
             dpi: DPI value passed to pango-view.
-            initial_dpi: Initial DPI to try with in binary search.
+            screen_resolution: Screen resolution for converting SVG to PNG.
             bgcolor: Background color (#rrggbb).
             fgcolor: Foreground color (#rrggbb).
             use_svg: If set to True, generate SVG file. Otherwise, generate PNG
                 file.
 
         Returns:
-            A tuple (`eff_dpi`, `width_pt`) of effective DPI and the width
-            passed to pango-view. Both `eff_dpi` and `width_pt` might be `None`
-            when not applicable.
+            The width in points passed to pango-view, or `None` when not
+            applicable.
         """
         one_line_dir = os.path.join(stage_dir, ONE_LINE_DIR)
         os.makedirs(one_line_dir, exist_ok=True)
@@ -605,21 +547,6 @@ class Converter:
         svg_file = os.path.join(stage_dir, name + '.svg')
         png_file = os.path.join(stage_dir, name + '.png')
         png_file_one_line = os.path.join(one_line_dir, name + '.png')
-
-        def get_one_line_png_height(dpi):
-            """Generates a one-line PNG with `dpi` and returns its height."""
-            run_pango_view(
-                input_file,
-                png_file_one_line,
-                locale,
-                font,
-                height,
-                0,
-                dpi,
-                bgcolor,
-                fgcolor,
-            )
-            return self._get_png_height(png_file_one_line)
 
         if use_svg:
             run_pango_view(
@@ -634,21 +561,29 @@ class Converter:
                 fgcolor,
                 hinting='none',
             )
-            self.convert_svg_to_png(svg_file, png_file, height, bgcolor)
+            self.convert_svg_to_png(
+                svg_file, png_file, height, screen_resolution, bgcolor
+            )
             self.convert_png_to_bmp(png_file, output_file, max_colors)
             return None, None
 
         if not dpi:
             raise BuildImageError('DPI must be specified with use_svg=False')
-        eff_dpi = dpi
-        max_height_px = self._to_px(height)
-        height_px = get_one_line_png_height(dpi)
-        if height_px > max_height_px:
-            eff_dpi = self._bisect_dpi(
-                dpi, initial_dpi, max_height_px, get_one_line_png_height
-            )
 
-        def get_width_px(width_pt):
+        run_pango_view(
+            input_file,
+            png_file_one_line,
+            locale,
+            font,
+            height,
+            0,
+            dpi,
+            bgcolor,
+            fgcolor,
+        )
+
+        def get_width(width_pt):
+            """Gets the worst-case relative width."""
             run_pango_view(
                 input_file,
                 png_file,
@@ -656,27 +591,45 @@ class Converter:
                 font,
                 height,
                 width_pt,
-                eff_dpi,
+                dpi,
                 bgcolor,
                 fgcolor,
             )
             num_lines = self.get_num_lines(png_file, one_line_dir)
-            return self._get_runtime_width_px(height, num_lines, png_file)
+            with Image.open(png_file) as image:
+                png_width, png_height = image.size
+            # To ensure the rendered image doesn't exceed the maximum width
+            # in runtime, we need to calculate the worst-case width, considering
+            # the rounding errors for integer division. In runtime, the rendered
+            # width and the maximum width (both in pixels) are calculated with:
+            #
+            #  height_px = floor(height * num_lines * R / SCALE_BASE)
+            #  width_px = floor(height_px * W / H)
+            #  max_width_px = floor(max_width * R / SCALE_BASE)
+            #
+            # where `height` and `max_width` are relative lengths (as in the
+            # code), R is the screen resolution in pixels, and W and H are width
+            # and height of the image in pixels.
+            #
+            # If the following holds
+            #
+            #  height * num_lines * W / H <= max_width
+            #
+            # we can prove that `width_px <= max_width_px`. Therefore we use the
+            # formula to calculate the worst-case width.
+            return height * num_lines * png_width / png_height
 
         if max_width:
             # NOTE: With the same DPI, the height of multi-line PNG is not
             # necessarily a multiple of the height of one-line PNG. Therefore,
             # even with the binary search, the height of the resulting
             # multi-line PNG might be less than "one_line_height * num_lines".
-            # We cannot binary-search DPI for multi-line PNGs because
-            # "num_lines" is dependent on DPI.
-            max_width_px = self._to_px(max_width)
             if not initial_width_pt:
                 # max_width is not in points, but this should be good enough
                 # as an initial value.
                 initial_width_pt = max_width
             width_pt = self._bisect_width(
-                initial_width_pt, max_width_px, get_width_px
+                initial_width_pt, max_width, get_width
             )
             num_lines = self.get_num_lines(png_file, one_line_dir)
         else:
@@ -686,7 +639,7 @@ class Converter:
         self.convert_png_to_bmp(
             png_file, output_file, max_colors, num_lines=num_lines
         )
-        return eff_dpi, width_pt
+        return width_pt
 
     def convert_sprite_images(self):
         """Converts sprite images."""
@@ -711,7 +664,13 @@ class Converter:
             bmp_file = os.path.join(self.output_dir, new_name + '.bmp')
             height = style[KEY_HEIGHT]
             bgcolor = style[KEY_BGCOLOR]
-            self.convert_svg_to_png(svg_file, png_file, height, bgcolor)
+            self.convert_svg_to_png(
+                svg_file,
+                png_file,
+                height,
+                self.SPRITE_ASSUMED_RESOLUTION,
+                bgcolor,
+            )
             self.convert_png_to_bmp(png_file, bmp_file, self.SPRITE_MAX_COLORS)
 
     def build_generic_strings(self):
@@ -775,11 +734,8 @@ class Converter:
         output_dir = os.path.join(self.output_ro_dir, locale)
         os.makedirs(output_dir, exist_ok=True)
 
-        eff_dpi_counters = defaultdict(Counter)
-        eff_dpi_counter = None
         width_pt_counters = defaultdict(Counter)
         width_pt_counter = None
-        results = []
         for name, category in sorted(names.items()):
             if name not in inputs:
                 raise BuildImageError(
@@ -800,16 +756,6 @@ class Converter:
             style = get_config_with_defaults(styles, category)
             height = style[KEY_HEIGHT]
             max_width = style[KEY_MAX_WIDTH]
-            eff_dpi_counter = eff_dpi_counters[height]
-            if eff_dpi_counter:
-                # Find the effective DPI that appears most times for `height`.
-                # This avoid doing the same binary search again and again. In
-                # case of a tie, pick the largest DPI.
-                best_eff_dpi = max(
-                    eff_dpi_counter, key=lambda dpi: (eff_dpi_counter[dpi], dpi)
-                )
-            else:
-                best_eff_dpi = None
             width_pt_counter = (
                 width_pt_counters[(height, max_width)] if max_width else None
             )
@@ -821,7 +767,7 @@ class Converter:
                 )
             else:
                 best_width_pt = None
-            eff_dpi, width_pt = self.convert_text_to_image(
+            width_pt = self.convert_text_to_image(
                 locale,
                 text_file,
                 output_file,
@@ -832,47 +778,11 @@ class Converter:
                 max_width=max_width,
                 initial_width_pt=best_width_pt,
                 dpi=dpi,
-                initial_dpi=best_eff_dpi,
                 bgcolor=style[KEY_BGCOLOR],
                 fgcolor=style[KEY_FGCOLOR],
             )
-            eff_dpi_counter[eff_dpi] += 1
             if width_pt:
                 width_pt_counter[width_pt] += 1
-            assert eff_dpi <= dpi
-            if eff_dpi != dpi:
-                results.append(eff_dpi)
-        return results
-
-    def _check_text_width(self, names):
-        """Checks if text image will exceed the drawing area at runtime."""
-        styles = self.formats[KEY_STYLES]
-
-        for locale_info in self.locales:
-            locale = locale_info.code
-            ro_locale_dir = os.path.join(self.output_ro_dir, locale)
-            for name, category in names.items():
-                new_name = self.rename_map.get(name, name)
-                if not new_name:
-                    continue
-                style = get_config_with_defaults(styles, category)
-                height = style[KEY_HEIGHT]
-                max_width = style[KEY_MAX_WIDTH]
-                if not max_width:
-                    continue
-                max_width_px = self._to_px(max_width)
-                filename = os.path.join(ro_locale_dir, f'{new_name}.bmp')
-                with open(filename, 'rb') as f:
-                    f.seek(BMP_HEADER_OFFSET_NUM_LINES)
-                    num_lines = f.read(1)[0]
-                width_px = self._get_runtime_width_px(
-                    height, num_lines, filename
-                )
-                if width_px > max_width_px:
-                    raise BuildImageError(
-                        f'{filename}: Image width {width_px:d}px greater'
-                        f'than max width {max_width_px:d}px'
-                    )
 
     def build_localized_strings(self):
         """Builds images of localized strings."""
@@ -915,19 +825,11 @@ class Converter:
             print()
 
             try:
-                results = [future.result() for future in futures]
+                for future in futures:
+                    future.result()
             except KeyboardInterrupt:
                 executor.shutdown(wait=False)
                 sys.exit('Aborted by user')
-
-        effective_dpi = [dpi for r in results for dpi in r if dpi]
-        if effective_dpi:
-            print(
-                f'Reducing effective DPI to {max(effective_dpi)}, '
-                'limited by screen resolution'
-            )
-
-        self._check_text_width(names)
 
     def move_language_images(self):
         """Renames language bitmaps and move to self.output_dir.
@@ -972,6 +874,7 @@ class Converter:
                         self.stage_glyph_dir,
                         self.GLYPH_MAX_COLORS,
                         height=height,
+                        screen_resolution=self.GLYPH_ASSUMED_RESOLUTION,
                         use_svg=True,
                     )
                 )

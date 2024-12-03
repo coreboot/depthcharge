@@ -32,7 +32,6 @@ top of `boards.yaml`. For example, add the following for board `link`:
 
 ```
 link:
-  screen: [1920, 1080]
   dpi: 112
   # List of locales to include.
   locales: [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, he]
@@ -48,7 +47,6 @@ into the existing entry. For example:
 
 ```
 asurada,link:
-  screen:   [1920, 1080]
   dpi: 112  # DO NOT COPY-PASTE -- follow instructions at top of file.
 ```
 
