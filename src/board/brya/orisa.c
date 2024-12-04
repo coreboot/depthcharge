@@ -17,8 +17,6 @@
 
 #define EC_PCH_INT_ODL		GPD2
 
-#define PCI_DEV_I2C0		PCI_DEV(0, 0x15, 0)
-
 /* Override of func in src/drivers/ec/rts5453/rts5453.c */
 void board_rts5453_get_image_paths(const char **image_path, const char **hash_path)
 {
@@ -84,7 +82,7 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 const struct tpm_config *variant_get_tpm_config(void)
 {
 	static const struct tpm_config config = {
-		.pci_dev = PCI_DEV_I2C0,
+		.pci_dev = PCH_DEV_I2C0,
 	};
 
 	return &config;
