@@ -34,6 +34,12 @@
 #define PCH_DEV_GSPI0	PCI_DEV(0, 0x1e, 2)
 #define PCH_DEV_GSPI1	PCI_DEV(0, 0x1e, 3)
 #define PCH_DEV_UFS1	PCI_DEV(0, 0x12, 7)
+#define PCH_DEV_I2C0	PCI_DEV(0, 0x15, 0)
+#define PCH_DEV_I2C1	PCI_DEV(0, 0x15, 1)
+#define PCH_DEV_I2C2	PCI_DEV(0, 0x15, 2)
+#define PCH_DEV_I2C3	PCI_DEV(0, 0x15, 3)
+#define PCH_DEV_I2C4	PCI_DEV(0, 0x10, 0)
+#define PCH_DEV_I2C5	PCI_DEV(0, 0x10, 1)
 
 /* PCR Interface */
 #define PCH_PCR_BASE_ADDRESS	0xfd000000
