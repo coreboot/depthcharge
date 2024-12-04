@@ -720,8 +720,15 @@ static vb2_error_t rts5453_update_image(const VbootAuxfwOps *vbaux, const uint8_
 
 	rts545x_set_i2c_speed(me);
 
-	if (rts545x_update_flash(me, image, image_size) == 0)
+	if (rts545x_update_flash(me, image, image_size) != 0) {
+		/* Attempt a retry of the flash but first reset the chip
+		   in case it is in a bad state from a previous run. */
+		ret = rts545x_reset_to_flash(me);
+		if (!ret && rts545x_update_flash(me, image, image_size) == 0)
+			status = VB2_SUCCESS;
+	} else {
 		status = VB2_SUCCESS;
+	}
 
 	rts545x_restore_i2c_speed(me);
 
