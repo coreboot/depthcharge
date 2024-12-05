@@ -56,6 +56,9 @@ vb2_error_t ui_load_bitmap(enum ui_archive_type type, const char *file,
 {
 	char path[PATH_MAX_LEN + 1];
 
+	bitmap->name[UI_BITMAP_FILENAME_MAX_LEN] = '\0';
+	strncpy(bitmap->name, file, UI_BITMAP_FILENAME_MAX_LEN);
+
 	switch (type) {
 	case UI_ARCHIVE_GENERIC:
 		snprintf(path, sizeof(path), "%s/%s",
