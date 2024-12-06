@@ -26,6 +26,9 @@ static const struct storage_config storage_configs[] = {
 	{
 		.media = STORAGE_UFS,
 		.pci_dev = PCI_DEV_UFS,
+		.ufs = {
+			.ref_clk_freq = UFS_REFCLKFREQ_38_4
+		},
 		.fw_config = FW_CONFIG(STORAGE, STORAGE_UFS)
 	},
 	{
@@ -46,6 +49,9 @@ static const struct storage_config storage_configs[] = {
 	{
 		.media = STORAGE_UFS,
 		.pci_dev = PCI_DEV_UFS,
+		.ufs = {
+			.ref_clk_freq = UFS_REFCLKFREQ_38_4
+		},
 		.fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN)
 	},
 };
