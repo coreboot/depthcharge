@@ -17,11 +17,15 @@
 
 #include <assert.h>
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <vb2_android_bootimg.h>
 #include <tss_constants.h>
+#include <vb2_android_bootimg.h>
+#include <vboot_api.h>
 
+#include "base/android_misc.h"
+#include "base/gpt.h"
 #include "base/timestamp.h"
 #include "boot/android_bootconfig_params.h"
 #include "boot/android_pvmfw.h"
@@ -31,6 +35,7 @@
 #include "vboot/boot.h"
 #include "vboot/boot_info.h"
 #include "vboot/secdata_tpm.h"
+#include "vboot/stages.h"
 
 /************************* CrOS Image Parsing ****************************/
 
@@ -61,7 +66,8 @@ static int fill_info_multiboot(struct boot_info *bi,
 
 /****************************** Android GKI ******************************/
 
-static int gki_setup_bootconfig(struct boot_info *bi, struct vb2_kernel_params *kp)
+static int gki_setup_bootconfig(struct boot_info *bi, struct vb2_kernel_params *kp,
+				char *fb_cmd)
 {
 	struct bootconfig_trailer *trailer;
 	struct bootconfig bc;
@@ -92,6 +98,14 @@ static int gki_setup_bootconfig(struct boot_info *bi, struct vb2_kernel_params *
 	if (ret < 0) {
 		printf("GKI: Cannot copy vboot cmdline to bootconfig\n");
 		return -1;
+	}
+
+	if (fb_cmd) {
+		ret = bootconfig_append_params(&bc, fb_cmd, strlen(fb_cmd));
+		if (ret < 0) {
+			printf("GKI: Cannot append fastboot bootconfig\n");
+			return -1;
+		}
 	}
 
 	append_android_bootconfig_params(&bc, kp);
@@ -198,6 +212,9 @@ fail:
 static int fill_info_gki(struct boot_info *bi,
 			 struct vb2_kernel_params *kparams)
 {
+	struct android_misc_oem_cmdline fastboot_cmd;
+	char *fastboot_bootconfig = NULL;
+
 	if (kparams->kernel_buffer == NULL) {
 		printf("Pointer to kernel buffer is not initialized\n");
 		return -1;
@@ -214,8 +231,18 @@ static int fill_info_gki(struct boot_info *bi,
 	bi->ramdisk_size = kparams->ramdisk_size;
 	bi->cmd_line = kparams->vendor_cmdline_buffer;
 
+	if ((vb2api_gbb_get_flags(vboot_get_context()) & VB2_GBB_FLAG_FORCE_UNLOCK_FASTBOOT) ||
+	    strstr(kparams->vboot_cmdline_buffer, "androidboot.verifiedbootstate=orange")) {
+		BlockDev *bdev = (BlockDev *)kparams->disk_handle;
+		GptData *gpt = alloc_gpt(bdev);
+		if (gpt != NULL && !android_misc_oem_cmdline_read(bdev, gpt, &fastboot_cmd)) {
+			fastboot_bootconfig = android_misc_get_oem_cmd(&fastboot_cmd, true);
+			commandline_append(android_misc_get_oem_cmd(&fastboot_cmd, false));
+		}
+	}
+
 	if (CONFIG(BOOTCONFIG)) {
-		if (gki_setup_bootconfig(bi, kparams))
+		if (gki_setup_bootconfig(bi, kparams, fastboot_bootconfig))
 			return -1;
 	}
 

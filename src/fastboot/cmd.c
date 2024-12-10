@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <vb2_gpt.h>
 
+#include "base/android_misc.h"
 #include "base/gpt.h"
 #include "drivers/storage/ufs.h"
 #include "fastboot/cmd.h"
@@ -119,6 +120,265 @@ static void fastboot_cmd_flash(struct FastbootOps *fb, const char *arg)
 static void fastboot_cmd_erase(struct FastbootOps *fb, const char *arg)
 {
 	fastboot_erase(fb, arg);
+}
+
+static bool is_cmd_quote(const char c, bool bootconfig)
+{
+	return c == '"' || (bootconfig && c == '\'');
+}
+
+static char *cmd_find_end(char *cmdline, bool bootconfig)
+{
+	char in_quote = 0;
+
+	for (; *cmdline; cmdline++) {
+		if (is_cmd_quote(*cmdline, bootconfig)) {
+			/*
+			 * Exit in_quote state only if ending quote match with
+			 * the starting one
+			 */
+			if (in_quote == *cmdline)
+				in_quote = 0;
+			else if (!in_quote)
+				in_quote = *cmdline;
+			continue;
+		}
+		if (!in_quote && is_android_misc_cmd_separator(*cmdline, bootconfig))
+			break;
+	}
+
+	return cmdline;
+}
+
+static void fastboot_cmd_cmdline_get(struct FastbootOps *fb, const char *arg,
+				     bool bootconfig)
+{
+	struct android_misc_oem_cmdline cmd;
+	char *cmdline;
+	char *param;
+
+	if (fastboot_disk_gpt_init(fb))
+		return;
+
+	if (android_misc_oem_cmdline_read(fb->disk, fb->gpt, &cmd))
+		/* Failed to read cmdline, treat it as empty */
+		cmdline = "\0";
+	else
+		cmdline = android_misc_get_oem_cmd(&cmd, bootconfig);
+	if (*cmdline == '\0')
+		fastboot_info(fb, "<empty>");
+	while (*cmdline) {
+		param = cmdline;
+		cmdline = cmd_find_end(cmdline, bootconfig);
+		*cmdline++ = '\0';
+		while (is_android_misc_cmd_separator(*cmdline, bootconfig))
+			cmdline++;
+		fastboot_info(fb, "%s", param);
+	}
+
+	fastboot_succeed(fb);
+}
+
+static void fastboot_cmd_cmdline_add(struct FastbootOps *fb, const char *arg,
+				     bool bootconfig)
+{
+	struct android_misc_oem_cmdline cmd;
+
+	if (*arg == '\0') {
+		fastboot_fail(fb, "Missing argument");
+		return;
+	}
+
+	if (fastboot_disk_gpt_init(fb))
+		return;
+
+	if (android_misc_oem_cmdline_read(fb->disk, fb->gpt, &cmd)) {
+		/* Let's continue with fresh cmd */
+		android_misc_reset_oem_cmd(&cmd);
+	}
+
+	if (android_misc_append_oem_cmd(&cmd, arg, bootconfig)) {
+		fastboot_fail(fb, "Failed to append to cmdline");
+		return;
+	}
+
+	if (android_misc_oem_cmdline_write(fb->disk, fb->gpt, &cmd)) {
+		fastboot_fail(fb, "Failed to write cmdline to misc");
+		return;
+	}
+
+	fastboot_succeed(fb);
+}
+
+static bool is_matching(const char *param, size_t param_len, const char *pattern)
+{
+	const char *next_wild = pattern;
+	size_t pattern_len;
+	bool wild_match = false;
+
+	if (*pattern == '*') {
+		pattern++;
+		/* Single '*' match with everything */
+		if (*pattern == '\0')
+			return true;
+		/* Wild match only if '*' wasn't escaped by second '*' */
+		if (*pattern != '*') {
+			wild_match = true;
+			next_wild = pattern;
+		} else {
+			/* Skip this '*' when looking for the next wild char */
+			next_wild = pattern + 1;
+		}
+	}
+	next_wild = strchr(next_wild, '*');
+	if (!next_wild)
+		pattern_len = strlen(pattern);
+	else
+		pattern_len = next_wild - pattern;
+
+	do {
+		if (param_len < pattern_len)
+			return false;
+
+		if (!strncmp(param, pattern, pattern_len)) {
+			/* If this is end of pattern, we need exact match */
+			if (!next_wild) {
+				if (param_len == pattern_len)
+					return true;
+			} else {
+				if (is_matching(param + pattern_len, param_len - pattern_len,
+						next_wild))
+					return true;
+			}
+		}
+		/* If we are wildly matching, try at next character */
+		param_len--;
+		param++;
+	} while (wild_match);
+
+	return false;
+}
+
+static void fastboot_cmd_cmdline_del(struct FastbootOps *fb, const char *arg,
+				     bool bootconfig)
+{
+	struct android_misc_oem_cmdline cmd;
+	int param_len;
+	char *cmdline;
+	char *param_end;
+	char *param;
+	bool modified_cmdline = false;
+
+	if (*arg == '\0') {
+		fastboot_fail(fb, "Missing argument");
+		return;
+	}
+
+	if (fastboot_disk_gpt_init(fb))
+		return;
+
+	if (android_misc_oem_cmdline_read(fb->disk, fb->gpt, &cmd)) {
+		fastboot_fail(fb, "Failed to read cmdline from misc");
+		return;
+	}
+
+	cmdline = android_misc_get_oem_cmd(&cmd, bootconfig);
+	param_end = cmdline;
+	do {
+		param = param_end;
+		param_end = cmd_find_end(param_end, bootconfig);
+		param_len = param_end - param;
+		if (is_matching(param, param_len, arg)) {
+			/* Remove also the delimiter if this isn't last parameter. */
+			if (*param_end != '\0')
+				param_len++;
+			if (android_misc_del_oem_cmd(&cmd, param - cmdline, param_len,
+						     bootconfig)) {
+				fastboot_fail(fb, "Failed to delete \"%.*s\" from cmdline",
+					      param_len, param);
+				return;
+			}
+			modified_cmdline = true;
+			param_end = param;
+			continue;
+		}
+		if (*param_end == '\0') {
+			if (modified_cmdline &&
+			    android_misc_oem_cmdline_write(fb->disk, fb->gpt, &cmd)) {
+				fastboot_fail(fb, "Failed to write cmdline to misc");
+				return;
+			}
+			fastboot_succeed(fb);
+			return;
+		}
+		param_end++;
+	} while (true);
+}
+
+static void fastboot_cmd_cmdline_set(struct FastbootOps *fb, const char *arg,
+				     bool bootconfig)
+{
+	struct android_misc_oem_cmdline cmd;
+
+	if (fastboot_disk_gpt_init(fb))
+		return;
+
+	if (android_misc_oem_cmdline_read(fb->disk, fb->gpt, &cmd)) {
+		/* Let's continue with fresh cmd */
+		android_misc_reset_oem_cmd(&cmd);
+	}
+
+	if (android_misc_set_oem_cmd(&cmd, arg, bootconfig)) {
+		fastboot_fail(fb, "Failed to append to cmdline");
+		return;
+	}
+
+	if (android_misc_oem_cmdline_write(fb->disk, fb->gpt, &cmd)) {
+		fastboot_fail(fb, "Failed to write cmdline to misc");
+		return;
+	}
+
+	fastboot_succeed(fb);
+}
+
+static void fastboot_cmd_oem_cmdline_get(struct FastbootOps *fb, const char *arg)
+{
+	fastboot_cmd_cmdline_get(fb, arg, false);
+}
+
+static void fastboot_cmd_oem_cmdline_add(struct FastbootOps *fb, const char *arg)
+{
+	fastboot_cmd_cmdline_add(fb, arg, false);
+}
+
+static void fastboot_cmd_oem_cmdline_del(struct FastbootOps *fb, const char *arg)
+{
+	fastboot_cmd_cmdline_del(fb, arg, false);
+}
+
+static void fastboot_cmd_oem_cmdline_set(struct FastbootOps *fb, const char *arg)
+{
+	fastboot_cmd_cmdline_set(fb, arg, false);
+}
+
+static void fastboot_cmd_oem_bootconfig_get(struct FastbootOps *fb, const char *arg)
+{
+	fastboot_cmd_cmdline_get(fb, arg, true);
+}
+
+static void fastboot_cmd_oem_bootconfig_add(struct FastbootOps *fb, const char *arg)
+{
+	fastboot_cmd_cmdline_add(fb, arg, true);
+}
+
+static void fastboot_cmd_oem_bootconfig_del(struct FastbootOps *fb, const char *arg)
+{
+	fastboot_cmd_cmdline_del(fb, arg, true);
+}
+
+static void fastboot_cmd_oem_bootconfig_set(struct FastbootOps *fb, const char *arg)
+{
+	fastboot_cmd_cmdline_set(fb, arg, true);
 }
 
 // `fastboot oem get-kernels` returns a list of slot letter:kernel mapping.
@@ -363,6 +623,14 @@ struct fastboot_cmd fastboot_cmds[] = {
 	CMD_ARGS("erase", ':', fastboot_cmd_erase),
 	CMD_ARGS("flash", ':', fastboot_cmd_flash),
 	CMD_ARGS("getvar", ':', fastboot_cmd_getvar),
+	CMD_ARGS("oem cmdline add", ' ', fastboot_cmd_oem_cmdline_add),
+	CMD_ARGS("oem cmdline del", ' ', fastboot_cmd_oem_cmdline_del),
+	CMD_ARGS("oem cmdline set", ' ', fastboot_cmd_oem_cmdline_set),
+	CMD_NO_ARGS("oem cmdline", fastboot_cmd_oem_cmdline_get),
+	CMD_ARGS("oem bootconfig add", ' ', fastboot_cmd_oem_bootconfig_add),
+	CMD_ARGS("oem bootconfig del", ' ', fastboot_cmd_oem_bootconfig_del),
+	CMD_ARGS("oem bootconfig set", ' ', fastboot_cmd_oem_bootconfig_set),
+	CMD_NO_ARGS("oem bootconfig", fastboot_cmd_oem_bootconfig_get),
 	CMD_NO_ARGS("oem get-kernels", fastboot_cmd_oem_get_kernels),
 	CMD_ARGS("oem read-ufs-descriptor", ':', fastboot_cmd_oem_read_ufs_descriptor),
 	CMD_ARGS("oem write-ufs-descriptor", ':', fastboot_cmd_oem_write_ufs_descriptor),
