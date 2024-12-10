@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <libpayload.h>
 #include "base/init_funcs.h"
+#include "drivers/bus/usb/usb.h"
 #include "drivers/flash/mtk_snfc.h"
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
@@ -19,7 +20,10 @@ static int board_setup(void)
 
 	/* TODO: Set up eMMC */
 	/* TODO: Set up SD card */
-	/* TODO: Set up USB */
+	/* Set up USB */
+	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11260000);
+	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
 	return 0;
 }
 
