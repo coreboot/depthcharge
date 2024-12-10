@@ -40,6 +40,9 @@ bool fastboot_disk_foreach_partition(struct fastboot_disk *disk,
 void fastboot_write(struct FastbootOps *fb, struct fastboot_disk *disk,
 		    const char *partition_name, size_t name_len, void *data,
 		    size_t data_len);
+bool fastboot_read(struct fastboot_disk *disk,
+		   const char *partition_name, size_t name_len, void *data,
+		   size_t data_len, size_t offset);
 void fastboot_erase(struct FastbootOps *fb, struct fastboot_disk *disk,
 		    const char *partition_name, size_t name_len);
 int fastboot_get_slot_count(struct fastboot_disk *disk);

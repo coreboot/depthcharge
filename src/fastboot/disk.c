@@ -139,6 +139,52 @@ GptEntry *fastboot_get_partition(struct fastboot_disk *disk, unsigned int index)
 	return (GptEntry *)&disk->gpt->primary_entries[index * h->size_of_entry];
 }
 
+bool fastboot_read(struct fastboot_disk *disk,
+		   const char *partition_name, size_t name_len, void *data,
+		   size_t data_len, size_t offset)
+{
+	if (offset % disk->disk->block_size) {
+		FB_DEBUG("Offset %zu not block size aligned %u\n", offset,
+			 disk->disk->block_size);
+		return false;
+	}
+
+	if (data_len % disk->disk->block_size) {
+		FB_DEBUG("Buffer size %zu not block size aligned %u\n", data_len,
+			 disk->disk->block_size);
+		return false;
+	}
+
+	GptEntry *e = fastboot_find_partition(disk, partition_name, name_len);
+	if (!e) {
+		FB_DEBUG("Could not find partition\n");
+		return false;
+	}
+
+	uint64_t space = GptGetEntrySizeLba(e);
+	uint64_t data_blocks = data_len / disk->disk->block_size;
+	uint64_t data_blocks_offset = offset / disk->disk->block_size;
+	if (data_blocks_offset + data_blocks > space) {
+		FB_DEBUG("Too large read (last data block %llu, space %llu)\n",
+			 data_blocks + data_blocks_offset, space);
+		return false;
+	}
+
+	FB_DEBUG("Reading LBA %llu to %llu, num blocks = %llu, data "
+		 "len = %zu, block size = %u\n",
+		 e->starting_lba + data_blocks_offset,
+		 e->starting_lba + data_blocks + data_blocks_offset,
+		 data_blocks, data_len, disk->disk->block_size);
+	lba_t blocks_read = disk->disk->ops.read(&disk->disk->ops,
+						 e->starting_lba + data_blocks_offset,
+						 data_blocks, data);
+	if (blocks_read != data_blocks) {
+		FB_DEBUG("Read %llu blocks instead of %llu\n", blocks_read, data_blocks);
+		return false;
+	}
+
+	return true;
+}
 
 void fastboot_write(struct FastbootOps *fb, struct fastboot_disk *disk,
 		    const char *partition_name, size_t name_len, void *data,
