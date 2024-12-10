@@ -18,6 +18,7 @@
 #ifndef __FASTBOOT_FASTBOOT_H__
 #define __FASTBOOT_FASTBOOT_H__
 
+#include <libpayload.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -30,8 +31,15 @@
 		printf("%s: ", __func__);                                      \
 		printf(__VA_ARGS__);                                           \
 	} while (0)
+
+#define FB_DEBUG_LINE(...)             \
+	do {                           \
+		FB_DEBUG(__VA_ARGS__); \
+		putchar('\n');         \
+	} while (0)
 #else
 #define FB_DEBUG(...)
+#define FB_DEBUG_LINE(...)
 #endif
 
 #if 0
@@ -40,6 +48,14 @@
 #else
 #define FB_TRACE_IO(...)
 #endif
+
+/* Call fastboot_fail if fb is not NULL and print the same message using FB_DEBUG */
+#define FB_FAIL_AND_DEBUG(fb, ...)                      \
+	do {                                            \
+		if (fb)                                 \
+			fastboot_fail(fb, __VA_ARGS__); \
+		FB_DEBUG_LINE(__VA_ARGS__);             \
+	} while(0)
 
 #define FASTBOOT_MSG_MAX 64
 #define FASTBOOT_MAX_DOWNLOAD_SIZE ((uint64_t)CONFIG_KERNEL_SIZE)
