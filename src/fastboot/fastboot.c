@@ -55,6 +55,7 @@ void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t,
 		/* vsnprintf sets msg_buf[FASTBOOT_MSG_MAX - 1] to '\0' in that case */
 		len = FASTBOOT_MSG_MAX - 1;
 	}
+	printf("FB send %.4s: %s\n", msg_buf, msg_buf + 4);
 	fb->send_packet(fb, msg_buf, len + 1);
 }
 
