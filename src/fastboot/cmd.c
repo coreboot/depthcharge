@@ -92,7 +92,7 @@ static void fastboot_cmd_flash(struct FastbootOps *fb, const char *arg,
 
 	uint64_t data_len;
 	void *data = fastboot_get_download_buffer(fb, &data_len);
-	fastboot_write(fb, &disk, arg, arg_len, data, (uint32_t)data_len);
+	fastboot_write(fb, &disk, arg, arg_len, data, (uint32_t)data_len, 0);
 	fastboot_disk_destroy(&disk);
 }
 
@@ -185,7 +185,7 @@ static void fastboot_cmd_reboot_to_recovery(struct FastbootOps *fb, const char *
 	}
 
 	fastboot_write(fb, &disk, GPT_ENT_NAME_ANDROID_MISC,
-		       sizeof(GPT_ENT_NAME_ANDROID_MISC), &bcb, sizeof(bcb));
+		       sizeof(GPT_ENT_NAME_ANDROID_MISC), &bcb, sizeof(bcb), 0);
 
 	fastboot_disk_destroy(&disk);
 	/*
