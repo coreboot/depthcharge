@@ -137,38 +137,54 @@ GptEntry *fastboot_get_partition(struct fastboot_disk *disk, unsigned int index)
 
 
 void fastboot_write(struct FastbootOps *fb, struct fastboot_disk *disk,
-		    const char *partition_name, void *data, size_t data_len)
+		    const char *partition_name, const uint64_t blocks_offset,
+		    void *data, size_t data_len)
 {
 	GptEntry *e = fastboot_find_partition(disk, partition_name);
 	if (!e) {
-		fastboot_fail(fb, "Could not find partition");
-		return;
-	}
-
-	uint64_t space = GptGetEntrySizeLba(e);
-	uint64_t data_blocks = div_round_up(data_len, disk->disk->block_size);
-	if (data_blocks > space) {
-		fastboot_fail(fb, "Image is too big");
+		fastboot_fail(fb, "Could not find partition \"%s\"\n", partition_name);
 		return;
 	}
 
 	if (is_sparse_image(data)) {
-		FB_DEBUG("Writing sparse image to LBA %llu to %llu\n",
-			 e->starting_lba, e->ending_lba);
-		if (write_sparse_image(fb, disk, e, data, data_len))
-			return;
-	} else {
-		FB_DEBUG("Writing LBA %llu to %llu, num blocks = %llu, data "
-			 "len = %zu, block size = %u\n",
-			 e->starting_lba, e->starting_lba + data_blocks,
-			 data_blocks, data_len, disk->disk->block_size);
-		lba_t blocks_written = disk->disk->ops.write(
-			&disk->disk->ops, e->starting_lba, data_blocks, data);
-		if (blocks_written != data_blocks) {
-			fastboot_fail(fb, "Failed to write");
+		if (offset) {
+			fastboot_fail(fb, "Non-zero offset for sparse image write");
 			return;
 		}
+
+		FB_DEBUG("Writing sparse image to LBA %llu to %llu\n",
+			 e->starting_lba, e->ending_lba);
+		if (!write_sparse_image(fb, disk, e, data, data_len))
+			fastboot_succeed(fb);
+
+		return;
 	}
+
+	if (data_len % disk->disk->block_size) {
+		fastboot_fail(fb, "Buffer size %zu not aligned to block size of %u\n", data_len,
+			      disk->disk->block_size);
+		return;
+	}
+
+	const uint64_t space = GptGetEntrySizeLba(e);
+	const uint64_t data_blocks = data_len / disk->disk->block_size;
+	if (blocks_offset > space || data_blocks > space - blocks_offset) {
+		fastboot_fail(fb, "Image is too big");
+		return;
+	}
+
+	FB_DEBUG("Writing LBA %llu to %llu, num blocks = %llu, data "
+		 "len = %zu, block size = %u\n",
+		 e->starting_lba + blocks_offset,
+		 e->starting_lba + blocks_offset + data_blocks,
+		 data_blocks, data_len, disk->disk->block_size);
+	const lba_t blocks_written = disk->disk->ops.write(
+		&disk->disk->ops, e->starting_lba + blocks_offset, data_blocks, data);
+	if (blocks_written != data_blocks) {
+		fastboot_fail(fb, "Failed to write");
+		return;
+	}
+
 	fastboot_succeed(fb);
 	return;
 }
