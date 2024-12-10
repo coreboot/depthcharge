@@ -109,6 +109,149 @@ static void fastboot_cmd_erase(struct FastbootOps *fb, const char *arg,
 	fastboot_disk_destroy(&disk);
 }
 
+static bool fastboot_read_misc_cmdline(struct FastbootOps *fb,
+				       struct vb2_fastboot_cmdline *fb_cmd)
+{
+	struct fastboot_disk disk;
+
+	if (!fastboot_disk_init(&disk)) {
+		FB_FAIL_AND_DEBUG(fb, "Failed to init disk");
+		return false;
+	}
+
+	if (!fastboot_read(&disk, GPT_ENT_NAME_ANDROID_MISC,
+			   sizeof(GPT_ENT_NAME_ANDROID_MISC), fb_cmd,
+			   sizeof(struct vb2_fastboot_cmdline),
+			   VB2_MISC_VENDOR_SPACE_FASTBOOT_CMDLINE_OFFSET)) {
+		FB_FAIL_AND_DEBUG(fb, "Failed to read misc partition");
+		fastboot_disk_destroy(&disk);
+		return false;
+	}
+
+	fastboot_disk_destroy(&disk);
+
+	if (!vb2_is_fastboot_cmdline_valid(fb_cmd)) {
+		FB_FAIL_AND_DEBUG(fb, "Invalid cmdline data stored in misc");
+		return false;
+	}
+
+	return true;
+}
+
+static void fastboot_write_misc_cmdline(struct FastbootOps *fb,
+					struct vb2_fastboot_cmdline *fb_cmd)
+{
+	struct fastboot_disk disk;
+
+	if (!fastboot_disk_init(&disk)) {
+		fastboot_fail(fb, "Failed to init disk");
+		return;
+	}
+
+	fb_cmd->magic = VB2_MISC_VENDOR_SPACE_FASTBOOT_CMDLINE_MAGIC;
+	fb_cmd->version = 0;
+	vb2_update_fastboot_cmdline_checksum(fb_cmd);
+
+	fastboot_write(fb, &disk, GPT_ENT_NAME_ANDROID_MISC,
+		       sizeof(GPT_ENT_NAME_ANDROID_MISC), fb_cmd,
+		       sizeof(struct vb2_fastboot_cmdline),
+		       VB2_MISC_VENDOR_SPACE_FASTBOOT_CMDLINE_OFFSET);
+
+	fastboot_disk_destroy(&disk);
+}
+
+static void fastboot_cmd_oem_cmdline_get(struct FastbootOps *fb,
+					 const char *arg, uint64_t arg_len) {
+	struct vb2_fastboot_cmdline fb_cmd;
+	char *line;
+
+	if (!fastboot_read_misc_cmdline(fb, &fb_cmd))
+		return;
+
+	line = fb_cmd.cmdline;
+	for (int i = 0; i < fb_cmd.len; i++) {
+		if (fb_cmd.cmdline[i] != '\n')
+			continue;
+
+		fb_cmd.cmdline[i] = '\0';
+		fastboot_info(fb, "%s", line);
+		line = &fb_cmd.cmdline[i + 1];
+	}
+
+	fastboot_succeed(fb);
+}
+
+static void fastboot_cmd_oem_cmdline_add(struct FastbootOps *fb,
+					 const char *arg, uint64_t arg_len) {
+	struct vb2_fastboot_cmdline fb_cmd;
+
+	if (!fastboot_read_misc_cmdline(fb, &fb_cmd))
+		return;
+
+	if (arg_len + fb_cmd.len + 1 >= sizeof(fb_cmd.cmdline)) {
+		fastboot_fail(fb, "Not enough space in fastboot cmdline");
+		return;
+	}
+
+	memcpy(&fb_cmd.cmdline[fb_cmd.len], arg, arg_len);
+	fb_cmd.len += arg_len + 1;
+	fb_cmd.cmdline[fb_cmd.len - 1] = '\n';
+
+	fastboot_write_misc_cmdline(fb, &fb_cmd);
+}
+
+static void fastboot_cmd_oem_cmdline_del(struct FastbootOps *fb,
+					 const char *arg, uint64_t arg_len) {
+	struct vb2_fastboot_cmdline fb_cmd;
+	char *line;
+
+	if (!fastboot_read_misc_cmdline(fb, &fb_cmd))
+		return;
+
+	line = fb_cmd.cmdline;
+	for (int i = 0; i < fb_cmd.len; i++) {
+		if (fb_cmd.cmdline[i] != '\n')
+			continue;
+
+		if (arg_len != fb_cmd.cmdline + i - line ||
+		    strncmp(line, arg, arg_len)) {
+			line = &fb_cmd.cmdline[i + 1];
+			continue;
+		}
+		/* Found line to remove */
+		break;
+	}
+	if (line >= fb_cmd.cmdline + fb_cmd.len) {
+		fastboot_fail(fb, "Line not found");
+		return;
+	}
+
+	memmove(line, line + arg_len + 1, fb_cmd.len - (line - fb_cmd.cmdline) - arg_len - 1);
+	fb_cmd.len -= arg_len + 1;
+
+	fastboot_write_misc_cmdline(fb, &fb_cmd);
+}
+
+static void fastboot_cmd_oem_cmdline_set(struct FastbootOps *fb,
+					 const char *arg, uint64_t arg_len) {
+	struct vb2_fastboot_cmdline fb_cmd;
+
+	if (arg_len + 1 >= sizeof(fb_cmd.cmdline)) {
+		fastboot_fail(fb, "Not enough space in fastboot cmdline");
+		return;
+	}
+
+	if (arg_len > 0) {
+		memcpy(fb_cmd.cmdline, arg, arg_len);
+		fb_cmd.cmdline[arg_len] = '\n';
+		fb_cmd.len = arg_len + 1;
+	} else {
+		fb_cmd.len = 0;
+	}
+
+	fastboot_write_misc_cmdline(fb, &fb_cmd);
+}
+
 // `fastboot oem get-kernels` returns a list of slot letter:kernel mapping.
 // This is useful for us because the partition tables are more flexible than on
 // more traditional devices, so there could be many kernels.
@@ -238,6 +381,10 @@ struct fastboot_cmd fastboot_cmds[] = {
 	CMD_ARGS("erase", ':', fastboot_cmd_erase),
 	CMD_ARGS("flash", ':', fastboot_cmd_flash),
 	CMD_ARGS("getvar", ':', fastboot_cmd_getvar),
+	CMD_ARGS("oem cmdline add", ' ', fastboot_cmd_oem_cmdline_add),
+	CMD_ARGS("oem cmdline del", ' ', fastboot_cmd_oem_cmdline_del),
+	CMD_ARGS("oem cmdline set", ' ', fastboot_cmd_oem_cmdline_set),
+	CMD_NO_ARGS("oem cmdline", fastboot_cmd_oem_cmdline_get),
 	CMD_NO_ARGS("oem get-kernels", fastboot_cmd_oem_get_kernels),
 	CMD_ARGS("reboot", '-', fastboot_cmd_reboot_to_recovery),
 	CMD_NO_ARGS("reboot", fastboot_cmd_reboot),
