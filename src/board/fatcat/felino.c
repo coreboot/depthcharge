@@ -37,7 +37,7 @@ const struct audio_config *variant_probe_audio_config(void)
 
 int gsc_irq_status(void)
 {
-	return pantherlake_get_gpe(GPE0_DW0_11); /* GPP_H11 */
+	return pantherlake_get_gpe(GPE0_DW2_15); /* GPP_F15 */
 }
 
 const struct tpm_config *variant_get_tpm_config(void)
