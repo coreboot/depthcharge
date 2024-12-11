@@ -3,16 +3,16 @@
  * Copyright 2025 Google LLC.
  */
 #include <libpayload.h>
-#include "drivers/sound/rt721_sndw.h"
+#include "drivers/sound/rt7xx_sndw.h"
 
 /* rt721 codec ID */
-static const sndw_codec_id rt721_id = {
+static const sndw_codec_id rt7xx_id = {
 	.codec = {
 		.version   = 0x30,
 		.mfgid1    = 0x02,
 		.mfgid2    = 0x5d,
-		.partid1   = 0x07,
-		.partid2   = 0x21,
+		.partid1   = RT_7XX_CODEC_PART1_ID,
+		.partid2   = RT_7XX_CODEC_PART2_ID,
 		.sndwclass = 0x1,
 	}
 };
@@ -84,12 +84,12 @@ static int sndw_beep(SndwOps *sndw, void *sndwlinkaddr, uint32_t sndwendpointdev
 	return 0;
 }
 /*
- * rt721sndw_beep - Function involves enabling of the codec, generate the beep via
+ * rt7xxsndw_beep - Function involves enabling of the codec, generate the beep via
  * tone generator and then resets the DSP.
  */
-static int rt721sndw_beep(SoundOps *me, uint32_t msec, uint32_t frequency)
+static int rt7xxsndw_beep(SoundOps *me, uint32_t msec, uint32_t frequency)
 {
-	rt721sndw *codec = container_of(me, rt721sndw, ops);
+	rt7xxsndw *codec = container_of(me, rt7xxsndw, ops);
 	sndw_codec_info maxcodecinfo;
 
 	if (codec->sndw->sndw_enable(codec->sndw, &maxcodecinfo)) {
@@ -98,7 +98,7 @@ static int rt721sndw_beep(SoundOps *me, uint32_t msec, uint32_t frequency)
 	}
 
 	for(int i = 0; i < SNDW_DEV_ID_NUM; i++) {
-		if(rt721_id.id[i] != maxcodecinfo.codecid.id[i]) {
+		if(rt7xx_id.id[i] != maxcodecinfo.codecid.id[i]) {
 			printf("Codecs don't match\n");
 			for(int j = 0; j < SNDW_DEV_ID_NUM; j++)
 				printf(" 0x%x", maxcodecinfo.codecid.id[j]);
@@ -118,17 +118,17 @@ static int rt721sndw_beep(SoundOps *me, uint32_t msec, uint32_t frequency)
 		return -1;
 	}
 
-	printf("Generated rt721sndw boot beep\n");
+	printf("Generated rt7xxsndw boot beep\n");
 	return 0;
 }
 /*
- * new_rt721_sndw - new structure for Soundwire rt721 codec.
+ * new_rt7xx_sndw - new structure for Soundwire rt7xx codec.
  * sndw - Pointer to the Soundwire ops.
  */
-rt721sndw *new_rt721_sndw(SndwOps *sndw, uint32_t beep_duration)
+rt7xxsndw *new_rt7xx_sndw(SndwOps *sndw, uint32_t beep_duration)
 {
-	rt721sndw *codec = xzalloc(sizeof(*codec));
-	codec->ops.play = &rt721sndw_beep;
+	rt7xxsndw *codec = xzalloc(sizeof(*codec));
+	codec->ops.play = &rt7xxsndw_beep;
 	codec->sndw = sndw;
 	codec->beep_duration = beep_duration;
 

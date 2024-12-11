@@ -128,6 +128,10 @@ config DRIVER_SOUND_RT5682S
 	bool "RT5682-VS codec driver"
 	default n
 
+config DRIVER_SOUND_RT712_SNDW
+	bool "RT712-VB SNDW codec driver"
+	default n
+
 config DRIVER_SOUND_RT721_SNDW
 	bool "RT721 Soundwire codec driver"
 	default n

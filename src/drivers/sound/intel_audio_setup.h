@@ -29,6 +29,7 @@ enum audio_codec_type {
 	AUDIO_RT5650,
 	AUDIO_ALC256,
 	AUDIO_ALC257,
+	AUDIO_RT712,
 	AUDIO_RT721,
 };
 
