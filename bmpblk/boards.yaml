@@ -70,8 +70,6 @@ _DEFAULT_:
   rw_override:  []
   split_ratio: 0
 
-x86-generic,amd64-generic,arm-generic,arm64-generic,mips-generic:
-
 asurada:
   # 1920x1080, boots recovery image on USB ports or SD card.
   dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
