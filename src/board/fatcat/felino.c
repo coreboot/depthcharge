@@ -9,6 +9,7 @@
 #include "drivers/gpio/pantherlake.h"
 #include "drivers/soc/pantherlake.h"
 #include "drivers/storage/storage_common.h"
+#include "drivers/bus/soundwire/soundwire.h"
 
 #define EC_SOC_INT_ODL		GPP_E03
 
@@ -16,21 +17,18 @@ const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
 
-	config = (struct audio_config){
-		.bus = {
-			.type			= AUDIO_I2S,
-			.i2s.address	= SSP_I2S1_START_ADDRESS,
-			.i2s.settings	= &max98357a_settings,
-		},
-		.amp = {
-			.type			= AUDIO_AMP_NONE,
-		},
-		.codec = {
-			.type			= AUDIO_RT5650,
-			.i2c[0].ctrlr		= PCI_DEV_I2C3,
-			.i2c[0].i2c_addr[0]	= 0x1a,
-		},
-	};
+	if (CONFIG(DRIVER_SOUND_RT712_SNDW) &&
+		fw_config_probe(FW_CONFIG(AUDIO, AUDIO_ALC712_SNDW))) {
+		config = (struct audio_config){
+			.bus = {
+				.type	= AUDIO_SNDW,
+				.sndw.link	= AUDIO_SNDW_LINK3,
+			},
+			.codec = {
+				.type	= AUDIO_RT712,
+			},
+		};
+	}
 
 	return &config;
 }
