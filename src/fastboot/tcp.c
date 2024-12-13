@@ -30,8 +30,6 @@
 #include "net/net.h"
 #include "net/uip.h"
 
-static struct fastboot_tcp_session tcp_session;
-
 /********************** PACKET BOOKKEEPING FUNCTIONS **************************/
 
 // Destroy a packet.
@@ -66,23 +64,6 @@ static void fastboot_tcp_txq_append(struct fastboot_tcp_session *tcp,
 		list_insert_after(&p->node, tcp->txq_bottom);
 		tcp->txq_bottom = &p->node;
 	}
-}
-
-// Reset a session.
-static void fastboot_tcp_reset_session(struct fastboot_tcp_session *tcp)
-{
-	if (tcp->last_packet) {
-		fastboot_tcp_packet_destroy(tcp->last_packet);
-		tcp->last_packet = NULL;
-	}
-	// Drain packet queue.
-	while (tcp->txq_top != NULL) {
-		struct fastboot_tcp_packet *top = fastboot_tcp_txq_pop(tcp);
-		fastboot_tcp_packet_destroy(top);
-	}
-
-	// Reset everything to its initial state.
-	fastboot_reset_session(tcp->fb_session);
 }
 
 // Send a single packet from the packet queue if we can.
@@ -124,10 +105,13 @@ static bool fastboot_tcp_is_valid_conn(struct fastboot_tcp_session *tcp)
 }
 
 // Send some data. This is used by the protocol-layer code in fastboot.c
-int fastboot_tcp_send(struct fastboot_session *fb, void *data, uint16_t datalen)
+int fastboot_tcp_send(struct FastbootOps *fb, void *data, uint16_t datalen)
 {
+	struct fastboot_tcp_session *tcp =
+		container_of(fb, struct fastboot_tcp_session, fb_session);
 	uint64_t size = htobe64(datalen);
 	void *packet_data = xmalloc(sizeof(size) + datalen);
+
 	memcpy(packet_data, &size, sizeof(size));
 	memcpy(packet_data + sizeof(size), data, datalen);
 
@@ -135,7 +119,7 @@ int fastboot_tcp_send(struct fastboot_session *fb, void *data, uint16_t datalen)
 	memset(p, 0, sizeof(*p));
 	p->data = packet_data;
 	p->len = datalen + sizeof(size);
-	fastboot_tcp_txq_append((struct fastboot_tcp_session *)fb->transport->data, p);
+	fastboot_tcp_txq_append(tcp, p);
 
 	return 0;
 }
@@ -149,6 +133,17 @@ static void fastboot_tcp_enter_state(struct fastboot_tcp_session *tcp,
 				     enum fastboot_tcp_state new_state)
 {
 	switch (new_state) {
+	case WAIT_FOR_HANDSHAKE:
+		if (tcp->last_packet) {
+			fastboot_tcp_packet_destroy(tcp->last_packet);
+			tcp->last_packet = NULL;
+		}
+		/* Drain packet queue */
+		while (tcp->txq_top != NULL) {
+			struct fastboot_tcp_packet *top = fastboot_tcp_txq_pop(tcp);
+			fastboot_tcp_packet_destroy(top);
+		}
+		break;
 	case WAIT_FOR_HEADER:
 		tcp->state_data.wait_for_header.header_bytes_collected = 0;
 		break;
@@ -223,7 +218,7 @@ static uint64_t fastboot_tcp_recv_header(struct fastboot_tcp_session *tcp,
 		tcp->state_data.wait_for_data.data_left_to_receive =
 			be64dec(state_data->header);
 		/* Choose next state based on fastboot session state */
-		fastboot_tcp_enter_state(tcp, tcp->fb_session->state == DOWNLOAD ?
+		fastboot_tcp_enter_state(tcp, tcp->fb_session.state == DOWNLOAD ?
 					      WAIT_FOR_DOWNLOAD : WAIT_FOR_COMMAND);
 	} else {
 		FB_DEBUG("short packet of %llu bytes, so far received %d\n",
@@ -249,7 +244,7 @@ static uint64_t fastboot_tcp_recv_command(struct fastboot_tcp_session *tcp, char
 		const uint64_t packet_len = state_data->data_left_to_receive;
 
 		FB_TRACE_IO("[from host] %.*s\n", packet_len, buf);
-		fastboot_handle_packet(tcp->fb_session, buf, packet_len);
+		fastboot_handle_packet(&tcp->fb_session, buf, packet_len);
 		fastboot_tcp_enter_state(tcp, WAIT_FOR_HEADER);
 
 		return packet_len;
@@ -265,7 +260,7 @@ static uint64_t fastboot_tcp_recv_command(struct fastboot_tcp_session *tcp, char
 	uip_close();
 	printf("drop connection because cannot collect segmented packet of %llu size\n",
 	       state_data->data_left_to_receive);
-	fastboot_tcp_enter_state(tcp, WAIT_FOR_HANDSHAKE);
+	fastboot_reset_session(&tcp->fb_session);
 
 	return 0;
 }
@@ -289,7 +284,7 @@ static uint64_t fastboot_tcp_recv_segment(struct fastboot_tcp_session *tcp, char
 		/* We received the whole packet, handle it */
 		FB_TRACE_IO("[from host] %.*s\n", state_data->segment_offset,
 			    state_data->segment_buf);
-		fastboot_handle_packet(tcp->fb_session, state_data->segment_buf,
+		fastboot_handle_packet(&tcp->fb_session, state_data->segment_buf,
 				       state_data->segment_offset);
 		fastboot_tcp_enter_state(tcp, WAIT_FOR_HEADER);
 	}
@@ -312,7 +307,7 @@ static uint64_t fastboot_tcp_recv_download(struct fastboot_tcp_session *tcp, cha
 		    state_data->data_left_to_receive);
 
 	state_data->data_left_to_receive -= bytes_consumed;
-	fastboot_handle_packet(tcp->fb_session, buf, bytes_consumed);
+	fastboot_handle_packet(&tcp->fb_session, buf, bytes_consumed);
 
 	/* Whole packet received, wait for new packet. */
 	if (state_data->data_left_to_receive == 0)
@@ -353,6 +348,9 @@ static void fastboot_tcp_recv(struct fastboot_tcp_session *tcp, char *buf,
 	}
 }
 
+/* Forward declaration of a global tcp_session */
+static struct fastboot_tcp_session tcp_session;
+
 // Net callback, called when there's network work to do.
 static void fastboot_tcp_net_callback(void)
 {
@@ -380,7 +378,7 @@ static void fastboot_tcp_net_callback(void)
 		FB_DEBUG(
 			"connection closed: closed %d aborted %d timedout %d\n",
 			uip_closed(), uip_aborted(), uip_timedout());
-		fastboot_tcp_reset_session(tcp);
+		fastboot_reset_session(&tcp->fb_session);
 		return;
 	}
 
@@ -405,38 +403,38 @@ static void fastboot_tcp_net_callback(void)
 	fastboot_tcp_send_packet(tcp);
 }
 
-static void fastboot_tcp_reset(struct fastboot_session *fb)
+static void fastboot_tcp_reset(struct FastbootOps *fb)
 {
-	struct fastboot_tcp_session *tcp = (struct fastboot_tcp_session *)fb->transport->data;
+	struct fastboot_tcp_session *tcp =
+		container_of(fb, struct fastboot_tcp_session, fb_session);
 
-	memset(tcp, 0, sizeof(tcp_session));
-
-	tcp->fb_session = fb;
+	fastboot_tcp_enter_state(tcp, WAIT_FOR_HANDSHAKE);
 }
 
-static void fastboot_tcp_poll(struct fastboot_session *fb)
+static void fastboot_tcp_poll(struct FastbootOps *fb)
 {
 	net_poll();
 }
 
-static void fastboot_tcp_release(struct fastboot_session *fb)
+static void fastboot_tcp_release(struct FastbootOps *fb)
 {
 	net_set_callback(NULL);
 }
 
-struct fastboot_transport net_fastboot_transport_layer = {
-	.poll = fastboot_tcp_poll,
-	.send_packet = fastboot_tcp_send,
-	.reset = fastboot_tcp_reset,
-	.release = fastboot_tcp_release,
-	.data = &tcp_session,
+static struct fastboot_tcp_session tcp_session = {
+	.fb_session = {
+		.poll = fastboot_tcp_poll,
+		.send_packet = fastboot_tcp_send,
+		.reset = fastboot_tcp_reset,
+		.release = fastboot_tcp_release,
+	},
 };
 
-struct fastboot_transport *fastboot_setup_tcp(void)
+struct FastbootOps *fastboot_setup_tcp(void)
 {
 	net_wait_for_link();
 
-	// Set up the network stack.
+	/* Set up the network stack */
 	uip_init();
 
 	uip_ipaddr_t my_ip, next_ip, server_ip;
@@ -453,5 +451,5 @@ struct fastboot_transport *fastboot_setup_tcp(void)
 
 	net_set_callback(fastboot_tcp_net_callback);
 
-	return &net_fastboot_transport_layer;
+	return &tcp_session.fb_session;
 }

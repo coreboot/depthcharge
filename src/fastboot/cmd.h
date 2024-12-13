@@ -23,7 +23,7 @@
 
 #include "fastboot/fastboot.h"
 
-typedef void (*fastboot_cmd_fn_t)(fastboot_session_t *fb, const char *arg,
+typedef void (*fastboot_cmd_fn_t)(struct FastbootOps *fb, const char *arg,
 				  uint64_t arg_len);
 
 // Represents a command.

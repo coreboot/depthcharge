@@ -37,10 +37,10 @@ bool fastboot_disk_init(struct fastboot_disk *disk);
 void fastboot_disk_destroy(struct fastboot_disk *disk);
 bool fastboot_disk_foreach_partition(struct fastboot_disk *disk,
 				     disk_foreach_callback_t cb, void *ctx);
-void fastboot_write(fastboot_session_t *fb, struct fastboot_disk *disk,
+void fastboot_write(struct FastbootOps *fb, struct fastboot_disk *disk,
 		    const char *partition_name, size_t name_len, void *data,
 		    size_t data_len);
-void fastboot_erase(fastboot_session_t *fb, struct fastboot_disk *disk,
+void fastboot_erase(struct FastbootOps *fb, struct fastboot_disk *disk,
 		    const char *partition_name, size_t name_len);
 int fastboot_get_slot_count(struct fastboot_disk *disk);
 char get_slot_for_partition_name(GptEntry *e, char *partition_name);
