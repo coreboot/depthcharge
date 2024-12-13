@@ -27,55 +27,55 @@
 #include "stdarg.h"
 
 static char msg_buf[FASTBOOT_MSG_MAX];
-void fastboot_fail(fastboot_session_t *fb, const char *msg)
+void fastboot_fail(struct FastbootOps *fb, const char *msg)
 {
 	int len = snprintf(msg_buf, FASTBOOT_MSG_MAX, "FAIL%s", msg);
-	fb->transport->send_packet(fb, msg_buf, len + 1);
+	fb->send_packet(fb, msg_buf, len + 1);
 }
 
-void fastboot_data(fastboot_session_t *fb, uint32_t bytes)
+void fastboot_data(struct FastbootOps *fb, uint32_t bytes)
 {
-	// Set up for data transfer.
+	/* Set up for data transfer */
 	fb->download_len = bytes;
 	fb->download_progress = 0;
 	fb->has_download = false;
 	fb->state = DOWNLOAD;
-	// Send acknowledgement to host.
+	/* Send acknowledgment to host */
 	int len = snprintf(msg_buf, FASTBOOT_MSG_MAX, "DATA%08x", bytes);
-	fb->transport->send_packet(fb, msg_buf, len + 1);
+	fb->send_packet(fb, msg_buf, len + 1);
 }
 
-void fastboot_okay(fastboot_session_t *fb, const char *fmt, ...)
+void fastboot_okay(struct FastbootOps *fb, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
 	memcpy(msg_buf, "OKAY", 4);
 	int len = 4 + vsnprintf(&msg_buf[4], FASTBOOT_MSG_MAX - 4, fmt, ap);
 	va_end(ap);
-	fb->transport->send_packet(fb, msg_buf, len + 1);
+	fb->send_packet(fb, msg_buf, len + 1);
 }
 
-void fastboot_info(fastboot_session_t *fb, const char *fmt, ...)
+void fastboot_info(struct FastbootOps *fb, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
 	memcpy(msg_buf, "INFO", 4);
 	int len = 4 + vsnprintf(&msg_buf[4], FASTBOOT_MSG_MAX - 4, fmt, ap);
 	va_end(ap);
-	fb->transport->send_packet(fb, msg_buf, len + 1);
+	fb->send_packet(fb, msg_buf, len + 1);
 }
 
-void fastboot_succeed(fastboot_session_t *fb)
+void fastboot_succeed(struct FastbootOps *fb)
 {
-	fb->transport->send_packet(fb, "OKAY", 5);
+	fb->send_packet(fb, "OKAY", 5);
 }
 
-bool fastboot_is_finished(fastboot_session_t *fb)
+bool fastboot_is_finished(struct FastbootOps *fb)
 {
 	return fb->state == FINISHED || fb->state == REBOOT;
 }
 
-void *fastboot_get_download_buffer(fastboot_session_t *fb, uint64_t *len)
+void *fastboot_get_download_buffer(struct FastbootOps *fb, uint64_t *len)
 {
 	if (len)
 		*len = fb->download_len;
@@ -84,7 +84,7 @@ void *fastboot_get_download_buffer(fastboot_session_t *fb, uint64_t *len)
 
 /***************************** PROTOCOL HANDLING *****************************/
 
-static void fastboot_handle_download(fastboot_session_t *fb, void *data,
+static void fastboot_handle_download(struct FastbootOps *fb, void *data,
 				     uint64_t len)
 {
 	uint64_t left = fb->download_len - fb->download_progress;
@@ -105,7 +105,7 @@ static void fastboot_handle_download(fastboot_session_t *fb, void *data,
 	}
 }
 
-static void fastboot_handle_command(fastboot_session_t *fb, void *data,
+static void fastboot_handle_command(struct FastbootOps *fb, void *data,
 				    uint64_t len)
 {
 	// "data" contains a command, which is essentially freeform text.
@@ -148,7 +148,7 @@ static void fastboot_handle_command(fastboot_session_t *fb, void *data,
 	fastboot_fail(fb, "Unknown command");
 }
 
-void fastboot_handle_packet(fastboot_session_t *fb, void *data, uint64_t len)
+void fastboot_handle_packet(struct FastbootOps *fb, void *data, uint64_t len)
 {
 	switch (fb->state) {
 	case COMMAND:
@@ -165,21 +165,21 @@ void fastboot_handle_packet(fastboot_session_t *fb, void *data, uint64_t len)
 	}
 }
 
-void fastboot_reset_session(fastboot_session_t *fb)
+void fastboot_reset_session(struct FastbootOps *fb)
 {
-	struct fastboot_transport *transport = fb->transport;
+	/* Reset common fastboot session */
+	fb->state = COMMAND;
+	fb->has_download = false;
 
-	memset(fb, 0, sizeof(struct fastboot_session));
-
-	fb->transport = transport;
-	if (transport->reset)
-		transport->reset(fb);
+	/* Reset transport layer specific data */
+	if (fb->reset)
+		fb->reset(fb);
 }
 
 void fastboot(void)
 {
-	struct fastboot_session fb_session;
-	struct fastboot_transport *transport = NULL;
+	struct FastbootOps *fb_session = NULL;
+	enum fastboot_state final_state;
 
 	/* TODO(b/370988331): Replace this with actual UI */
 	video_init();
@@ -191,30 +191,30 @@ void fastboot(void)
 	if (CONFIG(FASTBOOT_TCP)) {
 		video_console_set_cursor(0, 1);
 		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for network");
-		transport = fastboot_setup_tcp();
-		if (transport) {
+		fb_session = fastboot_setup_tcp();
+		if (fb_session) {
 			video_console_set_cursor(0, 1);
 			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Network connected");
 		}
 	}
 
-	if (transport == NULL) {
+	if (fb_session == NULL) {
 		video_console_set_cursor(0, 1);
 		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "No fastboot device");
 		return;
 	}
 
-	fb_session.transport = transport;
-	fastboot_reset_session(&fb_session);
+	fastboot_reset_session(fb_session);
 
 	printf("fastboot starting.\n");
-	while (!fastboot_is_finished(&fb_session))
-		fb_session.transport->poll(&fb_session);
+	while (!fastboot_is_finished(fb_session))
+		fb_session->poll(fb_session);
 
 	printf("fastboot done.\n");
-	if (fb_session.transport->release)
-		fb_session.transport->release(&fb_session);
+	final_state = fb_session->state;
+	if (fb_session->release)
+		fb_session->release(fb_session);
 
-	if (fb_session.state == REBOOT)
+	if (final_state == REBOOT)
 		cold_reboot();
 }

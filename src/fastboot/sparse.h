@@ -28,7 +28,7 @@
 #endif
 
 int is_sparse_image(void *image_addr);
-int write_sparse_image(fastboot_session_t *fb, struct fastboot_disk *disk,
+int write_sparse_image(struct FastbootOps *fb, struct fastboot_disk *disk,
 		       GptEntry *partition, void *image_addr,
 		       uint64_t image_size);
 
