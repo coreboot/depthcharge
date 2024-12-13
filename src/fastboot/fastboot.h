@@ -19,8 +19,8 @@
 #define __FASTBOOT_FASTBOOT_H__
 
 #include <stdarg.h>
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 //#define NDEBUG 0
 
