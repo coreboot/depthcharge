@@ -18,8 +18,8 @@
 #ifndef __FASTBOOT_SPARSE_H__
 #define __FASTBOOT_SPARSE_H__
 
-#include "fastboot/fastboot.h"
 #include "fastboot/disk.h"
+#include "fastboot/fastboot.h"
 
 #if 0
 #define FB_TRACE_SPARSE FB_DEBUG
