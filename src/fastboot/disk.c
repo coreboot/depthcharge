@@ -140,7 +140,7 @@ GptEntry *fastboot_get_partition(struct fastboot_disk *disk, unsigned int index)
 }
 
 
-void fastboot_write(fastboot_session_t *fb, struct fastboot_disk *disk,
+void fastboot_write(struct FastbootOps *fb, struct fastboot_disk *disk,
 		    const char *partition_name, size_t name_len, void *data,
 		    size_t data_len)
 {
@@ -178,7 +178,7 @@ void fastboot_write(fastboot_session_t *fb, struct fastboot_disk *disk,
 	return;
 }
 
-void fastboot_erase(fastboot_session_t *fb, struct fastboot_disk *disk,
+void fastboot_erase(struct FastbootOps *fb, struct fastboot_disk *disk,
 		    const char *partition_name, size_t name_len)
 {
 	GptEntry *e = fastboot_find_partition(disk, partition_name, name_len);
