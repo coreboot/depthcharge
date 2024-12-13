@@ -15,10 +15,12 @@
  * GNU General Public License for more details.
  */
 
-#include "fastboot/fastboot.h"
-#include "fastboot/disk.h"
-#include "fastboot/sparse.h"
+#include <libpayload.h>
 #include <stdint.h>
+
+#include "fastboot/sparse.h"
+#include "fastboot/disk.h"
+#include "fastboot/fastboot.h"
 
 /********************** Sparse Image Handling ****************************/
 

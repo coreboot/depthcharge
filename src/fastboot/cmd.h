@@ -18,9 +18,10 @@
 #ifndef __FASTBOOT_CMD_H__
 #define __FASTBOOT_CMD_H__
 
-#include "fastboot/fastboot.h"
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
+
+#include "fastboot/fastboot.h"
 
 typedef void (*fastboot_cmd_fn_t)(fastboot_session_t *fb, const char *arg,
 				  uint64_t arg_len);
