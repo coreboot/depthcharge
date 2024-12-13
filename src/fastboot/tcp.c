@@ -15,17 +15,17 @@
  * GNU General Public License for more details.
  */
 
-#include "fastboot/tcp.h"
 #include <libpayload.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "die.h"
 #include "drivers/net/net.h"
 #include "drivers/power/power.h"
 #include "endian.h"
 #include "fastboot/fastboot.h"
+#include "fastboot/tcp.h"
 #include "net/dhcp.h"
 #include "net/net.h"
 #include "net/uip.h"

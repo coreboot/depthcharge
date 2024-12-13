@@ -18,10 +18,11 @@
 #ifndef __FASTBOOT_DISK_H__
 #define __FASTBOOT_DISK_H__
 
-#include "fastboot/fastboot.h"
-#include "drivers/storage/blockdev.h"
-#include "gpt_misc.h"
 #include <stdbool.h>
+
+#include "drivers/storage/blockdev.h"
+#include "fastboot/fastboot.h"
+#include "gpt_misc.h"
 
 struct fastboot_disk {
 	BlockDev *disk;
