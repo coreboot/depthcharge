@@ -42,7 +42,7 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 	{.name = NULL},
 };
 
-static void fastboot_getvar_all(fastboot_session_t *fb)
+static void fastboot_getvar_all(struct FastbootOps *fb)
 {
 	char var_buf[FASTBOOT_MSG_MAX];
 
@@ -71,7 +71,7 @@ static void fastboot_getvar_all(fastboot_session_t *fb)
 	fastboot_succeed(fb);
 }
 
-void fastboot_cmd_getvar(fastboot_session_t *fb, const char *args,
+void fastboot_cmd_getvar(struct FastbootOps *fb, const char *args,
 			 uint64_t arg_len)
 {
 	char var_buf[FASTBOOT_MSG_MAX];

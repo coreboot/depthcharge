@@ -113,7 +113,7 @@ static void *img_buff_advance(struct img_buff *buff, uint64_t size)
 }
 
 /* Write sparse image to partition */
-int write_sparse_image(fastboot_session_t *fb, struct fastboot_disk *disk,
+int write_sparse_image(struct FastbootOps *fb, struct fastboot_disk *disk,
 		       GptEntry *partition, void *image_addr,
 		       uint64_t image_size)
 {

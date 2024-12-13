@@ -49,14 +49,14 @@ static int parse_hex(const char *str, size_t len, uint32_t *ret)
 	return valid;
 }
 
-static void fastboot_cmd_continue(fastboot_session_t *fb, const char *arg,
+static void fastboot_cmd_continue(struct FastbootOps *fb, const char *arg,
 				  uint64_t arg_len)
 {
 	fastboot_okay(fb, "Continuing boot");
 	fb->state = FINISHED;
 }
 
-static void fastboot_cmd_download(fastboot_session_t *fb, const char *arg,
+static void fastboot_cmd_download(struct FastbootOps *fb, const char *arg,
 				  uint64_t arg_len)
 {
 	uint32_t size = 0;
@@ -74,7 +74,7 @@ static void fastboot_cmd_download(fastboot_session_t *fb, const char *arg,
 	fastboot_data(fb, size);
 }
 
-static void fastboot_cmd_flash(fastboot_session_t *fb, const char *arg,
+static void fastboot_cmd_flash(struct FastbootOps *fb, const char *arg,
 			       uint64_t arg_len)
 {
 	if (!fb->has_download) {
@@ -94,7 +94,7 @@ static void fastboot_cmd_flash(fastboot_session_t *fb, const char *arg,
 	fastboot_disk_destroy(&disk);
 }
 
-static void fastboot_cmd_erase(fastboot_session_t *fb, const char *arg,
+static void fastboot_cmd_erase(struct FastbootOps *fb, const char *arg,
 			       uint64_t arg_len)
 {
 	struct fastboot_disk disk;
@@ -121,7 +121,7 @@ static void fastboot_cmd_erase(fastboot_session_t *fb, const char *arg,
 // We map them to fastboot slots by having the first slot be the first partition
 // we found.
 struct get_kernels_ctx {
-	fastboot_session_t *fb;
+	struct FastbootOps *fb;
 	int cur_kernel;
 };
 static bool get_kernels_cb(void *ctx, int index, GptEntry *e,
@@ -137,7 +137,7 @@ static bool get_kernels_cb(void *ctx, int index, GptEntry *e,
 	gk->cur_kernel++;
 	return false;
 }
-static void fastboot_cmd_oem_get_kernels(fastboot_session_t *fb,
+static void fastboot_cmd_oem_get_kernels(struct FastbootOps *fb,
 					 const char *arg, uint64_t arg_len)
 {
 	struct fastboot_disk disk;
@@ -154,14 +154,14 @@ static void fastboot_cmd_oem_get_kernels(fastboot_session_t *fb,
 	fastboot_succeed(fb);
 }
 
-static void fastboot_cmd_reboot(fastboot_session_t *fb, const char *arg,
+static void fastboot_cmd_reboot(struct FastbootOps *fb, const char *arg,
 				uint64_t arg_len)
 {
 	fastboot_succeed(fb);
 	fb->state = REBOOT;
 }
 
-static void fastboot_cmd_set_active(fastboot_session_t *fb, const char *arg,
+static void fastboot_cmd_set_active(struct FastbootOps *fb, const char *arg,
 				    uint64_t arg_len)
 {
 	struct fastboot_disk disk;
