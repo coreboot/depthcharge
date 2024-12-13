@@ -15,14 +15,13 @@
  * GNU General Public License for more details.
  */
 
-#include "fastboot/vars.h"
-
 #include <arch/virtual.h>
+#include <string.h>
 #include <sysinfo.h>
+
 #include "fastboot/disk.h"
 #include "fastboot/fastboot.h"
-
-#include <string.h>
+#include "fastboot/vars.h"
 
 #define VAR_ARGS(_name, _sep, _var)                                            \
 	{                                                                      \

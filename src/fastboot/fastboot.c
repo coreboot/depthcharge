@@ -15,13 +15,13 @@
  * GNU General Public License for more details.
  */
 
-#include "fastboot/fastboot.h"
 #include <libpayload.h>
-
 #include <stdlib.h>
+
 #include "die.h"
 #include "drivers/power/power.h"
 #include "fastboot/cmd.h"
+#include "fastboot/fastboot.h"
 #include "fastboot/tcp.h"
 #include "image/symbols.h"
 #include "stdarg.h"
