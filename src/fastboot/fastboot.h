@@ -35,7 +35,7 @@
 #endif
 
 #if 0
-// This is _very_ slow when transferring data.
+/* This is _very_ slow when transferring data */
 #define FB_TRACE_IO(...) printf(__VA_ARGS__)
 #else
 #define FB_TRACE_IO(...)
@@ -45,73 +45,65 @@
 #define FASTBOOT_MAX_DOWNLOAD_SIZE ((uint64_t)CONFIG_KERNEL_SIZE)
 
 enum fastboot_state {
-	// Expecting a command. This is the initial state.
+	/* Expecting a command. This is the initial state. */
 	COMMAND = 0,
-	// Expecting data.
+	/* Expecting data */
 	DOWNLOAD,
-	// Session finished, resume normal boot.
+	/* Session finished, resume normal boot */
 	FINISHED,
-	// Session finished, reboot.
+	/* Session finished, reboot */
 	REBOOT,
 };
 
-struct fastboot_transport;
-
-// State of a fastboot session.
-typedef struct fastboot_session {
-	// State of the session.
+/* State of a fastboot session and functions that abstract transport layer */
+struct FastbootOps {
+	/* State of the session */
 	enum fastboot_state state;
 
-	// Is there a download present?
+	/* Download buffer is ready to obtain from fastboot_get_download_buffer() */
 	bool has_download;
-	// If has_download, how much data is there?
-	// If state == DOWNLOAD, how much data are we expecting?
+	/*
+	 * Number of bytes in download buffer (or expected number of bytes after transfer
+	 * completes when in DOWNLOAD state)
+	 */
 	uint64_t download_len;
-	// If state == DOWNLOAD, how much data have we received?
+	/* Actual number of bytes received when in DOWNLOAD state */
 	uint64_t download_progress;
-	// Fastboot transport layer used for this session
-	struct fastboot_transport *transport;
-} fastboot_session_t;
-
-/* Set of functions that abstract fastboot transport layer */
-struct fastboot_transport {
 	/*
 	 * Poll for new fastboot messages. This function should call
 	 * fastboot_handle_packet(). This function is required.
 	 */
-	void (*poll)(struct fastboot_session *fb);
+	void (*poll)(struct FastbootOps *fb);
 	/* Send fastboot response. This function is required. */
-	int (*send_packet)(struct fastboot_session *fb, void *buf, uint16_t len);
+	int (*send_packet)(struct FastbootOps *fb, void *buf, uint16_t len);
 	/* Called on fastboot_reset_session(). This function is optional. */
-	void (*reset)(struct fastboot_session *fb);
+	void (*reset)(struct FastbootOps *fb);
 	/*
 	 * Called on fastboot exit. After this function, any function from
 	 * fastboot_transport shouldn't be called. This function is optional.
 	 */
-	void (*release)(struct fastboot_session *fb);
-	/* Pointer for internal data of fastboot_transport */
-	void *data;
+	void (*release)(struct FastbootOps *fb);
 };
 
-// Have we exited fastboot? (e.g. user ran `fastboot continue`)
-bool fastboot_is_finished(fastboot_session_t *fb);
-// Handle a single fastboot packet, or a chunk of data in a download.
-void fastboot_handle_packet(fastboot_session_t *fb, void *data, uint64_t len);
-// Run fastboot.
+/* Have we exited fastboot? (e.g. user ran `fastboot continue)` */
+bool fastboot_is_finished(struct FastbootOps *fb);
+/* Handle a single fastboot packet, or a chunk of data in a download */
+void fastboot_handle_packet(struct FastbootOps *fb, void *data, uint64_t len);
+/* Run fastboot */
 void fastboot(void);
-// Get the download buffer and the length of the download if a download exists.
-void *fastboot_get_download_buffer(fastboot_session_t *fb, uint64_t *len);
-// Reset fastboot session to initial state.
-void fastboot_reset_session(fastboot_session_t *fb);
+/* Get the download buffer and the length of the download if a download exists */
+void *fastboot_get_download_buffer(struct FastbootOps *fb, uint64_t *len);
+/* Reset fastboot session to initial state */
+void fastboot_reset_session(struct FastbootOps *fb);
 
-// Responses to the client.
-void fastboot_fail(fastboot_session_t *fb, const char *msg);
-void fastboot_data(fastboot_session_t *fb, uint32_t bytes);
-void fastboot_okay(fastboot_session_t *fb, const char *fmt, ...)
+/* Responses to the client */
+void fastboot_fail(struct FastbootOps *fb, const char *msg);
+void fastboot_data(struct FastbootOps *fb, uint32_t bytes);
+void fastboot_okay(struct FastbootOps *fb, const char *fmt, ...)
 	__attribute__((format(printf, 2, 3)));
-void fastboot_info(fastboot_session_t *fb, const char *fmt, ...)
+void fastboot_info(struct FastbootOps *fb, const char *fmt, ...)
 	__attribute__((format(printf, 2, 3)));
-// Sends an empty OKAY.
-void fastboot_succeed(fastboot_session_t *fb);
+/* Sends an empty OKAY */
+void fastboot_succeed(struct FastbootOps *fb);
 
-#endif // __FASTBOOT_FASTBOOT_H__
+#endif /* __FASTBOOT_FASTBOOT_H__ */

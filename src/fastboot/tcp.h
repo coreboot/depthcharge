@@ -68,7 +68,7 @@ union fastboot_tcp_state_data {
 
 struct fastboot_tcp_session {
 	// Transport-agnostic fastboot session information.
-	struct fastboot_session *fb_session;
+	struct FastbootOps fb_session;
 	// Current state of this session.
 	enum fastboot_tcp_state state;
 	// Data specific for the current state
@@ -95,6 +95,6 @@ struct fastboot_tcp_packet {
 	struct list_node node;
 };
 
-struct fastboot_transport *fastboot_setup_tcp(void);
+struct FastbootOps *fastboot_setup_tcp(void);
 
 #endif // __FASTBOOT_TCP_H__
