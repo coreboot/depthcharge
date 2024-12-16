@@ -18,6 +18,7 @@
 #include "drivers/power/psci.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/nau8318.h"
+#include "drivers/sound/rt5645.h"
 #include "drivers/sound/tas2563.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/storage/mtk_ufs.h"
@@ -59,7 +60,7 @@ static void setup_tas2563(GpioOps *spk_rst_l)
 	MtkI2s *i2so1 = new_mtk_i2s(0x1A110000, 2, 32 * KHz, 16, 16, AFE_I2S_O4);
 	I2sSource *i2s_source = new_i2s_source(&i2so1->ops, 32 * KHz, 2, 8000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-	MTKI2c *i2c3 = new_mtk_i2c(0x13150000, 0x163c0000, I2C_APDMA_ASYNC);
+	MTKI2c *i2c3 = new_mtk_i2c(0x13150000, 0x163C0000, I2C_APDMA_ASYNC);
 	Tas2563Codec *speaker_r = new_tas2563_codec(&i2c3->ops, 0x4c, 1, 0);
 	Tas2563Codec *speaker_l = new_tas2563_codec(&i2c3->ops, 0x4f, 0, 0);
 
@@ -71,6 +72,23 @@ static void setup_tas2563(GpioOps *spk_rst_l)
 			  &sound_route->components);
 	list_insert_after(&speaker_r->component.list_node,
 			  &sound_route->components);
+	sound_set_ops(&sound_route->ops);
+}
+
+static void setup_alc5645(void)
+{
+	MtkI2s *i2so0 = new_mtk_i2s(0x1A110000, 2, 48000, 16, 16, AFE_I2S_O6);
+	I2sSource *i2s_source = new_i2s_source(&i2so0->ops, 48000, 2, 8000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+
+	MTKI2c *i2c3 = new_mtk_i2c(0x13150000, 0x163C0000, I2C_APDMA_ASYNC);
+	rt5645Codec *rt5645 = new_rt5645_codec(&i2c3->ops, 0x1A);
+
+	list_insert_after(&rt5645->component.list_node,
+			  &sound_route->components);
+	list_insert_after(&i2so0->component.list_node,
+			  &sound_route->components);
+
 	sound_set_ops(&sound_route->ops);
 }
 
@@ -91,7 +109,8 @@ static void sound_setup(void)
 		printf("setup amps tas2563\n");
 		setup_tas2563(spk_reset);
 	} else {
-		printf("no amps found\n");
+		printf("setup amps alc5645\n");
+		setup_alc5645();
 	}
 }
 
