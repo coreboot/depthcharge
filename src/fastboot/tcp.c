@@ -105,7 +105,7 @@ static bool fastboot_tcp_is_valid_conn(struct fastboot_tcp_session *tcp)
 }
 
 // Send some data. This is used by the protocol-layer code in fastboot.c
-int fastboot_tcp_send(struct FastbootOps *fb, void *data, uint16_t datalen)
+static int fastboot_tcp_send(struct FastbootOps *fb, void *data, size_t datalen)
 {
 	struct fastboot_tcp_session *tcp =
 		container_of(fb, struct fastboot_tcp_session, fb_session);
