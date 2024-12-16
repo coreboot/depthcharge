@@ -75,7 +75,7 @@ struct FastbootOps {
 	 */
 	void (*poll)(struct FastbootOps *fb);
 	/* Send fastboot response. This function is required. */
-	int (*send_packet)(struct FastbootOps *fb, void *buf, uint16_t len);
+	int (*send_packet)(struct FastbootOps *fb, void *buf, size_t len);
 	/* Called on fastboot_reset_session(). This function is optional. */
 	void (*reset)(struct FastbootOps *fb);
 	/*
