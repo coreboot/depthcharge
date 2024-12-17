@@ -55,10 +55,6 @@ static const struct storage_config storage_configs[] = {
 			.clock_max = EMMC_CLOCK_MAX
 			},
 	},
-	{
-		.media = STORAGE_UFS,
-		.pci_dev = PCH_DEV_UFS1,
-	},
 };
 
 const struct storage_config *variant_get_storage_configs(size_t *count)
