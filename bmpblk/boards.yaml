@@ -392,3 +392,8 @@ fatcat:
 
 rauru:
   dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+skywalker:
+  sdcard: False
+  dpi: 112 # DO NOT COPY-PASTE -- follow instructions at top of file.
+
