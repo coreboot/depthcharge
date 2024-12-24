@@ -85,7 +85,6 @@ config SOC_INTEL_CSE_LITE_PSR
 config SOC_INTEL_CSE_LITE_SYNC_BY_PAYLOAD
 	bool "Sync CSE RW Partition"
 	depends on SOC_INTEL_CSE_LITE_SKU
-	select SOC_INTEL_CSE_RW_UPDATE
 	help
 	 Use this option if CSE RW update needs to be triggered during payload.
 
