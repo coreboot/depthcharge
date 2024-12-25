@@ -8,6 +8,7 @@
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/storage/mtk_ufs.h"
 
 static int board_setup(void)
 {
@@ -15,8 +16,11 @@ static int board_setup(void)
 	power_set_ops(&psci_power_ops);
 	/* Set up NOR flash ops */
 	MtkNorFlash *nor_flash = new_mtk_nor_flash(0x11018000);
-
 	flash_set_ops(&nor_flash->ops);
+
+	/* Set up UFS ops */
+	MtkUfsCtlr *ufs_host = new_mtk_ufs_ctlr(0x112B0000, 0x112BD000);
+	list_insert_after(&ufs_host->ufs.bctlr.list_node, &fixed_block_dev_controllers);
 
 	/* TODO: Set up eMMC */
 	/* TODO: Set up SD card */
