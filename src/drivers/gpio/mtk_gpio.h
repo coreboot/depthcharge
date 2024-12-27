@@ -33,6 +33,8 @@ typedef struct {
 #include "drivers/gpio/mt8186.h"
 #elif CONFIG(DRIVER_GPIO_MT8188)
 #include "drivers/gpio/mt8188.h"
+#elif CONFIG(DRIVER_GPIO_MT8189)
+#include "drivers/gpio/mt8189.h"
 #elif CONFIG(DRIVER_GPIO_MT8192)
 #include "drivers/gpio/mt8192.h"
 #elif CONFIG(DRIVER_GPIO_MT8195)

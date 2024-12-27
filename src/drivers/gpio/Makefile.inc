@@ -29,6 +29,7 @@ depthcharge-$(CONFIG_DRIVER_GPIO_MT8173) += mtk_gpio.c mtk_eint_v1.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8183) += mtk_gpio.c mtk_eint_v1.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8186) += mtk_gpio.c mtk_eint_v1.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8188) += mtk_gpio.c mtk_eint_v1.c
+depthcharge-$(CONFIG_DRIVER_GPIO_MT8189) += mtk_gpio.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8192) += mtk_gpio.c mtk_eint_v1.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8195) += mtk_gpio.c mtk_eint_v1.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8196) += mtk_gpio.c mt8196_eint.c
