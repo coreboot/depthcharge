@@ -33,6 +33,7 @@ enum timestamp_id {
 	/* 990+ reserved for vendorcode extensions (990-999: Intel ME continued) */
 	TS_ME_ROM_START = 990,
 	TS_ISSE_DMU_LOAD_END = 991,
+	TS_ESE_LOAD_AUNIT_END = 992,
 
 	// Depthcharge entry IDs start at 1000.
 	TS_START = 1000,

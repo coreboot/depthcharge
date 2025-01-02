@@ -69,6 +69,33 @@ static int soc_cbmem_inject_telemetry_data(s64 *time_stamp, s64 current_time)
 	return 0;
 
 }
+#elif CONFIG(SOC_INTEL_CSE_PRE_CPU_RESET_TELEMETRY_V3)
+static int soc_cbmem_inject_telemetry_data(s64 *time_stamp, s64 current_time)
+{
+	s64 start_stamp;
+
+	if (!time_stamp) {
+		printk(BIOS_ERR, "%s: Failed to insert CSME timestamps\n", __func__);
+		return -1;
+	}
+
+	start_stamp = current_time - time_stamp[PERF_DATA_CSME_GET_PERF_RESPONSE];
+
+	timestamp_add(TS_ME_ROM_START, start_stamp);
+	timestamp_add(TS_ME_BOOT_STALL_END,
+		start_stamp + time_stamp[PERF_DATA_CSME_RBE_BOOT_STALL_DONE_TO_PMC]);
+	timestamp_add(TS_ME_ICC_CONFIG_START,
+		start_stamp + time_stamp[PERF_DATA_CSME_GOT_ICC_CFG_START_MSG_FROM_PMC]);
+	timestamp_add(TS_ME_HOST_BOOT_PREP_END,
+		start_stamp + time_stamp[PERF_DATA_CSME_HOST_BOOT_PREP_DONE]);
+	timestamp_add(TS_ME_RECEIVED_CRDA_FROM_PMC,
+		start_stamp + time_stamp[PERF_DATA_PMC_SENT_CRDA]);
+	timestamp_add(TS_ESE_LOAD_AUNIT_END,
+		start_stamp + time_stamp[PERF_DATA_ESE_LOAD_AUNIT_COMPLETED]);
+
+	return 0;
+
+}
 #else
 #error "Select a valid pre CPU reset telemetry config"
 #endif
