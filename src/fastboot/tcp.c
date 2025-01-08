@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include "die.h"
+#include "drivers/ec/cros/ec.h"
 #include "drivers/net/net.h"
 #include "drivers/power/power.h"
 #include "endian.h"
@@ -446,6 +447,8 @@ struct FastbootOps *fastboot_setup_tcp(void)
 	video_console_set_cursor(0, 2);
 	video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "IP: %d.%d.%d.%d\n",
 		     uip_ipaddr_to_quad(&my_ip));
+	if (CONFIG(DRIVER_EC_CROS))
+		cros_ec_print("Fastboot IP: %d.%d.%d.%d\n", uip_ipaddr_to_quad(&my_ip));
 
 	uip_listen(uip_htons(FASTBOOT_PORT));
 
