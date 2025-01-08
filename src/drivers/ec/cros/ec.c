@@ -1080,3 +1080,22 @@ int cros_ec_set_ap_fw_state(uint32_t state)
 		return -1;
 	return 0;
 }
+
+int cros_ec_print(const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	char str[EC_HOST_PARAM_SIZE];
+	int ret = vsnprintf(str, sizeof(str), fmt, args);
+	va_end(args);
+
+	if (ret <= 0) {
+		printf("Failed to snprintf the message, ret:%d\n", ret);
+		return ret;
+	}
+
+	ret = ec_command(cros_ec_get(), EC_CMD_CONSOLE_PRINT, 0,
+			 str, MIN(ret, sizeof(str)), NULL, 0);
+
+	return ret;
+}

@@ -529,4 +529,13 @@ int cros_ec_i2c_passthru_protect_status(int i2c_port, int *status);
  */
 int cros_ec_set_ap_fw_state(uint32_t state);
 
+/**
+ * Print message on the EC console.
+ *
+ * @param fmt		Format string
+ * @param ...		printf like arguments for format string
+ * @return 0 if ok, negative on error
+ */
+int cros_ec_print(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+
 #endif /* __DRIVERS_EC_CROS_EC_H__ */
