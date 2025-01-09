@@ -911,7 +911,7 @@ void cros_ec_probe_aux_fw_chips(void)
 	CrosEc *cros_ec = cros_ec_get();
 	struct ec_response_usb_pd_ports usb_pd_ports_r;
 	struct ec_params_pd_chip_info pd_chip_p = {0};
-	struct ec_response_pd_chip_info pd_chip_r = {0};
+	struct ec_response_pd_chip_info_v2 pd_chip_r = {0};
 	int ret;
 	uint8_t i;
 	CrosEcAuxfwChipInfo *chip;
@@ -935,7 +935,17 @@ void cros_ec_probe_aux_fw_chips(void)
 		/* Get the USB PD Chip info */
 		pd_chip_p.port = i;
 		pd_chip_p.live = 0;
-		ret = ec_cmd_pd_chip_info(cros_ec, &pd_chip_p, &pd_chip_r);
+
+		/*
+		 * Check if EC_CMD_PD_CHIP_INFO(v2) is supported,
+		 * if not use EC_CMD_PD_CHIP_INFO instead.
+		 */
+		if (cros_ec_cmd_version_supported(EC_CMD_PD_CHIP_INFO, 2))
+			ret = ec_cmd_pd_chip_info_v2(cros_ec, &pd_chip_p, &pd_chip_r);
+		else
+			ret = ec_cmd_pd_chip_info(cros_ec, &pd_chip_p,
+					(struct ec_response_pd_chip_info *)&pd_chip_r);
+
 		if (ret < 0) {
 			printf("%s: Cannot get PD port%d info - %d\n",
 					__func__, i, ret);

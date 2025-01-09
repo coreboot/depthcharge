@@ -301,17 +301,14 @@ Tps6699x *new_tps6699x(int ec_pd_id)
 	return me;
 }
 
-static const VbootAuxfwOps *new_tps6699x_from_chip_info(struct ec_response_pd_chip_info *r,
+static const VbootAuxfwOps *new_tps6699x_from_chip_info(struct ec_response_pd_chip_info_v2 *r,
 							uint8_t ec_pd_id)
 {
 	Tps6699x *tps6699x;
 
-	/* Ignore the 2nd port so we don't perform the update twice.
-	 * TODO: b/324892496 Remove this when a better mechanism is
-	 * identified.
-	 */
-	if (ec_pd_id > 0) {
-		printf("Ignoring ports > 0 to avoid double-upgrade\n");
+	/* Skip firmware update if fw_update_flags flag is set */
+	if(r->fw_update_flags & USB_PD_CHIP_INFO_FWUP_FLAG_NO_UPDATE) {
+		printf("Ignoring port%d to avoid double-upgrade\n", ec_pd_id);
 		return NULL;
 	}
 

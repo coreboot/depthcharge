@@ -89,7 +89,7 @@ typedef struct CrosEcAuxfwChipInfo
 	 * for that chip.
 	 */
 	const VbootAuxfwOps * (*new_chip_aux_fw_ops)(
-				struct ec_response_pd_chip_info *chip,
+				struct ec_response_pd_chip_info_v2 *chip,
 				uint8_t ec_pd_id);
 } CrosEcAuxfwChipInfo;
 

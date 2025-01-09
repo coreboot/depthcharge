@@ -1928,7 +1928,7 @@ Ps8751 *new_ps8745_a2(CrosECTunnelI2c *bus, int ec_pd_id)
 }
 
 static const VbootAuxfwOps *new_ps8xxx_from_chip_info(
-	struct ec_response_pd_chip_info *r, uint8_t ec_pd_id)
+	struct ec_response_pd_chip_info_v2 *r, uint8_t ec_pd_id)
 {
 	Ps8751 *ps8751;
 
