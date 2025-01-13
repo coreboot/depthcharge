@@ -49,4 +49,6 @@ const Fmap *fmap_base(void);
 
 #define FMAP_AREA_RW_LEGACY "RW_LEGACY"
 
+#define FMAP_AREA_FW_EC_RW		"FW_EC_RW"
+
 #endif /* __IMAGE_FMAP_H__ */

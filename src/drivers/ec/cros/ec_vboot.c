@@ -3,12 +3,14 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <vb2_api.h>
+#include <image/fmap.h>
 
 #include "base/cleanup_funcs.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/ec/cros/commands.h"
 #include "drivers/ec/cros/commands_api.h"
 #include "drivers/ec/cros/ec.h"
+#include "drivers/flash/flash.h"
 #include "drivers/power/power.h"
 
 /* Timeout waiting for EC hash calculation completion */
@@ -427,6 +429,33 @@ static vb2_error_t vboot_set_region_protection(
 
 	/* Otherwise, it's an error */
 	return VB2_ERROR_UNKNOWN;
+}
+
+static vb2_error_t vboot_update_image_ap_flash(const uint8_t *image, int image_size)
+{
+	FmapArea ar;
+
+	/* TODO: consider checking if the select is properly set to
+	 * VB_SELECT_FIRMWARE_EC_UPDATE, should be based on the implementation
+	 * on the EC's end
+	 */
+
+	/* Find the area name for FW_EC_RW. */
+	if (fmap_find_area(FMAP_AREA_FW_EC_RW, &ar)) {
+		printf("%s: couldn't find %s region\n",__func__, FMAP_AREA_FW_EC_RW);
+		return  VB2_ERROR_UNKNOWN;
+	}
+	/* Make sure the EC image can fit in the Flash region */
+	if (image_size > ar.size) {
+		printf("%s: image to large", __func__);
+		return VB2_ERROR_INVALID_PARAMETER;
+	}
+	/* Rewrite to the flash region. */
+	if (flash_rewrite(image, ar.offset, image_size) != image_size) {
+		printf("%s: couldn't rewrite image to flash\n",__func__);
+		return VB2_ERROR_UNKNOWN;
+	}
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_update_image(VbootEcOps *vbec,
