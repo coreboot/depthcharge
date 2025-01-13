@@ -34,7 +34,7 @@ static struct rt5677_init_reg init_list[] = {
 	{RT5677_CLK_TREE_CTRL1,	  0x0111},
 	{RT5677_PLL1_CTRL1,	  0x0000},
 	{RT5677_PLL1_CTRL2,	  0x0000},
-	{RT5677_GPIO_CTRL2,       0x61B0},      /* GPIO5 output, high for SPKR_PA_EN on Smaug */
+	{RT5677_GPIO_CTRL2,       0x61B0},
 	{RT5677_DIG_MISC,	  0x0029},
 	{RT5677_GEN_CTRL1,	  0x00FF},
 	{RT5677_PWR_DIG2,	  0x9024},
