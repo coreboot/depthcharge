@@ -189,7 +189,7 @@ static int do_exit(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 U_BOOT_CMD(
 	exit, 1, 1,
-	"exit command console to coninue normal boot", NULL
+	"exit command console to continue normal boot", NULL
 );
 
 /*^^^^^^^^^^^^^^^^^^^^^^^^  History support ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
