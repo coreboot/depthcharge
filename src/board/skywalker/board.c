@@ -2,8 +2,10 @@
 
 #include <assert.h>
 #include <libpayload.h>
+
 #include "base/init_funcs.h"
 #include "drivers/bus/spi/mtk.h"
+#include "drivers/bus/i2c/mtk_i2c.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/spi.h"
@@ -12,7 +14,19 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/storage/mtk_ufs.h"
+#include "drivers/tpm/google/i2c.h"
+#include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
+
+static int tpm_irq_status(void)
+{
+	static GpioOps *tpm_int;
+	if (!tpm_int)
+		tpm_int = sysinfo_lookup_gpio("TPM interrupt", 1,
+					      new_mtk_eint);
+	assert(tpm_int);
+	return gpio_get(tpm_int);
+}
 
 static void enable_usb_vbus(struct UsbHostController *usb_host)
 {
@@ -33,6 +47,11 @@ static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
 	power_set_ops(&psci_power_ops);
+
+	/* Set up TPM */
+	MTKI2c *i2c3 = new_mtk_i2c(0x11D70000, 0x11300500, I2C_APDMA_ASYNC);
+	GscI2c *tpm = new_gsc_i2c(&i2c3->ops, GSC_I2C_ADDR, &tpm_irq_status);
+	tpm_set_ops(&tpm->base.ops);
 
 	/* Set up EC */
 	GpioOps *spi0_cs = new_gpio_not(new_mtk_gpio_output(PAD_SPIM0_CSB));
