@@ -160,11 +160,14 @@ static int do_get_cse_telemetry_data(void)
 	/* If CSE is already hidden then accessing CSE registers should be avoided */
 	if (!is_cse_enabled()) {
 		printk(BIOS_DEBUG, "CSE is disabled, not sending `Get Boot Perf` message\n");
-		return -1;
+		return 0;
 	}
 
 	/* Update coreboot timestamp table with CSE timestamps */
-	return process_cse_telemetry_data();
+	if (process_cse_telemetry_data() < 0)
+		printk(BIOS_ERR, "%s: Pre-cpu timestamp injection failed\n", __func__);
+
+	return 0;
 }
 
 INIT_FUNC(do_get_cse_telemetry_data);
