@@ -73,8 +73,8 @@ static void test_memchipinfo(void **state)
 	struct device_tree_node *c0 = dt_find_node_by_path(
 		&tree, "/lpddr-channel0", &adc, &szc, 0);
 	assert_non_null(c0);
-	assert_int_equal(adc, 1);
-	assert_int_equal(szc, 0);
+	assert_int_equal(adc, 2);
+	assert_int_equal(szc, 1);
 	assert_dt_compat_strings(c0, "jedec,lpddr3-channel");
 	assert_dt_u32_prop(c0, "io-width", 32);
 
@@ -104,8 +104,8 @@ static void test_memchipinfo(void **state)
 	struct device_tree_node *c1 = dt_find_node_by_path(
 		&tree, "/lpddr-channel1", &adc, &szc, 0);
 	assert_non_null(c1);
-	assert_int_equal(adc, 1);
-	assert_int_equal(szc, 0);
+	assert_int_equal(adc, 2);
+	assert_int_equal(szc, 1);
 	assert_dt_compat_strings(c1, "jedec,lpddr4-channel");
 	assert_dt_u32_prop(c1, "io-width", 16);
 
