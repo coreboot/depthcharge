@@ -146,15 +146,18 @@ void fastboot_write(struct FastbootOps *fb, struct fastboot_disk *disk,
 		return;
 	}
 
-	if (is_sparse_image(data)) {
-		if (offset) {
-			fastboot_fail(fb, "Non-zero offset for sparse image write");
-			return;
-		}
+	uint64_t space = GptGetEntrySizeLba(e);
+	const uint64_t start_block = e->starting_lba + blocks_offset;
+	if (space < blocks_offset) {
+		fastboot_fail(fb, "Offset is too big");
+		return;
+	}
+	space -= blocks_offset;
 
+	if (is_sparse_image(data)) {
 		FB_DEBUG("Writing sparse image to LBA %llu to %llu\n",
-			 e->starting_lba, e->ending_lba);
-		if (!write_sparse_image(fb, disk, e, data, data_len))
+			 start_block, start_block + space);
+		if (!write_sparse_image(fb, disk, start_block, space, data, data_len))
 			fastboot_succeed(fb);
 
 		return;
@@ -166,20 +169,18 @@ void fastboot_write(struct FastbootOps *fb, struct fastboot_disk *disk,
 		return;
 	}
 
-	const uint64_t space = GptGetEntrySizeLba(e);
 	const uint64_t data_blocks = data_len / disk->disk->block_size;
-	if (blocks_offset > space || data_blocks > space - blocks_offset) {
+	if (data_blocks > space) {
 		fastboot_fail(fb, "Image is too big");
 		return;
 	}
 
 	FB_DEBUG("Writing LBA %llu to %llu, num blocks = %llu, data "
 		 "len = %zu, block size = %u\n",
-		 e->starting_lba + blocks_offset,
-		 e->starting_lba + blocks_offset + data_blocks,
+		 start_block, start_block + data_blocks,
 		 data_blocks, data_len, disk->disk->block_size);
-	const lba_t blocks_written = disk->disk->ops.write(
-		&disk->disk->ops, e->starting_lba + blocks_offset, data_blocks, data);
+	const lba_t blocks_written = disk->disk->ops.write(&disk->disk->ops, start_block,
+							   data_blocks, data);
 	if (blocks_written != data_blocks) {
 		fastboot_fail(fb, "Failed to write");
 		return;

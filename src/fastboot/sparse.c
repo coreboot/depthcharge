@@ -112,9 +112,9 @@ static void *img_buff_advance(struct img_buff *buff, uint64_t size)
 	return data;
 }
 
-/* Write sparse image to partition */
+/* Write sparse image to the disk */
 int write_sparse_image(struct FastbootOps *fb, struct fastboot_disk *disk,
-		       GptEntry *partition, void *image_addr,
+		       uint64_t part_start_lba, uint64_t part_size_lba, void *image_addr,
 		       uint64_t image_size)
 {
 	struct img_buff buff;
@@ -164,9 +164,6 @@ int write_sparse_image(struct FastbootOps *fb, struct fastboot_disk *disk,
 	}
 
 	int i;
-	uint64_t part_addr = partition->starting_lba;
-	uint64_t part_size_lba = partition->ending_lba -
-				 partition->starting_lba + 1; // inclusive.
 	BlockDevOps *ops = &disk->disk->ops;
 
 	/* Perform the following operation on each chunk */
@@ -184,7 +181,7 @@ int write_sparse_image(struct FastbootOps *fb, struct fastboot_disk *disk,
 		FB_TRACE_SPARSE("Size in blks : %x\n", chunk_hdr->size_in_blks);
 		FB_TRACE_SPARSE("Total size   : %x\n",
 				chunk_hdr->total_size_bytes);
-		FB_TRACE_SPARSE("Part addr    : %llx\n", part_addr);
+		FB_TRACE_SPARSE("Part addr    : %llx\n", part_start_lba);
 
 		/* Size in bytes and lba of the area occupied by chunk range */
 		uint64_t chunk_size_bytes, chunk_size_lba;
@@ -229,7 +226,7 @@ int write_sparse_image(struct FastbootOps *fb, struct fastboot_disk *disk,
 				return -1;
 			}
 
-			if (ops->write(ops, part_addr, chunk_size_lba,
+			if (ops->write(ops, part_start_lba, chunk_size_lba,
 				       data_ptr) != chunk_size_lba) {
 				fastboot_fail(fb, "Failed to write");
 				return -1;
@@ -264,7 +261,7 @@ int write_sparse_image(struct FastbootOps *fb, struct fastboot_disk *disk,
 			}
 
 			/* Perform fill_write operation */
-			if (blockdev_fill_write(ops, part_addr, chunk_size_lba,
+			if (blockdev_fill_write(ops, part_start_lba, chunk_size_lba,
 						*data_fill) != chunk_size_lba) {
 				fastboot_fail(fb, "Failed to write");
 				return -1;
@@ -321,7 +318,7 @@ int write_sparse_image(struct FastbootOps *fb, struct fastboot_disk *disk,
 		}
 		}
 		/* Update partition address and size accordingly */
-		part_addr += chunk_size_lba;
+		part_start_lba += chunk_size_lba;
 		part_size_lba -= chunk_size_lba;
 	}
 
