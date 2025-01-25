@@ -39,7 +39,7 @@ const struct audio_config *variant_probe_audio_config(void)
 
 /* Override of func in src/drivers/ec/rts5453/rts5453.c */
 void board_rts5453_get_image_paths(const char **image_path,
-				   const char **hash_path)
+		const char **hash_path, struct ec_response_pd_chip_info_v2 *r)
 {
 	*image_path = "rts5453_retimer_bypass.bin";
 	*hash_path = "rts5453_retimer_bypass.hash";

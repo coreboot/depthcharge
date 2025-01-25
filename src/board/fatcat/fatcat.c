@@ -3,8 +3,12 @@
 #include <libpayload.h>
 
 #include "base/fw_config.h"
+#include "drivers/ec/rts5453/rts5453.h"
 #include "drivers/soc/pantherlake.h"
 #include "drivers/storage/storage_common.h"
+
+#define PDC_RTS5452_PROJ_NAME	"GOOG0800"
+#define PDC_RTS5453_PROJ_NAME	"GOOG0400"
 
 /* TODO: Implement override for `variant_probe_audio_config` */
 static const struct storage_config storage_configs[] = {
@@ -63,8 +67,17 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 }
 
 /* Override of func in src/drivers/ec/rts5453/rts5453.c */
-void board_rts5453_get_image_paths(const char **image_path, const char **hash_path)
+void board_rts5453_get_image_paths(const char **image_path,
+		const char **hash_path, struct ec_response_pd_chip_info_v2 *r)
 {
-	*image_path = "rts5453_retimer_jhl9040.bin";
-	*hash_path = "rts5453_retimer_jhl9040.hash";
+	if (!strcmp(r->fw_name_str, PDC_RTS5452_PROJ_NAME)) {
+		*image_path = "rts5452_retimer_jhl9040.bin";
+		*hash_path = "rts5452_retimer_jhl9040.hash";
+	} else if (!strcmp(r->fw_name_str, PDC_RTS5453_PROJ_NAME)) {
+		*image_path = "rts5453_retimer_jhl9040.bin";
+		*hash_path = "rts5453_retimer_jhl9040.hash";
+	} else {
+		*image_path = NULL;
+		*hash_path = NULL;
+	}
 }

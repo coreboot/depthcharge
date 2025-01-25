@@ -28,7 +28,7 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 
 /* Override of func in src/drivers/ec/rts5453/rts5453.c */
 void board_rts5453_get_image_paths(const char **image_path,
-				   const char **hash_path)
+		const char **hash_path, struct ec_response_pd_chip_info_v2 *r)
 {
 	*image_path = "rts5453_retimer_bypass.bin";
 	*hash_path = "rts5453_retimer_bypass.hash";

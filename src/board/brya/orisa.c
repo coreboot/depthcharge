@@ -18,7 +18,8 @@
 #define EC_PCH_INT_ODL		GPD2
 
 /* Override of func in src/drivers/ec/rts5453/rts5453.c */
-void board_rts5453_get_image_paths(const char **image_path, const char **hash_path)
+void board_rts5453_get_image_paths(const char **image_path,
+		const char **hash_path, struct ec_response_pd_chip_info_v2 *r)
 {
 	if (fw_config_probe(FW_CONFIG(PDC_CONTROL, PDC_RTS_BYPASS))) {
 		*image_path = "rts5453_retimer_bypass.bin";
