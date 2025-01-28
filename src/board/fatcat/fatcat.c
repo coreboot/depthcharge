@@ -6,11 +6,31 @@
 #include "drivers/ec/rts5453/rts5453.h"
 #include "drivers/soc/pantherlake.h"
 #include "drivers/storage/storage_common.h"
+#include "drivers/sound/intel_audio_setup.h"
 
 #define PDC_RTS5452_PROJ_NAME	"GOOG0800"
 #define PDC_RTS5453_PROJ_NAME	"GOOG0400"
 
-/* TODO: Implement override for `variant_probe_audio_config` */
+const struct audio_config *variant_probe_audio_config(void)
+{
+	static struct audio_config config;
+
+	if (CONFIG(DRIVER_SOUND_HDA) && fw_config_probe(FW_CONFIG(AUDIO, AUDIO_ALC256_HDA))) {
+		config = (struct audio_config){
+			.bus = {
+				.type = AUDIO_HDA,
+			},
+			.codec = {
+				.type = AUDIO_ALC256,
+			},
+		};
+	} else {
+		printf("Implement varaint audio config for other FW CONFIG options\n");
+	}
+
+	return &config;
+}
+
 static const struct storage_config storage_configs[] = {
 	{
 		.media = STORAGE_NVME,
