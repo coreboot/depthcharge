@@ -16,7 +16,7 @@
 #include "cse.h"
 #include "cse_telemetry.h"
 
-#define MSEC_TO_USEC(x) (x * 1000)
+#define MSEC_TO_USEC(x) ((s64)x * 1000)
 
 #if CONFIG(SOC_INTEL_CSE_PRE_CPU_RESET_TELEMETRY_V1)
 static int soc_cbmem_inject_telemetry_data(s64 *time_stamp, s64 current_time)
