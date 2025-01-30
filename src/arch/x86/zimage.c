@@ -19,7 +19,7 @@
 
 #include "arch/x86/boot.h"
 #include "vboot/boot.h"
-#include "vboot/boot_policy.h"
+#include "vboot/boot_info.h"
 #include "vboot/util/acpi.h"
 
 /* See "The Linux/x86 Boot Protocol" in kernel docs */

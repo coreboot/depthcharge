@@ -35,7 +35,7 @@
 #include "image/fmap.h"
 #include "image/symbols.h"
 #include "vboot/boot.h"
-#include "vboot/boot_policy.h"
+#include "vboot/boot_info.h"
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/nvdata.h"
 #include "vboot/secdata_tpm.h"

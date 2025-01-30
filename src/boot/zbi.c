@@ -30,7 +30,7 @@
 
 #include "boot/commandline.h"
 #include "vboot/boot.h"
-#include "vboot/boot_policy.h"
+#include "vboot/boot_info.h"
 #include "boot/zbi/driver-config.h"
 #include "boot/zbi/pixelformat.h"
 #include "boot/zbi/zbi.h"

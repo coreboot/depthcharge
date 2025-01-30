@@ -23,7 +23,7 @@
 #include "boot/zbi.h"
 #include "boot/multiboot.h"
 #include "base/timestamp.h"
-#include "vboot/boot_policy.h"
+#include "vboot/boot_info.h"
 #include "vboot/boot.h"
 
 static const int debug = 0;

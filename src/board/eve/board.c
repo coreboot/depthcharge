@@ -44,7 +44,7 @@
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"
-#include "vboot/boot_policy.h"
+#include "vboot/boot_info.h"
 #include "vboot/stages.h"
 #include "vboot/util/flag.h"
 
