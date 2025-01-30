@@ -43,6 +43,18 @@ config SOC_INTEL_STORE_ISH_FW_VERSION
 	  for the platform that would like to store the ISH version into the CBMEM and
 	  parse to perform some additional work.
 
+config SOC_INTEL_HAS_ISH_MAIN_FW
+	bool "Skip fetching ISH BUP version"
+	default n
+	depends on SOC_INTEL_CSE_LITE_SKU
+	help
+	  This config specifies that the Intel Sensor Hub (ISH) is using ISH MAIN firmware.
+	  When enabled, this setting skips fetching the ISH BUP version from the CSE firmware
+	  partition.
+
+	  This setting is platform-specific. Enable it only on platforms where the ISH is
+	  confirmed to be using the MAIN firmware.
+
 config SOC_INTEL_CSE_FW_PARTITION_CMOS_OFFSET
 	int "CMOS offset to store CSE FW info"
 	default 68

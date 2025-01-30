@@ -1506,7 +1506,7 @@ static void payload_cse_misc_ops(void *unused)
 	 * Store the ISH RW Firmware Version into CBMEM if ISH partition
 	 * is available
 	 */
-	if (soc_is_ish_partition_enabled())
+	if (!CONFIG(SOC_INTEL_HAS_ISH_MAIN_FW) && soc_is_ish_partition_enabled())
 		cse_store_ish_version();
 }
 
