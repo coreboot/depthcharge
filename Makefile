@@ -154,6 +154,10 @@ else
 INCLUDES += -I$(EC_HEADERS)
 endif
 
+ifdef COREBOOT_HEADERS
+INCLUDES += -I$(COREBOOT_HEADERS)
+endif
+
 ABI_FLAGS := $(ARCH_ABI_FLAGS) -ffreestanding -fno-builtin \
 	-fno-stack-protector -fomit-frame-pointer
 LINK_FLAGS = $(ARCH_LINK_FLAGS) $(ABI_FLAGS) -fuse-ld=bfd \
