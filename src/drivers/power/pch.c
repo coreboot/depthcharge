@@ -40,17 +40,17 @@
 #define   FULL_RST      (1 << 3)
 
 /*
- * Do a hard reset through the chipset's reset control register. This
- * register is available on all x86 systems (at least those built in
- * the last 10ys)
+ * Do a soft/warm reset through the chipset's reset control register.
+ * This register is available on all x86 systems (at least those built
+ * in the last 10ys)
  *
  * This function never returns.
  */
 static int pch_reboot(PowerOps *me)
 {
-	outb(FULL_RST | SYS_RST, RST_CNT); /* Req a hard reset, */
+	outb(SYS_RST, RST_CNT); /* Req a soft/warm reset, */
 	udelay(50); /* settle then, */
-	outb(FULL_RST | RST_CPU | SYS_RST, RST_CNT); /* reset.. */
+	outb(RST_CPU | SYS_RST, RST_CNT); /* reset.. */
 	halt();
 }
 
