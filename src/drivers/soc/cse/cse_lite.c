@@ -248,6 +248,9 @@ static void cse_store_rw_fw_version(void)
 	memcpy(&(cse_info_in_cbmem->cse_fwp_version.cur_cse_fw_version),
 		 &(cse_bp->fw_ver), sizeof(struct fw_version));
 
+	/* Update CBMEM cse sync status flag with CMOS stored information */
+	cse_info_in_cbmem->cse_sync_status = cse_info_in_cmos.cse_sync_status;
+
 	/* Update the CRC */
 	cse_store_info_crc(cse_info_in_cbmem);
 
@@ -742,17 +745,56 @@ static enum cb_err get_cse_ver_from_cbfs(struct fw_version *cbfs_rw_version)
 	return CB_SUCCESS;
 }
 
+static void cmos_update_cse_sync_performed(void)
+{
+	struct vb2_context *ctx = vboot_get_context();
+	if (!(vb2api_gbb_get_flags(ctx) & VB2_GBB_FLAG_FORCE_CSE_SYNC))
+		return;
+
+	struct cse_specific_info cse_info_in_cmos;
+	cmos_read_fw_partition_info(&cse_info_in_cmos);
+
+	/* Update CSE sync as performed */
+	cse_info_in_cmos.cse_sync_status |= CSE_ENFORCED_SYNC_PERFORMED;
+
+	/* Update the CRC */
+	cse_store_info_crc(&cse_info_in_cmos);
+
+	/* Update CSE specific info at CMOS*/
+	cmos_write_fw_partition_info(&cse_info_in_cmos);
+}
+
+static void cmos_update_cse_sync_status(void)
+{
+	struct vb2_context *ctx = vboot_get_context();
+	if (!(vb2api_gbb_get_flags(ctx) & VB2_GBB_FLAG_FORCE_CSE_SYNC))
+		return;
+
+	struct cse_specific_info cse_info_in_cmos;
+	cmos_read_fw_partition_info(&cse_info_in_cmos);
+
+	/* Reset flags if Enforced CSE sync is performed; else, request sync.*/
+	if (cse_info_in_cmos.cse_sync_status & CSE_ENFORCED_SYNC_PERFORMED) {
+		cse_info_in_cmos.cse_sync_status &=
+			~(CSE_ENFORCED_SYNC_PERFORMED | CSE_ENFORCED_SYNC_REQUEST);
+	} else
+		cse_info_in_cmos.cse_sync_status |= CSE_ENFORCED_SYNC_REQUEST;
+
+	/* Update the CRC */
+	cse_store_info_crc(&cse_info_in_cmos);
+
+	/* Update CSE specific info at CMOS*/
+	cmos_write_fw_partition_info(&cse_info_in_cmos);
+}
+
 static bool is_cse_sync_enforced(void)
 {
-	/*
-	 * Force test CSE firmware update scenario if below conditions are being met:
-	 *  - VB2_GBB_FLAG_FORCE_CSE_SYNC flag is set
-	 *  - CSE FW is in RO
-	 */
 	struct vb2_context *ctx = vboot_get_context();
-	if ((vb2api_gbb_get_flags(ctx) & VB2_GBB_FLAG_FORCE_CSE_SYNC) &&
-		 cse_get_current_bp() == RO) {
-		return true;
+	if (vb2api_gbb_get_flags(ctx) & VB2_GBB_FLAG_FORCE_CSE_SYNC) {
+		struct cse_specific_info cse_info_in_cmos;
+		cmos_read_fw_partition_info(&cse_info_in_cmos);
+
+		return cse_info_in_cmos.cse_sync_status & CSE_ENFORCED_SYNC_REQUEST;
 	}
 	return false;
 }
@@ -775,6 +817,9 @@ static enum cse_update_status cse_check_update_status(struct region *target_regi
 			cbfs_rw_version.build);
 	ret = cse_compare_sub_part_version(&cbfs_rw_version, cse_get_rw_version());
 	if (ret == 0) {
+		/* Update the CMOS status flag enforced CSE sync */
+		cmos_update_cse_sync_status();
+
 		if (is_cse_sync_enforced()) {
 			printk(BIOS_WARNING, "Force CSE Firmware upgrade for Autotest\n");
 			return CSE_UPDATE_UPGRADE;
@@ -834,6 +879,7 @@ static enum csme_failure_reason cse_update_rw(const void *cse_cbfs_rw, const siz
 	if (cse_write_rw_region(target_region, cse_cbfs_rw, cse_blob_sz) != CB_SUCCESS)
 		return CSE_LITE_SKU_FW_UPDATE_ERROR;
 
+	cmos_update_cse_sync_performed();
 	return CSE_NO_ERROR;
 }
 
