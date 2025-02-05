@@ -56,7 +56,7 @@ static void enable_usb_vbus(struct UsbHostController *usb_host)
 
 static void setup_tas2563(GpioOps *spk_rst_l)
 {
-	MtkI2s *i2so1 = new_mtk_i2s(0x1A110000, 2, 32 * KHz, 16, 16);
+	MtkI2s *i2so1 = new_mtk_i2s(0x1A110000, 2, 32 * KHz, 16, 16, AFE_I2S_O4);
 	I2sSource *i2s_source = new_i2s_source(&i2so1->ops, 32 * KHz, 2, 8000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 	MTKI2c *i2c3 = new_mtk_i2c(0x13150000, 0x163c0000, I2C_APDMA_ASYNC);

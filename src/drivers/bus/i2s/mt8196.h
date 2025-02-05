@@ -22,23 +22,29 @@ typedef struct afe_reg {
 	uint32_t afe_spm_control_req;
 	uint32_t _rsv3[13];
 	uint32_t aud_top_cfg_vlp_rg;
-	uint32_t _rsv4[1225];
+	uint32_t _rsv4[1189];
 	struct {
 		uint32_t con[10];
 		uint32_t mon;
-	} etdm_in[1];
-	uint32_t _rsv5[101];
+		uint32_t _rsv;
+	} etdm_in[6];
+	uint32_t _rsv5[28];
 	struct {
 		uint32_t con[10];
 		uint32_t mon;
-	} etdm_out[1];
-	uint32_t _rsv6[57];
-	uint32_t etdm_4_7_cowork_con0;
-	uint32_t _rsv7[1564];
+		uint32_t _rsv[5];
+	} etdm_out[6];
+	uint32_t _rsv6[20];
+	uint32_t etdm_4_7_cowork_con[3];
+	uint32_t _rsv7[1562];
 	uint32_t afe_conn116_1;
 	uint32_t _rsv8[7];
 	uint32_t afe_conn117_1;
-	uint32_t _rsv9[1470];
+	uint32_t _rsv8_1[247];
+	uint32_t afe_conn148_1;
+	uint32_t _rsv8_2[7];
+	uint32_t afe_conn149_1;
+	uint32_t _rsv9[1214];
 	uint32_t afe_dl_24ch_base_msb;
 	uint32_t afe_dl_24ch_base;
 	uint32_t afe_dl_24ch_cur_msb;
@@ -51,11 +57,15 @@ typedef struct afe_reg {
 	uint32_t afe_dl_24ch_mon0;
 } __attribute__((packed)) MtkI2sRegs;
 
-check_member(afe_reg, etdm_in[0].con[0], 0x13c0);
-check_member(afe_reg, etdm_out[0].con[0], 0x1580);
-check_member(afe_reg, etdm_4_7_cowork_con0, 0x1690);
+check_member(afe_reg, etdm_in[3].con[0], 0x13c0);
+check_member(afe_reg, etdm_in[5].con[0], 0x1420);
+check_member(afe_reg, etdm_out[3].con[0], 0x1580);
+check_member(afe_reg, etdm_out[5].con[0], 0x1600);
+check_member(afe_reg, etdm_4_7_cowork_con[0], 0x1690);
 check_member(afe_reg, afe_conn116_1, 0x2f04);
 check_member(afe_reg, afe_conn117_1, 0x2f24);
+check_member(afe_reg, afe_conn148_1, 0x3304);
+check_member(afe_reg, afe_conn149_1, 0x3324);
 check_member(afe_reg, afe_dl_24ch_base_msb, 0x4620);
 check_member(afe_reg, afe_dl_24ch_base, 0x4624);
 check_member(afe_reg, afe_dl_24ch_cur_msb, 0x4628);
@@ -65,16 +75,16 @@ check_member(afe_reg, afe_dl_24ch_end, 0x4634);
 check_member(afe_reg, afe_dl_24ch_con0, 0x4640);
 check_member(afe_reg, afe_dl_24ch_mon0, 0x4648);
 
-/* ETDM_4_7_COWORK_CON0 */
-#define ETDM_OUT4_SLAVE_SEL_SFT			8
-#define ETDM_OUT4_SLAVE_SEL_MASK		0xf
-#define ETDM_OUT4_SLAVE_SEL_MASK_SFT		(0xf << 8)
-#define ETDM_OUT4_SLAVE_SEL_VALUE		0x0
+/* ETDM_4_7_COWORK_CON */
+#define ETDM_OUT_SLAVE_SEL_SFT			8
+#define ETDM_OUT_SLAVE_SEL_MASK			0xf
+#define ETDM_OUT_SLAVE_SEL_MASK_SFT		(0xf << 8)
+#define ETDM_OUT_SLAVE_SEL_VALUE		0x0
 
-#define ETDM_IN4_SLAVE_SEL_SFT			24
-#define ETDM_IN4_SLAVE_SEL_MASK			0xf
-#define ETDM_IN4_SLAVE_SEL_MASK_SFT		(0xf << 24)
-#define ETDM_IN4_SLAVE_SEL_VALUE		0x8
+#define ETDM_IN_SLAVE_SEL_SFT			24
+#define ETDM_IN_SLAVE_SEL_MASK			0xf
+#define ETDM_IN_SLAVE_SEL_MASK_SFT		(0xf << 24)
+#define ETDM_IN_SLAVE_SEL_VALUE			0x8
 
 /* ETDM_IN0_CON0 */
 #define REG_ETDM_IN_EN_SFT			0
@@ -179,6 +189,18 @@ check_member(afe_reg, afe_dl_24ch_mon0, 0x4648);
 #define I055_O117_S_MASK			0x1
 #define I055_O117_S_MASK_SFT			(0x1 << 23)
 #define I055_O117_S_VALUE			0x1
+
+/* AFE_CONN148_1 */
+#define I054_O148_S_SFT				22
+#define I054_O148_S_MASK			0x1
+#define I054_O148_S_MASK_SFT			(0x1 << 22)
+#define I054_O148_S_VALUE			0x1
+
+/* AFE_CONN149_1 */
+#define I055_O149_S_SFT				23
+#define I055_O149_S_MASK			0x1
+#define I055_O149_S_MASK_SFT			(0x1 << 23)
+#define I055_O149_S_VALUE			0x1
 
 /* AFE_DL_24CH_BASE_MSB */
 #define DL_24CH_BASE__ADDR_MSB_SFT		0

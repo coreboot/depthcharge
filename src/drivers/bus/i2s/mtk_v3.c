@@ -103,7 +103,7 @@ static int mtk_i2s_send(I2sOps *me, uint32_t *data, unsigned int length)
 }
 
 MtkI2s *new_mtk_i2s(uintptr_t base, uint32_t channels, uint32_t rate,
-		    uint32_t word_len, uint32_t bit_len)
+		    uint32_t word_len, uint32_t bit_len, uint32_t i2s_num)
 {
 	MtkI2s *bus = xzalloc(sizeof(*bus));
 
@@ -114,6 +114,7 @@ MtkI2s *new_mtk_i2s(uintptr_t base, uint32_t channels, uint32_t rate,
 	bus->rate = rate;
 	bus->word_len = word_len;
 	bus->bit_len = bit_len;
+	bus->i2s_num = i2s_num;
 
 	return bus;
 }

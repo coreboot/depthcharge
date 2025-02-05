@@ -18,6 +18,15 @@
 #define I2S_LOG(args...)
 #endif
 
+enum {
+	AFE_I2S_O1,
+	AFE_I2S_O2,
+	AFE_I2S_O3,
+	AFE_I2S_O4,
+	AFE_I2S_O5,
+	AFE_I2S_O6,
+};
+
 typedef struct {
 	SoundRouteComponent component;
 	I2sOps ops;
@@ -27,10 +36,11 @@ typedef struct {
 	uint32_t rate;
 	uint32_t word_len;
 	uint32_t bit_len;
+	uint32_t i2s_num;
 } MtkI2s;
 
 MtkI2s *new_mtk_i2s(uintptr_t base, uint32_t channels, uint32_t rate,
-		    uint32_t word_len, uint32_t bit_len);
+		    uint32_t word_len, uint32_t bit_len, uint32_t i2s_num);
 int mtk_i2s_init(MtkI2s *bus);
 void mtk_etdmout_enable(MtkI2s *bus, bool enable,
 			uintptr_t buf_base, uintptr_t buf_end);
