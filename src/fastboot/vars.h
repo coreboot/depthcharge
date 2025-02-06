@@ -47,9 +47,8 @@ typedef struct fastboot_getvar_info {
 	fastboot_var_t var;
 } fastboot_getvar_info_t;
 
-void fastboot_cmd_getvar(struct FastbootOps *fb, const char *args,
-			 uint64_t arg_len);
+void fastboot_cmd_getvar(struct FastbootOps *fb, const char *args);
 fastboot_getvar_result_t fastboot_getvar(fastboot_var_t var, const char *arg,
-					 size_t arg_len, char *outbuf,
+					 size_t index, char *outbuf,
 					 size_t *outbuf_len);
 #endif // __FASTBOOT_VARS_H__

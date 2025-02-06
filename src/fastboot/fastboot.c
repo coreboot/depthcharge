@@ -109,7 +109,7 @@ static void fastboot_handle_command(struct FastbootOps *fb, void *data,
 				    uint64_t len)
 {
 	// "data" contains a command, which is essentially freeform text.
-	const char *cmd = (const char *)data;
+	char *cmd = (char *)data;
 	for (int i = 0; fastboot_cmds[i].name != NULL; i++) {
 		fastboot_cmd_t *cur = &fastboot_cmds[i];
 		// See if the command's name matches.
@@ -141,8 +141,11 @@ static void fastboot_handle_command(struct FastbootOps *fb, void *data,
 			cmd++;
 			len--;
 		}
+		/* Move arguments to the beginning of the buffer */
+		memmove(data, cmd, len);
+		((char *)data)[len] = '\0';
 
-		cur->fn(fb, cmd, len);
+		cur->fn(fb, data);
 		return;
 	}
 	fastboot_fail(fb, "Unknown command");

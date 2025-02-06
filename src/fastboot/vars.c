@@ -71,39 +71,32 @@ static void fastboot_getvar_all(struct FastbootOps *fb)
 	fastboot_succeed(fb);
 }
 
-void fastboot_cmd_getvar(struct FastbootOps *fb, const char *args,
-			 uint64_t arg_len)
+void fastboot_cmd_getvar(struct FastbootOps *fb, const char *args)
 {
 	char var_buf[FASTBOOT_MSG_MAX];
 
-	if (arg_len == strlen("all") && !strncmp(args, "all", strlen("all"))) {
+	if (!strcmp(args, "all")) {
 		fastboot_getvar_all(fb);
 		return;
 	}
 	for (int i = 0; fastboot_vars[i].name != NULL; i++) {
 		fastboot_getvar_info_t *var = &fastboot_vars[i];
 		int name_len = strlen(var->name);
-		if (name_len > arg_len)
-			continue;
 
 		if (strncmp(var->name, args, name_len))
 			continue;
 
-		args += name_len;
-		arg_len -= name_len;
 		if (var->has_args) {
-			if (arg_len < 1 || args[0] != var->sep) {
-				args -= name_len;
-				arg_len += name_len;
+			if (args[name_len] != var->sep)
 				continue;
-			}
 			args++;
-			arg_len--;
-		}
+		} else if (args[name_len] != '\0')
+			continue;
+		args += name_len;
 
 		size_t var_len = FASTBOOT_MSG_MAX;
 		fastboot_getvar_result_t state = fastboot_getvar(
-			var->var, args, arg_len, var_buf, &var_len);
+			var->var, args, 0, var_buf, &var_len);
 		if (state == STATE_OK) {
 			fastboot_okay(fb, "%.*s", (int)var_len, var_buf);
 		} else {
@@ -116,7 +109,7 @@ void fastboot_cmd_getvar(struct FastbootOps *fb, const char *args,
 }
 
 fastboot_getvar_result_t fastboot_getvar(fastboot_var_t var, const char *arg,
-					 size_t arg_len, char *outbuf,
+					 size_t index, char *outbuf,
 					 size_t *outbuf_len)
 {
 	size_t used_len = 0;
@@ -135,17 +128,17 @@ fastboot_getvar_result_t fastboot_getvar(fastboot_var_t var, const char *arg,
 		if (!fastboot_disk_init(&disk))
 			return STATE_DISK_ERROR;
 		if (arg != NULL) {
-			part = fastboot_find_partition(&disk, arg, arg_len);
+			part = fastboot_find_partition(&disk, arg);
 			if (part == NULL)
 				return STATE_UNKNOWN_VAR;
 		} else {
 			char *name;
 
 			/* There is no more partitions to get */
-			if (fastboot_get_number_of_partitions(&disk) <= arg_len)
+			if (fastboot_get_number_of_partitions(&disk) <= index)
 				return STATE_LAST;
 
-			part = fastboot_get_partition(&disk, arg_len);
+			part = fastboot_get_partition(&disk, index);
 			if (part == NULL)
 				return STATE_TRY_NEXT;
 

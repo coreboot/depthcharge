@@ -22,12 +22,13 @@
 #include "gpt_misc.h"
 #include <stdlib.h>
 
-static int parse_hex(const char *str, size_t len, uint32_t *ret)
+static int parse_hex(const char *str, uint32_t *ret)
 {
+	char c;
 	int valid = 0;
 	uint32_t result = 0;
-	for (size_t i = 0; i < len; i++) {
-		char c = str[i];
+
+	while ((c = *str++)) {
 		int units = 0;
 		if (c >= '0' && c <= '9') {
 			units = c - '0';
@@ -49,19 +50,17 @@ static int parse_hex(const char *str, size_t len, uint32_t *ret)
 	return valid;
 }
 
-static void fastboot_cmd_continue(struct FastbootOps *fb, const char *arg,
-				  uint64_t arg_len)
+static void fastboot_cmd_continue(struct FastbootOps *fb, const char *arg)
 {
 	fastboot_okay(fb, "Continuing boot");
 	fb->state = FINISHED;
 }
 
-static void fastboot_cmd_download(struct FastbootOps *fb, const char *arg,
-				  uint64_t arg_len)
+static void fastboot_cmd_download(struct FastbootOps *fb, const char *arg)
 {
 	uint32_t size = 0;
-	int digits = parse_hex(arg, arg_len, &size);
-	if (digits != arg_len) {
+	int digits = parse_hex(arg, &size);
+	if (arg[digits] != '\0') {
 		fastboot_fail(fb, "Invalid argument");
 		return;
 	}
@@ -74,8 +73,7 @@ static void fastboot_cmd_download(struct FastbootOps *fb, const char *arg,
 	fastboot_data(fb, size);
 }
 
-static void fastboot_cmd_flash(struct FastbootOps *fb, const char *arg,
-			       uint64_t arg_len)
+static void fastboot_cmd_flash(struct FastbootOps *fb, const char *arg)
 {
 	if (!fb->has_download) {
 		fastboot_fail(fb, "No data staged to flash");
@@ -90,12 +88,11 @@ static void fastboot_cmd_flash(struct FastbootOps *fb, const char *arg,
 
 	uint64_t data_len;
 	void *data = fastboot_get_download_buffer(fb, &data_len);
-	fastboot_write(fb, &disk, arg, arg_len, data, (uint32_t)data_len);
+	fastboot_write(fb, &disk, arg, data, (uint32_t)data_len);
 	fastboot_disk_destroy(&disk);
 }
 
-static void fastboot_cmd_erase(struct FastbootOps *fb, const char *arg,
-			       uint64_t arg_len)
+static void fastboot_cmd_erase(struct FastbootOps *fb, const char *arg)
 {
 	struct fastboot_disk disk;
 	if (!fastboot_disk_init(&disk)) {
@@ -103,7 +100,7 @@ static void fastboot_cmd_erase(struct FastbootOps *fb, const char *arg,
 		return;
 	}
 
-	fastboot_erase(fb, &disk, arg, arg_len);
+	fastboot_erase(fb, &disk, arg);
 	fastboot_disk_destroy(&disk);
 }
 
@@ -137,8 +134,7 @@ static bool get_kernels_cb(void *ctx, int index, GptEntry *e,
 	gk->cur_kernel++;
 	return false;
 }
-static void fastboot_cmd_oem_get_kernels(struct FastbootOps *fb,
-					 const char *arg, uint64_t arg_len)
+static void fastboot_cmd_oem_get_kernels(struct FastbootOps *fb, const char *arg)
 {
 	struct fastboot_disk disk;
 	if (!fastboot_disk_init(&disk)) {
@@ -154,15 +150,13 @@ static void fastboot_cmd_oem_get_kernels(struct FastbootOps *fb,
 	fastboot_succeed(fb);
 }
 
-static void fastboot_cmd_reboot(struct FastbootOps *fb, const char *arg,
-				uint64_t arg_len)
+static void fastboot_cmd_reboot(struct FastbootOps *fb, const char *arg)
 {
 	fastboot_succeed(fb);
 	fb->state = REBOOT;
 }
 
-static void fastboot_cmd_set_active(struct FastbootOps *fb, const char *arg,
-				    uint64_t arg_len)
+static void fastboot_cmd_set_active(struct FastbootOps *fb, const char *arg)
 {
 	struct fastboot_disk disk;
 	if (!fastboot_disk_init(&disk)) {
