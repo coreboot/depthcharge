@@ -281,7 +281,7 @@ static int rts545x_validate_firmware(Rts545x *me, const uint8_t *image, size_t i
 	ret = rts545x_block_out_transfer(me, RTS545X_VALIDATE_ISP_CMD, ARRAY_SIZE(validate_isp),
 					 validate_isp, &ping_status);
 	if (ret)
-		printf("%s: failed: %d", __func__, ret);
+		printf("%s: failed: %d\n", __func__, ret);
 	return ret;
 }
 
@@ -340,7 +340,7 @@ static int rts545x_construct_i2c_tunnel(Rts545x *me)
 		return -1;
 	}
 
-	printf("%s: Located chip at port %d, addr %02x", me->chip_name, r.i2c_info.port,
+	printf("%s: Located chip at port %d, addr %02x\n", me->chip_name, r.i2c_info.port,
 	       r.i2c_info.addr_flags);
 
 	me->bus = new_cros_ec_tunnel_i2c(r.i2c_info.port);
@@ -649,7 +649,7 @@ static int rts545x_update_flash(Rts545x *me, const uint8_t *image, size_t image_
 	printf("%s: Starting flash write\n", __func__);
 	ret = rts545x_flash_write(me, image, image_size);
 	if (ret) {
-		printf("%s: Failed during flash write", __func__);
+		printf("%s: Failed during flash write\n", __func__);
 		rts545x_flash_access_disable(me);
 		return ret;
 	}
