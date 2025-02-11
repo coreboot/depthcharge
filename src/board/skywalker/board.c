@@ -10,6 +10,7 @@
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/spi.h"
+#include "drivers/ec/rts5453/rts5453.h"
 #include "drivers/flash/mtk_snfc.h"
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
@@ -21,6 +22,26 @@
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
+
+/* Override of func in src/drivers/ec/rts5453/rts5453.c */
+void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
+				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
+{
+	switch (ec_pd_id) {
+	case 0:
+		/* TUSB546 */
+		*image_path = "rts5453_GOOG0C00.bin";
+		*hash_path = "rts5453_GOOG0C00.hash";
+		break;
+	case 1:
+		/* PS8747 */
+		*image_path = "rts5453_GOOG0B00.bin";
+		*hash_path = "rts5453_GOOG0B00.hash";
+		break;
+	default:
+		printf("Unknown ec_pd_id %d\n", ec_pd_id);
+	}
+}
 
 static int tpm_irq_status(void)
 {
