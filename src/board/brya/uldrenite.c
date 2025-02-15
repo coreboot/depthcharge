@@ -25,6 +25,14 @@ void board_rts5453_get_image_paths(const char **image_path,
 	*hash_path = NULL;
 }
 
+/* Override of func in src/drivers/ec/tps6699x/tps6699x.c */
+void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path)
+{
+	/* Will update path for TI PDC AU later */
+	*image_path = "tps6699x.bin";
+	*hash_path = "tps6699x.hash";
+}
+
 const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
