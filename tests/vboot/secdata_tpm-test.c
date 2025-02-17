@@ -97,22 +97,6 @@ static void test_secdata_kernel_write(void **state)
 			    VB2_SECDATA_KERNEL_MIN_SIZE);
 	assert_false(ctx->flags & VB2_CONTEXT_SECDATA_KERNEL_CHANGED);
 
-	expect_value(TlclWrite, index, KERNEL_NV_INDEX);
-	expect_value(TlclWrite, length, VB2_SECDATA_KERNEL_MIN_SIZE);
-	expect_not_value(TlclWrite, data, (uintptr_t)NULL);
-	will_return(TlclWrite, (uintptr_t)buf);
-	will_return(TlclWrite, 0);
-	/* Write to changed kernel should be successful and should return bytes
-	   to previously passed buffer. It should also unset a kernel changed
-	   flag. */
-	ctx->flags |= VB2_CONTEXT_SECDATA_KERNEL_CHANGED;
-	memset(buf, 0xC8, sizeof(buf));
-	memset(ctx->secdata_kernel, 0x37, VB2_SECDATA_KERNEL_SIZE);
-	assert_int_equal(secdata_kernel_write(ctx), TPM_SUCCESS);
-	assert_memory_equal(ctx->secdata_kernel, buf,
-			    VB2_SECDATA_KERNEL_MIN_SIZE);
-	assert_false(ctx->flags & VB2_CONTEXT_SECDATA_KERNEL_CHANGED);
-
 	/* Expect TlclForceClear(), TlclSetEnable() and TlclSetDeactivated(0)
 	   to be called for TPM_E_MAXNVWRITES as TlclWrite() return value. */
 	expect_value(TlclWrite, index, KERNEL_NV_INDEX);
