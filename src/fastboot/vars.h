@@ -23,6 +23,7 @@
 #include <stdio.h>
 
 typedef enum fastboot_var {
+	VAR_CURRENT_SLOT,
 	VAR_DOWNLOAD_SIZE,
 	VAR_IS_USERSPACE,
 	VAR_PARTITION_SIZE,

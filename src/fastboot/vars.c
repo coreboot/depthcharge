@@ -33,6 +33,7 @@
 		.name = _name, .has_args = false, .var = _var                  \
 	}
 static fastboot_getvar_info_t fastboot_vars[] = {
+	VAR_NO_ARGS("current-slot", VAR_CURRENT_SLOT),
 	VAR_NO_ARGS("max-download-size", VAR_DOWNLOAD_SIZE),
 	VAR_NO_ARGS("is-userspace", VAR_IS_USERSPACE),
 	VAR_ARGS("partition-size", ':', VAR_PARTITION_SIZE),
@@ -114,8 +115,34 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 					 const char *arg, size_t index, char *outbuf,
 					 size_t *outbuf_len)
 {
+	GptEntry *part = NULL;
 	size_t used_len = 0;
+	char *name;
+
 	switch (var) {
+	case VAR_CURRENT_SLOT: {
+		if (fastboot_disk_gpt_init(fb))
+			return STATE_DISK_ERROR;
+
+		/* Make sure that GptNextKernelEntry starts with fresh state */
+		if (GptInit(fb->gpt) != GPT_SUCCESS)
+			return STATE_DISK_ERROR;
+
+		part = GptNextKernelEntry(fb->gpt);
+		if (part == NULL)
+			return STATE_DISK_ERROR;
+
+		name = gpt_get_entry_name(part);
+		if (name == NULL || name[0] == '\0')
+			return STATE_DISK_ERROR;
+		/* Get last character */
+		while (name[1] != '\0')
+			name++;
+
+		used_len = snprintf(outbuf, *outbuf_len, "%s", name);
+		free(name);
+		break;
+	}
 	case VAR_DOWNLOAD_SIZE:
 		used_len = snprintf(outbuf, *outbuf_len, "%llu",
 				    FASTBOOT_MAX_DOWNLOAD_SIZE);
@@ -123,9 +150,7 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 	case VAR_IS_USERSPACE:
 		used_len = snprintf(outbuf, *outbuf_len, "no");
 		break;
-	case VAR_PARTITION_SIZE: {
-		GptEntry *part = NULL;
-
+	case VAR_PARTITION_SIZE:
 		if (fastboot_disk_gpt_init(fb))
 			return STATE_DISK_ERROR;
 		if (arg != NULL) {
@@ -133,8 +158,6 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 			if (part == NULL)
 				return STATE_UNKNOWN_VAR;
 		} else {
-			char *name;
-
 			/* There is no more partitions to get */
 			if (gpt_get_number_of_partitions(fb->gpt) <= index)
 				return STATE_LAST;
@@ -156,7 +179,6 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		used_len += snprintf(outbuf, *outbuf_len, "0x%llx",
 				     GptGetEntrySizeBytes(fb->gpt, part));
 		break;
-	}
 	case VAR_PRODUCT: {
 		struct cb_mainboard *mainboard =
 			phys_to_virt(lib_sysinfo.cb_mainboard);
