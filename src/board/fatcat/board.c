@@ -29,7 +29,12 @@
 #include <libpayload.h>
 #include <sysinfo.h>
 
-#define EC_PCH_INT_ODL	GPP_A17
+#if CONFIG(CROS_EC_ENABLE_MEC)
+#define EC_SOC_INT_ODL	0 /* Not Connected */
+#else
+#define EC_SOC_INT_ODL	GPP_E07
+#endif
+
 #define I2C_FS_HZ	400000 /* 400KHz */
 
 __weak const struct storage_config *variant_get_storage_configs(size_t *count)
@@ -44,7 +49,7 @@ __weak const struct storage_config *variant_get_storage_configs(size_t *count)
 
 __weak const int variant_get_ec_int(void)
 {
-	return EC_PCH_INT_ODL;
+	return EC_SOC_INT_ODL;
 }
 
 static GpioOps *mkbp_int_ops(void)

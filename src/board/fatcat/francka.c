@@ -7,7 +7,7 @@
 #include "drivers/soc/pantherlake.h"
 #include "drivers/storage/storage_common.h"
 
-#define EC_PCH_INT_ODL		GPP_B05
+#define EC_SOC_INT_ODL		GPP_B05
 
 const struct audio_config *variant_probe_audio_config(void)
 {
@@ -51,5 +51,5 @@ const struct tpm_config *variant_get_tpm_config(void)
 
 const int variant_get_ec_int(void)
 {
-	return EC_PCH_INT_ODL;
+	return EC_SOC_INT_ODL;
 }
