@@ -42,7 +42,11 @@
 #endif
 
 #define FASTBOOT_MSG_MAX 256
-#define FASTBOOT_MAX_DOWNLOAD_SIZE ((uint64_t)CONFIG_KERNEL_SIZE)
+/*
+ * TODO(b/397865136): Increase chunk size once the super corruption issue is
+ * fixed.
+ */
+#define FASTBOOT_MAX_DOWNLOAD_SIZE ((uint64_t)16 * 1024 * 1024)
 /* Maximum length of command packet as stated in the Fastboot documentation */
 #define FASTBOOT_COMMAND_MAX 4096
 
