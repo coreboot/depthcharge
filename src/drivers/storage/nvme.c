@@ -494,8 +494,13 @@ static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
 		max_transfer_blocks = NVME_MAX_XFER_BYTES / block_size;
 
 	/* Flush cache data to the memory before DMA transfer */
-	bounce_buffer_start(&bbstate, buffer,
-			    orig_count * drive->dev.block_size, bbflags);
+	const int ret = bounce_buffer_start(&bbstate, buffer,
+					    orig_count * drive->dev.block_size,
+					    bbflags);
+	if (ret) {
+		printf("%s: error: Failed to allocate bounce buffer.\n", __func__);
+		return 0;
+	}
 
 	void *bounce_buffer = bbstate.bounce_buffer;
 	const char *op = read ? "read" : "write";
