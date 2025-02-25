@@ -3,7 +3,9 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <vb2_api.h>
+#include <vb2_sha.h>
 #include <image/fmap.h>
+#include <cbfs_glue.h>
 
 #include "base/cleanup_funcs.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
@@ -65,6 +67,40 @@ static enum ec_flash_region vboot_to_ec_region(
 	default:
 		return EC_FLASH_REGION_ACTIVE;
 	}
+}
+
+static vb2_error_t vboot_hash_image_ap_flash(const uint8_t **hash, int *hash_size)
+{
+	uint8_t *image;
+	static struct vb2_hash stored_hash;
+
+	FmapArea ar;
+
+	/* Find the area name for FW_EC_RW. */
+	if (fmap_find_area(FMAP_AREA_FW_EC_RW, &ar)) {
+		printf("%s: couldn't find %s region\n",__func__,
+				FMAP_AREA_FW_EC_RW);
+		return  VB2_ERROR_UNKNOWN;
+	}
+	image = xzalloc(ar.size);
+	/* Read image from flash. */
+	if (flash_read(image, ar.offset, ar.size) != ar.size) {
+		printf("%s: couldn't read image from flash\n",__func__);
+		free(image);
+		return VB2_ERROR_UNKNOWN;
+	}
+	/* Compute SHA256 hash of the ec.bin. */
+	if (vb2_hash_calculate(cbfs_hwcrypto_allowed(), image, ar.size,
+                       VB2_HASH_SHA256, &stored_hash) != VB2_SUCCESS) {
+		free(image);
+		return VB2_ERROR_UNKNOWN;
+	}
+
+	*hash = stored_hash.sha256;
+	*hash_size = VB2_SHA256_DIGEST_SIZE;
+	free(image);
+
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
