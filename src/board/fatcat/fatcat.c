@@ -82,8 +82,8 @@ static const struct storage_config storage_configs[] = {
 
 const struct storage_config *variant_get_storage_configs(size_t *count)
 {
-        *count = ARRAY_SIZE(storage_configs);
-        return storage_configs;
+	*count = ARRAY_SIZE(storage_configs);
+	return storage_configs;
 }
 
 /* Override of func in src/drivers/ec/rts5453/rts5453.c */
