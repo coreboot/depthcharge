@@ -114,6 +114,9 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 	int recalc_requested = 0;
 	uint32_t hash_offset;
 
+	if (CONFIG(EC_UPDATE_AP_SPI_FLASH))
+		return vboot_hash_image_ap_flash(hash, hash_size);
+
 	hash_offset = get_vboot_hash_offset(select);
 
 	start = timer_us(0);
@@ -501,6 +504,10 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 	uint32_t region_offset, region_size;
 	enum ec_flash_region region = vboot_to_ec_region(select);
+
+	if (CONFIG(EC_UPDATE_AP_SPI_FLASH))
+		return vboot_update_image_ap_flash(image, image_size);
+
 	vb2_error_t rv = vboot_set_region_protection(me, 0);
 	if (rv == VB2_REQUEST_REBOOT_EC_TO_RO || rv != VB2_SUCCESS)
 		return rv;

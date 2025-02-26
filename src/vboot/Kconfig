@@ -60,6 +60,13 @@ config EC_EFS
 	  software sync need to also support it. This setting tells vboot to
 	  perform EFS software sync.
 
+config EC_UPDATE_AP_SPI_FLASH
+        bool "Update EC firmware in the AP SPI FLASH"
+        default n
+        help
+          Enables updating the ec image to the AP SPI flash instead of the EC
+          embedded flash.
+
 config PHYSICAL_PRESENCE_KEYBOARD
 	bool "Use keyboard to confirm physical presence"
 	default y
