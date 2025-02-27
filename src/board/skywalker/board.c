@@ -13,6 +13,7 @@
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/storage/mtk_mmc.h"
 #include "drivers/storage/mtk_ufs.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"
@@ -72,8 +73,28 @@ static int board_setup(void)
 	MtkUfsCtlr *ufs_host = new_mtk_ufs_ctlr(0x112B0000, 0x112BD000);
 	list_insert_after(&ufs_host->ufs.bctlr.list_node, &fixed_block_dev_controllers);
 
-	/* TODO: Set up eMMC */
-	/* TODO: Set up SD card */
+	/* Set up SD card */
+	MtkMmcTuneReg sd_card_tune_reg = {
+		.msdc_iocon = 0x0,
+		.pad_tune = 0x0,
+	};
+	GpioOps *card_detect_ops = sysinfo_lookup_gpio("SD card detect", 1,
+						       new_mtk_gpio_input);
+	if (!card_detect_ops) {
+		printf("%s: SD card detect GPIO not found\n", __func__);
+	} else {
+		MtkMmcHost *sd_card = new_mtk_mmc_host(0x11240000,
+						       0x11D800000,
+						       200 * MHz,
+						       25 * MHz,
+						       sd_card_tune_reg,
+						       4, 1, card_detect_ops,
+						       MTK_MMC_V2);
+
+		list_insert_after(&sd_card->mmc.ctrlr.list_node,
+				  &removable_block_dev_controllers);
+	}
+
 	/* Set up USB */
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11260000);
 	set_usb_init_callback(usb_host, enable_usb_vbus);
