@@ -107,7 +107,8 @@ static void flash_setup(void)
 							PCI_BASE_ADDRESS_0);
 		mmio_base &= PCI_BASE_ADDRESS_MEM_MASK;
 		FastSpiFlash *spi = new_fast_spi_flash(mmio_base);
-		flash_set_ops(&spi->ops);
+		MmapFlash *flash = new_mmap_backed_flash(&spi->ops);
+		flash_set_ops(&flash->ops);
 	} else {
 		flash_set_ops(&new_mmap_flash()->ops);
 	}
