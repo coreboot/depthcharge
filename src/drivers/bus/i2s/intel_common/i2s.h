@@ -21,9 +21,9 @@
 #define RETRY_COUNT             1000
 #define SSP_TIMEOUT             0
 #if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
-#define TX_FIFO_NOT_FULL        0x4000000
+#define TX_FIFO_NOT_FULL        BIT(26)
 #else /* !CONFIG(INTEL_COMMON_I2S_ACE_3_x) */
-#define TX_FIFO_NOT_FULL        0x4
+#define TX_FIFO_NOT_FULL        BIT(2)
 #endif /* CONFIG(INTEL_COMMON_I2S_ACE_3_x) */
 
 /* FIFO over/under-run interrupt config. */
