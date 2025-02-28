@@ -66,6 +66,12 @@ DEFINE_REG(SSCR2, 0x40)
 DEFINE_REG(SSPSP2, 0x44)
 DEFINE_REG(SSCR3, 0x48)
 DEFINE_REG(SSIOC, 0x4C)
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+DEFINE_REG(SSMIDYTSA, 0x68)
+DEFINE_REG(SSMODYCS, 0xE0)
+DEFINE_REG(SSMODYD, 0xE4)
+DEFINE_REG(SSMODYTSA, 0xE8)
+#endif /* CONFIG(INTEL_COMMON_I2S_ACE_3_x) */
 
 /* SSP SSCR0 field definitions. */
 DEFINE_FIELD(SSCR0, DSS, 0x0F, 0)	/* Data Size Select [4..16] */
@@ -104,12 +110,20 @@ DEFINE_FIELD(SSPSP, EDMYSTOP, 0x7, 26)
 DEFINE_FIELD(SSPSP, SFRMWDTH, 0x3F, 16)
 DEFINE_FIELD(SSPSP, DMYSTOP, 0x3, 7)
 
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+/* SSP SSMODYTSA fields definitions */
+DEFINE_FIELD(SSMODYTSA, TTSA, 0xFF, 0)
+/* SSP SSMIDYTSA fields definitions */
+DEFINE_FIELD(SSMIDYTSA, RTSA, 0xFF, 0)
+DEFINE_FIELD(SSMODYCS, TXEN, 0x1, 0)
+DEFINE_FIELD(SSMODYCS, TSRE, 0x3, 1)
+#else /* !CONFIG(INTEL_COMMON_I2S_ACE_3_x) */
 /* SSP SSTSA fields definitions */
 DEFINE_FIELD(SSTSA, TXEN, 0x1, 8)
 DEFINE_FIELD(SSTSA, TTSA, 0xFF, 0)
-
 /* SSP SSRSA fields definitions */
 DEFINE_FIELD(SSRSA, RTSA, 0xFF, 0)
+#endif /* CONFIG(INTEL_COMMON_I2S_ACE_3_x) */
 
 #define SSCR0_reg(regbit, value)					\
 	(((value) & SSCR0_##regbit##_MASK) << SSCR0_##regbit##_SHIFT)
@@ -131,6 +145,27 @@ DEFINE_FIELD(SSRSA, RTSA, 0xFF, 0)
 
 #define SSTSA_reg(regbit, value)					\
 	(((value) & SSTSA_##regbit##_MASK) << SSTSA_##regbit##_SHIFT)
+
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+#define SSMODYCS_reg(regbit, value)					\
+	(((value) & SSMODYCS_##regbit##_MASK) << SSMODYCS_##regbit##_SHIFT)
+
+#define SSMIDYTSA_reg(regbit, value)					\
+	(((value) & SSMIDYTSA_##regbit##_MASK) << SSMIDYTSA_##regbit##_SHIFT)
+
+#define SSMODYTSA_reg(regbit, value)					\
+	(((value) & SSMODYTSA_##regbit##_MASK) << SSMODYTSA_##regbit##_SHIFT)
+
+#define set_SSMODYCS_reg(reg_pointer, regbit)				\
+	write_SSMODYCS(read_SSMODYCS(reg_pointer)			\
+	| (SSMODYCS_##regbit##_MASK << SSMODYCS_##regbit##_SHIFT),	\
+	reg_pointer);
+
+#define clear_SSMODYCS_reg(reg_pointer, regbit)				\
+	write_SSMODYCS((read_SSMODYCS(reg_pointer)			\
+	& (~((SSMODYCS_##regbit##_MASK << SSMODYCS_##regbit##_SHIFT)))),  \
+	reg_pointer);
+#endif /* CONFIG(INTEL_COMMON_I2S_ACE_3_x) */
 
 #define set_SSCR0_reg(reg_pointer, regbit)				  \
 	write_SSCR0(read_SSCR0(reg_pointer)				  \

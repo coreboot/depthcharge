@@ -20,7 +20,11 @@
 
 #define RETRY_COUNT             1000
 #define SSP_TIMEOUT             0
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+#define TX_FIFO_NOT_FULL        0x4000000
+#else /* !CONFIG(INTEL_COMMON_I2S_ACE_3_x) */
 #define TX_FIFO_NOT_FULL        0x4
+#endif /* CONFIG(INTEL_COMMON_I2S_ACE_3_x) */
 
 /* FIFO over/under-run interrupt config. */
 enum {

@@ -32,7 +32,12 @@
 static void i2s_enable(I2sRegs *regs)
 {
 	set_SSCR0_reg(regs, SSE);
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+	set_SSMODYCS_reg(regs, TSRE);
+	set_SSMODYCS_reg(regs, TXEN);
+#else
 	set_SSTSA_reg(regs, TXEN);
+#endif
 }
 
 /**
@@ -44,7 +49,12 @@ static void i2s_enable(I2sRegs *regs)
 static void i2s_disable(I2sRegs *regs)
 {
 	clear_SSCR0_reg(regs, SSE);
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+	clear_SSMODYCS_reg(regs, TSRE);
+	clear_SSMODYCS_reg(regs, TXEN);
+#else
 	clear_SSTSA_reg(regs, TXEN);
+#endif
 }
 
 /*
@@ -151,7 +161,7 @@ static uint32_t calculate_sscr0(const I2sSettings *settings, int bps)
 	if (CONFIG(INTEL_COMMON_I2S_CAVS_2_0) ||
 		CONFIG(INTEL_COMMON_I2S_CAVS_2_5) ||
 		/* ACE must select divider clock for SCLK */
-		CONFIG(INTEL_COMMON_I2S_ACE_1_x))
+		CONFIG(INTEL_COMMON_I2S_ACE_1_x) || CONFIG(INTEL_COMMON_I2S_ACE_3_x))
 		sscr0 |= SSCR0_reg(ECS, DIV_ENABLE);
 	return sscr0;
 }
@@ -291,7 +301,7 @@ static int enable_DSP_SSP(I2s *bus)
 	if (read32(bus->lpe_bar0 + BAR_OFFSET) != ENABLE_ADSP_BAR)
 		return -1;
 
-	if (CONFIG(INTEL_COMMON_I2S_ACE_1_x)) {
+	if (CONFIG(INTEL_COMMON_I2S_ACE_1_x) || CONFIG(INTEL_COMMON_I2S_ACE_3_x)) {
 		if (ace_dsp_core_power_up(bus))
 			return -1;
 	} else {
@@ -329,8 +339,11 @@ static int enable_DSP_SSP(I2s *bus)
 	write32((bus->lpe_bar4 + (MNCSS_REG_BLOCK_START + MDIV_N_VAL(bus->ssp_port))), 1);
 #endif
 
-#if CONFIG(INTEL_COMMON_I2S_CAVS_2_5) || CONFIG(INTEL_COMMON_I2S_ACE_1_x)
 	/* SPA register should be set for each I2S port */
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+	write32((bus->lpe_bar0 + I2SLCTL),
+	read32(bus->lpe_bar0 + I2SLCTL) | I2SLCTL_SPA_MASK(bus->ssp_port));
+#elif CONFIG(INTEL_COMMON_I2S_CAVS_2_5) || CONFIG(INTEL_COMMON_I2S_ACE_1_x)
 	write32((bus->lpe_bar4 + I2SLCTL),
 	read32(bus->lpe_bar4 + I2SLCTL) | BIT(bus->ssp_port));
 #endif
@@ -367,8 +380,13 @@ static void set_ssp_i2s_hw(I2sRegs *regs, const I2sSettings *settings, int bps)
 	sscr2 = calculate_sscr2();
 	sscr3 = 0;
 	sspsp = calculate_sspsp(settings, bps);
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+	sstsa = SSMODYTSA_reg(TTSA, settings->ssp_active_tx_slots_map);
+	ssrsa = SSMIDYTSA_reg(RTSA, settings->ssp_active_rx_slots_map);
+#else
 	sstsa = SSTSA_reg(TTSA, settings->ssp_active_tx_slots_map);
 	ssrsa = SSRSA_reg(RTSA, settings->ssp_active_rx_slots_map);
+#endif
 	ssioc = calculate_ssioc();
 
 	write_SSCR0(sscr0, regs);
@@ -377,8 +395,13 @@ static void set_ssp_i2s_hw(I2sRegs *regs, const I2sSettings *settings, int bps)
 	write_SSCR3(sscr3, regs);
 	write_SSPSP(sspsp, regs);
 	write_SSPSP2(sspsp2, regs);
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+	write_SSMODYTSA(sstsa, regs);
+	write_SSMIDYTSA(ssrsa, regs);
+#else
 	write_SSTSA(sstsa, regs);
 	write_SSRSA(ssrsa, regs);
+#endif
 	write_SSIOC(ssioc, regs);
 
 	/* Clear status */
@@ -426,7 +449,9 @@ static int i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 	int i;
 	uint64_t last_activity;
 	I2s *bus = container_of(me, I2s, ops);
+#if !CONFIG(INTEL_COMMON_I2S_ACE_3_x)
 	struct I2sRegs *i2s_reg = bus->regs;
+#endif
 
 	if (!bus->initialized) {
 		if (i2s_init(bus))
@@ -443,15 +468,24 @@ static int i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 		gpio_set(bus->sdmode_gpio, 1);
 
 	for (i = 0; i < LPE_SSP_FIFO_SIZE; i++)
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+		write_SSMODYD(*data++, bus->regs);
+#else
 		write32(&i2s_reg->ssdr, *data++);
+#endif
 
 	i2s_enable(bus->regs);
 	length -= LPE_SSP_FIFO_SIZE;
 
 	last_activity = timer_us(0);
 	while (length > 0) {
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+		if (read_SSMODYCS(bus->regs) & TX_FIFO_NOT_FULL) {
+			write_SSMODYD(*data++, bus->regs);
+#else
 		if (read_SSSR(bus->regs) & TX_FIFO_NOT_FULL) {
 			write32(&i2s_reg->ssdr, *data++);
+#endif
 			length--;
 			last_activity = timer_us(0);
 		} else {
@@ -490,12 +524,16 @@ I2s *new_i2s_structure(const I2sSettings *settings, int bps, GpioOps *sdmode,
 	bus->lpe_bar0 = (void *)(uintptr_t)(pci_read_config32(lpe_pcidev, REG_BAR0) & (~0xf));
 	bus->lpe_bar4 = (void *)(uintptr_t)(pci_read_config32(lpe_pcidev, REG_BAR4) & (~0xf));
 	bus->ops.send = &i2s_send;
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+	bus->regs = (I2sRegs *)(bus->lpe_bar0 + ssp_i2s_start_address);
+#else
 	bus->regs = (I2sRegs *)(bus->lpe_bar4 + ssp_i2s_start_address);
+#endif
 	bus->settings = settings;
 	bus->bits_per_sample = bps;
 	bus->sdmode_gpio = sdmode;
 #if CONFIG(INTEL_COMMON_I2S_CAVS_2_0) || CONFIG(INTEL_COMMON_I2S_CAVS_2_5) ||\
-	CONFIG(INTEL_COMMON_I2S_ACE_1_x)
+	CONFIG(INTEL_COMMON_I2S_ACE_1_x) || CONFIG(INTEL_COMMON_I2S_ACE_3_x)
 	bus->ssp_port = (ssp_i2s_start_address - SSP_I2S0_START_ADDRESS) / 0x1000;
 #endif
 

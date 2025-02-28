@@ -44,3 +44,7 @@ config INTEL_COMMON_I2S_CAVS_2_5
 config INTEL_COMMON_I2S_ACE_1_x
 	bool "Intel ACE1.x specification"
 	default n
+
+config INTEL_COMMON_I2S_ACE_3_x
+	bool "Intel ACE3.x specification"
+	default n

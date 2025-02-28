@@ -102,12 +102,25 @@
  * Serial bit rate = SSP clock / (SCR+1),
  */
 #define SERIAL_CLOCK_RATE		0x18
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+#define SSP_I2Sx_OFFSET(x)		(0x28100 + 0x1000 * (x))
+#else /* !CONFIG(INTEL_COMMON_I2S_ACE_3_x) */
 #define SSP_I2Sx_OFFSET(x)		(0x28000 + 0x1000 * (x))
+#endif
 #define SSP_I2S0_START_ADDRESS	SSP_I2Sx_OFFSET(0)
 #define SSP_I2S1_START_ADDRESS	SSP_I2Sx_OFFSET(1)
 #define SSP_I2S2_START_ADDRESS	SSP_I2Sx_OFFSET(2)
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+/* 0x000D04[+=0x0] I2S0LCTL[16] default XTAL Oscillator clock 38.4MHz */
+#define I2SLCTL			0xD04
+#define I2SLCTL_SPA_MASK(x)	BIT(16 + x)
+#define I2SLCTL_CPA_MASK(x)	BIT(23 + x)
+#else /* !CONFIG(INTEL_COMMON_I2S_ACE_3_x) */
 /* 0x00028804[+=0x0] I2S0LCTL[1] default XTAL Oscillator clock 38.4MHz */
 #define I2SLCTL			0x28804
+#define I2SLCTL_SPA_MASK(x)	BIT(0 + x)
+#define I2SLCTL_CPA_MASK(x)	BIT(8 + x)
+#endif /* CONFIG(INTEL_COMMON_I2S_ACE_3_x) */
 
 #endif /* CONFIG(INTEL_COMMON_I2S_ACE_1_x) */
 
@@ -115,8 +128,13 @@
 #define HFDSSCS			0x1000
 #define HFDSSCS_SPA_MASK		BIT(16)
 #define HFDSSCS_CPA_MASK		BIT(24)
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+#define HFPWRCTL			0x1d20
+#define HFPWRSTS			0x1d24
+#else /* !CONFIG(INTEL_COMMON_I2S_ACE_3_x) */
 #define HFPWRCTL			0x1d18
 #define HFPWRSTS			0x1d1c
+#endif /* CONFIG(INTEL_COMMON_I2S_ACE_3_x) */
 #define HFPWRCTL_WPDSPHPxPG(x)	BIT(x)
 #define DSP2C0_CTL			0x178d04
 #define DSP2C0_OSEL_SHIFT		24
