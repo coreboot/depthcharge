@@ -58,6 +58,9 @@
 DEFINE_REG(SSCR0, 0x00)
 DEFINE_REG(SSCR1, 0x04)
 DEFINE_REG(SSSR, 0x08)
+#if !CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+DEFINE_REG(SSDR, 0x10)
+#endif
 DEFINE_REG(SSTO, 0x28)
 DEFINE_REG(SSPSP, 0x2C)
 DEFINE_REG(SSTSA, 0x30)
@@ -202,7 +205,12 @@ typedef struct I2sRegs {
 	uint32_t sscr1;
 	uint32_t sssr;
 	uint32_t ssitr;
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+	/* Not applicable for ACE 3.x */
+	uint32_t reserved_reg_1;
+#else
 	uint32_t ssdr;
+#endif
 	uint32_t ssto;
 	uint32_t sspsp;
 	uint32_t sstsa;

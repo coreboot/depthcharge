@@ -449,9 +449,6 @@ static int i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 	int i;
 	uint64_t last_activity;
 	I2s *bus = container_of(me, I2s, ops);
-#if !CONFIG(INTEL_COMMON_I2S_ACE_3_x)
-	struct I2sRegs *i2s_reg = bus->regs;
-#endif
 
 	if (!bus->initialized) {
 		if (i2s_init(bus))
@@ -471,7 +468,7 @@ static int i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 #if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
 		write_SSMODYD(*data++, bus->regs);
 #else
-		write32(&i2s_reg->ssdr, *data++);
+		write_SSDR(*data++, bus->regs);
 #endif
 
 	i2s_enable(bus->regs);
@@ -484,7 +481,7 @@ static int i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 			write_SSMODYD(*data++, bus->regs);
 #else
 		if (read_SSSR(bus->regs) & TX_FIFO_NOT_FULL) {
-			write32(&i2s_reg->ssdr, *data++);
+			write_SSDR(*data++, bus->regs);
 #endif
 			length--;
 			last_activity = timer_us(0);
