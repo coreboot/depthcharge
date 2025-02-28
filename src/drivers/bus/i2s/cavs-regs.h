@@ -83,6 +83,8 @@
 #define MNCSS_REG_BLOCK_START	0x0800
 /* I2S Link Control register */
 #define I2SLCTL			0x71c04
+#define I2SLCTL_SPA_MASK(x)	BIT(0 + x)
+#define I2SLCTL_CPA_MASK(x)	BIT(8 + x)
 /* Index of respective I2S port to which amp is connected */
 #define AMP_SSP_PORT_INDEX	1
 /* M register offset address */
@@ -90,7 +92,7 @@
 /* N register offset address */
 #define MDIV_N_VAL(port_id)	(0x100 + 0x8 * (port_id) + 0x4)
 
-#else /* CONFIG(INTEL_COMMON_I2S_ACE_1_x) */
+#else /* CONFIG(INTEL_COMMON_I2S_ACE_1_x) / CONFIG(INTEL_COMMON_I2S_ACE_3_x) */
 
 #define DSP_POWER_ON		0x0
 #define DSP_POWERED_UP		0x0

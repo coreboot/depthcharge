@@ -345,7 +345,7 @@ static int enable_DSP_SSP(I2s *bus)
 	read32(bus->lpe_bar0 + I2SLCTL) | I2SLCTL_SPA_MASK(bus->ssp_port));
 #elif CONFIG(INTEL_COMMON_I2S_CAVS_2_5) || CONFIG(INTEL_COMMON_I2S_ACE_1_x)
 	write32((bus->lpe_bar4 + I2SLCTL),
-	read32(bus->lpe_bar4 + I2SLCTL) | BIT(bus->ssp_port));
+	read32(bus->lpe_bar4 + I2SLCTL) | I2SLCTL_SPA_MASK(bus->ssp_port));
 #endif
 
 /* Tunning I2S signal BCLK 3.072Mhz for CS35L53 */
