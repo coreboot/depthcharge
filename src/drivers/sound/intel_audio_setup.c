@@ -25,6 +25,7 @@
 #include "drivers/sound/nau8318.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/rt5645.h"
+#include "drivers/sound/rt721_sndw.h"
 
 /* Default I2S setting 4000 volume, 16bit, 2ch, 48k */
 #define AUD_VOLUME		4000
@@ -256,6 +257,14 @@ static SoundOps *setup_max98363_sndw(SndwOps *ops, unsigned int beep_ms)
 	return &new_max98363_sndw(ops, beep_ms)->ops;
 }
 
+static SoundOps *setup_rt721_sndw(SndwOps *ops, unsigned int beep_ms)
+{
+	if (!CONFIG(DRIVER_SOUND_RT721_SNDW))
+		return NULL;
+
+	return &new_rt721_sndw(ops, beep_ms)->ops;
+}
+
 static void configure_audio_codec(const struct audio_codec *codec,
 				  struct audio_data *data)
 {
@@ -291,6 +300,11 @@ static void configure_audio_codec(const struct audio_codec *codec,
 	case AUDIO_MAX98363:
 		if (data->type == AUDIO_SNDW)
 			data->ops = setup_max98363_sndw(&data->sndw->ops, BEEP_DURATION);
+		break;
+
+	case AUDIO_RT721:
+		if (data->type == AUDIO_SNDW)
+			data->ops = setup_rt721_sndw(&data->sndw->ops, BEEP_DURATION);
 		break;
 
 	case AUDIO_CS35L53:

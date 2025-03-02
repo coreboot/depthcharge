@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: GPL-2.0
+
+#ifndef __DRIVERS_SOUND_RT721_COMMON_REGS_H__
+#define __DRIVERS_SOUND_RT721_COMMON_REGS_H__
+
+/* RT721 SCP Address Page Register */
+enum {
+	RT721_SCP_ADDRPAGE1 = 0x48,
+	RT721_SCP_ADDRPAGE2 = 0x49,
+};
+
+/* RT721 Tone Generator Register */
+enum {
+	RT721_TONE_GENERATOR = 0x9080,
+};
+
+/* RT721 SCP Address Page register config */
+enum {
+	RT721_SCP_ADDRPAGE1_FUNC4_CONFIG           = 0x82,
+	RT721_SCP_ADDRPAGE2_TONE_GENERATOR_CONTROL = 0x10,
+};
+
+/* RT721_TONE_GENERATOR */
+enum {
+	RT721_TONE_GENERATOR_ENABLE  = 0x1e,
+	RT721_TONE_GENERATOR_DISABLE = 0x00,
+};
+
+#endif /* __DRIVERS_SOUND_RT721_COMMON_REGS_H__ */
