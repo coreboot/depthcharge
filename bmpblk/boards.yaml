@@ -397,3 +397,9 @@ skywalker:
   sdcard: False
   dpi: 112 # DO NOT COPY-PASTE -- follow instructions at top of file.
 
+ocelot:
+  # 3840x2160, boots recovery image on USB ports.
+  sdcard: False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
+
