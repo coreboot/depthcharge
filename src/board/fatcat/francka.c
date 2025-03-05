@@ -6,18 +6,34 @@
 #include "drivers/gpio/pantherlake.h"
 #include "drivers/soc/pantherlake.h"
 #include "drivers/storage/storage_common.h"
+#include "drivers/ec/rts5453/rts5453.h"
 
 #define EC_SOC_INT_ODL		GPP_B05
+
+void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path)
+{
+	*image_path = "tps6699x_GOOG0A00.bin";
+	*hash_path = "tps6699x_GOOG0A00.hash";
+}
+
+void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
+				   struct ec_response_pd_chip_info_v2 *r)
+{
+	*image_path = NULL;
+	*hash_path = NULL;
+}
 
 const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
 
 	config = (struct audio_config){
-		.bus = {
+		.bus =
+		{
 			.type = AUDIO_HDA,
 		},
-		.codec = {
+		.codec =
+		{
 			.type = AUDIO_ALC256,
 		},
 	};
