@@ -14,3 +14,6 @@ config INTEL_COMMON_SOUNDWIRE_ACE_1_x
 	bool "Intel ACE 1.x specification"
 	default n
 
+config INTEL_COMMON_SOUNDWIRE_ACE_3_x
+	bool "Intel ACE 3.x specification"
+	default n

@@ -7,53 +7,61 @@
 #ifndef __DRIVERS_BUS_SOUNDWIRE_MIPI_SNDWREGS_H__
 #define __DRIVERS_BUS_SOUNDWIRE_MIPI_SNDWREGS_H__
 
+#if CONFIG(INTEL_COMMON_SOUNDWIRE_ACE_3_x)
+#define SNDW_MEM_BASE_OFFSET 0x4100
+#define SNDW_MEM_CTRL_BASE_OFFSET 0x100
+#else /* !INTEL_COMMON_SOUNDWIRE_ACE_3_x */
+#define SNDW_MEM_BASE_OFFSET 0x0
+#define SNDW_MEM_CTRL_BASE_OFFSET 0x0
+#endif  /* INTEL_COMMON_SOUNDWIRE_ACE_3_x */
+
 /* MCP_Config - MCP configuration registers. This register contains various control bits for
    reset, clock, and keeper control. */
-#define SNDW_MEM_CONFIG				0x00
+#define SNDW_MEM_CONFIG			(SNDW_MEM_BASE_OFFSET + 0x00)
 #define SNDW_MEM_CONFIG_MODE_AHB		0x8
 #define SNDW_MEM_CONFIG_OM_NORMAL		0x7
-#define SNDW_MEM_CTRL				0x04
+#define SNDW_MEM_CTRL				(SNDW_MEM_BASE_OFFSET + 0x04)
 #define SNDW_MEM_CTRL_BLOCKWAKEUP		0x1
 #define SNDW_MEM_CTRL_CLOCKSTOPCLEAR		0x4
 
 /* MCP_CmdCtrl - MCP command control register is the ping frame configuration register. */
-#define SNDW_MEM_CMDCTRL			0x08
+#define SNDW_MEM_CMDCTRL			(SNDW_MEM_BASE_OFFSET + 0x08)
 
 /* MCP_ConfigUpdate - This register is used to apply new configuration to the Master. */
-#define SNDW_MEM_CONFIGUPDATE			0x18
+#define SNDW_MEM_CONFIGUPDATE			(SNDW_MEM_CTRL_BASE_OFFSET + 0x18)
 #define SNDW_MEM_CONFIGUPDATE_UPDATE_DONE	0x1
 
 /* MCP_ClockCtrl -  This register contains fields that define clock source and clock divider */
-#define SNDW_MEM_CLK_CTRL0			0x30
-#define SNDW_MEM_CLK_CTRL1			0x38
+#define SNDW_MEM_CLK_CTRL0			(SNDW_MEM_CTRL_BASE_OFFSET + 0x30)
+#define SNDW_MEM_CLK_CTRL1			(SNDW_MEM_CTRL_BASE_OFFSET + 0x38)
 #define SNDW_MEM_CLK_MCLKD_MASK			0xFF
 
 /* MCP_Stat - Master Status contains flags from all sources which can generate interrupts. */
-#define SNDW_MEM_STAT				0x40
+#define SNDW_MEM_STAT				(SNDW_MEM_CTRL_BASE_OFFSET + 0x40)
 #define SNDW_MEM_STAT_TXE			0x2
 #define SNDW_MEM_STAT_TXE_FIFO_EMPTY		0x2
 #define SNDW_MEM_STAT_RXNE			0x8
 #define SNDW_MEM_STAT_RXNE_FIFO_EMPTY		0x8
 
 /* MCP_IntStat - Write one to specific bits of this register will clear interrupt. */
-#define SNDW_MEM_INTSTAT			0x44
-#define SNDW_MEM_INTMASK			0x48
+#define SNDW_MEM_INTSTAT			(SNDW_MEM_CTRL_BASE_OFFSET + 0x44)
+#define SNDW_MEM_INTMASK			(SNDW_MEM_CTRL_BASE_OFFSET + 0x48)
 #define SNDW_MEM_INTMASK_RXNE			0x8
 #define SNDW_MEM_INTMASK_RXNE_FIFO_EMPTY	0x8
 
 /* MCP_EndpointStat - This register contains endpoint device status */
-#define SNDW_MEM_ENDPOINTSTAT			0x50
+#define SNDW_MEM_ENDPOINTSTAT			(SNDW_MEM_CTRL_BASE_OFFSET + 0x50)
 #define SNDW_MEM_ENDPOINTSTAT_STATUS(x)		(0x3 << ((x) * 2))
 
 /* MCP_FIFOStat - This register contains levels of the Command FIFO and Response FIFO */
-#define SNDW_MEM_FIFOSTAT			0x7C
+#define SNDW_MEM_FIFOSTAT			(SNDW_MEM_CTRL_BASE_OFFSET + 0x7C)
 #define SNDW_MEM_FIFOSTAT_AVAIL_MASK		0x3F
 #define SNDW_MEM_FIFOSTAT_AVAIL			0
 #define SNDW_MEM_FIFOSTAT_FREE_MASK		0x3F00
 #define SNDW_MEM_FIFOSTAT_FREE			8
 
 /* MCP_Command - This register is used to access TX_FIFO and RX_FIFO */
-#define SNDW_MEM_COMMAND			0x80
+#define SNDW_MEM_COMMAND			(SNDW_MEM_BASE_OFFSET + 0x80)
 
 #define SNDW_MAX_ENDPOINT_NUMBER		12
 #define CLK_DIVIDER				0x3

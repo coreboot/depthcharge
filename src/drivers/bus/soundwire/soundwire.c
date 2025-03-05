@@ -97,6 +97,18 @@ static void printrxcmd(uint32_t rxcmd)
 #endif
 
 /*
+ * sndw_get_bar - Function to fetch the bar address based on ACE version
+ * bus - Pointer to the Soundwire structure.
+ */
+static void* sndw_get_bar(Soundwire *bus)
+{
+	if(CONFIG(INTEL_COMMON_SOUNDWIRE_ACE_3_x))
+		return bus->hdabar;
+	else
+		return bus->dspbar;
+}
+
+/*
  * send - Function operating on Sndw Fifo for sending message to codecs.
  * sndwlinkaddr - Soundwire controller link address.
  * txcmds - Pointer to send messages.
@@ -227,7 +239,9 @@ static int read_endpointid(void *sndwlinkaddr, uint32_t deviceindex,
 static uint32_t getsndwlinkaddress(Soundwire *bus)
 {
 	uint32_t linkaddress;
-	linkaddress = (read32(bus->dspbar + DSP_MEM_SNDW_SNDWIPPTR) & DSP_MEM_SNDW_SNDWIPPTR_PRT)
+	void *bar_addr = sndw_get_bar(bus);
+
+	linkaddress = (read32(bar_addr + DSP_MEM_SNDW_SNDWIPPTR) & DSP_MEM_SNDW_SNDWIPPTR_PRT)
 			+ (bus->sndwlinkindex * DSP_MEM_SNDW_OFFSETS);
 
 	if (linkaddress == 0) {
@@ -244,8 +258,9 @@ static uint32_t getsndwlinkaddress(Soundwire *bus)
  */
 static uint32_t getnumofsndwlinks(Soundwire *bus)
 {
+	void *bar_addr = sndw_get_bar(bus);
 	/* Get the number of the supported Soundwire links */
-	uint32_t numofsndwlinks = ((read32(bus->dspbar + DSP_MEM_SNDW_SNDWLCAP)
+	uint32_t numofsndwlinks = ((read32(bar_addr + DSP_MEM_SNDW_SNDWLCAP)
 				& DSP_MEM_SNDW_SNDWLCAP_SC) >> DSP_MEM_SNDW_SNDWLCAP_SC_BIT);
 	return numofsndwlinks;
 }
@@ -259,11 +274,10 @@ static uint32_t sndwcodecstatus(Soundwire *bus, uint32_t *endpointstatus)
 {
 	uint32_t status;
 	struct stopwatch sw;
-	uint32_t sndwlinkaddress = getsndwlinkaddress(bus);
 
 	stopwatch_init_usecs_expire(&sw, SNDW_POLL_TIME_US);
 	do {
-		status = read32(bus->dspbar + sndwlinkaddress + SNDW_MEM_ENDPOINTSTAT);
+		status = read32(bus->sndwlinkaddr + SNDW_MEM_ENDPOINTSTAT);
 		if (status != 0) {
 			*endpointstatus = status;
 			return 0;
@@ -348,20 +362,22 @@ static int sndwlink_poweron(Soundwire *bus)
 	uint32_t value;
 	uint16_t rwval;
 
+	void *bar_addr = sndw_get_bar(bus);
+
 	/* Set SPA = 1 to power on the SoundWire link */
 	value = DSP_MEM_SNDW_SNDWLCTL_SPA << bus->sndwlinkindex;
-	write32(bus->dspbar + DSP_MEM_SNDW_SNDWLCTL,
-		(read32(bus->dspbar + DSP_MEM_SNDW_SNDWLCTL) | value));
+	write32(bar_addr + DSP_MEM_SNDW_SNDWLCTL,
+		(read32(bar_addr + DSP_MEM_SNDW_SNDWLCTL) | value));
 
 	value = DSP_MEM_SNDW_SNDWLCTL_CPA << bus->sndwlinkindex;
 	/* Wait till current active power bit is set */
 	for (int i = 0; i < RETRY_COUNT; i++) {
-		if ((read32(bus->dspbar + DSP_MEM_SNDW_SNDWLCTL) & value) == value)
+		if ((read32(bar_addr + DSP_MEM_SNDW_SNDWLCTL) & value) == value)
 			break;
 		mdelay(1);
 	}
 
-	if ((read32(bus->dspbar + DSP_MEM_SNDW_SNDWLCTL) & value) != value) {
+	if ((read32(bar_addr + DSP_MEM_SNDW_SNDWLCTL) & value) != value) {
 		printf("Failed to poweron the Soundwire link.\n");
 		return -1;
 	}
@@ -370,15 +386,15 @@ static int sndwlink_poweron(Soundwire *bus)
 	 * Enable Data AC Timing Qualifier in preparation for Master IP being
 	 * put into "Normal" Operation
 	 */
-	rwval = read16(bus->dspbar + DSP_MEM_SNDW_SNDWxACTMCTL(bus->sndwlinkindex))
+	rwval = read16(bar_addr + DSP_MEM_SNDW_SNDWxACTMCTL(bus->sndwlinkindex))
 						| DSP_MEM_SNDW_SNDWxACTMCTL_DACTQE;
-	write16(bus->dspbar + DSP_MEM_SNDW_SNDWxACTMCTL(bus->sndwlinkindex),
+	write16(bar_addr + DSP_MEM_SNDW_SNDWxACTMCTL(bus->sndwlinkindex),
 		rwval);
 
 	/* Enable the Master IP Flowthrough */
-	rwval = read16(bus->dspbar + DSP_MEM_SNDW_SNDWxIOCTL(bus->sndwlinkindex))
+	rwval = read16(bar_addr + DSP_MEM_SNDW_SNDWxIOCTL(bus->sndwlinkindex))
 			| DSP_MEM_SNDW_SNDWxIOCTL_MIF;
-	write16(bus->dspbar + DSP_MEM_SNDW_SNDWxIOCTL(bus->sndwlinkindex),
+	write16(bar_addr + DSP_MEM_SNDW_SNDWxIOCTL(bus->sndwlinkindex),
 		rwval);
 
 	return 0;
@@ -403,7 +419,7 @@ static int sndwlink_init(Soundwire *bus)
 	}
 
 	sndwlinkaddress = getsndwlinkaddress(bus);
-	bus->sndwlinkaddr = bus->dspbar + sndwlinkaddress;
+	bus->sndwlinkaddr = sndw_get_bar(bus) + sndwlinkaddress;
 
 	/* Function to check access to Sndw controller */
 	if (read32((bus->sndwlinkaddr) + SNDW_MEM_CONFIG) == 0xffffffff) {
@@ -415,6 +431,33 @@ static int sndwlink_init(Soundwire *bus)
 		printf("Failed to initialize the soundwire controller.\n");
 		return -1;
 	}
+
+	return 0;
+}
+
+/*
+ * ace_dsp_config_power_domain - perform power control operations to
+ * wake or prevent gated-DSP0 & gated-IO1(SDW) from power gating.
+ * bus - Pointer to the Soudnwire structure.
+ * ctrl_reg - power domain control register address.
+ * ctrl_reg_mask - power domain control register mask.
+ * sts_reg - power domain status register.
+ * sts_reg_mask - power domain status register mask.
+ */
+static int ace_dsp_config_power_domain(Soundwire *bus, uint32_t ctrl_reg, uint32_t ctrl_reg_mask,
+					uint32_t sts_reg, uint32_t sts_reg_mask)
+{
+	write32(bus->dspbar + ctrl_reg, read32(bus->dspbar + ctrl_reg) | ctrl_reg_mask);
+
+	for (int i = 0; i < RETRY_COUNT; i++) {
+		/* We configure dsp bar here unlike other configurataions where we
+		 * use hda_bar for ACE 3.x and dsp_bar for ACE 1.x */
+		if ((read32(bus->dspbar + sts_reg) & ctrl_reg_mask) == ctrl_reg_mask)
+			break;
+		mdelay(1);
+	}
+	if ((read32(bus->dspbar + sts_reg) & sts_reg_mask) != sts_reg_mask)
+		return -1;
 
 	return 0;
 }
@@ -443,18 +486,15 @@ static int ace_dsp_core_power_up(Soundwire *bus)
 		return -1;
 
 	/* Wake/Prevent gated-DSP0 & gated-IO1(SDW) from power gating */
-	write32(bus->dspbar + MTL_HFPWRCTL,
-		(read32(bus->dspbar + MTL_HFPWRCTL) | MTL_HFPWRCTL_WPHP0IO0_PG));
-
-	for (int i = 0; i < RETRY_COUNT; i++) {
-		if ((read32(bus->dspbar + MTL_HFPWRSTS) &
-				MTL_HFPWRCTL_WPHP0IO0_PG) == MTL_HFPWRCTL_WPHP0IO0_PG)
-			break;
-		mdelay(1);
-	}
-	if ((read32(bus->dspbar + MTL_HFPWRSTS) &
-			MTL_HFPWRCTL_WPHP0IO0_PG) != MTL_HFPWRCTL_WPHP0IO0_PG)
+#if CONFIG(INTEL_COMMON_SOUNDWIRE_ACE_3_x)
+	if (ace_dsp_config_power_domain(bus, PTL_HFPWRCTL2, MTL_HFPWRCTL_WPHP0IO0_PG,
+					PTL_HFPWRSTS2, MTL_HFPWRCTL_WPDSPHPxPG(0)))
 		return -1;
+#else /* !INTEL_COMMON_SOUNDWIRE_ACE_3_x */
+	if (ace_dsp_config_power_domain(bus, MTL_HFPWRCTL, MTL_HFPWRCTL_WPHP0IO0_PG,
+					MTL_HFPWRSTS, MTL_HFPWRCTL_WPHP0IO0_PG))
+		return -1;
+#endif /* INTEL_COMMON_SOUNDWIRE_ACE_3_x */
 
 	/* Program Host CPU the owner of the IP & shim */
 	val = read32(bus->dspbar + MTL_DSP2C0_CTL);
@@ -508,7 +548,7 @@ static int enable_hda_dsp(Soundwire *bus)
 		return -1;
 	}
 
-	if (CONFIG(INTEL_COMMON_SOUNDWIRE_ACE_1_x)) {
+	if (CONFIG(INTEL_COMMON_SOUNDWIRE_ACE_1_x) || CONFIG(INTEL_COMMON_SOUNDWIRE_ACE_3_x)) {
 		if (ace_dsp_core_power_up(bus)) {
 			printf("Failed to power up ACE dsp core\n");
 			return -1;
@@ -640,7 +680,7 @@ static int sndw_disable(SndwOps *me)
 {
 	Soundwire *bus = container_of(me, Soundwire, ops);
 
-	if (CONFIG(INTEL_COMMON_SOUNDWIRE_ACE_1_x)) {
+	if (CONFIG(INTEL_COMMON_SOUNDWIRE_ACE_1_x) || CONFIG(INTEL_COMMON_SOUNDWIRE_ACE_3_x)) {
 		if (ace_dsp_core_power_down(bus))
 			return -1;
 	} else {
