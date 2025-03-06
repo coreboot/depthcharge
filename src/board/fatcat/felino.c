@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <libpayload.h>
-
+#include "drivers/ec/tps6699x/tps6699x.h"
 #include "board/fatcat/include/variant.h"
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
@@ -57,13 +57,6 @@ const int variant_get_ec_int(void)
 /* Override of func in src/drivers/ec/tps6699x/tps6699x.c */
 void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path)
 {
-	if (fw_config_probe(FW_CONFIG(PDC_CONTROL, PDC_TI))) {
-		/* Will update path for TI PDC AU later */
-		*image_path = "tps6699x.bin";
-		*hash_path = "tps6699x.hash";
-	} else {
-		/* Unknown configuration. Don't perform an update. */
-		*image_path = NULL;
-		*hash_path = NULL;
-	}
+	*image_path = "tps6699x_GOOG0700.bin";
+	*hash_path = "tps6699x_GOOG0700.hash";
 }

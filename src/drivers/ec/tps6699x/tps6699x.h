@@ -8,6 +8,7 @@
 #include "drivers/ec/common/pdc_utils.h"
 #include "drivers/ec/vboot_auxfw.h"
 #include "vb2_api.h"
+#include "drivers/ec/cros/commands.h"
 
 #if (TPS6699X_DEBUG > 0)
 #define debug(msg, args...) printf("%s: " msg, __func__, ##args)
