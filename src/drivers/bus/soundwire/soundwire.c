@@ -245,8 +245,8 @@ static uint32_t getsndwlinkaddress(Soundwire *bus)
 static uint32_t getnumofsndwlinks(Soundwire *bus)
 {
 	/* Get the number of the supported Soundwire links */
-	uint32_t numofsndwlinks = read32(bus->dspbar + DSP_MEM_SNDW_SNDWLCAP)
-								& DSP_MEM_SNDW_SNDWSC;
+	uint32_t numofsndwlinks = ((read32(bus->dspbar + DSP_MEM_SNDW_SNDWLCAP)
+				& DSP_MEM_SNDW_SNDWLCAP_SC) >> DSP_MEM_SNDW_SNDWLCAP_SC_BIT);
 	return numofsndwlinks;
 }
 
