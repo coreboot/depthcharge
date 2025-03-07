@@ -54,6 +54,9 @@ static int board_setup(void)
 	tpm_set_ops(&tpm->base.ops);
 
 	/* Set up EC */
+	flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
+	flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
+
 	GpioOps *spi0_cs = new_gpio_not(new_mtk_gpio_output(PAD_SPIM0_CSB));
 	MtkSpi *spi0 = new_mtk_spi(0x11010800, spi0_cs);
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi0->ops);
