@@ -38,7 +38,8 @@
 /* SoundWire Shim Registers */
 #if CONFIG(INTEL_COMMON_SOUNDWIRE_ACE_1_x)
 #define DSP_MEM_SNDW				0x38000
-#else
+#endif
+#if CONFIG(INTEL_COMMON_SNDW_CAVS_2_5)
 #define DSP_MEM_SNDW				0x2C000
 #endif
 #define DSP_MEM_SNDW_SNDWLCAP			(DSP_MEM_SNDW + 0x00)
