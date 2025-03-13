@@ -255,6 +255,8 @@ static int update_all_tcss_ports_states(void)
 		if (!r) {
 			if (GET_TCSS_CD_FIELD(USAGE, cmd) == TCSS_CONN_REQ_RES)
 				tcss_conn_req_res[ec_port] = true;
+			else
+				tcss_conn_req_res[ec_port] = false;
 		}
 	}
 
