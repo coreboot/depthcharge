@@ -33,6 +33,17 @@ const struct audio_config *variant_probe_audio_config(void)
 	return &config;
 }
 
+static const struct storage_config storage_configs[] = {
+	{ .media = STORAGE_NVME, .pci_dev = PCI_DEV_PCIE9 },
+	{ .media = STORAGE_RTKMMC, .pci_dev = PCI_DEV_PCIE2 },
+};
+
+const struct storage_config *variant_get_storage_configs(size_t *count)
+{
+	*count = ARRAY_SIZE(storage_configs);
+	return storage_configs;
+}
+
 int gsc_irq_status(void)
 {
 	return pantherlake_get_gpe(GPE0_DW2_15); /* GPP_F15 */
