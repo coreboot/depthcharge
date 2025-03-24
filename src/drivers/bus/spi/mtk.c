@@ -42,15 +42,11 @@ static void mtk_spi_reset(MtkSpiRegs *regs)
 	clrbits_le32(&regs->spi_cmd_reg, 1 << SPI_CMD_RST_SHIFT);
 }
 
-static void mtk_spi_dump_data(const char *name, const uint8_t *data, int size)
+static void mtk_spi_dump_data(const char *name, const uint8_t *data, size_t size)
 {
 #ifdef MTK_SPI_DEBUG
-	int i;
-
-	printf("%s[%d]: 0x ", name, size);
-	for (i = 0; i < size; i++)
-		printf("%#x ", data[i]);
-	printf("\n");
+	printf("%s[%d]:\n", name, size);
+	hexdump(data, size);
 #endif
 }
 
