@@ -51,6 +51,7 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 	VAR_ARGS("slot-unbootable", ':', VAR_SLOT_UNBOOTABLE),
 	VAR_NO_ARGS("logical-block-size", VAR_LOGICAL_BLOCK_SIZE),
 	VAR_NO_ARGS("serialno", VAR_SERIALNO),
+	VAR_ARGS("has-slot", ':', VAR_HAS_SLOT),
 	{.name = NULL},
 };
 
@@ -311,6 +312,47 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 			used_len = snprintf(outbuf, *outbuf_len, "unknown");
 		break;
 	}
+	case VAR_HAS_SLOT:
+		if (fastboot_disk_gpt_init(fb))
+			return STATE_DISK_ERROR;
+		if (arg != NULL) {
+			slot = fastboot_get_slot_for_partition_name(arg);
+			if (slot)
+				return STATE_UNKNOWN_VAR;
+			part = gpt_find_partition(fb->gpt, arg);
+			if (part) {
+				slot = 0;
+			} else {
+				/* Maximum length of GPT name is 36 chars */
+				char name_a[37];
+				int ret = snprintf(name_a, sizeof(name_a), "%s_a", arg);
+				if (ret < 0 || ret > sizeof(name_a))
+					return STATE_UNKNOWN_VAR;
+				part = gpt_find_partition(fb->gpt, name_a);
+				if (!part)
+					return STATE_UNKNOWN_VAR;
+				slot = 'a';
+			}
+		} else {
+			int name_len;
+			state = fastboot_get_partition_name_by_index(fb->gpt, index, &name,
+								     &part);
+			if (state != STATE_OK)
+				return state;
+			name_len = strlen(name);
+			slot = fastboot_get_slot_for_partition_name(name);
+			if (slot) {
+				if (slot != 'a')
+					return STATE_TRY_NEXT;
+				name_len -= 2;
+			}
+			used_len = snprintf(outbuf, *outbuf_len, "%.*s:", name_len, name);
+			outbuf += used_len;
+			*outbuf_len -= used_len;
+			free(name);
+		}
+		used_len += snprintf(outbuf, *outbuf_len, slot ? "yes" : "no");
+		break;
 	default:
 		return STATE_UNKNOWN_VAR;
 	}

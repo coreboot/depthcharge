@@ -186,7 +186,6 @@ const u8 *vpd_find(const char *key, const u8 *blob, u32 *offset, u32 *size)
 	will_return(vpd_find, ret); \
 } while (0)
 
-
 /* Reset mock data (for use before each test) */
 static int setup(void **state)
 {
@@ -248,6 +247,9 @@ static void setup_partition_table(fastboot_var_t var)
 		WILL_GET_PRIORITY(part, 5);
 		WILL_GET_ENTRY_SUCCESSFUL(part, 1);
 		break;
+	case VAR_HAS_SLOT:
+		WILL_GET_SLOT_FOR_PARTITION_NAME(part_name, 'a');
+		break;
 	default:
 		break;
 	}
@@ -285,6 +287,9 @@ static void setup_partition_table(fastboot_var_t var)
 	case VAR_SLOT_UNBOOTABLE:
 		WILL_CHECK_ANDROID(part, false);
 		break;
+	case VAR_HAS_SLOT:
+		WILL_GET_SLOT_FOR_PARTITION_NAME(part_name, 'a');
+		break;
 	default:
 		break;
 	}
@@ -307,6 +312,9 @@ static void setup_partition_table(fastboot_var_t var)
 		break;
 	case VAR_SLOT_UNBOOTABLE:
 		WILL_CHECK_ANDROID(part, false);
+		break;
+	case VAR_HAS_SLOT:
+		WILL_GET_SLOT_FOR_PARTITION_NAME(part_name, 0);
 		break;
 	default:
 		break;
@@ -337,6 +345,9 @@ static void setup_partition_table(fastboot_var_t var)
 		WILL_GET_SLOT_FOR_PARTITION_NAME(part_name, 'b');
 		WILL_CHECK_BOOTABLE_ENTRY(part, true);
 		WILL_GET_PRIORITY(part, 0);
+		break;
+	case VAR_HAS_SLOT:
+		WILL_GET_SLOT_FOR_PARTITION_NAME(part_name, 'b');
 		break;
 	default:
 		break;
@@ -796,6 +807,87 @@ static void test_fb_getvar_serialno(void **state)
 	TEST_FASTBOOT_GETVAR_OK(VAR_SERIALNO, "", "unknown");
 }
 
+static void test_fb_getvar_has_slot(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GET_SLOT_FOR_PARTITION_NAME("part", 0);
+	WILL_FIND_PARTITION("part", NULL);
+	WILL_FIND_PARTITION("part_a", part);
+	TEST_FASTBOOT_GETVAR_OK(VAR_HAS_SLOT, "part", "yes");
+}
+
+static void test_fb_getvar_has_no_slot(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GET_SLOT_FOR_PARTITION_NAME("super", 0);
+	WILL_FIND_PARTITION("super", part);
+	TEST_FASTBOOT_GETVAR_OK(VAR_HAS_SLOT, "super", "no");
+}
+
+static void test_fb_getvar_has_slot_no_partition(void **state)
+{
+	WILL_GET_SLOT_FOR_PARTITION_NAME("unk", 0);
+	WILL_FIND_PARTITION("unk", NULL);
+	WILL_FIND_PARTITION("unk_a", NULL);
+	TEST_FASTBOOT_GETVAR_ERR(VAR_HAS_SLOT, "unk", STATE_UNKNOWN_VAR);
+}
+
+static void test_fb_getvar_has_slot_in_arg(void **state)
+{
+	WILL_GET_SLOT_FOR_PARTITION_NAME("part_a", 'a');
+	TEST_FASTBOOT_GETVAR_ERR(VAR_HAS_SLOT, "part_a", STATE_UNKNOWN_VAR);
+}
+
+static void test_fb_getvar_has_slot_a_at_index(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GET_SLOT_FOR_PARTITION_NAME("part_a", 'a');
+	/* Print just the base name without a slot */
+	test_fb_getvar_partition_at_index(state, VAR_HAS_SLOT, part, "part_a", "part:yes");
+}
+
+static void test_fb_getvar_has_slot_b_at_index(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char var_buf[FASTBOOT_MSG_MAX];
+	size_t out_len = sizeof(var_buf);
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GET_NUMBER_OF_PARTITIONS(5);
+	WILL_GET_PARTITION(3, part);
+	WILL_GET_ENTRY_NAME(part, "part_b");
+	WILL_GET_SLOT_FOR_PARTITION_NAME("part_b", 'b');
+	/* Shouldn't print base name for other slots than "a" */
+	assert_int_equal(fastboot_getvar(fb, VAR_HAS_SLOT, NULL, 3, var_buf, &out_len),
+			 STATE_TRY_NEXT);
+}
+
+static void test_fb_getvar_has_no_slot_at_index(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GET_SLOT_FOR_PARTITION_NAME("part", 0);
+	test_fb_getvar_partition_at_index(state, VAR_HAS_SLOT, part, "part", "part:no");
+}
+
+static void test_fb_getvar_has_slot_at_index_not_exist(void **state)
+{
+	test_fb_getvar_partition_at_index_not_exist(state, VAR_HAS_SLOT);
+}
+
+static void test_fb_getvar_has_slot_at_index_no_name(void **state)
+{
+	test_fb_getvar_partition_at_index_no_name(state, VAR_HAS_SLOT);
+}
+
+static void test_fb_getvar_has_slot_at_index_last(void **state)
+{
+	test_fb_getvar_partition_at_index_last(state, VAR_HAS_SLOT);
+}
+
 /* fastboot_cmd_getvar tests */
 
 static void test_fb_cmd_getvar_current_slot(void **state)
@@ -975,6 +1067,20 @@ static void test_fb_cmd_getvar_serialno(void **state)
 	fastboot_cmd_getvar(fb, "serialno");
 }
 
+static void test_fb_cmd_getvar_has_slot(void **state)
+{
+	struct FastbootOps *fb = *state;
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GET_SLOT_FOR_PARTITION_NAME("part", 0);
+	WILL_FIND_PARTITION("part", NULL);
+	WILL_FIND_PARTITION("part_a", part);
+
+	WILL_SEND_EXACT(fb, "OKAYyes");
+
+	fastboot_cmd_getvar(fb, "has-slot:part");
+}
+
 /* fastboot_cmd_getvar fail tests */
 static void test_fb_cmd_getvar_get_fail(void **state)
 {
@@ -1093,6 +1199,9 @@ static void test_fb_cmd_getvar_all(void **state)
 	/* Setup for slot-unbootable */
 	setup_partition_table(VAR_SLOT_UNBOOTABLE);
 
+	/* Setup for has-slot */
+	setup_partition_table(VAR_HAS_SLOT);
+
 	/* Setup for product */
 	const char product[] = "kano";
 	struct {
@@ -1146,6 +1255,9 @@ static void test_fb_cmd_getvar_all(void **state)
 	check_fb_cmd_getvar_all_contains("INFOslot-retry-count:b:8");
 	check_fb_cmd_getvar_all_contains("INFOslot-unbootable:a:no");
 	check_fb_cmd_getvar_all_contains("INFOslot-unbootable:b:yes");
+	check_fb_cmd_getvar_all_contains("INFOhas-slot:vbmeta:yes");
+	check_fb_cmd_getvar_all_contains("INFOhas-slot:boot:yes");
+	check_fb_cmd_getvar_all_contains("INFOhas-slot:super:no");
 	check_fb_cmd_getvar_all_contains("INFOproduct:kano");
 	check_fb_cmd_getvar_all_contains("INFOsecure:no");
 	check_fb_cmd_getvar_all_contains("INFOslot-count:1");
@@ -1190,6 +1302,9 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 
 	/* Setup for slot-unbootable */
 	setup_partition_table(VAR_SLOT_UNBOOTABLE);
+
+	/* Setup for has-slot */
+	setup_partition_table(VAR_HAS_SLOT);
 
 	/* Setup for product */
 	const char product[] = "kano";
@@ -1243,6 +1358,9 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	check_fb_cmd_getvar_all_contains("INFOslot-retry-count:b:8");
 	check_fb_cmd_getvar_all_contains("INFOslot-unbootable:a:no");
 	check_fb_cmd_getvar_all_contains("INFOslot-unbootable:b:yes");
+	check_fb_cmd_getvar_all_contains("INFOhas-slot:vbmeta:yes");
+	check_fb_cmd_getvar_all_contains("INFOhas-slot:boot:yes");
+	check_fb_cmd_getvar_all_contains("INFOhas-slot:super:no");
 	check_fb_cmd_getvar_all_contains("INFOproduct:kano");
 	check_fb_cmd_getvar_all_contains("INFOsecure:no");
 	check_fb_cmd_getvar_all_contains("INFOslot-count:1");
@@ -1311,6 +1429,16 @@ int main(void)
 		TEST(test_fb_getvar_slot_unbootable_at_index_last),
 		TEST(test_fb_getvar_version_bootloader),
 		TEST(test_fb_getvar_serialno),
+		TEST(test_fb_getvar_has_slot),
+		TEST(test_fb_getvar_has_no_slot),
+		TEST(test_fb_getvar_has_slot_no_partition),
+		TEST(test_fb_getvar_has_slot_in_arg),
+		TEST(test_fb_getvar_has_slot_a_at_index),
+		TEST(test_fb_getvar_has_slot_b_at_index),
+		TEST(test_fb_getvar_has_no_slot_at_index),
+		TEST(test_fb_getvar_has_slot_at_index_not_exist),
+		TEST(test_fb_getvar_has_slot_at_index_no_name),
+		TEST(test_fb_getvar_has_slot_at_index_last),
 		TEST(test_fb_cmd_getvar_current_slot),
 		TEST(test_fb_cmd_getvar_download_size),
 		TEST(test_fb_cmd_getvar_is_userspace),
@@ -1326,6 +1454,7 @@ int main(void)
 		TEST(test_fb_cmd_getvar_slot_unbootable),
 		TEST(test_fb_cmd_getvar_version_bootloader),
 		TEST(test_fb_cmd_getvar_serialno),
+		TEST(test_fb_cmd_getvar_has_slot),
 		TEST(test_fb_cmd_getvar_get_fail),
 		TEST(test_fb_cmd_getvar_no_args),
 		TEST(test_fb_cmd_getvar_prefix_of_var_name),

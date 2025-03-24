@@ -38,6 +38,7 @@ typedef enum fastboot_var {
 	VAR_SLOT_UNBOOTABLE,
 	VAR_LOGICAL_BLOCK_SIZE,
 	VAR_SERIALNO,
+	VAR_HAS_SLOT,
 } fastboot_var_t;
 
 typedef enum fastboot_getvar_result {
