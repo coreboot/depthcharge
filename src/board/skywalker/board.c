@@ -24,6 +24,8 @@
 #include "drivers/storage/mtk_ufs.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"
+#include "drivers/video/display.h"
+#include "drivers/video/mtk_ddp.h"
 #include "vboot/util/flag.h"
 
 #define MAX_PATH_LEN 32
@@ -174,6 +176,11 @@ static void setup_emmc(void)
 	printf("%s done\n", __func__);
 }
 
+static int board_backlight_update(DisplayOps *me, bool enable)
+{
+	return 0;
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
@@ -246,6 +253,13 @@ static int board_setup(void)
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11260000);
 	set_usb_init_callback(usb_host, enable_usb_vbus);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	/* Set display ops */
+	if (display_init_required())
+		display_set_ops(new_mtk_display(board_backlight_update,
+						0x14002000, 2, 0));
+	else
+		printf("[%s] no display init required!\n", __func__);
 
 	if (CONFIG(DRIVER_EC_RTS5453))
 		rts545x_register();
