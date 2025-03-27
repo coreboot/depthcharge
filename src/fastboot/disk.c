@@ -265,3 +265,32 @@ void fastboot_slots_disable_all(GptData *gpt)
 {
 	gpt_foreach_partition(gpt, disable_all_callback, gpt);
 }
+
+int fastboot_get_slot_suffixes(GptData *gpt, char *outbuf, size_t outbuf_len)
+{
+	int total = 0;
+	struct kpi_ctx result = {
+		.kernel_count = 0,
+		.present = 0,
+	};
+	gpt_foreach_partition(gpt, check_kernel_partition_info, &result);
+
+	outbuf[0] = '\0';
+	for (char slot = 'a'; slot <= 'z'; slot++) {
+		if (result.present & BIT(slot - 'a')) {
+			int ret = snprintf(outbuf, outbuf_len, "%c,", slot);
+			if (ret < 0)
+				return ret;
+			if (outbuf_len >= ret) {
+				outbuf += ret;
+				outbuf_len -= ret;
+			} else {
+				outbuf += outbuf_len;
+				outbuf_len = 0;
+			}
+			total += ret;
+		}
+	}
+
+	return total;
+}

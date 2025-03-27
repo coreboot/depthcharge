@@ -33,6 +33,7 @@ void fastboot_erase(struct FastbootOps *fb, const char *partition_name);
 int fastboot_get_slot_count(GptData *gpt);
 char get_slot_for_partition_name(GptEntry *e, char *partition_name);
 GptEntry *fastboot_get_kernel_for_slot(GptData *gpt, char slot);
+int fastboot_get_slot_suffixes(GptData *gpt, char *outbuf, size_t outbuf_len);
 void fastboot_slots_disable_all(GptData *gpt);
 
 #endif // __FASTBOOT_DISK_H__

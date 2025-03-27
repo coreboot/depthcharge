@@ -41,6 +41,7 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 	VAR_NO_ARGS("secure", VAR_SECURE),
 	VAR_NO_ARGS("slot-count", VAR_SLOT_COUNT),
 	VAR_NO_ARGS("version", VAR_VERSION),
+	VAR_NO_ARGS("slot-suffixes", VAR_SLOT_SUFFIXES),
 	{.name = NULL},
 };
 
@@ -195,6 +196,11 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		break;
 	case VAR_VERSION:
 		used_len = snprintf(outbuf, *outbuf_len, "0.4");
+		break;
+	case VAR_SLOT_SUFFIXES:
+		if (fastboot_disk_gpt_init(fb))
+			return STATE_DISK_ERROR;
+		used_len = fastboot_get_slot_suffixes(fb->gpt, outbuf, *outbuf_len);
 		break;
 	default:
 		return STATE_UNKNOWN_VAR;

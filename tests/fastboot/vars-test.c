@@ -107,6 +107,20 @@ GptEntry *GptNextKernelEntry(GptData *gpt)
 /* Setup for GptNextKernelEntry mock */
 #define WILL_GET_NEXT_KERNEL_ENTRY(ret) will_return(GptNextKernelEntry, ret)
 
+int fastboot_get_slot_suffixes(GptData *gpt, char *outbuf, size_t outbuf_len)
+{
+	assert_ptr_equal(gpt, &test_gpt);
+	char *suffixes = mock_ptr_type(char *);
+	int suffixes_len = strlen(suffixes);
+
+	memcpy(outbuf, suffixes, MIN(suffixes_len + 1, outbuf_len));
+
+	return suffixes_len;
+}
+
+/* Setup for fastboot_get_slot_suffixes mock */
+#define WILL_GET_SLOT_SUFFIXES(ret) will_return(fastboot_get_slot_suffixes, ret)
+
 /* Reset mock data (for use before each test) */
 static int setup(void **state)
 {
@@ -340,6 +354,14 @@ static void test_fb_getvar_current_slot_empty_name(void **state)
 	TEST_FASTBOOT_GETVAR_ERR(VAR_CURRENT_SLOT, "", STATE_DISK_ERROR);
 }
 
+static void test_fb_getvar_slot_suffixes(void **state)
+{
+	WILL_GET_SLOT_SUFFIXES("a,b");
+	TEST_FASTBOOT_GETVAR_OK(VAR_SLOT_SUFFIXES, "", "a,b");
+}
+
+/* fastboot_cmd_getvar tests */
+
 static void test_fb_cmd_getvar_current_slot(void **state)
 {
 	struct FastbootOps *fb = *state;
@@ -434,6 +456,18 @@ static void test_fb_cmd_getvar_version(void **state)
 	fastboot_cmd_getvar(fb, "version");
 }
 
+static void test_fb_cmd_getvar_slot_suffixes(void **state)
+{
+	struct FastbootOps *fb = *state;
+
+	WILL_GET_SLOT_SUFFIXES("a,b");
+
+	WILL_SEND_EXACT(fb, "OKAYa,b");
+
+	fastboot_cmd_getvar(fb, "slot-suffixes");
+}
+
+/* fastboot_cmd_getvar fail tests */
 static void test_fb_cmd_getvar_get_fail(void **state)
 {
 	struct FastbootOps *fb = *state;
@@ -473,6 +507,8 @@ static void test_fb_cmd_getvar_undefined(void **state)
 
 	fastboot_cmd_getvar(fb, "this-var-doesn't-exist");
 }
+
+/* fastboot_cmd_getvar all tests */
 
 /* Save packets from "getvar all" to check them later, because order of them isn't important */
 struct fb_test_packet {
@@ -553,6 +589,9 @@ static void test_fb_cmd_getvar_all(void **state)
 	/* Setup for slot-count */
 	WILL_GET_SLOT_COUNT(1);
 
+	/* Setup for slot-suffixes */
+	WILL_GET_SLOT_SUFFIXES("a,b");
+
 	fastboot_cmd_getvar(fb, "all");
 
 	if (packets_list.next == NULL)
@@ -577,6 +616,7 @@ static void test_fb_cmd_getvar_all(void **state)
 	check_fb_cmd_getvar_all_contains("INFOsecure:no");
 	check_fb_cmd_getvar_all_contains("INFOslot-count:1");
 	check_fb_cmd_getvar_all_contains("INFOversion:0.4");
+	check_fb_cmd_getvar_all_contains("INFOslot-suffixes:a,b");
 
 	list_for_each(node, packets_list, list_node) {
 		fail_msg("Unexpected message: \"%s\"", node->msg);
@@ -619,6 +659,9 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	/* Setup for slot-count */
 	WILL_GET_SLOT_COUNT(1);
 
+	/* Setup for slot-suffixes */
+	WILL_GET_SLOT_SUFFIXES("a,b");
+
 	fastboot_cmd_getvar(fb, "all");
 
 	if (packets_list.next == NULL)
@@ -642,6 +685,7 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	check_fb_cmd_getvar_all_contains("INFOsecure:no");
 	check_fb_cmd_getvar_all_contains("INFOslot-count:1");
 	check_fb_cmd_getvar_all_contains("INFOversion:0.4");
+	check_fb_cmd_getvar_all_contains("INFOslot-suffixes:a,b");
 
 	list_for_each(node, packets_list, list_node) {
 		fail_msg("Unexpected message: \"%s\"", node->msg);
@@ -670,6 +714,7 @@ int main(void)
 		TEST(test_fb_getvar_current_slot_no_kernel),
 		TEST(test_fb_getvar_current_slot_no_name),
 		TEST(test_fb_getvar_current_slot_empty_name),
+		TEST(test_fb_getvar_slot_suffixes),
 		TEST(test_fb_cmd_getvar_current_slot),
 		TEST(test_fb_cmd_getvar_download_size),
 		TEST(test_fb_cmd_getvar_is_userspace),
@@ -678,6 +723,7 @@ int main(void)
 		TEST(test_fb_cmd_getvar_secure),
 		TEST(test_fb_cmd_getvar_slot_count),
 		TEST(test_fb_cmd_getvar_version),
+		TEST(test_fb_cmd_getvar_slot_suffixes),
 		TEST(test_fb_cmd_getvar_get_fail),
 		TEST(test_fb_cmd_getvar_no_args),
 		TEST(test_fb_cmd_getvar_prefix_of_var_name),
