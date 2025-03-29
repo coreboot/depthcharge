@@ -6,7 +6,9 @@
 #include "drivers/bus/i2s/i2s.h"
 #include "drivers/sound/route.h"
 
-#if CONFIG(DRIVER_BUS_I2S_MT8196)
+#if CONFIG(DRIVER_BUS_I2S_MT8189)
+#include "drivers/bus/i2s/mt8189.h"
+#elif CONFIG(DRIVER_BUS_I2S_MT8196)
 #include "drivers/bus/i2s/mt8196.h"
 #else
 #error "Unsupported BUS I2S config for MediaTek"
@@ -17,6 +19,11 @@
 #else
 #define I2S_LOG(args...)
 #endif
+
+enum {
+	AFE_TDM_OUT0,
+	AFE_TDM_OUT1,
+};
 
 typedef struct {
 	SoundRouteComponent component;
