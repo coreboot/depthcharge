@@ -6,6 +6,7 @@
 #include "base/init_funcs.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
+#include "drivers/bus/i2s/mtk_v3.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/spi.h"
@@ -13,6 +14,7 @@
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/sound/i2s.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/storage/mtk_ufs.h"
 #include "drivers/tpm/google/i2c.h"
@@ -44,6 +46,29 @@ static void enable_usb_vbus(struct UsbHostController *usb_host)
 	}
 }
 
+static void setup_codec_rt9123(GpioOps *spk_en)
+{
+	MtkI2s *mtk_i2s = new_mtk_i2s(0x11050000, 2, 32 * KHz, 16, 16, AFE_TDM_OUT1);
+	I2sSource *i2s_source = new_i2s_source(&mtk_i2s->ops, 32 * KHz, 2, 8000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+
+	gpio_set(spk_en, 1);
+
+	sound_set_ops(&sound_route->ops);
+	printf("%s done\n", __func__);
+}
+
+static void sound_setup(void)
+{
+	GpioOps *rt9123_spk_en = sysinfo_lookup_gpio("rt9123_spk_en", 1,
+						     new_mtk_gpio_output);
+
+	if (rt9123_spk_en)
+		setup_codec_rt9123(rt9123_spk_en);
+	else
+		printf("no amps found\n");
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
@@ -64,6 +89,8 @@ static int board_setup(void)
 	GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1, new_mtk_gpio_input);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, ec_int);
 	register_vboot_ec(&cros_ec->vboot);
+
+	sound_setup();
 
 	/* Set up NOR flash ops */
 	MtkNorFlash *nor_flash = new_mtk_nor_flash(0x11018000);
