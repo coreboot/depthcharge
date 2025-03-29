@@ -15,6 +15,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/sound/i2s.h"
+#include "drivers/sound/rt5645.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/storage/mtk_ufs.h"
 #include "drivers/tpm/google/i2c.h"
@@ -58,13 +59,35 @@ static void setup_codec_rt9123(GpioOps *spk_en)
 	printf("%s done\n", __func__);
 }
 
+static void setup_codec_alc5645(void)
+{
+	MtkI2s *mtk_i2s = new_mtk_i2s(0x11050000, 2, 48000, 16, 16, AFE_TDM_OUT0);
+	I2sSource *i2s_source = new_i2s_source(&mtk_i2s->ops, 48000, 2, 8000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+
+	MTKI2c *i2c2 = new_mtk_i2c(0x11B20000, 0x11300400, I2C_APDMA_ASYNC);
+	rt5645Codec *rt5645 = new_rt5645_codec(&i2c2->ops, 0x1A);
+
+	list_insert_after(&rt5645->component.list_node,
+			  &sound_route->components);
+	list_insert_after(&mtk_i2s->component.list_node,
+			  &sound_route->components);
+
+	sound_set_ops(&sound_route->ops);
+	printf("%s done\n", __func__);
+}
+
 static void sound_setup(void)
 {
 	GpioOps *rt9123_spk_en = sysinfo_lookup_gpio("rt9123_spk_en", 1,
 						     new_mtk_gpio_output);
+	GpioOps *alc5645_spk_en = sysinfo_lookup_gpio("alc5645_spk_en", 1,
+						      new_mtk_gpio_output);
 
 	if (rt9123_spk_en)
 		setup_codec_rt9123(rt9123_spk_en);
+	else if (alc5645_spk_en)
+		setup_codec_alc5645();
 	else
 		printf("no amps found\n");
 }
