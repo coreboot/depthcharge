@@ -212,8 +212,9 @@ static vb2_error_t get_localized_graphic_archive(const char *locale_code,
 			return VB2_SUCCESS;
 		}
 		/* No need to keep more than one locale graphics at a time */
-		free(ro_cache);
-		free(rw_cache);
+		cbfs_unmap(ro_cache);
+		if (rw_cache)
+			cbfs_unmap(rw_cache);
 		ro_cache = NULL;
 	}
 
