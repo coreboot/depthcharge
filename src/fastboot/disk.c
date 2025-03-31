@@ -154,29 +154,21 @@ void fastboot_erase(struct FastbootOps *fb, const char *partition_name)
 /************************* SLOT LOGIC ******************************/
 
 // Returns 0 if the partition is not valid.
-char get_slot_for_partition_name(GptEntry *e, char *partition_name)
+char fastboot_get_slot_for_partition_name(const char *partition_name)
 {
-	if (!IsAndroid(e))
-		return 0;
 	int len = strlen(partition_name);
-	// expect partition names ending with -X or _x
-	if (partition_name[len - 2] != '-' && partition_name[len - 2] != '_') {
-		FB_DEBUG("ignoring kernel name '%s' - missing suffix\n",
-			 partition_name);
-		return 0;
-	}
 
-	if (!isalpha(partition_name[len - 1])) {
-		FB_DEBUG("ignoring kernel name '%s' - slot is not a letter\n",
-			 partition_name);
+	if (len < 2)
 		return 0;
-	}
+	/* Expect partition names ending with -X or _x */
+	if (partition_name[len - 2] != '-' && partition_name[len - 2] != '_')
+		return 0;
 
-	// make all slots lowercase.
-	char slot = partition_name[len - 1];
-	if (slot < 'a')
-		slot += ('a' - 'A');
-	return slot;
+	if (!isalpha(partition_name[len - 1]))
+		return 0;
+
+	/* Make all slots lowercase */
+	return tolower(partition_name[len - 1]);
 }
 
 struct kpi_ctx {
@@ -192,7 +184,11 @@ static bool check_kernel_partition_info(void *ctx, int index, GptEntry *e,
 					char *partition_name)
 {
 	struct kpi_ctx *info = (struct kpi_ctx *)ctx;
-	char slot = get_slot_for_partition_name(e, partition_name);
+
+	if (!IsAndroid(e))
+		return false;
+
+	char slot = fastboot_get_slot_for_partition_name(partition_name);
 	if (slot == 0)
 		return false;
 
@@ -223,7 +219,10 @@ struct find_slot_ctx {
 static bool find_slot_callback(void *ctx, int index, GptEntry *e,
 			       char *partition_name)
 {
-	char slot = get_slot_for_partition_name(e, partition_name);
+	if (!IsAndroid(e))
+		return false;
+
+	char slot = fastboot_get_slot_for_partition_name(partition_name);
 	if (slot == 0)
 		return false;
 

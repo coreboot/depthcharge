@@ -373,7 +373,10 @@ struct get_kernels_ctx {
 static bool get_kernels_cb(void *ctx, int index, GptEntry *e,
 			   char *partition_name)
 {
-	char slot = get_slot_for_partition_name(e, partition_name);
+	if (!IsAndroid(e))
+		return false;
+
+	char slot = fastboot_get_slot_for_partition_name(partition_name);
 	if (slot == 0)
 		return false;
 

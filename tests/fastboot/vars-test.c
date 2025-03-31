@@ -121,6 +121,19 @@ int fastboot_get_slot_suffixes(GptData *gpt, char *outbuf, size_t outbuf_len)
 /* Setup for fastboot_get_slot_suffixes mock */
 #define WILL_GET_SLOT_SUFFIXES(ret) will_return(fastboot_get_slot_suffixes, ret)
 
+int GetEntrySuccessful(const GptEntry *e)
+{
+	check_expected_ptr(e);
+
+	return mock();
+}
+
+/* Setup for GetEntrySuccessful mock */
+#define WILL_GET_ENTRY_SUCCESSFUL(entry, ret) do { \
+	expect_value(GetEntrySuccessful, e, entry); \
+	will_return(GetEntrySuccessful, ret); \
+} while (0)
+
 /* Reset mock data (for use before each test) */
 static int setup(void **state)
 {
@@ -149,17 +162,30 @@ static int setup(void **state)
 #define TEST_FASTBOOT_GETVAR_OK(var, arg, expected) \
 	TEST_FASTBOOT_GETVAR(var, arg, expected, STATE_OK)
 
-static void setup_partition_table(void)
+static void setup_partition_table(fastboot_var_t var)
 {
-	const int num_of_parts = 6;
+	const int num_of_parts = 7;
 	GptEntry *part;
+	const char *part_name;
 
 	/* vbmeta_a 0x100 at 0 */
 	part = (void *)0xcafe;
+	part_name = "vbmeta_a";
 	WILL_GET_NUMBER_OF_PARTITIONS(num_of_parts);
 	WILL_GET_PARTITION(0, part);
-	WILL_GET_ENTRY_NAME(part, "vbmeta_a");
-	WILL_GET_ENTRY_SIZE(part, 0x100);
+	WILL_GET_ENTRY_NAME(part, part_name);
+	switch (var) {
+	case VAR_PARTITION_SIZE:
+		WILL_GET_ENTRY_SIZE(part, 0x100);
+		break;
+	case VAR_SLOT_SUCCESSFUL:
+		WILL_CHECK_ANDROID(part, true);
+		WILL_GET_SLOT_FOR_PARTITION_NAME(part_name, 'a');
+		WILL_GET_ENTRY_SUCCESSFUL(part, 1);
+		break;
+	default:
+		break;
+	}
 
 	/* No part at 1 */
 	WILL_GET_NUMBER_OF_PARTITIONS(num_of_parts);
@@ -175,22 +201,137 @@ static void setup_partition_table(void)
 	WILL_GET_PARTITION(3, part);
 	WILL_GET_ENTRY_NAME(part, NULL);
 
-	/* boot_a 0x300 at 4*/
+	/* boot_a 0x300 at 4 */
 	part = (void *)0xcaf4;
+	part_name = "boot_a";
 	WILL_GET_NUMBER_OF_PARTITIONS(num_of_parts);
 	WILL_GET_PARTITION(4, part);
-	WILL_GET_ENTRY_NAME(part, "boot_a");
-	WILL_GET_ENTRY_SIZE(part, 0x300);
+	WILL_GET_ENTRY_NAME(part, part_name);
+	switch (var) {
+	case VAR_PARTITION_SIZE:
+		WILL_GET_ENTRY_SIZE(part, 0x300);
+		break;
+	case VAR_SLOT_SUCCESSFUL:
+		WILL_CHECK_ANDROID(part, false);
+		break;
+	default:
+		break;
+	}
 
-	/* super 0x1000 at 5*/
+	/* super 0x1000 at 5 */
 	part = (void *)0xcaf5;
+	part_name = "super";
 	WILL_GET_NUMBER_OF_PARTITIONS(num_of_parts);
 	WILL_GET_PARTITION(5, part);
-	WILL_GET_ENTRY_NAME(part, "super");
-	WILL_GET_ENTRY_SIZE(part, 0x1000);
+	WILL_GET_ENTRY_NAME(part, part_name);
+	switch (var) {
+	case VAR_PARTITION_SIZE:
+		WILL_GET_ENTRY_SIZE(part, 0x1000);
+		break;
+	case VAR_SLOT_SUCCESSFUL:
+		WILL_CHECK_ANDROID(part, false);
+		break;
+	default:
+		break;
+	}
+
+	/* vbmeta_b 0x100 at 6 */
+	part = (void *)0xcaf6;
+	part_name = "vbmeta_b";
+	WILL_GET_NUMBER_OF_PARTITIONS(num_of_parts);
+	WILL_GET_PARTITION(6, part);
+	WILL_GET_ENTRY_NAME(part, part_name);
+	switch (var) {
+	case VAR_PARTITION_SIZE:
+		WILL_GET_ENTRY_SIZE(part, 0x100);
+		break;
+	case VAR_SLOT_SUCCESSFUL:
+		WILL_CHECK_ANDROID(part, true);
+		WILL_GET_SLOT_FOR_PARTITION_NAME(part_name, 'b');
+		WILL_GET_ENTRY_SUCCESSFUL(part, 0);
+		break;
+	default:
+		break;
+	}
 
 	/* No more partitions */
 	WILL_GET_NUMBER_OF_PARTITIONS(num_of_parts);
+}
+
+/* Common tests for variables iterating over partitions */
+
+static void test_fb_getvar_partition_at_index(void **state, fastboot_var_t var, GptEntry *part,
+					      const char *part_name, const char *exp_out)
+{
+	struct FastbootOps *fb = *state;
+	char var_buf[FASTBOOT_MSG_MAX];
+	size_t out_len = sizeof(var_buf);
+
+	WILL_GET_NUMBER_OF_PARTITIONS(5);
+	WILL_GET_PARTITION(3, part);
+	WILL_GET_ENTRY_NAME(part, part_name);
+	assert_int_equal(fastboot_getvar(fb, var, NULL, 3, var_buf, &out_len), STATE_OK);
+	assert_string_equal(var_buf, exp_out);
+	assert_int_equal(out_len, strlen(exp_out));
+}
+
+static void test_fb_getvar_kernel_slot_at_index(void **state, fastboot_var_t var,
+						GptEntry *part, const char *part_name,
+						char slot, const char *exp_out)
+{
+	WILL_CHECK_ANDROID(part, true);
+	WILL_GET_SLOT_FOR_PARTITION_NAME(part_name, slot);
+	test_fb_getvar_partition_at_index(state, var, part, part_name, exp_out);
+}
+
+static void test_fb_getvar_kernel_slot_at_index_no_slot(void **state, fastboot_var_t var)
+{
+	struct FastbootOps *fb = *state;
+	char var_buf[FASTBOOT_MSG_MAX];
+	size_t out_len = sizeof(var_buf);
+	GptEntry *part = (void *)0xcafe;
+	char part_name[] = "part";
+
+	WILL_GET_NUMBER_OF_PARTITIONS(5);
+	WILL_GET_PARTITION(3, part);
+	WILL_GET_ENTRY_NAME(part, part_name);
+	WILL_CHECK_ANDROID(part, true);
+	WILL_GET_SLOT_FOR_PARTITION_NAME(part_name, 0);
+	assert_int_equal(fastboot_getvar(fb, var, NULL, 3, var_buf, &out_len), STATE_TRY_NEXT);
+}
+
+static void test_fb_getvar_partition_at_index_not_exist(void **state, fastboot_var_t var)
+{
+	struct FastbootOps *fb = *state;
+	char var_buf[FASTBOOT_MSG_MAX];
+	size_t out_len = sizeof(var_buf);
+
+	WILL_GET_NUMBER_OF_PARTITIONS(5);
+	WILL_GET_PARTITION(0, NULL);
+	assert_int_equal(fastboot_getvar(fb, var, NULL, 0, var_buf, &out_len), STATE_TRY_NEXT);
+}
+
+static void test_fb_getvar_partition_at_index_no_name(void **state, fastboot_var_t var)
+{
+	struct FastbootOps *fb = *state;
+	char var_buf[FASTBOOT_MSG_MAX];
+	size_t out_len = sizeof(var_buf);
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GET_NUMBER_OF_PARTITIONS(5);
+	WILL_GET_PARTITION(2, part);
+	WILL_GET_ENTRY_NAME(part, NULL);
+	assert_int_equal(fastboot_getvar(fb, var, NULL, 2, var_buf, &out_len), STATE_TRY_NEXT);
+}
+
+static void test_fb_getvar_partition_at_index_last(void **state, fastboot_var_t var)
+{
+	struct FastbootOps *fb = *state;
+	char var_buf[FASTBOOT_MSG_MAX];
+	size_t out_len = sizeof(var_buf);
+
+	WILL_GET_NUMBER_OF_PARTITIONS(5);
+	assert_int_equal(fastboot_getvar(fb, var, NULL, 5, var_buf, &out_len), STATE_LAST);
 }
 
 /* Test functions start here */
@@ -249,58 +390,28 @@ static void test_fb_getvar_partition_size_no_entry(void **state)
 	TEST_FASTBOOT_GETVAR_ERR(VAR_PARTITION_SIZE, "part2", STATE_UNKNOWN_VAR);
 }
 
-static void test_fb_getvar_partition_at_index(void **state)
+static void test_fb_getvar_partition_size_at_index(void **state)
 {
-	struct FastbootOps *fb = *state;
-	char var_buf[FASTBOOT_MSG_MAX];
-	size_t out_len = sizeof(var_buf);
 	GptEntry *part = (void *)0xcafe;
 
-	WILL_GET_NUMBER_OF_PARTITIONS(5);
-	WILL_GET_PARTITION(3, part);
-	WILL_GET_ENTRY_NAME(part, "part3");
 	WILL_GET_ENTRY_SIZE(part, 0x7e);
-	assert_int_equal(fastboot_getvar(fb, VAR_PARTITION_SIZE, NULL, 3, var_buf, &out_len),
-			 STATE_OK);
-	assert_string_equal(var_buf, "part3:0x7e");
-	assert_int_equal(out_len, 10);
+	test_fb_getvar_partition_at_index(state, VAR_PARTITION_SIZE, part, "part3",
+					  "part3:0x7e");
 }
 
-static void test_fb_getvar_partition_at_index_not_exist(void **state)
+static void test_fb_getvar_partition_size_at_index_not_exist(void **state)
 {
-	struct FastbootOps *fb = *state;
-	char var_buf[FASTBOOT_MSG_MAX];
-	size_t out_len = sizeof(var_buf);
-
-	WILL_GET_NUMBER_OF_PARTITIONS(5);
-	WILL_GET_PARTITION(0, NULL);
-	assert_int_equal(fastboot_getvar(fb, VAR_PARTITION_SIZE, NULL, 0, var_buf, &out_len),
-			 STATE_TRY_NEXT);
+	test_fb_getvar_partition_at_index_not_exist(state, VAR_PARTITION_SIZE);
 }
 
-static void test_fb_getvar_partition_at_index_no_name(void **state)
+static void test_fb_getvar_partition_size_at_index_no_name(void **state)
 {
-	struct FastbootOps *fb = *state;
-	char var_buf[FASTBOOT_MSG_MAX];
-	size_t out_len = sizeof(var_buf);
-	GptEntry *part = (void *)0xcafe;
-
-	WILL_GET_NUMBER_OF_PARTITIONS(5);
-	WILL_GET_PARTITION(2, part);
-	WILL_GET_ENTRY_NAME(part, NULL);
-	assert_int_equal(fastboot_getvar(fb, VAR_PARTITION_SIZE, NULL, 2, var_buf, &out_len),
-			 STATE_TRY_NEXT);
+	test_fb_getvar_partition_at_index_no_name(state, VAR_PARTITION_SIZE);
 }
 
-static void test_fb_getvar_partition_at_index_last(void **state)
+static void test_fb_getvar_partition_size_at_index_last(void **state)
 {
-	struct FastbootOps *fb = *state;
-	char var_buf[FASTBOOT_MSG_MAX];
-	size_t out_len = sizeof(var_buf);
-
-	WILL_GET_NUMBER_OF_PARTITIONS(5);
-	assert_int_equal(fastboot_getvar(fb, VAR_PARTITION_SIZE, NULL, 5, var_buf, &out_len),
-			 STATE_LAST);
+	test_fb_getvar_partition_at_index_last(state, VAR_PARTITION_SIZE);
 }
 
 static void test_fb_getvar_download_size(void **state)
@@ -358,6 +469,73 @@ static void test_fb_getvar_slot_suffixes(void **state)
 {
 	WILL_GET_SLOT_SUFFIXES("a,b");
 	TEST_FASTBOOT_GETVAR_OK(VAR_SLOT_SUFFIXES, "", "a,b");
+}
+
+static void test_fb_getvar_slot_successful(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GET_KERNEL_FOR_SLOT('a', part);
+	WILL_GET_ENTRY_SUCCESSFUL(part, 1);
+	TEST_FASTBOOT_GETVAR_OK(VAR_SLOT_SUCCESSFUL, "a", "yes");
+}
+
+static void test_fb_getvar_slot_unsuccessful(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GET_KERNEL_FOR_SLOT('a', part);
+	WILL_GET_ENTRY_SUCCESSFUL(part, 0);
+	TEST_FASTBOOT_GETVAR_OK(VAR_SLOT_SUCCESSFUL, "a", "no");
+}
+
+static void test_fb_getvar_slot_successful_no_kernel(void **state)
+{
+	WILL_GET_KERNEL_FOR_SLOT('a', NULL);
+	TEST_FASTBOOT_GETVAR_ERR(VAR_SLOT_SUCCESSFUL, "a", STATE_UNKNOWN_VAR);
+}
+
+static void test_fb_getvar_slot_successful_bad_slot(void **state)
+{
+	TEST_FASTBOOT_GETVAR_ERR(VAR_SLOT_SUCCESSFUL, "ab", STATE_UNKNOWN_VAR);
+}
+
+static void test_fb_getvar_slot_successful_at_index(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GET_ENTRY_SUCCESSFUL(part, 1);
+	test_fb_getvar_kernel_slot_at_index(state, VAR_SLOT_SUCCESSFUL, part, "vbmeta_a", 'a',
+					    "a:yes");
+}
+
+static void test_fb_getvar_slot_unsuccessful_at_index(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GET_ENTRY_SUCCESSFUL(part, 0);
+	test_fb_getvar_kernel_slot_at_index(state, VAR_SLOT_SUCCESSFUL, part, "vbmeta_a", 'a',
+					    "a:no");
+}
+
+static void test_fb_getvar_slot_successful_at_index_no_slot(void **state)
+{
+	test_fb_getvar_kernel_slot_at_index_no_slot(state, VAR_SLOT_SUCCESSFUL);
+}
+
+static void test_fb_getvar_slot_successful_at_index_not_exist(void **state)
+{
+	test_fb_getvar_partition_at_index_not_exist(state, VAR_SLOT_SUCCESSFUL);
+}
+
+static void test_fb_getvar_slot_successful_at_index_no_name(void **state)
+{
+	test_fb_getvar_partition_at_index_no_name(state, VAR_SLOT_SUCCESSFUL);
+}
+
+static void test_fb_getvar_slot_successful_at_index_last(void **state)
+{
+	test_fb_getvar_partition_at_index_last(state, VAR_SLOT_SUCCESSFUL);
 }
 
 /* fastboot_cmd_getvar tests */
@@ -467,6 +645,19 @@ static void test_fb_cmd_getvar_slot_suffixes(void **state)
 	fastboot_cmd_getvar(fb, "slot-suffixes");
 }
 
+static void test_fb_cmd_getvar_slot_successful(void **state)
+{
+	struct FastbootOps *fb = *state;
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GET_KERNEL_FOR_SLOT('a', part);
+	WILL_GET_ENTRY_SUCCESSFUL(part, 1);
+
+	WILL_SEND_EXACT(fb, "OKAYyes");
+
+	fastboot_cmd_getvar(fb, "slot-successful:a");
+}
+
 /* fastboot_cmd_getvar fail tests */
 static void test_fb_cmd_getvar_get_fail(void **state)
 {
@@ -572,8 +763,12 @@ static void test_fb_cmd_getvar_all(void **state)
 	snprintf(expected_max_download_size, sizeof(expected_max_download_size),
 		 "INFOmax-download-size:0x%llx", FASTBOOT_MAX_DOWNLOAD_SIZE);
 
+
+	/* Setup for slot-successful */
+	setup_partition_table(VAR_SLOT_SUCCESSFUL);
+
 	/* Setup for partition-size */
-	setup_partition_table();
+	setup_partition_table(VAR_PARTITION_SIZE);
 
 	/* Setup for product */
 	const char product[] = "kano";
@@ -612,6 +807,9 @@ static void test_fb_cmd_getvar_all(void **state)
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:vbmeta_a:0x100");
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:boot_a:0x300");
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:super:0x1000");
+	check_fb_cmd_getvar_all_contains("INFOpartition-size:vbmeta_b:0x100");
+	check_fb_cmd_getvar_all_contains("INFOslot-successful:a:yes");
+	check_fb_cmd_getvar_all_contains("INFOslot-successful:b:no");
 	check_fb_cmd_getvar_all_contains("INFOproduct:kano");
 	check_fb_cmd_getvar_all_contains("INFOsecure:no");
 	check_fb_cmd_getvar_all_contains("INFOslot-count:1");
@@ -643,7 +841,11 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	WILL_GPT_INIT(-1);
 
 	/* Setup for partition-size */
-	setup_partition_table();
+	setup_partition_table(VAR_PARTITION_SIZE);
+
+	/* Setup for slot-successful */
+	setup_partition_table(VAR_SLOT_SUCCESSFUL);
+
 
 	/* Setup for product */
 	const char product[] = "kano";
@@ -681,6 +883,9 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:vbmeta_a:0x100");
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:boot_a:0x300");
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:super:0x1000");
+	check_fb_cmd_getvar_all_contains("INFOpartition-size:vbmeta_b:0x100");
+	check_fb_cmd_getvar_all_contains("INFOslot-successful:a:yes");
+	check_fb_cmd_getvar_all_contains("INFOslot-successful:b:no");
 	check_fb_cmd_getvar_all_contains("INFOproduct:kano");
 	check_fb_cmd_getvar_all_contains("INFOsecure:no");
 	check_fb_cmd_getvar_all_contains("INFOslot-count:1");
@@ -704,10 +909,10 @@ int main(void)
 		TEST(test_fb_getvar_product),
 		TEST(test_fb_getvar_partition_size),
 		TEST(test_fb_getvar_partition_size_no_entry),
-		TEST(test_fb_getvar_partition_at_index),
-		TEST(test_fb_getvar_partition_at_index_not_exist),
-		TEST(test_fb_getvar_partition_at_index_no_name),
-		TEST(test_fb_getvar_partition_at_index_last),
+		TEST(test_fb_getvar_partition_size_at_index),
+		TEST(test_fb_getvar_partition_size_at_index_not_exist),
+		TEST(test_fb_getvar_partition_size_at_index_no_name),
+		TEST(test_fb_getvar_partition_size_at_index_last),
 		TEST(test_fb_getvar_download_size),
 		TEST(test_fb_getvar_current_slot),
 		TEST(test_fb_getvar_current_slot_fail_gpt_init),
@@ -715,6 +920,16 @@ int main(void)
 		TEST(test_fb_getvar_current_slot_no_name),
 		TEST(test_fb_getvar_current_slot_empty_name),
 		TEST(test_fb_getvar_slot_suffixes),
+		TEST(test_fb_getvar_slot_successful),
+		TEST(test_fb_getvar_slot_unsuccessful),
+		TEST(test_fb_getvar_slot_successful_no_kernel),
+		TEST(test_fb_getvar_slot_successful_bad_slot),
+		TEST(test_fb_getvar_slot_successful_at_index),
+		TEST(test_fb_getvar_slot_unsuccessful_at_index),
+		TEST(test_fb_getvar_slot_successful_at_index_no_slot),
+		TEST(test_fb_getvar_slot_successful_at_index_not_exist),
+		TEST(test_fb_getvar_slot_successful_at_index_no_name),
+		TEST(test_fb_getvar_slot_successful_at_index_last),
 		TEST(test_fb_cmd_getvar_current_slot),
 		TEST(test_fb_cmd_getvar_download_size),
 		TEST(test_fb_cmd_getvar_is_userspace),
@@ -724,6 +939,7 @@ int main(void)
 		TEST(test_fb_cmd_getvar_slot_count),
 		TEST(test_fb_cmd_getvar_version),
 		TEST(test_fb_cmd_getvar_slot_suffixes),
+		TEST(test_fb_cmd_getvar_slot_successful),
 		TEST(test_fb_cmd_getvar_get_fail),
 		TEST(test_fb_cmd_getvar_no_args),
 		TEST(test_fb_cmd_getvar_prefix_of_var_name),

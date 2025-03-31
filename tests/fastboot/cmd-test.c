@@ -246,21 +246,6 @@ bool gpt_foreach_partition(GptData *gpt, gpt_foreach_callback_t cb, void *ctx)
 
 #define GPT_FOREACH_WILL_END will_return(gpt_foreach_partition, NULL)
 
-char get_slot_for_partition_name(GptEntry *e, char *partition_name)
-{
-	check_expected_ptr(e);
-	check_expected(partition_name);
-
-	return mock();
-}
-
-/* Setup for gpt_slot_for_partition_name mock */
-#define WILL_GET_SLOT(entry, name, slot) do { \
-	expect_value(get_slot_for_partition_name, e, entry); \
-	expect_string(get_slot_for_partition_name, partition_name, name); \
-	will_return(get_slot_for_partition_name, slot); \
-} while (0)
-
 int GetEntryPriority(const GptEntry *e)
 {
 	check_expected_ptr(e);
@@ -272,20 +257,6 @@ int GetEntryPriority(const GptEntry *e)
 #define WILL_GET_PRIORITY(entry, priority) do { \
 	expect_value(GetEntryPriority, e, entry); \
 	will_return(GetEntryPriority, priority); \
-} while (0)
-
-GptEntry *fastboot_get_kernel_for_slot(GptData *gpt, char slot)
-{
-	assert_ptr_equal(gpt, &test_gpt);
-	check_expected(slot);
-
-	return mock_ptr_type(GptEntry *);
-}
-
-/* Setup for fastboot_get_kernel_for_slot mock */
-#define WILL_GET_KERNEL_FOR_SLOT(slot_arg, entry) do { \
-	expect_value(fastboot_get_kernel_for_slot, slot, slot_arg); \
-	will_return(fastboot_get_kernel_for_slot, entry); \
 } while (0)
 
 int GptUpdateKernelWithEntry(GptData *gpt, GptEntry *e, uint32_t update_type)
@@ -1314,20 +1285,23 @@ static void test_fb_cmd_oem_get_kernels(void **state)
 	GptEntry entries[4];
 
 	GPT_FOREACH_WILL_RETURN_ENTRY(&entries[0], 0, "boot_a");
-	WILL_GET_SLOT(&entries[0], "boot_a", 'a');
+	WILL_CHECK_ANDROID(&entries[0], true);
+	WILL_GET_SLOT_FOR_PARTITION_NAME("boot_a", 'a');
 	WILL_GET_PRIORITY(&entries[0], 5);
 	WILL_SEND_EXACT(fb, "INFOa:boot_a:prio=5");
 
 	GPT_FOREACH_WILL_RETURN_ENTRY(&entries[1], 1, "boot_b");
-	WILL_GET_SLOT(&entries[1], "boot_b", 'b');
+	WILL_CHECK_ANDROID(&entries[1], true);
+	WILL_GET_SLOT_FOR_PARTITION_NAME("boot_b", 'b');
 	WILL_GET_PRIORITY(&entries[1], 7);
 	WILL_SEND_EXACT(fb, "INFOb:boot_b:prio=7");
 
 	GPT_FOREACH_WILL_RETURN_ENTRY(&entries[2], 2, "super");
-	WILL_GET_SLOT(&entries[2], "super", 0);
+	WILL_CHECK_ANDROID(&entries[2], false);
 
-	GPT_FOREACH_WILL_RETURN_ENTRY(&entries[3], 4, "metadata_a");
-	WILL_GET_SLOT(&entries[3], "metadata_a", 0);
+	GPT_FOREACH_WILL_RETURN_ENTRY(&entries[3], 4, "vbmeta");
+	WILL_CHECK_ANDROID(&entries[3], true);
+	WILL_GET_SLOT_FOR_PARTITION_NAME("vbmeta", 0);
 
 	GPT_FOREACH_WILL_END;
 	WILL_SEND_PREFIX(fb, "OKAY");
