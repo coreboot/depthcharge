@@ -790,7 +790,7 @@ int cros_ec_locate_pdc_chip(uint8_t port, struct ec_response_locate_chip *r)
 	return cros_ec_locate_chip(EC_CHIP_TYPE_PDC, port, r);
 }
 
-int cros_ec_pd_chip_info(int port, int renew, struct ec_response_pd_chip_info *r)
+int cros_ec_pd_chip_info(int port, int renew, struct ec_response_pd_chip_info_v2 *r)
 {
 	int ret;
 	const struct ec_params_pd_chip_info p = {
@@ -803,10 +803,10 @@ int cros_ec_pd_chip_info(int port, int renew, struct ec_response_pd_chip_info *r
 	 * if not use EC_CMD_PD_CHIP_INFO instead.
 	 */
 	if (cros_ec_cmd_version_supported(EC_CMD_PD_CHIP_INFO, 2))
-		ret = ec_cmd_pd_chip_info_v2(cros_ec_get(), &p,
-			(struct ec_response_pd_chip_info_v2 *) r);
+		ret = ec_cmd_pd_chip_info_v2(cros_ec_get(), &p, r);
 	else
-		ret = ec_cmd_pd_chip_info(cros_ec_get(), &p, r);
+		ret = ec_cmd_pd_chip_info(cros_ec_get(), &p,
+				(struct ec_response_pd_chip_info *)r);
 
 	return ret;
 }

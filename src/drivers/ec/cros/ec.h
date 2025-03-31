@@ -437,7 +437,7 @@ void cros_ec_probe_aux_fw_chips(void);
  * @return 0 if ok, -1 on error
  */
 int cros_ec_pd_chip_info(int port, int renew,
-			 struct ec_response_pd_chip_info *r);
+			 struct ec_response_pd_chip_info_v2 *r);
 
 /**
  * Return a port's mux state.

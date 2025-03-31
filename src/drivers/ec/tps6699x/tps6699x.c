@@ -107,8 +107,7 @@ static bool tps6699x_query_chip_host_cmd(Tps6699x *me)
 	struct ec_response_pd_chip_info_v2 r;
 	int status;
 
-	status = cros_ec_pd_chip_info(me->ec_pd_id, /* live= */ true,
-			(struct ec_response_pd_chip_info *) &r);
+	status = cros_ec_pd_chip_info(me->ec_pd_id, /* live= */ true, &r);
 	if (status < 0) {
 		printf("%s: could not get chip info (%d)\n", me->chip_name, status);
 		return false;

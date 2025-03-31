@@ -643,7 +643,7 @@ static int __must_check anx3429_enable_mcu(Anx3429 *me)
 
 static int __must_check anx3429_capture_device_id(Anx3429 *me)
 {
-	struct ec_response_pd_chip_info r;
+	struct ec_response_pd_chip_info_v2 r;
 
 	if (me->chip.vendor != 0)
 		return 0;

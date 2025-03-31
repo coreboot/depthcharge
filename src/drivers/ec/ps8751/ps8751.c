@@ -941,7 +941,7 @@ static int is_parade_chip(const struct ec_response_pd_chip_info *const info,
 static enum ps8751_device_state __must_check ps8751_capture_device_id(
 							Ps8751 *me, int renew)
 {
-	struct ec_response_pd_chip_info r;
+	struct ec_response_pd_chip_info_v2 r;
 
 	if (me->chip.vendor != 0 && !renew)
 		return PS8751_DEVICE_PRESENT;
@@ -960,10 +960,10 @@ static enum ps8751_device_state __must_check ps8751_capture_device_id(
 	printf("%s: vendor 0x%04x product 0x%04x "
 	       "device 0x%04x fw_rev 0x%02x\n",
 	       me->chip_name, vendor, product, device, fw_rev);
-	if (is_corrupted_tcpc(&r, me->chip_type)) {
+	if (is_corrupted_tcpc((struct ec_response_pd_chip_info *)&r, me->chip_type)) {
 		printf("%s: reports corruption (%4x:%4x)\n",
 		       me->chip_name, vendor, product);
-	} else if (!is_parade_chip(&r, me->chip_type)) {
+	} else if (!is_parade_chip((struct ec_response_pd_chip_info *)&r, me->chip_type)) {
 		return PS8751_DEVICE_NOT_PARADE;
 	}
 

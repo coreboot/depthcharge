@@ -402,7 +402,7 @@ static int rts545x_restore_i2c_speed(Rts545x *me)
 
 static bool is_rts545x_device_present(Rts545x *me, int live)
 {
-	struct ec_response_pd_chip_info r;
+	struct ec_response_pd_chip_info_v2 r;
 	int status;
 
 	if (me->chip_info.vid && !live)
