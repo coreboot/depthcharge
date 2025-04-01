@@ -369,26 +369,23 @@ static void fastboot_cmd_oem_bootconfig_set(struct FastbootOps *fb, const char *
 // we found.
 struct get_kernels_ctx {
 	struct FastbootOps *fb;
-	int cur_kernel;
 };
 static bool get_kernels_cb(void *ctx, int index, GptEntry *e,
 			   char *partition_name)
 {
-	if (get_slot_for_partition_name(e, partition_name) == 0)
+	char slot = get_slot_for_partition_name(e, partition_name);
+	if (slot == 0)
 		return false;
 
 	struct get_kernels_ctx *gk = (struct get_kernels_ctx *)ctx;
-	char fastboot_slot = gk->cur_kernel + 'a';
-	fastboot_info(gk->fb, "%c:%s:prio=%d", fastboot_slot, partition_name,
+	fastboot_info(gk->fb, "%c:%s:prio=%d", slot, partition_name,
 		      GetEntryPriority(e));
-	gk->cur_kernel++;
 	return false;
 }
 static void fastboot_cmd_oem_get_kernels(struct FastbootOps *fb, const char *arg)
 {
 	struct get_kernels_ctx ctx = {
 		.fb = fb,
-		.cur_kernel = 0,
 	};
 
 	if (fastboot_disk_gpt_init(fb))

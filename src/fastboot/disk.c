@@ -219,18 +219,17 @@ int fastboot_get_slot_count(GptData *gpt)
 
 struct find_slot_ctx {
 	GptEntry *target_entry;
-	int count;
-	int desired_slot;
+	char desired_slot;
 };
 static bool find_slot_callback(void *ctx, int index, GptEntry *e,
 			       char *partition_name)
 {
-	if (get_slot_for_partition_name(e, partition_name) == 0)
+	char slot = get_slot_for_partition_name(e, partition_name);
+	if (slot == 0)
 		return false;
 
 	struct find_slot_ctx *fs = (struct find_slot_ctx *)ctx;
-	fs->count++;
-	if (fs->count == fs->desired_slot) {
+	if (slot == fs->desired_slot) {
 		fs->target_entry = e;
 		return true;
 	}
@@ -246,8 +245,7 @@ GptEntry *fastboot_get_kernel_for_slot(GptData *gpt, char slot)
 	}
 	struct find_slot_ctx ctx = {
 		.target_entry = NULL,
-		.count = 0,
-		.desired_slot = 1 + (slot - 'a'),
+		.desired_slot = slot,
 	};
 	if (gpt_foreach_partition(gpt, find_slot_callback, &ctx))
 		return ctx.target_entry;
