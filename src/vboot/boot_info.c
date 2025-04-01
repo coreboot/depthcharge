@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <vb2_android_bootimg.h>
+#include <tss_constants.h>
 
 #include "boot/android_bootconfig_params.h"
 #include "boot/android_pvmfw.h"
@@ -28,6 +29,7 @@
 #include "boot/multiboot.h"
 #include "vboot/boot.h"
 #include "vboot/boot_info.h"
+#include "vboot/secdata_tpm.h"
 
 /************************* CrOS Image Parsing ****************************/
 
@@ -113,13 +115,23 @@ static int gki_setup_bootconfig(struct boot_info *bi, struct vb2_kernel_params *
 static int setup_pvmfw(struct boot_info *bi, struct vb2_kernel_params *kparams)
 {
 	int ret;
-	size_t pvmfw_size = kparams->pvmfw_out_size;
-	void *pvmfw_addr = kparams->pvmfw_buffer;
+	uint32_t status;
+	size_t pvmfw_size = kparams->pvmfw_out_size, params_size;
+	void *pvmfw_addr = kparams->pvmfw_buffer, *params = NULL;
 
 	if (!pvmfw_addr || pvmfw_size == 0) {
 		/* There is no pvmfw so fail and don't do anything */
 		printf("pvmfw was not loaded\n");
 		return -1;
+	}
+
+	/* Get pvmfw boot params from GSC */
+	status = secdata_get_pvmfw_params(&params, &params_size);
+	if (status != TPM_SUCCESS) {
+		printf("Failed to get pvmfw gsc boot params data. "
+		       "secdata_get_pvmfw_params returned %u\n", status);
+		ret = -1;
+		goto fail;
 	}
 
 	/* Verify that pvmfw start address is aligned */
@@ -131,7 +143,7 @@ static int setup_pvmfw(struct boot_info *bi, struct vb2_kernel_params *kparams)
 
 	ret = setup_android_pvmfw(pvmfw_addr,
 				  kparams->pvmfw_buffer_size,
-				  &pvmfw_size, NULL, 0);
+				  &pvmfw_size, params, params_size);
 	if (ret != 0) {
 		printf("Failed to setup pvmfw configuration\n");
 		goto fail;
@@ -140,6 +152,13 @@ static int setup_pvmfw(struct boot_info *bi, struct vb2_kernel_params *kparams)
 	bi->pvmfw_addr = pvmfw_addr;
 	bi->pvmfw_size = pvmfw_size;
 fail:
+	/* TODO(b/380002393): Clear the remains before jumping to kernel */
+	if (params) {
+		/* Make sure that secrets are no longer in memory */
+		memset(params, 0, params_size);
+		free(params);
+	}
+
 	/* If failed then clear the buffer */
 	if (ret != 0)
 		memset(kparams->pvmfw_buffer, 0, kparams->pvmfw_buffer_size);

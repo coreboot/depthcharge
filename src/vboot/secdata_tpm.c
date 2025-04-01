@@ -167,3 +167,55 @@ uint32_t secdata_extend_kernel_pcr(struct vb2_context *ctx)
 
 	return TPM_SUCCESS;
 }
+
+#if CONFIG(ANDROID_PVMFW)
+uint32_t secdata_get_pvmfw_params(void **boot_params, size_t *params_size)
+{
+	void *params = NULL;
+	uint32_t ret;
+	uint32_t unused_attrs;
+	uint32_t space_size;
+	char unused_auth_policy[256];
+	uint32_t auth_policy_size = sizeof(unused_auth_policy);
+
+	*boot_params = NULL;
+	*params_size = 0;
+
+	/* Get the BootParam space size */
+	RETURN_ON_FAILURE(TlclGetSpaceInfo(ANDROID_PVMFW_BOOT_PARAMS_NV_INDEX,
+					   &unused_attrs, &space_size,
+					   &unused_auth_policy,
+					   &auth_policy_size));
+	if (space_size == 0) {
+		printf("Failed to get pvmfw gsc boot params size\n");
+		return TPM_E_INVALID_RESPONSE;
+	}
+
+	/* Allocate a buffer for BootParam CBOR object */
+	params = malloc(space_size);
+	if (!params) {
+		printf("Failed to allocate buffer for pvmfw params\n");
+		return TPM_E_RESPONSE_TOO_LARGE;
+	}
+
+	/* Get contents of BootParam object from NV space */
+	ret = TlclRead(ANDROID_PVMFW_BOOT_PARAMS_NV_INDEX, params, space_size);
+	if (ret != TPM_SUCCESS) {
+		printf("TPM: %#x returned by TlclRead"
+		       "(ANDROID_PVMFW_BOOT_PARAMS_NV_INDEX)\n", (int)ret);
+		goto fail;
+	}
+
+	*boot_params = params;
+	*params_size = space_size;
+	return 0;
+fail:
+	/*
+	 * Make sure that secrets are no longer in memory, if TlclRead
+	 * somehow only read partial data.
+	 */
+	memset(params, 0, space_size);
+	free(params);
+	return ret;
+}
+#endif
