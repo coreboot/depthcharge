@@ -141,7 +141,7 @@ static CleanupFunc commit_and_lock_cleanup = {
 int vboot_select_and_boot_kernel(void)
 {
 	struct vb2_context *ctx = vboot_get_context();
-	static char vboot_cmdline[KiB];
+	static char vboot_cmdline[2 * KiB];
 
 	struct vb2_kernel_params kparams = {
 		.kernel_buffer = _kernel_start,
