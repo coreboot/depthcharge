@@ -79,3 +79,12 @@ config BOOTCONFIG
 	help
 	  Enable support for bootconfig feature which is another way to provide
 	  key=value parameters to the kernel besides commandline.
+
+config ANDROID_PVMFW
+	bool "Support for loading pvmfw into memory"
+	default n
+	help
+	  Enables loading pvmfw from AVB partition into memory and providing
+	  location and size information to Linux kernel.
+
+	  This option can be temporarily disabled for bring up purposes.

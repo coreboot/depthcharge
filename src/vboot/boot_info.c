@@ -22,6 +22,7 @@
 #include <vb2_android_bootimg.h>
 
 #include "boot/android_bootconfig_params.h"
+#include "boot/android_pvmfw.h"
 #include "boot/bootconfig.h"
 #include "boot/commandline.h"
 #include "boot/multiboot.h"
@@ -106,6 +107,46 @@ static int gki_setup_bootconfig(struct boot_info *bi, struct vb2_kernel_params *
 	return 0;
 }
 
+/*
+ * Fill struct boot_info with pvmfw information and fill pvmfw config.
+ */
+static int setup_pvmfw(struct boot_info *bi, struct vb2_kernel_params *kparams)
+{
+	int ret;
+	size_t pvmfw_size = kparams->pvmfw_out_size;
+	void *pvmfw_addr = kparams->pvmfw_buffer;
+
+	if (!pvmfw_addr || pvmfw_size == 0) {
+		/* There is no pvmfw so fail and don't do anything */
+		printf("pvmfw was not loaded\n");
+		return -1;
+	}
+
+	/* Verify that pvmfw start address is aligned */
+	if (!IS_ALIGNED((uintptr_t)pvmfw_addr, ANDROID_PVMFW_CFG_ALIGN)) {
+		printf("Failed to setup pvmfw at aligned address\n");
+		ret = -1;
+		goto fail;
+	}
+
+	ret = setup_android_pvmfw(pvmfw_addr,
+				  kparams->pvmfw_buffer_size,
+				  &pvmfw_size, NULL, 0);
+	if (ret != 0) {
+		printf("Failed to setup pvmfw configuration\n");
+		goto fail;
+	}
+
+	bi->pvmfw_addr = pvmfw_addr;
+	bi->pvmfw_size = pvmfw_size;
+fail:
+	/* If failed then clear the buffer */
+	if (ret != 0)
+		memset(kparams->pvmfw_buffer, 0, kparams->pvmfw_buffer_size);
+
+	return ret;
+}
+
 static int fill_info_gki(struct boot_info *bi,
 			 struct vb2_kernel_params *kparams)
 {
@@ -128,6 +169,11 @@ static int fill_info_gki(struct boot_info *bi,
 	if (CONFIG(BOOTCONFIG)) {
 		if (gki_setup_bootconfig(bi, kparams))
 			return -1;
+	}
+
+	if (CONFIG(ANDROID_PVMFW)) {
+		if (setup_pvmfw(bi, kparams))
+			printf("Failed to setup pvmfw\n");
 	}
 
 	return 0;
