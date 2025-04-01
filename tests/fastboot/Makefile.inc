@@ -44,3 +44,4 @@ vars-test-srcs += src/fastboot/vars.c
 vars-test-mocks += GptGetEntrySizeBytes
 vars-test-mocks += GptInit
 vars-test-mocks += GptNextKernelEntry
+vars-test-mocks += GetEntryTries

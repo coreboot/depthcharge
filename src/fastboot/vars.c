@@ -44,6 +44,7 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 	VAR_NO_ARGS("version", VAR_VERSION),
 	VAR_NO_ARGS("slot-suffixes", VAR_SLOT_SUFFIXES),
 	VAR_ARGS("slot-successful", ':', VAR_SLOT_SUCCESSFUL),
+	VAR_ARGS("slot-retry-count", ':', VAR_SLOT_RETRY_COUNT),
 	{.name = NULL},
 };
 
@@ -155,9 +156,11 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 					 const char *arg, size_t index, char *outbuf,
 					 size_t *outbuf_len)
 {
+	fastboot_getvar_result_t state;
 	GptEntry *part = NULL;
 	size_t used_len = 0;
 	char *name;
+	char slot = 0;
 
 	switch (var) {
 	case VAR_CURRENT_SLOT: {
@@ -197,18 +200,10 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 			if (part == NULL)
 				return STATE_UNKNOWN_VAR;
 		} else {
-			/* There is no more partitions to get */
-			if (gpt_get_number_of_partitions(fb->gpt) <= index)
-				return STATE_LAST;
-
-			part = gpt_get_partition(fb->gpt, index);
-			if (part == NULL)
-				return STATE_TRY_NEXT;
-
-			name = gpt_get_entry_name(part);
-			if (name == NULL)
-				return STATE_TRY_NEXT;
-
+			state = fastboot_get_partition_name_by_index(fb->gpt, index, &name,
+								     &part);
+			if (state != STATE_OK)
+				return state;
 			used_len = snprintf(outbuf, *outbuf_len, "%s:", name);
 			outbuf += used_len;
 			*outbuf_len -= used_len;
@@ -249,25 +244,42 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		if (arg != NULL) {
 			if (strlen(arg) != 1)
 				return STATE_UNKNOWN_VAR;
-			char slot_char_arg = arg[0];
-			GptEntry *e = fastboot_get_kernel_for_slot(fb->gpt, slot_char_arg);
-			if (e == NULL)
+			slot = arg[0];
+			part = fastboot_get_kernel_for_slot(fb->gpt, slot);
+			if (part == NULL)
 				return STATE_UNKNOWN_VAR;
-			used_len = snprintf(outbuf, *outbuf_len, "%s",
-					    GetEntrySuccessful(e) ? "yes" : "no");
 		} else {
 			/* Handling for "getvar all" - arg is NULL, use index. */
-			GptEntry *entry_for_index = NULL;
-			char slot_char_for_index = 0;
-			fastboot_getvar_result_t find_slot_state =
-				fastboot_get_kernel_slot_by_index(fb->gpt, index,
-								  &entry_for_index,
-								  &slot_char_for_index);
-			if (find_slot_state != STATE_OK)
-				return find_slot_state;
-			used_len = snprintf(outbuf, *outbuf_len, "%c:%s", slot_char_for_index,
-					    GetEntrySuccessful(entry_for_index) ? "yes" : "no");
+			state = fastboot_get_kernel_slot_by_index(fb->gpt, index, &part, &slot);
+			if (state != STATE_OK)
+				return state;
+			used_len = snprintf(outbuf, *outbuf_len, "%c:", slot);
+			outbuf += used_len;
+			*outbuf_len -= used_len;
 		}
+		used_len += snprintf(outbuf, *outbuf_len, "%s",
+				     GetEntrySuccessful(part) ? "yes" : "no");
+		break;
+	case VAR_SLOT_RETRY_COUNT:
+		if (fastboot_disk_gpt_init(fb))
+			return STATE_DISK_ERROR;
+
+		if (arg != NULL) {
+			if (strlen(arg) != 1)
+				return STATE_UNKNOWN_VAR;
+			slot = arg[0];
+			part = fastboot_get_kernel_for_slot(fb->gpt, slot);
+			if (part == NULL)
+				return STATE_UNKNOWN_VAR;
+		} else {
+			state = fastboot_get_kernel_slot_by_index(fb->gpt, index, &part, &slot);
+			if (state != STATE_OK)
+				return state;
+			used_len = snprintf(outbuf, *outbuf_len, "%c:", slot);
+			outbuf += used_len;
+			*outbuf_len -= used_len;
+		}
+		used_len += snprintf(outbuf, *outbuf_len, "%d", GetEntryTries(part));
 		break;
 	default:
 		return STATE_UNKNOWN_VAR;
