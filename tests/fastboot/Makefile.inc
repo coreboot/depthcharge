@@ -29,6 +29,7 @@ cmd-test-srcs += src/base/android_misc.c
 cmd-test-srcs += src/fastboot/cmd.c
 cmd-test-mocks += GptModified
 cmd-test-mocks += GptUpdateKernelWithEntry
+cmd-test-mocks += SetEntryPriority
 cmd-test-mocks += SetEntrySuccessful
 cmd-test-mocks += android_misc_bcb_write
 cmd-test-mocks += android_misc_bcb_read

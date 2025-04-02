@@ -556,39 +556,85 @@ static void fastboot_cmd_set_active(struct FastbootOps *fb, char *arg)
 		fastboot_succeed(fb);
 }
 
-static void fastboot_cmd_oem_set_successful(struct FastbootOps *fb, char *arg)
+/**
+ * Parse "arg" in format <partition>:<int_value>, where <partition> has to be name of bootable
+ * entry and <int_value> is unsigned integer.
+ *
+ * Returns 0 or positive when parsed successful, negative on error.
+ */
+int parse_partition_value(struct FastbootOps *fb, char *arg, GptEntry **entry,
+			  const char *val_parse_err, const char *usage)
 {
 	const char *part_name = strsep(&arg, ":");
-	const char *state_str = strsep(&arg, ":");
-	uint8_t state;
-	GptEntry *entry;
+	const char *val_str = strsep(&arg, ":");
+	char *val_end = NULL;
+	int val;
 
-	if (!part_name || !state_str || arg != NULL) {
-		fastboot_fail(fb, "Invalid arguments. Use: oem "
-				  "set-successful:<partition>:<0|1>");
-		return;
+	if (!part_name || !val_str || arg != NULL) {
+		fastboot_fail(fb, usage);
+		return -1;
 	}
 
-	/* Parse the state (0 or 1) */
-	state = state_str[0] - '0';
-	if (state >= 2 || state_str[1] != '\0') {
-		fastboot_fail(fb, "Invalid state value. Must be 0 or 1");
-		return;
+	val = strtol(val_str, &val_end, 0);
+	if (val < 0 || val_end == val_str || *val_end != '\0') {
+		fastboot_fail(fb, val_parse_err, val);
+		return -1;
 	}
 
 	if (fastboot_disk_gpt_init(fb))
-		return;
+		return -1;
 
-	entry = gpt_find_partition(fb->gpt, part_name);
-	if (!entry) {
-		fastboot_fail(fb, "Partition '%s' not found", part_name);
-		return;
+	*entry = gpt_find_partition(fb->gpt, part_name);
+	if (!*entry) {
+		fastboot_fail(fb, "Could not find '%s' partition", part_name);
+		return -1;
 	}
 
 	/* Check if it's a bootable entry type */
-	if (!IsBootableEntry(entry)) {
-		fastboot_fail(fb, "Partition '%s' is not a bootable entry type",
-			      part_name);
+	if (!IsBootableEntry(*entry)) {
+		fastboot_fail(fb, "Partition '%s' is not a bootable entry type", part_name);
+		return -1;
+	}
+
+	return val;
+}
+
+static void fastboot_cmd_oem_set_priority(struct FastbootOps *fb, char *arg)
+{
+	const char *priority_err = "Invalid priority %d (valid range is 0-15)";
+	GptEntry *entry;
+	int priority = parse_partition_value(fb, arg, &entry, priority_err,
+					     "Invalid arguments. Use: oem "
+					     "set-priority:<partition>:<0-15>");
+	if (priority < 0)
+		return;
+
+	if (priority > 15) {
+		fastboot_fail(fb, priority_err, priority);
+		return;
+	}
+
+	SetEntryPriority(entry, priority);
+	GptModified(fb->gpt);
+
+	if (!fastboot_save_gpt(fb))
+		fastboot_succeed(fb);
+	else
+		fastboot_fail(fb, "Failed to save GPT");
+}
+
+static void fastboot_cmd_oem_set_successful(struct FastbootOps *fb, char *arg)
+{
+	const char *state_err = "Invalid state %d. Must be 0 or 1";
+	GptEntry *entry;
+	int state = parse_partition_value(fb, arg, &entry, state_err,
+					  "Invalid arguments. Use: oem "
+					  "set-successful:<partition>:<0|1>");
+	if (state < 0)
+		return;
+
+	if (state > 1) {
+		fastboot_fail(fb, state_err, state);
 		return;
 	}
 
@@ -627,6 +673,7 @@ struct fastboot_cmd fastboot_cmds[] = {
 	CMD_ARGS("oem read-ufs-descriptor", ':', fastboot_cmd_oem_read_ufs_descriptor),
 	CMD_ARGS("oem write-ufs-descriptor", ':', fastboot_cmd_oem_write_ufs_descriptor),
 	CMD_ARGS("oem set-successful", ':', fastboot_cmd_oem_set_successful),
+	CMD_ARGS("oem set-priority", ':', fastboot_cmd_oem_set_priority),
 	CMD_ARGS("reboot", '-', fastboot_cmd_reboot_to_target),
 	CMD_NO_ARGS("reboot", fastboot_cmd_reboot),
 	CMD_ARGS("set_active", ':', fastboot_cmd_set_active),

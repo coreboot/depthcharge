@@ -378,6 +378,18 @@ void SetEntrySuccessful(GptEntry *e, int successful)
 	expect_value(SetEntrySuccessful, successful, state); \
 } while (0)
 
+void SetEntryPriority(GptEntry *e, int priority)
+{
+	check_expected_ptr(e);
+	check_expected(priority);
+}
+
+/* Setup for SetEntryPriority mock */
+#define WILL_SET_ENTRY_PRIORITY(entry, state) do { \
+	expect_value(SetEntryPriority, e, entry); \
+	expect_value(SetEntryPriority, priority, state); \
+} while (0)
+
 void GptModified(GptData *gpt)
 {
 	function_called();
@@ -1785,8 +1797,12 @@ static void test_fb_cmd_oem_set_successful_no_partition(void **state)
 static void test_fb_cmd_oem_set_successful_bad_arg(void **state)
 {
 	struct FastbootOps *fb = *state;
+	GptEntry *part = (void *)0xcafe;
+
 	char cmd[] = "oem set-successful:vbmeta_a:11";
 
+	WILL_FIND_PARTITION("vbmeta_a", part);
+	WILL_CHECK_BOOTABLE_ENTRY(part, true);
 	WILL_SEND_PREFIX(fb, "FAIL");
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
@@ -1815,6 +1831,8 @@ static void test_fb_cmd_oem_set_successful_bad_arg(void **state)
 
 	char cmd5[] = "oem set-successful:vbmeta_b:2";
 
+	WILL_FIND_PARTITION("vbmeta_b", part);
+	WILL_CHECK_BOOTABLE_ENTRY(part, true);
 	WILL_SEND_PREFIX(fb, "FAIL");
 
 	fastboot_handle_packet(fb, cmd5, sizeof(cmd5) - 1);
@@ -1825,6 +1843,130 @@ static void test_fb_cmd_oem_set_successful_bad_arg(void **state)
 	WILL_SEND_PREFIX(fb, "FAIL");
 
 	fastboot_handle_packet(fb, cmd6, sizeof(cmd6) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_oem_set_priority(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "oem set-priority:vbmeta_a:3";
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_FIND_PARTITION("vbmeta_a", part);
+	WILL_CHECK_BOOTABLE_ENTRY(part, true);
+	WILL_SET_ENTRY_PRIORITY(part, 3);
+	WILL_MODIFY_GPT;
+	WILL_SAVE_GPT(fb, 0);
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_oem_set_priority_fail_save_gpt(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "oem set-priority:vbmeta_a:3";
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_FIND_PARTITION("vbmeta_a", part);
+	WILL_CHECK_BOOTABLE_ENTRY(part, true);
+	WILL_SET_ENTRY_PRIORITY(part, 3);
+	WILL_MODIFY_GPT;
+	WILL_SAVE_GPT(fb, -1);
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_oem_set_priority_non_bootable(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "oem set-priority:vbmeta_a:3";
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_FIND_PARTITION("vbmeta_a", part);
+	WILL_CHECK_BOOTABLE_ENTRY(part, false);
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_oem_set_priority_no_partition(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "oem set-priority:vbmeta_a:3";
+
+	WILL_FIND_PARTITION("vbmeta_a", NULL);
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_oem_set_priority_bad_arg(void **state)
+{
+	struct FastbootOps *fb = *state;
+	GptEntry *part = (void *)0xcafe;
+
+	char cmd[] = "oem set-priority:vbmeta_a:16";
+
+	WILL_FIND_PARTITION("vbmeta_a", part);
+	WILL_CHECK_BOOTABLE_ENTRY(part, true);
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd2[] = "oem set-priority:vbmeta_a:";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd2, sizeof(cmd2) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd3[] = "oem set-priority:vbmeta_a";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd3, sizeof(cmd3) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd4[] = "oem set-priority:";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd4, sizeof(cmd4) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd5[] = "oem set-priority:vbmeta_a:-2";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd5, sizeof(cmd5) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd6[] = "oem set-priority:vbmeta_a:prio";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd6, sizeof(cmd6) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd7[] = "oem set-priority:vbmeta_a:6prio";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd7, sizeof(cmd7) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd8[] = "oem set-priority:vbmeta_b:1:additional";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd8, sizeof(cmd8) - 1);
 	assert_int_equal(fb->state, COMMAND);
 }
 
@@ -1921,6 +2063,11 @@ int main(void)
 		TEST(test_fb_cmd_oem_set_successful_non_bootable),
 		TEST(test_fb_cmd_oem_set_successful_no_partition),
 		TEST(test_fb_cmd_oem_set_successful_bad_arg),
+		TEST(test_fb_cmd_oem_set_priority),
+		TEST(test_fb_cmd_oem_set_priority_fail_save_gpt),
+		TEST(test_fb_cmd_oem_set_priority_non_bootable),
+		TEST(test_fb_cmd_oem_set_priority_no_partition),
+		TEST(test_fb_cmd_oem_set_priority_bad_arg),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }
