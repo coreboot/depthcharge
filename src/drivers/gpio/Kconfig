@@ -1,5 +1,5 @@
 ##
-## Copyright 2013 Google LLC
+## Copyright 2013-2025 Google LLC
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -56,15 +56,22 @@ config DRIVER_GPIO_QCS405
 	default n
 	depends on ARCH_ARM
 
+config DRIVER_GPIO_QCOM
+	bool "Qualcomm common GPIO driver"
+	default n
+	depends on ARCH_ARM
+
 config DRIVER_GPIO_SC7180
 	bool "Qualcomm SC7180 GPIO driver"
 	default n
 	depends on ARCH_ARM
+	select DRIVER_GPIO_QCOM
 
 config DRIVER_GPIO_SC7280
 	bool "Qualcomm SC7280 GPIO driver"
 	default n
 	depends on ARCH_ARM
+	select DRIVER_GPIO_QCOM
 
 config DRIVER_GPIO_LYNXPOINT_LP
 	bool "Intel Lynxpoint LP PCH GPIO driver"

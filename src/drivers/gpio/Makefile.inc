@@ -1,5 +1,5 @@
 ##
-## Copyright 2012 Google LLC
+## Copyright 2012-2025 Google LLC
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -46,6 +46,5 @@ depthcharge-$(CONFIG_DRIVER_GPIO_APOLLOLAKE) += apollolake.c
 depthcharge-$(CONFIG_DRIVER_GPIO_ICELAKE) += icelake.c
 depthcharge-$(CONFIG_DRIVER_GPIO_KERN) += kern.c
 depthcharge-$(CONFIG_DRIVER_GPIO_QCS405) += qcs405.c
-depthcharge-$(CONFIG_DRIVER_GPIO_SC7180) += qcom_gpio.c
-depthcharge-$(CONFIG_DRIVER_GPIO_SC7280) += qcom_gpio.c
+depthcharge-$(CONFIG_DRIVER_GPIO_QCOM) += qcom_gpio.c
 depthcharge-$(CONFIG_DRIVER_GPIO_JASPERLAKE) += jasperlake.c
