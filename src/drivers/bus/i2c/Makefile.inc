@@ -1,5 +1,5 @@
 ##
-## Copyright 2012 Google LLC
+## Copyright 2012-2025 Google LLC
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -36,5 +36,4 @@ depthcharge-$(CONFIG_DRIVER_BUS_I2C_ROCKCHIP) += rockchip.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_S3C24X0) += s3c24x0.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_TEGRA) += tegra.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_ARMADA38X) += armada38x_i2c.c
-depthcharge-$(CONFIG_DRIVER_BUS_I2C_SC7180) += qcom_qupv3_i2c.c
-depthcharge-$(CONFIG_DRIVER_BUS_I2C_SC7280) += qcom_qupv3_i2c.c
+depthcharge-$(CONFIG_DRIVER_BUS_I2C_QCOM_QUP) += qcom_qupv3_i2c.c
