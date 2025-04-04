@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2021, The Linux Foundation.  All rights reserved.
+ * Copyright (C) 2025, The Linux Foundation.  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -22,6 +22,8 @@
 #include "sc7180.h"
 #elif CONFIG(DRIVER_GPIO_SC7280)
 #include "sc7280.h"
+#elif CONFIG(DRIVER_SOC_X1P42100)
+#include "x1p42100.h"
 #endif
 
 #define GPIO(num)	((GpioSpec){.addr = GPIO##num##_ADDR})

@@ -67,6 +67,15 @@ config DRIVER_SOC_QCOM_SDTRAY
 	  You ordinarily shouldn't need this unless you need to hack voltage
 	  regulators in depthcharge to work around hardware issues.
 
+config DRIVER_SOC_X1P42100
+	bool "Qualcomm SOC X1P42100 driver"
+	default n
+	select DRIVER_GPIO_QCOM
+	select DRIVER_SOC_QCOM_QUP_SE
+	select DRIVER_BUS_I2C_QCOM_QUP
+	select DRIVER_BUS_SPI_QUP_QCOM
+	select DRIVER_BUS_QSPI_QUP_QCOM
+
 config DRIVER_SOC_JASPERLAKE
 	bool "Jasperlake SoC driver"
 	default n
