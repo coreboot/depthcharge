@@ -144,11 +144,19 @@ static int mtk_spi_transfer(SpiOps *me, void *in, const void *out,
 		inb = dma_malloc(alloc_size);
 	outb = dma_malloc(alloc_size);
 
-	/* The SPI controller will transmit in full-duplex for RX,
-	 * therefore we enable tx & rx DMA when just do RX.
+	/*
+	 * Pre-MT8189 boards (such as Rauru) support the 16-byte SPI idle
+	 * feature, where DMA will process TX FIFO (if TX_DMA enabled) once
+	 * 16 bytes of data are accumulated in the FIFO. Then both TX and RX
+	 * FIFOs will be cleared. Between each 16-byte transfer, SPI will be in
+	 * the idle state. As the FIFOs are 32-byte depth, they will never be
+	 * full.
+	 *
+	 * MT8189 (Skywalker) does not support the 16-byte idle feature.
+	 * Therefore, RX_DMA needs to be enabled even for TX-only transfer.
 	 */
-	setbits_le32(&regs->spi_cmd_reg, (!!in << SPI_CMD_RX_DMA_SHIFT) |
-		     (1 << SPI_CMD_TX_DMA_SHIFT));
+	setbits_le32(&regs->spi_cmd_reg,
+		     (1 << SPI_CMD_RX_DMA_SHIFT) | (1 << SPI_CMD_TX_DMA_SHIFT));
 
 	while (aligned) {
 		uint32_t current_size;
