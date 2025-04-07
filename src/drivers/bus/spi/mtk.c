@@ -45,7 +45,7 @@ static void mtk_spi_reset(MtkSpiRegs *regs)
 static void mtk_spi_dump_data(const char *name, const uint8_t *data, size_t size)
 {
 #ifdef MTK_SPI_DEBUG
-	printf("%s[%d]:\n", name, size);
+	printf("%s[%zu]:\n", name, size);
 	hexdump(data, size);
 #endif
 }
