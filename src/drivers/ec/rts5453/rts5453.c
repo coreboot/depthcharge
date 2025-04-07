@@ -754,11 +754,12 @@ pd_restart:
 	return VB2_REQUEST_REBOOT_EC_TO_RO;
 }
 
-/* By default, output NULL to perform no update. Board code shall
+/*
+ * By default, output NULL to perform no update. Board code shall
  * override this function if supported.
  */
-__weak void board_rts5453_get_image_paths(const char **image_path,
-				const char **hash_path, struct ec_response_pd_chip_info_v2 *r)
+__weak void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
+					  int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
 	*image_path = NULL;
 	*hash_path = NULL;
@@ -772,7 +773,7 @@ Rts545x *new_rts5453(CrosECTunnelI2c *bus, int ec_pd_id,
 		.update_image = rts5453_update_image,
 	};
 
-	board_rts5453_get_image_paths(&fw_ops.fw_image_name, &fw_ops.fw_hash_name, r);
+	board_rts5453_get_image_paths(&fw_ops.fw_image_name, &fw_ops.fw_hash_name, ec_pd_id, r);
 
 	if (fw_ops.fw_image_name == NULL || fw_ops.fw_hash_name == NULL) {
 		/* No files, so don't perform an update */
