@@ -22,20 +22,6 @@ int fastboot_get_slot_count(GptData *gpt)
 /* Setup for fastboot_get_slot_count mock */
 #define WILL_GET_SLOT_COUNT(ret) will_return(fastboot_get_slot_count, ret)
 
-GptEntry *gpt_find_partition(GptData *gpt, const char *partition_name)
-{
-	assert_ptr_equal(gpt, &test_gpt);
-	check_expected(partition_name);
-
-	return mock_ptr_type(GptEntry *);
-}
-
-/* Setup for gpt_find_partition mock */
-#define WILL_FIND_PARTITION(name, ret) do { \
-	expect_string(gpt_find_partition, partition_name, name); \
-	will_return(gpt_find_partition, ret); \
-} while (0)
-
 char *gpt_get_entry_name(GptEntry *e)
 {
 	check_expected(e);
@@ -145,19 +131,6 @@ int GetEntryTries(const GptEntry *e)
 #define WILL_GET_ENTRY_TRIES(entry, ret) do { \
 	expect_value(GetEntryTries, e, entry); \
 	will_return(GetEntryTries, ret); \
-} while (0)
-
-bool IsBootableEntry(const GptEntry *e)
-{
-	check_expected_ptr(e);
-
-	return mock();
-}
-
-/* Setup for IsBootableEntry mock */
-#define WILL_CHECK_BOOTABLE_ENTRY(entry, ret) do { \
-	expect_value(IsBootableEntry, e, entry); \
-	will_return(IsBootableEntry, ret); \
 } while (0)
 
 const char *get_active_fw_id(void)

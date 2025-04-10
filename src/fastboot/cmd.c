@@ -16,6 +16,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <vb2_gpt.h>
 
 #include "base/android_misc.h"
@@ -580,6 +581,51 @@ static void fastboot_cmd_set_active(struct FastbootOps *fb, char *arg)
 		fastboot_succeed(fb);
 }
 
+static void fastboot_cmd_oem_set_successful(struct FastbootOps *fb, char *arg)
+{
+	const char *part_name = strsep(&arg, ":");
+	const char *state_str = strsep(&arg, ":");
+	uint8_t state;
+	GptEntry *entry;
+
+	if (!part_name || !state_str || arg != NULL) {
+		fastboot_fail(fb, "Invalid arguments. Use: oem "
+				  "set-successful:<partition>:<0|1>");
+		return;
+	}
+
+	/* Parse the state (0 or 1) */
+	state = state_str[0] - '0';
+	if (state >= 2 || state_str[1] != '\0') {
+		fastboot_fail(fb, "Invalid state value. Must be 0 or 1");
+		return;
+	}
+
+	if (fastboot_disk_gpt_init(fb))
+		return;
+
+	entry = gpt_find_partition(fb->gpt, part_name);
+	if (!entry) {
+		fastboot_fail(fb, "Partition '%s' not found", part_name);
+		return;
+	}
+
+	/* Check if it's a bootable entry type */
+	if (!IsBootableEntry(entry)) {
+		fastboot_fail(fb, "Partition '%s' is not a bootable entry type",
+			      part_name);
+		return;
+	}
+
+	SetEntrySuccessful(entry, state);
+	GptModified(fb->gpt);
+
+	if (!fastboot_save_gpt(fb))
+		fastboot_succeed(fb);
+	else
+		fastboot_fail(fb, "Failed to save GPT");
+}
+
 #define CMD_ARGS(_name, _sep, _fn)                                             \
 	{                                                                      \
 		.name = _name, .has_args = true, .sep = _sep, .fn = _fn        \
@@ -606,6 +652,7 @@ struct fastboot_cmd fastboot_cmds[] = {
 	CMD_NO_ARGS("oem get-kernels", fastboot_cmd_oem_get_kernels),
 	CMD_ARGS("oem read-ufs-descriptor", ':', fastboot_cmd_oem_read_ufs_descriptor),
 	CMD_ARGS("oem write-ufs-descriptor", ':', fastboot_cmd_oem_write_ufs_descriptor),
+	CMD_ARGS("oem set-successful", ':', fastboot_cmd_oem_set_successful),
 	CMD_ARGS("reboot", '-', fastboot_cmd_reboot_to_target),
 	CMD_NO_ARGS("reboot", fastboot_cmd_reboot),
 	CMD_ARGS("set_active", ':', fastboot_cmd_set_active),

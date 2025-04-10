@@ -70,3 +70,18 @@ int GetEntryPriority(const GptEntry *e)
 
 	return mock();
 }
+
+bool IsBootableEntry(const GptEntry *e)
+{
+	check_expected_ptr(e);
+
+	return mock();
+}
+
+GptEntry *gpt_find_partition(GptData *gpt, const char *partition_name)
+{
+	assert_ptr_equal(gpt, &test_gpt);
+	check_expected(partition_name);
+
+	return mock_ptr_type(GptEntry *);
+}

@@ -50,4 +50,16 @@ void setup_test_fb(void);
 	will_return(GetEntryPriority, priority); \
 } while (0)
 
+/* Setup for IsBootableEntry mock */
+#define WILL_CHECK_BOOTABLE_ENTRY(entry, ret) do { \
+	expect_value(IsBootableEntry, e, entry); \
+	will_return(IsBootableEntry, ret); \
+} while (0)
+
+/* Setup for gpt_find_partition mock */
+#define WILL_FIND_PARTITION(name, ret) do { \
+	expect_string(gpt_find_partition, partition_name, name); \
+	will_return(gpt_find_partition, ret); \
+} while (0)
+
 #endif /* _FASTBOOT_COMMON_MOCKS_H */
