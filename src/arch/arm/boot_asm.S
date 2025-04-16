@@ -21,6 +21,10 @@
 boot_arm_linux_jump:
 	/* Entered with R0 = &fdt, R1 = entry */
 
+#if CONFIG(CLEAR_DATA)
+#error "Implement arm32 support for CLEAR_DATA"
+#endif
+
 	/* Linux ABI expects SVC mode (0x13) with IRQ(7) and FIQ(6) disabled */
 	msr	cpsr_cxf, #0xd3
 

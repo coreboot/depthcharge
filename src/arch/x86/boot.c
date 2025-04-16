@@ -56,6 +56,8 @@ static uint32_t lb_mem_type_to_e820(uint32_t lb_mem_type) {
 	}
 }
 
+void boot_x86_linux_jump(void *entry, void *params) __attribute__((noreturn));
+
 int boot_x86_linux(struct boot_info *bi)
 {
 	struct boot_params *boot_params = bi->params;
@@ -121,20 +123,8 @@ int boot_x86_linux(struct boot_info *bi)
 		}
 		entry += 0x200;
 	}
-	/*
-	 * Set %ebx, %ebp, and %edi to 0, %esi to point to the boot_params
-	 * structure, and then jump to the kernel. We assume that %cs is
-	 * 0x10, 4GB flat, and read/execute, and the data segments are 0x18,
-	 * 4GB flat, and read/write.
-	 */
-	__asm__ __volatile__ (
-	"movl $0, %%ebp		\n"
-	"cli			\n"
-	"jmp *%[kernel_entry]	\n"
-	:: [kernel_entry]"a"(entry),
-	   [boot_params] "S"(boot_params),
-	   "b"(0), "D"(0)
-	);
+
+	boot_x86_linux_jump(entry, boot_params);
 
 	return 0;
 }

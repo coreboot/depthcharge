@@ -11,7 +11,7 @@ boot_arm64_linux_jump:
 
 	/* CAREFUL: Stack data will be invalid from here on! */
 
-#if CONFIG(WIDEVINE_PROVISION)
+#if CONFIG(CLEAR_DATA)
 	/* Clear .data section */
 	mov	x1, #0
 	ldr	x0, =_data

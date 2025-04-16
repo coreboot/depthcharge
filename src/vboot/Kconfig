@@ -122,4 +122,5 @@ endchoice
 config WIDEVINE_PROVISION
 	bool "Enable the widevine provision for ARM optee"
 	depends on ARCH_ARM_V8
+	select CLEAR_DATA
 	default n

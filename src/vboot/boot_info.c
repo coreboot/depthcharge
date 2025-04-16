@@ -180,7 +180,6 @@ static int setup_pvmfw(struct boot_info *bi, struct vb2_kernel_params *kparams)
 	bi->pvmfw_addr = pvmfw_addr;
 	bi->pvmfw_size = pvmfw_size;
 fail:
-	/* TODO(b/380002393): Clear the remains before jumping to kernel */
 	if (params) {
 		/* Make sure that secrets are no longer in memory */
 		memset(params, 0, params_size);

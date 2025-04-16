@@ -12,6 +12,8 @@
 ##
 
 depthcharge-y += boot.c
+depthcharge-$(CONFIG_ARCH_X86_32) += boot_asm.S
+depthcharge-$(CONFIG_ARCH_X86_64) += boot_asm64.S
 depthcharge-$(CONFIG_ARCH_X86_32) += gcc.c
 depthcharge-$(CONFIG_ARCH_X86_32) += physmem.c
 depthcharge-$(CONFIG_KERNEL_ZIMAGE) += zimage.c
