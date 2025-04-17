@@ -35,6 +35,13 @@ int fastboot_disk_gpt_init(struct FastbootOps *fb)
 	return 0;
 }
 
+int fastboot_disk_init(struct FastbootOps *fb)
+{
+	fb->disk = &test_disk;
+
+	return 0;
+}
+
 char fastboot_get_slot_for_partition_name(const char *partition_name)
 {
 	check_expected(partition_name);

@@ -45,6 +45,7 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 	VAR_NO_ARGS("slot-suffixes", VAR_SLOT_SUFFIXES),
 	VAR_ARGS("slot-successful", ':', VAR_SLOT_SUCCESSFUL),
 	VAR_ARGS("slot-retry-count", ':', VAR_SLOT_RETRY_COUNT),
+	VAR_NO_ARGS("logical-block-size", VAR_LOGICAL_BLOCK_SIZE),
 	{.name = NULL},
 };
 
@@ -280,6 +281,12 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 			*outbuf_len -= used_len;
 		}
 		used_len += snprintf(outbuf, *outbuf_len, "%d", GetEntryTries(part));
+		break;
+	case VAR_LOGICAL_BLOCK_SIZE:
+		if (fastboot_disk_init(fb))
+			return STATE_DISK_ERROR;
+
+		used_len = snprintf(outbuf, *outbuf_len, "0x%x", fb->disk->block_size);
 		break;
 	default:
 		return STATE_UNKNOWN_VAR;
