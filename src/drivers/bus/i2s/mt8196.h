@@ -6,6 +6,15 @@
 #define SRAM_BASE	0x1A119000
 #define SRAM_SIZE	0x10000
 
+enum {
+	AFE_I2S_O1,
+	AFE_I2S_O2,
+	AFE_I2S_O3,
+	AFE_I2S_O4,
+	AFE_I2S_O5,
+	AFE_I2S_O6,
+};
+
 /* AFE */
 typedef struct afe_reg {
 	uint32_t audio_top_con0;

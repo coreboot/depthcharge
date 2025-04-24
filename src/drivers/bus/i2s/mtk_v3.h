@@ -18,15 +18,6 @@
 #define I2S_LOG(args...)
 #endif
 
-enum {
-	AFE_I2S_O1,
-	AFE_I2S_O2,
-	AFE_I2S_O3,
-	AFE_I2S_O4,
-	AFE_I2S_O5,
-	AFE_I2S_O6,
-};
-
 typedef struct {
 	SoundRouteComponent component;
 	I2sOps ops;
@@ -38,6 +29,13 @@ typedef struct {
 	uint32_t bit_len;
 	uint32_t i2s_num;
 } MtkI2s;
+
+struct mtk_afe_rate {
+	unsigned int rate;
+	unsigned int reg_v_afe;
+	unsigned int reg_v_etdm;
+	unsigned int reg_v_etdm_relatch;
+};
 
 MtkI2s *new_mtk_i2s(uintptr_t base, uint32_t channels, uint32_t rate,
 		    uint32_t word_len, uint32_t bit_len, uint32_t i2s_num);

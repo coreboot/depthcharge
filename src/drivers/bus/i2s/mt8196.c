@@ -6,13 +6,6 @@
 #include "drivers/bus/i2s/mt8196.h"
 #include "drivers/bus/i2s/mtk_v3.h"
 
-struct mtk_afe_rate {
-	unsigned int rate;
-	unsigned int reg_v_afe;
-	unsigned int reg_v_etdm;
-	unsigned int reg_v_etdm_relatch;
-};
-
 static const struct mtk_afe_rate mtk_rates[] = {
 	{ .rate = 8000, .reg_v_afe = 0, .reg_v_etdm = 0, .reg_v_etdm_relatch = 0 },
 	{ .rate = 12000, .reg_v_afe = 2, .reg_v_etdm = 1, .reg_v_etdm_relatch = 2 },
