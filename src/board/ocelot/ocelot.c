@@ -3,6 +3,7 @@
 #include <libpayload.h>
 
 #include "base/fw_config.h"
+#include "drivers/bus/soundwire/cavs_2_5-sndwregs.h"
 #include "drivers/ec/rts5453/rts5453.h"
 #include "drivers/soc/pantherlake.h"
 #include "drivers/storage/storage_common.h"
@@ -22,6 +23,17 @@ const struct audio_config *variant_probe_audio_config(void)
 			},
 			.codec = {
 				.type = AUDIO_ALC256,
+			},
+		};
+	} else if (CONFIG(DRIVER_SOUND_RT721_SNDW) &&
+			fw_config_probe(FW_CONFIG(AUDIO, AUDIO_ALC721_SNDW))) {
+		config = (struct audio_config) {
+			.bus = {
+				.type = AUDIO_SNDW,
+				.sndw.link = AUDIO_SNDW_LINK3,
+			},
+			.codec = {
+				.type = AUDIO_RT721,
 			},
 		};
 	} else {
