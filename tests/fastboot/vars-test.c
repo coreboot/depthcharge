@@ -147,6 +147,19 @@ int GetEntryTries(const GptEntry *e)
 	will_return(GetEntryTries, ret); \
 } while (0)
 
+bool IsBootableEntry(const GptEntry *e)
+{
+	check_expected_ptr(e);
+
+	return mock();
+}
+
+/* Setup for IsBootableEntry mock */
+#define WILL_CHECK_BOOTABLE_ENTRY(entry, ret) do { \
+	expect_value(IsBootableEntry, e, entry); \
+	will_return(IsBootableEntry, ret); \
+} while (0)
+
 /* Reset mock data (for use before each test) */
 static int setup(void **state)
 {
@@ -201,6 +214,13 @@ static void setup_partition_table(fastboot_var_t var)
 		WILL_GET_SLOT_FOR_PARTITION_NAME(part_name, 'a');
 		WILL_GET_ENTRY_TRIES(part, 12);
 		break;
+	case VAR_SLOT_UNBOOTABLE:
+		WILL_CHECK_ANDROID(part, true);
+		WILL_GET_SLOT_FOR_PARTITION_NAME(part_name, 'a');
+		WILL_CHECK_BOOTABLE_ENTRY(part, true);
+		WILL_GET_PRIORITY(part, 5);
+		WILL_GET_ENTRY_SUCCESSFUL(part, 1);
+		break;
 	default:
 		break;
 	}
@@ -235,6 +255,9 @@ static void setup_partition_table(fastboot_var_t var)
 	case VAR_SLOT_RETRY_COUNT:
 		WILL_CHECK_ANDROID(part, false);
 		break;
+	case VAR_SLOT_UNBOOTABLE:
+		WILL_CHECK_ANDROID(part, false);
+		break;
 	default:
 		break;
 	}
@@ -253,6 +276,9 @@ static void setup_partition_table(fastboot_var_t var)
 		WILL_CHECK_ANDROID(part, false);
 		break;
 	case VAR_SLOT_RETRY_COUNT:
+		WILL_CHECK_ANDROID(part, false);
+		break;
+	case VAR_SLOT_UNBOOTABLE:
 		WILL_CHECK_ANDROID(part, false);
 		break;
 	default:
@@ -278,6 +304,12 @@ static void setup_partition_table(fastboot_var_t var)
 		WILL_CHECK_ANDROID(part, true);
 		WILL_GET_SLOT_FOR_PARTITION_NAME(part_name, 'b');
 		WILL_GET_ENTRY_TRIES(part, 8);
+		break;
+	case VAR_SLOT_UNBOOTABLE:
+		WILL_CHECK_ANDROID(part, true);
+		WILL_GET_SLOT_FOR_PARTITION_NAME(part_name, 'b');
+		WILL_CHECK_BOOTABLE_ENTRY(part, true);
+		WILL_GET_PRIORITY(part, 0);
 		break;
 	default:
 		break;
@@ -623,6 +655,99 @@ static void test_fb_getvar_logical_block_size(void **state)
 	TEST_FASTBOOT_GETVAR_OK(VAR_LOGICAL_BLOCK_SIZE, "", "0x200");
 }
 
+static void test_fb_getvar_slot_unbootable(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+
+	/* Unbootable, because partition isn't kernel */
+	WILL_GET_KERNEL_FOR_SLOT('a', part);
+	WILL_CHECK_BOOTABLE_ENTRY(part, false);
+	TEST_FASTBOOT_GETVAR_OK(VAR_SLOT_UNBOOTABLE, "a", "yes");
+
+	/* Unbootable, because partition has 0 priority */
+	WILL_GET_KERNEL_FOR_SLOT('b', part);
+	WILL_CHECK_BOOTABLE_ENTRY(part, true);
+	WILL_GET_PRIORITY(part, 0);
+	TEST_FASTBOOT_GETVAR_OK(VAR_SLOT_UNBOOTABLE, "b", "yes");
+
+	/* Unbootable, because partition isn't successful and has zero tries */
+	WILL_GET_KERNEL_FOR_SLOT('a', part);
+	WILL_CHECK_BOOTABLE_ENTRY(part, true);
+	WILL_GET_PRIORITY(part, 3);
+	WILL_GET_ENTRY_SUCCESSFUL(part, 0);
+	WILL_GET_ENTRY_TRIES(part, 0);
+	TEST_FASTBOOT_GETVAR_OK(VAR_SLOT_UNBOOTABLE, "a", "yes");
+}
+
+static void test_fb_getvar_slot_bootable(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GET_KERNEL_FOR_SLOT('a', part);
+	WILL_CHECK_BOOTABLE_ENTRY(part, true);
+	WILL_GET_PRIORITY(part, 5);
+	WILL_GET_ENTRY_SUCCESSFUL(part, 0);
+	WILL_GET_ENTRY_TRIES(part, 3);
+	TEST_FASTBOOT_GETVAR_OK(VAR_SLOT_UNBOOTABLE, "a", "no");
+
+	WILL_GET_KERNEL_FOR_SLOT('b', part);
+	WILL_CHECK_BOOTABLE_ENTRY(part, true);
+	WILL_GET_PRIORITY(part, 5);
+	WILL_GET_ENTRY_SUCCESSFUL(part, 1);
+	TEST_FASTBOOT_GETVAR_OK(VAR_SLOT_UNBOOTABLE, "b", "no");
+}
+
+static void test_fb_getvar_slot_unbootable_no_kernel(void **state)
+{
+	WILL_GET_KERNEL_FOR_SLOT('a', NULL);
+	TEST_FASTBOOT_GETVAR_ERR(VAR_SLOT_UNBOOTABLE, "a", STATE_UNKNOWN_VAR);
+}
+
+static void test_fb_getvar_slot_unbootable_bad_slot(void **state)
+{
+	TEST_FASTBOOT_GETVAR_ERR(VAR_SLOT_UNBOOTABLE, "ab", STATE_UNKNOWN_VAR);
+}
+
+static void test_fb_getvar_slot_unbootable_at_index(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_CHECK_BOOTABLE_ENTRY(part, false);
+	test_fb_getvar_kernel_slot_at_index(state, VAR_SLOT_UNBOOTABLE, part, "vbmeta_a", 'a',
+					    "a:yes");
+}
+
+static void test_fb_getvar_slot_bootable_at_index(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_CHECK_BOOTABLE_ENTRY(part, true);
+	WILL_GET_PRIORITY(part, 5);
+	WILL_GET_ENTRY_SUCCESSFUL(part, 1);
+	test_fb_getvar_kernel_slot_at_index(state, VAR_SLOT_UNBOOTABLE, part, "vbmeta_a", 'a',
+					    "a:no");
+}
+
+static void test_fb_getvar_slot_unbootable_at_index_no_slot(void **state)
+{
+	test_fb_getvar_kernel_slot_at_index_no_slot(state, VAR_SLOT_UNBOOTABLE);
+}
+
+static void test_fb_getvar_slot_unbootable_at_index_not_exist(void **state)
+{
+	test_fb_getvar_partition_at_index_not_exist(state, VAR_SLOT_UNBOOTABLE);
+}
+
+static void test_fb_getvar_slot_unbootable_at_index_no_name(void **state)
+{
+	test_fb_getvar_partition_at_index_no_name(state, VAR_SLOT_UNBOOTABLE);
+}
+
+static void test_fb_getvar_slot_unbootable_at_index_last(void **state)
+{
+	test_fb_getvar_partition_at_index_last(state, VAR_SLOT_UNBOOTABLE);
+}
+
 /* fastboot_cmd_getvar tests */
 
 static void test_fb_cmd_getvar_current_slot(void **state)
@@ -767,6 +892,19 @@ static void test_fb_cmd_getvar_logical_block_size(void **state)
 	fastboot_cmd_getvar(fb, "logical-block-size");
 }
 
+static void test_fb_cmd_getvar_slot_unbootable(void **state)
+{
+	struct FastbootOps *fb = *state;
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GET_KERNEL_FOR_SLOT('a', part);
+	WILL_CHECK_BOOTABLE_ENTRY(part, false);
+
+	WILL_SEND_EXACT(fb, "OKAYyes");
+
+	fastboot_cmd_getvar(fb, "slot-unbootable:a");
+}
+
 /* fastboot_cmd_getvar fail tests */
 static void test_fb_cmd_getvar_get_fail(void **state)
 {
@@ -882,6 +1020,9 @@ static void test_fb_cmd_getvar_all(void **state)
 	/* Setup for partition-size */
 	setup_partition_table(VAR_PARTITION_SIZE);
 
+	/* Setup for slot-unbootable */
+	setup_partition_table(VAR_SLOT_UNBOOTABLE);
+
 	/* Setup for product */
 	const char product[] = "kano";
 	struct {
@@ -927,6 +1068,8 @@ static void test_fb_cmd_getvar_all(void **state)
 	check_fb_cmd_getvar_all_contains("INFOslot-successful:b:no");
 	check_fb_cmd_getvar_all_contains("INFOslot-retry-count:a:12");
 	check_fb_cmd_getvar_all_contains("INFOslot-retry-count:b:8");
+	check_fb_cmd_getvar_all_contains("INFOslot-unbootable:a:no");
+	check_fb_cmd_getvar_all_contains("INFOslot-unbootable:b:yes");
 	check_fb_cmd_getvar_all_contains("INFOproduct:kano");
 	check_fb_cmd_getvar_all_contains("INFOsecure:no");
 	check_fb_cmd_getvar_all_contains("INFOslot-count:1");
@@ -966,6 +1109,9 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 
 	/* Setup for slot-retry-count */
 	setup_partition_table(VAR_SLOT_RETRY_COUNT);
+
+	/* Setup for slot-unbootable */
+	setup_partition_table(VAR_SLOT_UNBOOTABLE);
 
 	/* Setup for product */
 	const char product[] = "kano";
@@ -1011,6 +1157,8 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	check_fb_cmd_getvar_all_contains("INFOslot-successful:b:no");
 	check_fb_cmd_getvar_all_contains("INFOslot-retry-count:a:12");
 	check_fb_cmd_getvar_all_contains("INFOslot-retry-count:b:8");
+	check_fb_cmd_getvar_all_contains("INFOslot-unbootable:a:no");
+	check_fb_cmd_getvar_all_contains("INFOslot-unbootable:b:yes");
 	check_fb_cmd_getvar_all_contains("INFOproduct:kano");
 	check_fb_cmd_getvar_all_contains("INFOsecure:no");
 	check_fb_cmd_getvar_all_contains("INFOslot-count:1");
@@ -1065,6 +1213,16 @@ int main(void)
 		TEST(test_fb_getvar_slot_retry_count_at_index_no_name),
 		TEST(test_fb_getvar_slot_retry_count_at_index_last),
 		TEST(test_fb_getvar_logical_block_size),
+		TEST(test_fb_getvar_slot_unbootable),
+		TEST(test_fb_getvar_slot_bootable),
+		TEST(test_fb_getvar_slot_unbootable_no_kernel),
+		TEST(test_fb_getvar_slot_unbootable_bad_slot),
+		TEST(test_fb_getvar_slot_unbootable_at_index),
+		TEST(test_fb_getvar_slot_bootable_at_index),
+		TEST(test_fb_getvar_slot_unbootable_at_index_no_slot),
+		TEST(test_fb_getvar_slot_unbootable_at_index_not_exist),
+		TEST(test_fb_getvar_slot_unbootable_at_index_no_name),
+		TEST(test_fb_getvar_slot_unbootable_at_index_last),
 		TEST(test_fb_cmd_getvar_current_slot),
 		TEST(test_fb_cmd_getvar_download_size),
 		TEST(test_fb_cmd_getvar_is_userspace),
@@ -1077,6 +1235,7 @@ int main(void)
 		TEST(test_fb_cmd_getvar_slot_successful),
 		TEST(test_fb_cmd_getvar_slot_retry_count),
 		TEST(test_fb_cmd_getvar_logical_block_size),
+		TEST(test_fb_cmd_getvar_slot_unbootable),
 		TEST(test_fb_cmd_getvar_get_fail),
 		TEST(test_fb_cmd_getvar_no_args),
 		TEST(test_fb_cmd_getvar_prefix_of_var_name),

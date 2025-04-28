@@ -246,19 +246,6 @@ bool gpt_foreach_partition(GptData *gpt, gpt_foreach_callback_t cb, void *ctx)
 
 #define GPT_FOREACH_WILL_END will_return(gpt_foreach_partition, NULL)
 
-int GetEntryPriority(const GptEntry *e)
-{
-	check_expected_ptr(e);
-
-	return mock();
-}
-
-/* Setup for GetEntryPriority mock */
-#define WILL_GET_PRIORITY(entry, priority) do { \
-	expect_value(GetEntryPriority, e, entry); \
-	will_return(GetEntryPriority, priority); \
-} while (0)
-
 int GptUpdateKernelWithEntry(GptData *gpt, GptEntry *e, uint32_t update_type)
 {
 	assert_ptr_equal(gpt, &test_gpt);

@@ -45,6 +45,7 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 	VAR_NO_ARGS("slot-suffixes", VAR_SLOT_SUFFIXES),
 	VAR_ARGS("slot-successful", ':', VAR_SLOT_SUCCESSFUL),
 	VAR_ARGS("slot-retry-count", ':', VAR_SLOT_RETRY_COUNT),
+	VAR_ARGS("slot-unbootable", ':', VAR_SLOT_UNBOOTABLE),
 	VAR_NO_ARGS("logical-block-size", VAR_LOGICAL_BLOCK_SIZE),
 	{.name = NULL},
 };
@@ -153,6 +154,26 @@ static fastboot_getvar_result_t fastboot_get_kernel_slot_by_index(
 	return STATE_OK;
 }
 
+static bool is_entry_unbootable(GptEntry *entry)
+{
+	return !IsBootableEntry(entry) || GetEntryPriority(entry) == 0 ||
+		(!GetEntrySuccessful(entry) &&  GetEntryTries(entry) == 0);
+}
+
+static int get_slot_var(fastboot_var_t var, GptEntry *e, char *outbuf, size_t len)
+{
+	switch (var) {
+	case VAR_SLOT_SUCCESSFUL:
+		return snprintf(outbuf, len, "%s", GetEntrySuccessful(e) ? "yes" : "no");
+	case VAR_SLOT_RETRY_COUNT:
+		return snprintf(outbuf, len, "%d", GetEntryTries(e));
+	case VAR_SLOT_UNBOOTABLE:
+		return snprintf(outbuf, len, "%s", is_entry_unbootable(e) ? "yes" : "no");
+	default:
+		die("Incorrect %s() argument: %u\n", __func__, var);
+	}
+}
+
 fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t var,
 					 const char *arg, size_t index, char *outbuf,
 					 size_t *outbuf_len)
@@ -239,29 +260,8 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		used_len = fastboot_get_slot_suffixes(fb->gpt, outbuf, *outbuf_len);
 		break;
 	case VAR_SLOT_SUCCESSFUL:
-		if (fastboot_disk_gpt_init(fb))
-			return STATE_DISK_ERROR;
-
-		if (arg != NULL) {
-			if (strlen(arg) != 1)
-				return STATE_UNKNOWN_VAR;
-			slot = arg[0];
-			part = fastboot_get_kernel_for_slot(fb->gpt, slot);
-			if (part == NULL)
-				return STATE_UNKNOWN_VAR;
-		} else {
-			/* Handling for "getvar all" - arg is NULL, use index. */
-			state = fastboot_get_kernel_slot_by_index(fb->gpt, index, &part, &slot);
-			if (state != STATE_OK)
-				return state;
-			used_len = snprintf(outbuf, *outbuf_len, "%c:", slot);
-			outbuf += used_len;
-			*outbuf_len -= used_len;
-		}
-		used_len += snprintf(outbuf, *outbuf_len, "%s",
-				     GetEntrySuccessful(part) ? "yes" : "no");
-		break;
 	case VAR_SLOT_RETRY_COUNT:
+	case VAR_SLOT_UNBOOTABLE:
 		if (fastboot_disk_gpt_init(fb))
 			return STATE_DISK_ERROR;
 
@@ -280,7 +280,7 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 			outbuf += used_len;
 			*outbuf_len -= used_len;
 		}
-		used_len += snprintf(outbuf, *outbuf_len, "%d", GetEntryTries(part));
+		used_len += get_slot_var(var, part, outbuf, *outbuf_len);
 		break;
 	case VAR_LOGICAL_BLOCK_SIZE:
 		if (fastboot_disk_init(fb))

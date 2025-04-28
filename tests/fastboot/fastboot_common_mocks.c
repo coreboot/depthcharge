@@ -63,3 +63,10 @@ bool IsAndroid(const GptEntry *e)
 
 	return mock();
 }
+
+int GetEntryPriority(const GptEntry *e)
+{
+	check_expected_ptr(e);
+
+	return mock();
+}
