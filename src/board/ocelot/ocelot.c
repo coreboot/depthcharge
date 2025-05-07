@@ -37,7 +37,7 @@ const struct audio_config *variant_probe_audio_config(void)
 			},
 		};
 	} else {
-		printf("Implement varaint audio config for other FW CONFIG options\n");
+		printf("Implement variant audio config for other FW CONFIG options\n");
 	}
 
 	return &config;
@@ -46,18 +46,13 @@ const struct audio_config *variant_probe_audio_config(void)
 static const struct storage_config storage_configs[] = {
 	{
 		.media = STORAGE_NVME,
-		.pci_dev = PCI_DEV_PCIE5,
-		.fw_config = FW_CONFIG(STORAGE, STORAGE_NVME_GEN4)
-	},
-	{
-		.media = STORAGE_NVME,
 		.pci_dev = PCI_DEV_PCIE1,
 		.fw_config = FW_CONFIG(STORAGE, STORAGE_NVME_GEN4)
 	},
 	{
 		.media = STORAGE_NVME,
-		.pci_dev = PCI_DEV_PCIE9,
-		.fw_config = FW_CONFIG(STORAGE, STORAGE_NVME_GEN5)
+		.pci_dev = PCI_DEV_PCIE5,
+		.fw_config = FW_CONFIG(STORAGE, STORAGE_NVME_GEN4)
 	},
 	{
 		.media = STORAGE_UFS,
@@ -69,17 +64,12 @@ static const struct storage_config storage_configs[] = {
 	},
 	{
 		.media = STORAGE_NVME,
-		.pci_dev = PCI_DEV_PCIE5,
-		.fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN)
-	},
-	{
-		.media = STORAGE_NVME,
 		.pci_dev = PCI_DEV_PCIE1,
 		.fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN)
 	},
 	{
 		.media = STORAGE_NVME,
-		.pci_dev = PCI_DEV_PCIE9,
+		.pci_dev = PCI_DEV_PCIE5,
 		.fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN)
 	},
 	{
