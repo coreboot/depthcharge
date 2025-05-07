@@ -20,6 +20,10 @@
 #define PCI_DEV_PCIE2 	PCI_DEV(0, 0x1c, 1)
 #define PCI_DEV_PCIE3	PCI_DEV(0, 0x1c, 2)
 #define PCI_DEV_PCIE4 	PCI_DEV(0, 0x1c, 3)
+#if CONFIG(DRIVER_SOC_WILDCATLAKE)
+#define PCI_DEV_PCIE5	PCI_DEV(0, 0x06, 0)
+#define PCI_DEV_PCIE6	PCI_DEV(0, 0x06, 1)
+#else
 #define PCI_DEV_PCIE5	PCI_DEV(0, 0x1c, 4)
 #define PCI_DEV_PCIE6	PCI_DEV(0, 0x1c, 5)
 #define PCI_DEV_PCIE7	PCI_DEV(0, 0x1c, 6)
@@ -28,6 +32,7 @@
 #define PCI_DEV_PCIE10	PCI_DEV(0, 0x06, 1)
 #define PCI_DEV_PCIE11	PCI_DEV(0, 0x06, 2)
 #define PCI_DEV_PCIE12 	PCI_DEV(0, 0x06, 3)
+#endif
 #define PCI_DEV_UFS	PCI_DEV(0, 0x17, 0)
 
 /* PCR Interface */

@@ -135,6 +135,11 @@ config DRIVER_SOC_PANTHERLAKE
 	select INTEL_COMMON_I2S_ACE_3_x
 	select INTEL_COMMON_SOUNDWIRE_ACE_3_x
 
+config DRIVER_SOC_WILDCATLAKE
+	bool "Wildcatlake SoC driver"
+	default n
+	select DRIVER_SOC_PANTHERLAKE
+
 config DRIVER_SOC_CEZANNE
 	bool "Cezanne SoC driver"
 	default n

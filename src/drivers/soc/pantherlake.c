@@ -22,10 +22,18 @@ int pantherlake_get_gpe(int gpe)
 	return soc_get_gpe(gpe, &cfg);
 }
 
+#if CONFIG(DRIVER_SOC_WILDCATLAKE)
+static const SocPcieRpGroup ptl_rp_groups[] = {
+	{ .slot = PCIE_RP_SLOT_0, .first_fn = 0, .count = 4 },
+	{ .slot = PCIE_RP_SLOT_1, .first_fn = 0, .count = 2 },
+};
+#else
 static const SocPcieRpGroup ptl_rp_groups[] = {
 	{ .slot = PCIE_RP_SLOT_0, .first_fn = 0, .count = 8 },
 	{ .slot = PCIE_RP_SLOT_1, .first_fn = 0, .count = 4 },
 };
+#endif
+
 const unsigned int ptl_rp_groups_count = ARRAY_SIZE(ptl_rp_groups);
 
 const SocPcieRpGroup *soc_get_rp_group(pcidev_t dev, size_t *count)
