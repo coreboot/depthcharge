@@ -47,6 +47,13 @@ __weak const struct storage_config *variant_get_storage_configs(size_t *count)
 	return storage_configs;
 }
 
+static bool is_board_fatcat(void)
+{
+	static const char * const board_str = "fatcat";
+
+	return strncmp(CONFIG_VARIANT_NAME, board_str, strlen(board_str)) == 0;
+}
+
 __weak const int variant_get_ec_int(void)
 {
 	return EC_SOC_INT_ODL;
@@ -55,8 +62,10 @@ __weak const int variant_get_ec_int(void)
 static GpioOps *mkbp_int_ops(void)
 {
 	GpioCfg *mkbp_int_gpio = new_platform_gpio_input(variant_get_ec_int());
-	/* Active-low, has to be inverted */
-	return new_gpio_not(&mkbp_int_gpio->ops);
+	if (is_board_fatcat())
+		return new_gpio_passthrough(&mkbp_int_gpio->ops);
+	else
+		return new_gpio_not(&mkbp_int_gpio->ops); // Active-low, has to be inverted
 }
 
 static void ec_setup(void)
