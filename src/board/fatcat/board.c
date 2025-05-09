@@ -63,7 +63,7 @@ static GpioOps *mkbp_int_ops(void)
 {
 	GpioCfg *mkbp_int_gpio = new_platform_gpio_input(variant_get_ec_int());
 	if (is_board_fatcat())
-		return new_gpio_passthrough(&mkbp_int_gpio->ops);
+		return &mkbp_int_gpio->ops;
 	else
 		return new_gpio_not(&mkbp_int_gpio->ops); // Active-low, has to be inverted
 }
