@@ -15,21 +15,21 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __FASTBOOT_SPARSE_H__
-#define __FASTBOOT_SPARSE_H__
+#ifndef __BASE_SPARSE_H__
+#define __BASE_SPARSE_H__
 
-#include "fastboot/disk.h"
-#include "fastboot/fastboot.h"
+#include "base/gpt.h"
+#include "drivers/storage/blockdev.h"
 
 #if 0
-#define FB_TRACE_SPARSE FB_DEBUG
+#define TRACE_SPARSE printf
 #else
-#define FB_TRACE_SPARSE(...)
+#define TRACE_SPARSE(...)
 #endif
 
 int is_sparse_image(void *image_addr);
-int write_sparse_image(struct FastbootOps *fb, struct fastboot_disk *disk,
-		       uint64_t part_start_lba, uint64_t part_size_lba, void *image_addr,
-		       uint64_t image_size);
+enum gpt_io_ret write_sparse_image(BlockDev *disk, uint64_t part_start_lba,
+				   uint64_t part_size_lba, void *image_addr,
+				   uint64_t image_size);
 
-#endif // __FASTBOOT_SPARSE_H__
+#endif // __BASE_SPARSE_H__

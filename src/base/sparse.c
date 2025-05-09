@@ -18,9 +18,7 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "fastboot/sparse.h"
-#include "fastboot/disk.h"
-#include "fastboot/fastboot.h"
+#include "base/sparse.h"
 
 /********************** Sparse Image Handling ****************************/
 
@@ -113,75 +111,62 @@ static void *img_buff_advance(struct img_buff *buff, uint64_t size)
 }
 
 /* Write sparse image to the disk */
-int write_sparse_image(struct FastbootOps *fb, struct fastboot_disk *disk,
-		       uint64_t part_start_lba, uint64_t part_size_lba, void *image_addr,
-		       uint64_t image_size)
+enum gpt_io_ret write_sparse_image(BlockDev *disk, uint64_t part_start_lba,
+				   uint64_t part_size_lba, void *image_addr,
+				   uint64_t image_size)
 {
 	struct img_buff buff;
 	struct sparse_image_hdr *img_hdr;
 	struct sparse_chunk_hdr *chunk_hdr;
-	uint64_t bdev_block_size = disk->disk->block_size;
+	uint64_t bdev_block_size = disk->block_size;
 
-	if (img_buff_init(&buff, image_addr, image_size)) {
-		fastboot_fail(fb, "Image too small");
-		return -1;
-	}
+	if (img_buff_init(&buff, image_addr, image_size))
+		return GPT_IO_SPARSE_TOO_SMALL;
 
 	img_hdr = img_buff_advance(&buff, sizeof(*img_hdr));
 
-	if (img_hdr == NULL) {
-		fastboot_fail(fb, "Image too small");
-		return -1;
-	}
+	if (img_hdr == NULL)
+		return GPT_IO_SPARSE_TOO_SMALL;
 
-	FB_TRACE_SPARSE("Magic          : %x\n", img_hdr->magic);
-	FB_TRACE_SPARSE("Major Version  : %x\n", img_hdr->major_version);
-	FB_TRACE_SPARSE("Minor Version  : %x\n", img_hdr->minor_version);
-	FB_TRACE_SPARSE("File Hdr Size  : %x\n", img_hdr->file_hdr_size);
-	FB_TRACE_SPARSE("Chunk Hdr Size : %x\n", img_hdr->chunk_hdr_size);
-	FB_TRACE_SPARSE("Blk Size       : %x\n", img_hdr->blk_size);
-	FB_TRACE_SPARSE("Total blks     : %x\n", img_hdr->total_blks);
-	FB_TRACE_SPARSE("Total chunks   : %x\n", img_hdr->total_chunks);
-	FB_TRACE_SPARSE("Checksum       : %x\n", img_hdr->image_checksum);
+	TRACE_SPARSE("Magic          : %x\n", img_hdr->magic);
+	TRACE_SPARSE("Major Version  : %x\n", img_hdr->major_version);
+	TRACE_SPARSE("Minor Version  : %x\n", img_hdr->minor_version);
+	TRACE_SPARSE("File Hdr Size  : %x\n", img_hdr->file_hdr_size);
+	TRACE_SPARSE("Chunk Hdr Size : %x\n", img_hdr->chunk_hdr_size);
+	TRACE_SPARSE("Blk Size       : %x\n", img_hdr->blk_size);
+	TRACE_SPARSE("Total blks     : %x\n", img_hdr->total_blks);
+	TRACE_SPARSE("Total chunks   : %x\n", img_hdr->total_chunks);
+	TRACE_SPARSE("Checksum       : %x\n", img_hdr->image_checksum);
 
 	/* Is image header size as expected? */
-	if (img_hdr->file_hdr_size != sizeof(*img_hdr)) {
-		fastboot_fail(fb, "Unsupported sparse image.");
-		return -1;
-	}
+	if (img_hdr->file_hdr_size != sizeof(*img_hdr))
+		return GPT_IO_SPARSE_WRONG_HEADER_SIZE;
 
 	/* Is image block size multiple of bdev block size? */
 	if (img_hdr->blk_size !=
-	    ALIGN_DOWN(img_hdr->blk_size, bdev_block_size)) {
-		fastboot_fail(fb, "Invalid block size for sparse image.");
-		return -1;
-	}
+	    ALIGN_DOWN(img_hdr->blk_size, bdev_block_size))
+		return GPT_IO_SPARSE_BLOCK_SIZE_NOT_ALIGNED;
 
 	/* Is chunk header size as expected? */
-	if (img_hdr->chunk_hdr_size != sizeof(*chunk_hdr)) {
-		fastboot_fail(fb, "Chunk header wrong size");
-		return -1;
-	}
+	if (img_hdr->chunk_hdr_size != sizeof(*chunk_hdr))
+		return GPT_IO_SPARSE_WRONG_HEADER_SIZE;
 
 	int i;
-	BlockDevOps *ops = &disk->disk->ops;
+	BlockDevOps *ops = &disk->ops;
 
 	/* Perform the following operation on each chunk */
 	for (i = 0; i < img_hdr->total_chunks; i++) {
 		/* Get chunk header */
 		chunk_hdr = img_buff_advance(&buff, sizeof(*chunk_hdr));
 
-		if (chunk_hdr == NULL) {
-			fastboot_fail(fb, "Sparse image ended abruptly");
-			return -1;
-		}
+		if (chunk_hdr == NULL)
+			return GPT_IO_SPARSE_TOO_SMALL;
 
-		FB_TRACE_SPARSE("Chunk %d\n", i);
-		FB_TRACE_SPARSE("Type         : %x\n", chunk_hdr->type);
-		FB_TRACE_SPARSE("Size in blks : %x\n", chunk_hdr->size_in_blks);
-		FB_TRACE_SPARSE("Total size   : %x\n",
-				chunk_hdr->total_size_bytes);
-		FB_TRACE_SPARSE("Part addr    : %llx\n", part_start_lba);
+		TRACE_SPARSE("Chunk %d\n", i);
+		TRACE_SPARSE("Type         : %x\n", chunk_hdr->type);
+		TRACE_SPARSE("Size in blks : %x\n", chunk_hdr->size_in_blks);
+		TRACE_SPARSE("Total size   : %x\n", chunk_hdr->total_size_bytes);
+		TRACE_SPARSE("Part addr    : %llx\n", part_start_lba);
 
 		/* Size in bytes and lba of the area occupied by chunk range */
 		uint64_t chunk_size_bytes, chunk_size_lba;
@@ -192,11 +177,9 @@ int write_sparse_image(struct FastbootOps *fb, struct fastboot_disk *disk,
 
 		/* Should not write past partition size */
 		if (part_size_lba < chunk_size_lba) {
-			FB_TRACE_SPARSE("part_size_lba:%llx\n", part_size_lba);
-			FB_TRACE_SPARSE("chunk_size_lba:%llx\n",
-					chunk_size_lba);
-			fastboot_fail(fb, "Chunk too big");
-			return -1;
+			TRACE_SPARSE("part_size_lba:%llx\n", part_size_lba);
+			TRACE_SPARSE("chunk_size_lba:%llx\n", chunk_size_lba);
+			return GPT_IO_SPARSE_WRONG_CHUNK_SIZE;
 		}
 
 		switch (chunk_hdr->type) {
@@ -210,27 +193,20 @@ int write_sparse_image(struct FastbootOps *fb, struct fastboot_disk *disk,
 			 */
 			if ((chunk_size_bytes + sizeof(*chunk_hdr)) !=
 			    chunk_hdr->total_size_bytes) {
-				FB_TRACE_SPARSE("chunk_size_bytes:%llx\n",
-						chunk_size_bytes +
-							sizeof(*chunk_hdr));
-				FB_TRACE_SPARSE("total_size_bytes:%x\n",
-						chunk_hdr->total_size_bytes);
-				fastboot_fail(fb, "Chunk size is wrong");
-				return -1;
+				TRACE_SPARSE("chunk_size_bytes:%llx\n",
+					     chunk_size_bytes + sizeof(*chunk_hdr));
+				TRACE_SPARSE("total_size_bytes:%x\n",
+					     chunk_hdr->total_size_bytes);
+				return GPT_IO_SPARSE_WRONG_CHUNK_SIZE;
 			}
 
 			data_ptr = img_buff_advance(&buff, chunk_size_bytes);
-			if (data_ptr == NULL) {
-				fastboot_fail(fb,
-					      "Sparse image ended abruptly");
-				return -1;
-			}
+			if (data_ptr == NULL)
+				return GPT_IO_SPARSE_TOO_SMALL;
 
 			if (ops->write(ops, part_start_lba, chunk_size_lba,
-				       data_ptr) != chunk_size_lba) {
-				fastboot_fail(fb, "Failed to write");
-				return -1;
-			}
+				       data_ptr) != chunk_size_lba)
+				return GPT_IO_TRANSFER_ERROR;
 
 			break;
 		}
@@ -244,28 +220,21 @@ int write_sparse_image(struct FastbootOps *fb, struct fastboot_disk *disk,
 			 */
 			if (sizeof(uint32_t) + sizeof(*chunk_hdr) !=
 			    chunk_hdr->total_size_bytes) {
-				FB_TRACE_SPARSE("chunk_size_bytes:%zx\n",
-						sizeof(uint32_t) +
-							sizeof(*chunk_hdr));
-				FB_TRACE_SPARSE("total_size_bytes:%x\n",
-						chunk_hdr->total_size_bytes);
-				fastboot_fail(fb, "Chunk size is wrong");
-				return -1;
+				TRACE_SPARSE("chunk_size_bytes:%zx\n",
+					     sizeof(uint32_t) + sizeof(*chunk_hdr));
+				TRACE_SPARSE("total_size_bytes:%x\n",
+					     chunk_hdr->total_size_bytes);
+				return GPT_IO_SPARSE_WRONG_CHUNK_SIZE;
 			}
 
 			data_fill = img_buff_advance(&buff, sizeof(*data_fill));
-			if (!data_fill) {
-				fastboot_fail(fb,
-					      "Sparse image ended abruptly");
-				return -1;
-			}
+			if (!data_fill)
+				return GPT_IO_SPARSE_TOO_SMALL;
 
 			/* Perform fill_write operation */
 			if (blockdev_fill_write(ops, part_start_lba, chunk_size_lba,
-						*data_fill) != chunk_size_lba) {
-				fastboot_fail(fb, "Failed to write");
-				return -1;
-			}
+						*data_fill) != chunk_size_lba)
+				return GPT_IO_TRANSFER_ERROR;
 
 			break;
 		}
@@ -276,12 +245,10 @@ int write_sparse_image(struct FastbootOps *fb, struct fastboot_disk *disk,
 			 * data in sparse image = 0 bytes
 			 */
 			if (sizeof(*chunk_hdr) != chunk_hdr->total_size_bytes) {
-				FB_TRACE_SPARSE("chunk_size_bytes:%zx\n",
-						sizeof(*chunk_hdr));
-				FB_TRACE_SPARSE("total_size_bytes:%x\n",
-						chunk_hdr->total_size_bytes);
-				fastboot_fail(fb, "Chunk size is wrong");
-				return -1;
+				TRACE_SPARSE("chunk_size_bytes:%zx\n", sizeof(*chunk_hdr));
+				TRACE_SPARSE("total_size_bytes:%x\n",
+					     chunk_hdr->total_size_bytes);
+				return GPT_IO_SPARSE_WRONG_CHUNK_SIZE;
 			}
 			break;
 		}
@@ -292,29 +259,22 @@ int write_sparse_image(struct FastbootOps *fb, struct fastboot_disk *disk,
 			 */
 			if (sizeof(uint32_t) + sizeof(*chunk_hdr) !=
 			    chunk_hdr->total_size_bytes) {
-				FB_TRACE_SPARSE("chunk_size_bytes:%zx\n",
-						sizeof(uint32_t) +
-							sizeof(*chunk_hdr));
-				FB_TRACE_SPARSE("total_size_bytes:%x\n",
-						chunk_hdr->total_size_bytes);
-				fastboot_fail(fb, "Chunk size is wrong");
-				return -1;
+				TRACE_SPARSE("chunk_size_bytes:%zx\n",
+					     sizeof(uint32_t) + sizeof(*chunk_hdr));
+				TRACE_SPARSE("total_size_bytes:%x\n",
+					     chunk_hdr->total_size_bytes);
+				return GPT_IO_SPARSE_WRONG_CHUNK_SIZE;
 			}
 
 			/* Data present in chunk sparse image = 4 bytes */
-			if (img_buff_advance(&buff, sizeof(uint32_t)) == NULL) {
-				fastboot_fail(fb,
-					      "Sparse image ended abruptly");
-				return -1;
-			}
+			if (img_buff_advance(&buff, sizeof(uint32_t)) == NULL)
+				return GPT_IO_SPARSE_TOO_SMALL;
 			break;
 		}
 		default: {
 			/* Unknown chunk type */
-			FB_TRACE_SPARSE("Unknown chunk type %d\n",
-					chunk_hdr->type);
-			fastboot_fail(fb, "Unrecognised chunk type");
-			return -1;
+			TRACE_SPARSE("Unknown chunk type %d\n", chunk_hdr->type);
+			return GPT_IO_SPARSE_WRONG_CHUNK_TYPE;
 		}
 		}
 		/* Update partition address and size accordingly */

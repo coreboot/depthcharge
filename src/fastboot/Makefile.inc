@@ -14,7 +14,6 @@
 fastboot-y += cmd.c
 fastboot-y += disk.c
 fastboot-y += fastboot.c
-fastboot-y += sparse.c
 fastboot-y += tcp.c
 fastboot-y += vars.c
 fastboot-y += usb.c

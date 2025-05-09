@@ -19,6 +19,7 @@
 #include <string.h>
 #include <sysinfo.h>
 
+#include "base/gpt.h"
 #include "fastboot/disk.h"
 #include "fastboot/fastboot.h"
 #include "fastboot/vars.h"
@@ -128,21 +129,21 @@ fastboot_getvar_result_t fastboot_getvar(fastboot_var_t var, const char *arg,
 		if (!fastboot_disk_init(&disk))
 			return STATE_DISK_ERROR;
 		if (arg != NULL) {
-			part = fastboot_find_partition(&disk, arg);
+			part = gpt_find_partition(disk.gpt, arg);
 			if (part == NULL)
 				return STATE_UNKNOWN_VAR;
 		} else {
 			char *name;
 
 			/* There is no more partitions to get */
-			if (fastboot_get_number_of_partitions(&disk) <= index)
+			if (gpt_get_number_of_partitions(disk.gpt) <= index)
 				return STATE_LAST;
 
-			part = fastboot_get_partition(&disk, index);
+			part = gpt_get_partition(disk.gpt, index);
 			if (part == NULL)
 				return STATE_TRY_NEXT;
 
-			name = fastboot_get_entry_name(part);
+			name = gpt_get_entry_name(part);
 			if (name == NULL)
 				return STATE_TRY_NEXT;
 

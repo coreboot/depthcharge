@@ -32,4 +32,52 @@ GptData *alloc_gpt(BlockDev *bdev);
 /* Free the allocated GPT pointer. */
 void free_gpt(BlockDev *bdev, GptData *gpt);
 
+/* Returns partition name as an ASCII string. Caller should free the data. */
+char *gpt_get_entry_name(GptEntry *e);
+
+/* Returns true to stop iteration, false to continue */
+typedef bool (*gpt_foreach_callback_t)(void *ctx, int index, GptEntry *e,
+				       char *partition_name);
+
+/* Iterate over all partitions until cb returns true */
+bool gpt_foreach_partition(GptData *gpt, gpt_foreach_callback_t cb, void *ctx);
+
+/* Find entry with specified name */
+GptEntry *gpt_find_partition(GptData *gpt, const char *partition_name);
+
+/* Get number of entries in GPT */
+int gpt_get_number_of_partitions(GptData *gpt);
+
+/* Get GPT entry at specified index */
+GptEntry *gpt_get_partition(GptData *gpt, unsigned int index);
+
+/* Return codes of IO functions */
+enum gpt_io_ret {
+	GPT_IO_SUCCESS = 0,
+	GPT_IO_SIZE_NOT_ALIGNED,
+	GPT_IO_NO_PARTITION,
+	GPT_IO_OUT_OF_RANGE,
+	GPT_IO_TRANSFER_ERROR,
+	GPT_IO_SPARSE_TOO_SMALL,
+	GPT_IO_SPARSE_WRONG_HEADER_SIZE,
+	GPT_IO_SPARSE_BLOCK_SIZE_NOT_ALIGNED,
+	GPT_IO_SPARSE_WRONG_CHUNK_SIZE,
+	GPT_IO_SPARSE_WRONG_CHUNK_TYPE,
+};
+
+/* Read content of the partition starting from offset specified in disk blocks */
+enum gpt_io_ret gpt_read_partition(BlockDev *disk, GptData *gpt, const char *partition_name,
+				   const uint64_t blocks_offset, void *data, size_t data_len);
+
+/*
+ * Write content of data buffer to the partition starting from offset specified
+ * in disk blocks
+ */
+enum gpt_io_ret gpt_write_partition(BlockDev *disk, GptData *gpt, const char *partition_name,
+				    const uint64_t blocks_offset, void *data, size_t data_len);
+
+/* Erase content of the partition */
+enum gpt_io_ret gpt_erase_partition(BlockDev *disk, GptData *gpt,
+		    const char *partition_name);
+
 #endif /* __BASE_GPT_H__ */
