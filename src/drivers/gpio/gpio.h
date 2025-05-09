@@ -35,7 +35,6 @@ static inline int gpio_set(GpioOps *gpio, unsigned val)
 
 GpioOps *new_gpio_high(void);
 GpioOps *new_gpio_low(void);
-GpioOps *new_gpio_passthrough(GpioOps *a);
 GpioOps *new_gpio_not(GpioOps *a);
 GpioOps *new_gpio_and(GpioOps *a, GpioOps *b);
 GpioOps *new_gpio_or(GpioOps *a, GpioOps *b);

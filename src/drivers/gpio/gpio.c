@@ -63,27 +63,6 @@ GpioOps *new_gpio_not(GpioOps *a)
 	return &op->ops;
 }
 
-static int gpio_passthrough_get(GpioOps *me)
-{
-	GpioUnaryOp *op = container_of(me, GpioUnaryOp, ops);
-	return gpio_get(op->a);
-}
-
-static int gpio_passthrough_set(GpioOps *me, unsigned value)
-{
-	GpioUnaryOp *op = container_of(me, GpioUnaryOp, ops);
-	return gpio_set(op->a, value);
-}
-
-GpioOps *new_gpio_passthrough(GpioOps *a)
-{
-	GpioUnaryOp *op = xzalloc(sizeof(*op));
-	op->ops.get = &gpio_passthrough_get;
-	op->ops.set = &gpio_passthrough_set;
-	op->a = a;
-	return &op->ops;
-}
-
 static GpioOps *new_gpio_binary_op(GpioOps *a, GpioOps *b,
 				   int (*get)(GpioOps *me))
 {
