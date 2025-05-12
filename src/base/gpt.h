@@ -29,8 +29,8 @@
  */
 GptData *alloc_gpt(BlockDev *bdev);
 
-/* Free the allocated GPT pointer. */
-void free_gpt(BlockDev *bdev, GptData *gpt);
+/* Free the allocated GPT pointer. Returns 0 if GPT was updated successfully. */
+int free_gpt(BlockDev *bdev, GptData *gpt);
 
 /* Returns partition name as an ASCII string. Caller should free the data. */
 char *gpt_get_entry_name(GptEntry *e);

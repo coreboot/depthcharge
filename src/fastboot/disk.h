@@ -24,21 +24,15 @@
 #include "fastboot/fastboot.h"
 #include "gpt_misc.h"
 
-struct fastboot_disk {
-	BlockDev *disk;
-	GptData *gpt;
-};
-
-bool fastboot_disk_init(struct fastboot_disk *disk);
-void fastboot_disk_destroy(struct fastboot_disk *disk);
-void fastboot_write(struct FastbootOps *fb, struct fastboot_disk *disk,
-		    const char *partition_name, const uint64_t blocks_offset,
-		    void *data, size_t data_len);
-void fastboot_erase(struct FastbootOps *fb, struct fastboot_disk *disk,
-		    const char *partition_name);
-int fastboot_get_slot_count(struct fastboot_disk *disk);
+int fastboot_disk_init(struct FastbootOps *fb);
+int fastboot_disk_gpt_init(struct FastbootOps *fb);
+int fastboot_save_gpt(struct FastbootOps *fb);
+void fastboot_write(struct FastbootOps *fb, const char *partition_name,
+		    const uint64_t blocks_offset, void *data, size_t data_len);
+void fastboot_erase(struct FastbootOps *fb, const char *partition_name);
+int fastboot_get_slot_count(GptData *gpt);
 char get_slot_for_partition_name(GptEntry *e, char *partition_name);
-GptEntry *fastboot_get_kernel_for_slot(struct fastboot_disk *disk, char slot);
-void fastboot_slots_disable_all(struct fastboot_disk *disk);
+GptEntry *fastboot_get_kernel_for_slot(GptData *gpt, char slot);
+void fastboot_slots_disable_all(GptData *gpt);
 
 #endif // __FASTBOOT_DISK_H__

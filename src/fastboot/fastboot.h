@@ -22,6 +22,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "gpt_misc.h"
+#include "drivers/storage/blockdev.h"
+
 #define FB_DEBUG(...)                                                          \
 	do {                                                                   \
 		printf("%s: ", __func__);                                      \
@@ -59,6 +62,11 @@ enum fastboot_state {
 struct FastbootOps {
 	/* State of the session */
 	enum fastboot_state state;
+
+	/* Device used as a target for flash/erase command. Maybe NULL. */
+	BlockDev *disk;
+	/* GPT of the disk, maybe NULL */
+	GptData *gpt;
 
 	/* fastboot_get_memory_buffer() has staged data */
 	bool has_staged_data;

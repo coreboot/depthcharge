@@ -48,12 +48,15 @@ GptData *alloc_gpt(BlockDev *bdev)
 	return gpt;
 }
 
-void free_gpt(BlockDev *bdev, GptData *gpt)
+int free_gpt(BlockDev *bdev, GptData *gpt)
 {
+	int ret;
 	assert(bdev && gpt);
 
-	WriteAndFreeGptData(bdev, gpt);
+	ret = WriteAndFreeGptData(bdev, gpt);
 	free(gpt);
+
+	return ret;
 }
 
 char *gpt_get_entry_name(GptEntry *e)

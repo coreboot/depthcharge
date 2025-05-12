@@ -57,14 +57,15 @@ static void fastboot_getvar_all(struct FastbootOps *fb)
 			do {
 				size_t len = FASTBOOT_MSG_MAX;
 
-				state = fastboot_getvar(var->var, NULL, arg++, var_buf, &len);
+				state = fastboot_getvar(fb, var->var, NULL, arg++,
+							var_buf, &len);
 				if (state == STATE_OK)
 					fastboot_info(fb, "%s:%.*s", var->name, (int)len,
 						      var_buf);
 			} while (state == STATE_OK || state == STATE_TRY_NEXT);
 		} else {
 			size_t len = FASTBOOT_MSG_MAX;
-			fastboot_getvar(var->var, NULL, 0, var_buf, &len);
+			fastboot_getvar(fb, var->var, NULL, 0, var_buf, &len);
 			fastboot_info(fb, "%s:%.*s", var->name, (int)len,
 				      var_buf);
 		}
@@ -97,7 +98,7 @@ void fastboot_cmd_getvar(struct FastbootOps *fb, const char *args)
 
 		size_t var_len = FASTBOOT_MSG_MAX;
 		fastboot_getvar_result_t state = fastboot_getvar(
-			var->var, args, 0, var_buf, &var_len);
+			fb, var->var, args, 0, var_buf, &var_len);
 		if (state == STATE_OK) {
 			fastboot_okay(fb, "%.*s", (int)var_len, var_buf);
 		} else {
@@ -109,8 +110,8 @@ void fastboot_cmd_getvar(struct FastbootOps *fb, const char *args)
 	fastboot_fail(fb, "Unknown variable");
 }
 
-fastboot_getvar_result_t fastboot_getvar(fastboot_var_t var, const char *arg,
-					 size_t index, char *outbuf,
+fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t var,
+					 const char *arg, size_t index, char *outbuf,
 					 size_t *outbuf_len)
 {
 	size_t used_len = 0;
@@ -123,23 +124,22 @@ fastboot_getvar_result_t fastboot_getvar(fastboot_var_t var, const char *arg,
 		used_len = snprintf(outbuf, *outbuf_len, "no");
 		break;
 	case VAR_PARTITION_SIZE: {
-		struct fastboot_disk disk;
 		GptEntry *part = NULL;
 
-		if (!fastboot_disk_init(&disk))
+		if (fastboot_disk_gpt_init(fb))
 			return STATE_DISK_ERROR;
 		if (arg != NULL) {
-			part = gpt_find_partition(disk.gpt, arg);
+			part = gpt_find_partition(fb->gpt, arg);
 			if (part == NULL)
 				return STATE_UNKNOWN_VAR;
 		} else {
 			char *name;
 
 			/* There is no more partitions to get */
-			if (gpt_get_number_of_partitions(disk.gpt) <= index)
+			if (gpt_get_number_of_partitions(fb->gpt) <= index)
 				return STATE_LAST;
 
-			part = gpt_get_partition(disk.gpt, index);
+			part = gpt_get_partition(fb->gpt, index);
 			if (part == NULL)
 				return STATE_TRY_NEXT;
 
@@ -154,8 +154,7 @@ fastboot_getvar_result_t fastboot_getvar(fastboot_var_t var, const char *arg,
 		}
 
 		used_len += snprintf(outbuf, *outbuf_len, "0x%llx",
-				     GptGetEntrySizeBytes(disk.gpt, part));
-		fastboot_disk_destroy(&disk);
+				     GptGetEntrySizeBytes(fb->gpt, part));
 		break;
 	}
 	case VAR_PRODUCT: {
@@ -165,15 +164,12 @@ fastboot_getvar_result_t fastboot_getvar(fastboot_var_t var, const char *arg,
 		used_len = snprintf(outbuf, *outbuf_len, "%s", mb_part_string);
 		break;
 	}
-	case VAR_SLOT_COUNT: {
-		struct fastboot_disk disk;
-		if (!fastboot_disk_init(&disk))
+	case VAR_SLOT_COUNT:
+		if (fastboot_disk_gpt_init(fb))
 			return STATE_DISK_ERROR;
 		used_len = snprintf(outbuf, *outbuf_len, "%d",
-				    fastboot_get_slot_count(&disk));
-		fastboot_disk_destroy(&disk);
+				    fastboot_get_slot_count(fb->gpt));
 		break;
-	}
 	case VAR_SECURE:
 		used_len = snprintf(outbuf, *outbuf_len, "no");
 		break;

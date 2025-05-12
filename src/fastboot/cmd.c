@@ -111,28 +111,14 @@ static void fastboot_cmd_flash(struct FastbootOps *fb, const char *arg)
 		return;
 	}
 
-	struct fastboot_disk disk;
-	if (!fastboot_disk_init(&disk)) {
-		fastboot_fail(fb, "Failed to init disk");
-		return;
-	}
-
 	uint64_t data_len;
 	void *data = fastboot_get_memory_buffer(fb, &data_len);
-	fastboot_write(fb, &disk, arg, 0, data, (uint32_t)data_len);
-	fastboot_disk_destroy(&disk);
+	fastboot_write(fb, arg, 0, data, (uint32_t)data_len);
 }
 
 static void fastboot_cmd_erase(struct FastbootOps *fb, const char *arg)
 {
-	struct fastboot_disk disk;
-	if (!fastboot_disk_init(&disk)) {
-		fastboot_fail(fb, "Failed to init disk");
-		return;
-	}
-
-	fastboot_erase(fb, &disk, arg);
-	fastboot_disk_destroy(&disk);
+	fastboot_erase(fb, arg);
 }
 
 // `fastboot oem get-kernels` returns a list of slot letter:kernel mapping.
@@ -167,17 +153,15 @@ static bool get_kernels_cb(void *ctx, int index, GptEntry *e,
 }
 static void fastboot_cmd_oem_get_kernels(struct FastbootOps *fb, const char *arg)
 {
-	struct fastboot_disk disk;
-	if (!fastboot_disk_init(&disk)) {
-		fastboot_fail(fb, "Failed to init disk");
-		return;
-	}
 	struct get_kernels_ctx ctx = {
 		.fb = fb,
 		.cur_kernel = 0,
 	};
-	gpt_foreach_partition(disk.gpt, get_kernels_cb, &ctx);
-	fastboot_disk_destroy(&disk);
+
+	if (fastboot_disk_gpt_init(fb))
+		return;
+
+	gpt_foreach_partition(fb->gpt, get_kernels_cb, &ctx);
 	fastboot_succeed(fb);
 }
 
@@ -297,23 +281,21 @@ static void fastboot_cmd_reboot(struct FastbootOps *fb, const char *arg)
 
 static void fastboot_cmd_set_active(struct FastbootOps *fb, const char *arg)
 {
-	struct fastboot_disk disk;
-	if (!fastboot_disk_init(&disk)) {
-		fastboot_fail(fb, "Failed to init disk");
+	if (fastboot_disk_gpt_init(fb))
 		return;
-	}
-	GptEntry *slot = fastboot_get_kernel_for_slot(&disk, arg[0]);
+
+	GptEntry *slot = fastboot_get_kernel_for_slot(fb->gpt, arg[0]);
 	if (slot == NULL) {
 		fastboot_fail(fb, "Could not find slot");
-		goto out;
+		return;
 	}
 
-	fastboot_slots_disable_all(&disk);
-	GptUpdateKernelWithEntry(disk.gpt, slot, GPT_UPDATE_ENTRY_ACTIVE);
-
-	fastboot_succeed(fb);
-out:
-	fastboot_disk_destroy(&disk);
+	fastboot_slots_disable_all(fb->gpt);
+	GptUpdateKernelWithEntry(fb->gpt, slot, GPT_UPDATE_ENTRY_ACTIVE);
+	if (fastboot_save_gpt(fb))
+		fastboot_fail(fb, "Could not save GPT to the disk");
+	else
+		fastboot_succeed(fb);
 }
 
 #define CMD_ARGS(_name, _sep, _fn)                                             \
