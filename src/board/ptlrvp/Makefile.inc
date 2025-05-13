@@ -1,2 +1,5 @@
 depthcharge-y += board.c
-depthcharge-y += ptlrvp.c
+
+ifneq ($(CONFIG_VARIANT_NAME), "")
+depthcharge-y += $(call strip_quotes,$(CONFIG_VARIANT_NAME)).c
+endif
