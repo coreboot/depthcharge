@@ -104,7 +104,8 @@ static int board_setup(void)
 	 * flag_fetch() will die if it encounters a flag that is not registered,
 	 * so we still need to register lid switch even if we don't have a lid.
 	 */
-	flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
+	if (CONFIG(DRIVER_EC_CROS))
+		flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
 
 	/* stub out required GPIOs for vboot */
 	flag_replace(FLAG_PWRSW, new_gpio_low());
@@ -119,9 +120,11 @@ static int board_setup(void)
 
 	flash_setup();
 
-	ec_setup();
+	if (CONFIG(DRIVER_EC_CROS))
+		ec_setup();
 
-	tpm_setup();
+	if (CONFIG(DRIVER_TPM_GOOGLE_TI50))
+		tpm_setup();
 
 	audio_setup();
 
