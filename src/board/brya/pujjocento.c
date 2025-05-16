@@ -26,11 +26,9 @@ const struct audio_config *variant_probe_audio_config(void)
 
 	config = (struct audio_config){
 		.bus = {
-			.type = AUDIO_HDA,
-		},
-		.codec = {
-			.type = AUDIO_ALC256,
-		},
+			.type = AUDIO_PWM,
+			.pwm.pad = GPP_B14,
+		}
 	};
 
 	return &config;
