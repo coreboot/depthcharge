@@ -20,7 +20,10 @@
 #include <lzma.h>
 #include <vb2_api.h>
 
+#include "base/android_misc.h"
+#include "debug/dev.h"
 #include "drivers/flash/flash.h"
+#include "fastboot/fastboot.h"
 #include "vboot/nvdata.h"
 #include "vboot/secdata_tpm.h"
 
@@ -96,4 +99,44 @@ vb2_error_t vb2ex_commit_data(struct vb2_context *ctx)
 	}
 
 	return rv;
+}
+
+vb2_error_t vb2ex_get_android_bootmode(struct vb2_context *ctx,
+				       vb2ex_disk_handle_t disk,
+				       GptData *gpt,
+				       enum vb2_android_bootmode *bootmode)
+{
+	enum android_misc_bcb_command cmd;
+	BlockDev *bdev = (BlockDev *)disk;
+
+	/* Ignore misc partition on external disks */
+	if (bdev->removable) {
+		*bootmode = VB2_ANDROID_NORMAL_BOOT;
+		return VB2_SUCCESS;
+	}
+
+	cmd = android_misc_get_bcb_command(bdev, gpt);
+	switch (cmd) {
+	case MISC_BCB_NORMAL_BOOT:
+	/* For unknown command, just continue with normal boot */
+	case MISC_BCB_UNKNOWN:
+	/*
+	 * If there is problem with misc partition, just allow normal boot and let OS to
+	 * figure it out if it boot
+	 */
+	case MISC_BCB_DISK_ERROR:
+		*bootmode = VB2_ANDROID_NORMAL_BOOT;
+		break;
+	case MISC_BCB_RECOVERY_BOOT:
+		*bootmode = VB2_ANDROID_RECOVERY_BOOT;
+		break;
+	case MISC_BCB_BOOTLOADER_BOOT:
+		*bootmode = VB2_ANDROID_NORMAL_BOOT;
+		/* If GBB flag is set, start fastboot */
+		if (vb2api_gbb_get_flags(ctx) & VB2_GBB_FLAG_FORCE_UNLOCK_FASTBOOT)
+			fastboot();
+		break;
+	}
+
+	return VB2_SUCCESS;
 }
