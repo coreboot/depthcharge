@@ -964,8 +964,12 @@ void cros_ec_probe_aux_fw_chips(void)
 
 		list_for_each(chip, ec_aux_fw_chip_list, list_node) {
 			if (pd_chip_r.vendor_id != chip->vid ||
-			    pd_chip_r.product_id != chip->pid)
+			    pd_chip_r.product_id != chip->pid) {
+				printf("%s: port %d, vid/pid %d/%d != %d/%d, skipping\n",
+				       __func__, i, chip->vid, chip->pid,
+				       pd_chip_r.vendor_id, pd_chip_r.product_id);
 				continue;
+			}
 
 			ops = chip->new_chip_aux_fw_ops(&pd_chip_r, i);
 			if (ops)
