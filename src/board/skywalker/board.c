@@ -4,6 +4,7 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
+#include "board/skywalker/include/variant.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
 #include "drivers/bus/i2s/mtk_v3.h"
@@ -24,24 +25,24 @@
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 
+#define MAX_PATH_LEN 32
+
 /* Override of func in src/drivers/ec/rts5453/rts5453.c */
 void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
 				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
-	switch (ec_pd_id) {
-	case 0:
-		/* TUSB546 */
-		*image_path = "rts5453_GOOG0C00.bin";
-		*hash_path = "rts5453_GOOG0C00.hash";
-		break;
-	case 1:
-		/* PS8747 */
-		*image_path = "rts5453_GOOG0B00.bin";
-		*hash_path = "rts5453_GOOG0B00.hash";
-		break;
-	default:
-		printf("Unknown ec_pd_id %d\n", ec_pd_id);
-	}
+	assert(ec_pd_id >= 0 && ec_pd_id < PDC_PORT_NUM);
+
+	const char *config = rts545x_configs[ec_pd_id];
+	static char image[PDC_PORT_NUM][MAX_PATH_LEN];
+	static char hash[PDC_PORT_NUM][MAX_PATH_LEN];
+	static const char *pattern = "rts5453_GOOG%s00.%s";
+
+	snprintf(image[ec_pd_id], MAX_PATH_LEN, pattern, config, "bin");
+	snprintf(hash[ec_pd_id], MAX_PATH_LEN, pattern, config, "hash");
+
+	*image_path = image[ec_pd_id];
+	*hash_path = hash[ec_pd_id];
 }
 
 static int tpm_irq_status(void)
