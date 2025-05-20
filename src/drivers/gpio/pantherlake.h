@@ -438,7 +438,7 @@
  * | Pad End Number   |    218  | 219 |
  * +------------------+---------+-----+
  */
-#if CONFIG(SOC_INTEL_WILDCATLAKE)
+#if CONFIG(DRIVER_SOC_WILDCATLAKE)
 #define GPP_B00			INC(GPP_DDSP_HPDALV)
 #else
 #define GPP_B00			INC(GPP_S07)
