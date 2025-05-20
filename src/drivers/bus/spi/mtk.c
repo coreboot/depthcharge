@@ -90,8 +90,7 @@ static int mtk_spi_xfer(MtkSpi *bus, void *in, const void *out,
 			((packet_loop - 1) << SPI_CFG1_PACKET_LOOP_SHIFT));
 
 	write32(&regs->spi_tx_src_reg, (uintptr_t)outb);
-	if (inb)
-		write32(&regs->spi_rx_dst_reg, (uintptr_t)inb);
+	write32(&regs->spi_rx_dst_reg, (uintptr_t)inb);
 
 	if (bus->state == MTK_SPI_IDLE) {
 		setbits_le32(&regs->spi_cmd_reg, 1 << SPI_CMD_ACT_SHIFT);
@@ -134,14 +133,13 @@ static int mtk_spi_transfer(SpiOps *me, void *in, const void *out,
 	MtkSpi *bus = container_of(me, MtkSpi, ops);
 	MtkSpiRegs *regs = bus->reg_addr;
 	uint32_t aligned, remains, offset = 0, alloc_size;
-	uint8_t *inb = NULL, *outb = NULL;
+	uint8_t *inb, *outb;
 
 	remains = size % MTK_PACKET_SIZE;
 	aligned = size - remains;
 	alloc_size = MIN(MAX(remains, aligned),
 			 MTK_PACKET_SIZE * MTK_PACKET_MAX_LOOP);
-	if (in)
-		inb = dma_malloc(alloc_size);
+	inb = dma_malloc(alloc_size);
 	outb = dma_malloc(alloc_size);
 
 	/*
