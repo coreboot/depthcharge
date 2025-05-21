@@ -160,6 +160,14 @@ bool IsBootableEntry(const GptEntry *e)
 	will_return(IsBootableEntry, ret); \
 } while (0)
 
+const char *get_active_fw_id(void)
+{
+	return mock_ptr_type(char *);
+}
+
+/* Setup for get_active_fw_id mock */
+#define WILL_GET_ACTIVE_FW_ID(ret) will_return(get_active_fw_id, ret)
+
 /* Reset mock data (for use before each test) */
 static int setup(void **state)
 {
@@ -748,6 +756,15 @@ static void test_fb_getvar_slot_unbootable_at_index_last(void **state)
 	test_fb_getvar_partition_at_index_last(state, VAR_SLOT_UNBOOTABLE);
 }
 
+static void test_fb_getvar_version_bootloader(void **state)
+{
+	WILL_GET_ACTIVE_FW_ID("FWID");
+	TEST_FASTBOOT_GETVAR_OK(VAR_VERSION_BOOTLOADER, "", "FWID");
+
+	WILL_GET_ACTIVE_FW_ID(NULL);
+	TEST_FASTBOOT_GETVAR_OK(VAR_VERSION_BOOTLOADER, "", "unknown");
+}
+
 /* fastboot_cmd_getvar tests */
 
 static void test_fb_cmd_getvar_current_slot(void **state)
@@ -905,6 +922,17 @@ static void test_fb_cmd_getvar_slot_unbootable(void **state)
 	fastboot_cmd_getvar(fb, "slot-unbootable:a");
 }
 
+static void test_fb_cmd_getvar_version_bootloader(void **state)
+{
+	struct FastbootOps *fb = *state;
+
+	WILL_GET_ACTIVE_FW_ID("fwversion");
+
+	WILL_SEND_EXACT(fb, "OKAYfwversion");
+
+	fastboot_cmd_getvar(fb, "version-bootloader");
+}
+
 /* fastboot_cmd_getvar fail tests */
 static void test_fb_cmd_getvar_get_fail(void **state)
 {
@@ -1043,6 +1071,9 @@ static void test_fb_cmd_getvar_all(void **state)
 	/* Setup for logical-block-size */
 	test_disk.block_size = 0x1000;
 
+	/* Setup for version-bootloader */
+	WILL_GET_ACTIVE_FW_ID("fwversion");
+
 	fastboot_cmd_getvar(fb, "all");
 
 	if (packets_list.next == NULL)
@@ -1076,6 +1107,7 @@ static void test_fb_cmd_getvar_all(void **state)
 	check_fb_cmd_getvar_all_contains("INFOversion:0.4");
 	check_fb_cmd_getvar_all_contains("INFOslot-suffixes:a,b");
 	check_fb_cmd_getvar_all_contains("INFOlogical-block-size:0x1000");
+	check_fb_cmd_getvar_all_contains("INFOversion-bootloader:fwversion");
 
 	list_for_each(node, packets_list, list_node) {
 		fail_msg("Unexpected message: \"%s\"", node->msg);
@@ -1133,6 +1165,9 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	/* Setup for logical-block-size */
 	test_disk.block_size = 0x1000;
 
+	/* Setup for version-bootloader */
+	WILL_GET_ACTIVE_FW_ID("fwversion");
+
 	fastboot_cmd_getvar(fb, "all");
 
 	if (packets_list.next == NULL)
@@ -1165,6 +1200,7 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	check_fb_cmd_getvar_all_contains("INFOversion:0.4");
 	check_fb_cmd_getvar_all_contains("INFOslot-suffixes:a,b");
 	check_fb_cmd_getvar_all_contains("INFOlogical-block-size:0x1000");
+	check_fb_cmd_getvar_all_contains("INFOversion-bootloader:fwversion");
 
 	list_for_each(node, packets_list, list_node) {
 		fail_msg("Unexpected message: \"%s\"", node->msg);
@@ -1223,6 +1259,7 @@ int main(void)
 		TEST(test_fb_getvar_slot_unbootable_at_index_not_exist),
 		TEST(test_fb_getvar_slot_unbootable_at_index_no_name),
 		TEST(test_fb_getvar_slot_unbootable_at_index_last),
+		TEST(test_fb_getvar_version_bootloader),
 		TEST(test_fb_cmd_getvar_current_slot),
 		TEST(test_fb_cmd_getvar_download_size),
 		TEST(test_fb_cmd_getvar_is_userspace),
@@ -1236,6 +1273,7 @@ int main(void)
 		TEST(test_fb_cmd_getvar_slot_retry_count),
 		TEST(test_fb_cmd_getvar_logical_block_size),
 		TEST(test_fb_cmd_getvar_slot_unbootable),
+		TEST(test_fb_cmd_getvar_version_bootloader),
 		TEST(test_fb_cmd_getvar_get_fail),
 		TEST(test_fb_cmd_getvar_no_args),
 		TEST(test_fb_cmd_getvar_prefix_of_var_name),

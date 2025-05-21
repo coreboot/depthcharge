@@ -24,6 +24,7 @@
 #include "fastboot/disk.h"
 #include "fastboot/fastboot.h"
 #include "fastboot/vars.h"
+#include "vboot/firmware_id.h"
 
 #define VAR_ARGS(_name, _sep, _var)                                            \
 	{                                                                      \
@@ -42,6 +43,7 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 	VAR_NO_ARGS("secure", VAR_SECURE),
 	VAR_NO_ARGS("slot-count", VAR_SLOT_COUNT),
 	VAR_NO_ARGS("version", VAR_VERSION),
+	VAR_NO_ARGS("version-bootloader", VAR_VERSION_BOOTLOADER),
 	VAR_NO_ARGS("slot-suffixes", VAR_SLOT_SUFFIXES),
 	VAR_ARGS("slot-successful", ':', VAR_SLOT_SUCCESSFUL),
 	VAR_ARGS("slot-retry-count", ':', VAR_SLOT_RETRY_COUNT),
@@ -254,6 +256,14 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 	case VAR_VERSION:
 		used_len = snprintf(outbuf, *outbuf_len, "0.4");
 		break;
+	case VAR_VERSION_BOOTLOADER: {
+		const char *fw_id = get_active_fw_id();
+		if (fw_id == NULL)
+			used_len = snprintf(outbuf, *outbuf_len, "unknown");
+		else
+			used_len = snprintf(outbuf, *outbuf_len, "%s", fw_id);
+		break;
+	}
 	case VAR_SLOT_SUFFIXES:
 		if (fastboot_disk_gpt_init(fb))
 			return STATE_DISK_ERROR;
