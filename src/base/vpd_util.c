@@ -112,8 +112,12 @@ const u8 *vpd_find(const char *key, const u8 *blob, u32 *offset, u32 *size)
 	if (!arg.matched)
 		return NULL;
 
-	*size = arg.value_len;
-	*offset = arg.value - blob;
+	if (size)
+		*size = arg.value_len;
+
+	if (offset)
+		*offset = arg.value - blob;
+
 	return arg.value;
 }
 
