@@ -36,3 +36,8 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 	*count = ARRAY_SIZE(storage_configs);
 	return storage_configs;
 }
+
+int gsc_irq_status(void)
+{
+	return pantherlake_get_gpe(GPE0_DW2_02); /* GPP_E02 */
+}
