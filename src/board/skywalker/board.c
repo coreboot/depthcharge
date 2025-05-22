@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <libpayload.h>
 
+#include "base/fw_config.h"
 #include "base/init_funcs.h"
 #include "board/skywalker/include/variant.h"
 #include "drivers/bus/spi/mtk.h"
@@ -152,6 +153,27 @@ static void rts545x_register(void)
 	list_insert_after(&rts5453_info.list_node, &ec_aux_fw_chip_list);
 }
 
+static void setup_ufs(void)
+{
+	MtkUfsCtlr *ufs_host = new_mtk_ufs_ctlr(0x112B0000, 0x112BD000);
+	list_insert_after(&ufs_host->ufs.bctlr.list_node, &fixed_block_dev_controllers);
+	printf("%s done\n", __func__);
+}
+
+static void setup_emmc(void)
+{
+	MtkMmcTuneReg emmc_tune_reg = {
+		.msdc_iocon = 0x1 << 8,
+		.pad_tune = 0x10 << 16,
+	};
+	MtkMmcHost *emmc = new_mtk_mmc_host(
+		0x11230000, 0x11e70000, 400 * MHz, 200 * MHz, emmc_tune_reg, 8,
+		0, NULL, MTK_MMC_V2);
+
+	list_insert_after(&emmc->mmc.ctrlr.list_node, &fixed_block_dev_controllers);
+	printf("%s done\n", __func__);
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
@@ -179,9 +201,24 @@ static int board_setup(void)
 	MtkNorFlash *nor_flash = new_mtk_nor_flash(0x11018000);
 	flash_set_ops(&nor_flash->ops);
 
-	/* Set up UFS ops */
-	MtkUfsCtlr *ufs_host = new_mtk_ufs_ctlr(0x112B0000, 0x112BD000);
-	list_insert_after(&ufs_host->ufs.bctlr.list_node, &fixed_block_dev_controllers);
+	/* Set up storage */
+	bool do_emmc_setup = false;
+	bool do_ufs_setup = false;
+
+	if (!fw_config_is_provisioned()) {
+		do_emmc_setup = true;
+		do_ufs_setup = true;
+	} else if (fw_config_probe(FW_CONFIG(STORAGE, STORAGE_EMMC))) {
+		do_emmc_setup = true;
+	} else if (fw_config_probe(FW_CONFIG(STORAGE, STORAGE_UFS2X)) ||
+		   fw_config_probe(FW_CONFIG(STORAGE, STORAGE_UFS3X))) {
+		do_ufs_setup = true;
+	}
+
+	if (do_ufs_setup)
+		setup_ufs();
+	if (do_emmc_setup)
+		setup_emmc();
 
 	/* Set up SD card */
 	MtkMmcTuneReg sd_card_tune_reg = {
