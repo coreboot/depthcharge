@@ -2,11 +2,7 @@
 
 #include <libpayload.h>
 
-#include "base/fw_config.h"
-#include "drivers/bus/i2s/cavs-regs.h"
-#include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "drivers/bus/soundwire/cavs_2_5-sndwregs.h"
-#include "drivers/ec/rts5453/rts5453.h"
 #include "drivers/gpio/pantherlake.h"
 #include "drivers/soc/pantherlake.h"
 #include "drivers/storage/storage_common.h"
