@@ -293,6 +293,13 @@ vb2_error_t ui_display(struct ui_context *ui,
 	const struct ui_screen_info *screen = state->screen;
 	const struct ui_error_message *error = NULL;
 
+	/*
+	 * Tell the EC about our state...ignore errors since some ECs won't
+	 * support this.
+	 */
+	if (CONFIG(DRIVER_EC_CROS))
+		cros_ec_set_ap_fw_state(calc_ap_fw_state(ui->state));
+
 	VB2_TRY(init_screen());
 
 	if (state->error_code != UI_ERROR_NONE)
@@ -335,13 +342,6 @@ vb2_error_t ui_display(struct ui_context *ui,
 	}
 
 	flush_graphics_buffer();
-
-	/*
-	 * Tell the EC about our state...ignore errors since some ECs won't
-	 * support this.
-	 */
-	if (CONFIG(DRIVER_EC_CROS))
-		cros_ec_set_ap_fw_state(calc_ap_fw_state(ui->state));
 
 	return rv;
 }
