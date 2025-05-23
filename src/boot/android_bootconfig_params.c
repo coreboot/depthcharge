@@ -131,8 +131,11 @@ int append_android_bootconfig_boottime(struct boot_info *bi)
 
 	/* Append current boottime */
 	uint64_t boot_time_ms = get_us_since_pre_cpu_reset() / USECS_PER_MSEC;
+	uint64_t splash_time_ms = get_us_timestamp_since_pre_reset_at_index(
+				TS_FIRMWARE_SPLASH_RENDERED) / USECS_PER_MSEC;
 	char boottime[sizeof(BOOTCONFIG_MAX_BOOTTIME_STR)];
-	snprintf(boottime, sizeof(boottime), "firmware:%"PRIu64, boot_time_ms);
+	snprintf(boottime, sizeof(boottime), "firmware:%"PRIu64",splash:%"PRIu64,
+	       boot_time_ms, splash_time_ms);
 	if (bootconfig_append(&bc, BOOTCONFIG_BOOTTIME_KEY_STR, boottime)) {
 		printf("%s: Cannot append boottime", __func__);
 		return -1;

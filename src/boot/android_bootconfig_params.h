@@ -9,7 +9,7 @@
 #include "bootconfig.h"
 
 #define BOOTCONFIG_BOOTTIME_KEY_STR "androidboot.boottime"
-#define BOOTCONFIG_MAX_BOOTTIME_STR "firmware:18446744073709551615"
+#define BOOTCONFIG_MAX_BOOTTIME_STR "firmware:18446744073709551615,splash:18446744073709551615"
 
 /*
  * Append androidboot bootconfig parameters to bootconfig section.
