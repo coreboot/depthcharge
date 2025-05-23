@@ -168,10 +168,10 @@ static vb2_error_t tps6699x_check_hash(const VbootAuxfwOps *vbaux, const uint8_t
 		return VB2_SUCCESS;
 	}
 
-	/* Prepare to perform a PDC update: shut off the EC's PD stack so it
+	/*
+	 * Prepare to perform a PDC update: shut off the EC's PD stack so it
 	 * does not communicate with the PDC during updates and interfere.
 	 */
-
 	ret = cros_ec_pd_control(me->ec_pd_id, PD_SUSPEND);
 	switch (ret) {
 	case EC_RES_SUCCESS:
@@ -248,7 +248,7 @@ static vb2_error_t tps6699x_update_image(const VbootAuxfwOps *vbaux, const uint8
 
 pd_restart:
 	/* Re-enable the EC PD stack */
-	ret = cros_ec_pd_control(0, PD_RESUME);
+	ret = cros_ec_pd_control(me->ec_pd_id, PD_RESUME);
 	if (ret) {
 		printf("%s: Cannot resume PD: %d. Rebooting.\n", me->chip_name, ret);
 		/* Resuming the EC PD stack failed. Reboot the EC to recover */
