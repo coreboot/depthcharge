@@ -90,25 +90,46 @@ uint64_t get_us_since_boot(void)
 	return timer_us(0) - ts_table->base_time / tick_freq_mhz;
 }
 
+/*
+ * Retrieves the pre-cpu timestamp recorded in the system's timestamp table.
+ *
+ * This function iterates through all entries in the `ts_table` and identifies
+ * the smallest (most negative or earliest) `entry_stamp` value. This value
+ * often serves as a reference point, such as an indicator of a pre-CPU reset
+ * event or the earliest recorded activity in the system's lifetime from a
+ * specific measurement perspective.
+ */
+static int64_t get_pre_cpu_reset_timestamp(void)
+{
+	static int64_t earliest_stamp = INT64_MAX;
+
+	if (earliest_stamp != INT64_MAX)
+		return earliest_stamp;
+
+	earliest_stamp = 0;
+	for (uint32_t i = 0; i < ts_table->num_entries; i++) {
+		if (ts_table->entries[i].entry_stamp < earliest_stamp)
+			earliest_stamp = ts_table->entries[i].entry_stamp;
+	}
+
+	return earliest_stamp;
+}
+
 uint64_t get_us_since_pre_cpu_reset(void)
 {
 	if (!ts_table)
 		return timer_us(0);
 
 	uint64_t tick_freq_mhz = get_tick_freq_mhz();
-	int64_t earliest_stamp = 0;
 	uint64_t current_raw_value;
-	for (uint32_t i = 0; i < ts_table->num_entries; i++) {
-		if (ts_table->entries[i].entry_stamp < earliest_stamp)
-			earliest_stamp = ts_table->entries[i].entry_stamp;
-	}
 
 	if (CONFIG(TIMESTAMP_RAW))
 		current_raw_value = timer_raw_value();
 	else
 		current_raw_value = timer_us(0) * tick_freq_mhz;
 
-	return (current_raw_value - ts_table->base_time - earliest_stamp) / tick_freq_mhz;
+	return (current_raw_value - ts_table->base_time - get_pre_cpu_reset_timestamp()) /
+			 tick_freq_mhz;
 }
 
 int timestamp_tick_freq_mhz(void)
