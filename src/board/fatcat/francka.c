@@ -2,9 +2,12 @@
 
 #include <libpayload.h>
 
+#include "base/fw_config.h"
 #include "board/fatcat/include/variant.h"
+#include "drivers/bus/soundwire/cavs_2_5-sndwregs.h"
 #include "drivers/gpio/pantherlake.h"
 #include "drivers/soc/pantherlake.h"
+#include "drivers/sound/intel_audio_setup.h"
 #include "drivers/storage/storage_common.h"
 #include "drivers/ec/rts5453/rts5453.h"
 
@@ -27,16 +30,32 @@ const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
 
-	config = (struct audio_config){
-		.bus =
-		{
-			.type = AUDIO_HDA,
-		},
-		.codec =
-		{
-			.type = AUDIO_ALC256,
-		},
-	};
+	if (CONFIG(DRIVER_SOUND_HDA) &&
+			fw_config_probe(FW_CONFIG(AUDIO, AUDIO_ALC256M_CG_HDA))) {
+		config = (struct audio_config){
+			.bus =
+			{
+				.type = AUDIO_HDA,
+			},
+			.codec =
+			{
+				.type = AUDIO_ALC256,
+			},
+		};
+	} else if (CONFIG(DRIVER_SOUND_RT721_SNDW) &&
+			fw_config_probe(FW_CONFIG(AUDIO, AUDIO_ALC721_SNDW))) {
+		config = (struct audio_config) {
+			.bus = {
+				.type = AUDIO_SNDW,
+				.sndw.link = AUDIO_SNDW_LINK0,
+			},
+			.codec = {
+				.type = AUDIO_RT721,
+			},
+		};
+	} else {
+		printf("Implement varaint audio config for other FW CONFIG options\n");
+	}
 
 	return &config;
 }
