@@ -18,6 +18,9 @@
 #include <stdint.h>
 
 enum timestamp_id {
+	/* 500+ reserved for vendorcode extensions (500-600: google/chromeos) */
+	TS_FIRMWARE_SPLASH_RENDERED = 557,
+
 	/* 940-950 reserved for vendorcode extensions (940-950: Intel ME) */
 	TS_ME_INFORM_DRAM_START = 940,
 	TS_ME_INFORM_DRAM_END = 941,
