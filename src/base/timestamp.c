@@ -139,3 +139,51 @@ int timestamp_tick_freq_mhz(void)
 
 	return 0;
 }
+
+static int64_t timestamp_entry_stamp(enum timestamp_id id)
+{
+	for (uint32_t i = 0; i < ts_table->num_entries; i++) {
+		if (ts_table->entries[i].entry_id == id)
+			return ts_table->entries[i].entry_stamp;
+	}
+
+	return 0;
+}
+
+static int64_t timestamp_entry_stamp_since_pre_cpu_reset(enum timestamp_id id)
+{
+	return timestamp_entry_stamp(id) - get_pre_cpu_reset_timestamp();
+}
+
+/*
+ * Calculates the time elapsed since boot to reach a specific timestamp ID.
+ *
+ * This function retrieves the raw timestamp count for a given `timestamp_id`
+ * and converts it into microseconds. The elapsed time is calculated by dividing
+ * the raw timestamp count by the system's timestamp tick frequency in MHz.
+ *
+ */
+uint64_t get_us_timestamp_at_index(enum timestamp_id id)
+{
+	if (!ts_table)
+		return 0;
+
+	return timestamp_entry_stamp(id) / timestamp_tick_freq_mhz();
+}
+
+/*
+ * Calculates the time elapsed since boot (including pre-cpu reset) to reach a
+ * specific timestamp ID.
+ *
+ * This function retrieves the raw timestamp count for a given `timestamp_id`
+ * and converts it into microseconds. The elapsed time is calculated by dividing
+ * the raw timestamp count by the system's timestamp tick frequency in MHz.
+ *
+ */
+uint64_t get_us_timestamp_since_pre_reset_at_index(enum timestamp_id id)
+{
+	if (!ts_table)
+		return 0;
+
+	return timestamp_entry_stamp_since_pre_cpu_reset(id) / timestamp_tick_freq_mhz();
+}

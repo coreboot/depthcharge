@@ -65,6 +65,13 @@ void timestamp_add_now(enum timestamp_id id);
 void timestamp_mix_in_randomness(u8 *buffer, size_t size);
 uint64_t get_us_since_boot(void);
 uint64_t get_us_since_pre_cpu_reset(void);
+/* Calculates the time elapsed since boot to reach a specific timestamp ID */
+uint64_t get_us_timestamp_at_index(enum timestamp_id id);
+/*
+ * Calculates the time elapsed since boot (including pre-cpu reset) to reach a
+ * specific timestamp ID.
+ */
+uint64_t get_us_timestamp_since_pre_reset_at_index(enum timestamp_id id);
 /* Returns timestamp tick frequency in MHz. */
 int timestamp_tick_freq_mhz(void);
 
