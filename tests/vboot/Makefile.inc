@@ -59,7 +59,6 @@ ui-test-common-srcs += src/vboot/ui/menu.c
 ui-test-common-srcs += src/vboot/ui/navigation.c
 ui-test-common-srcs += src/vboot/ui/screens.c
 
-ui-test-common-mocks += arch_ndelay
 ui-test-common-mocks += cbmem_console_snapshot
 ui-test-common-mocks += dc_dev_enter_firmware_shell
 ui-test-common-mocks += dc_dev_firmware_shell_enabled
