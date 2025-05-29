@@ -27,34 +27,6 @@
 #include "fastboot/vars.h"
 #include "net/uip.h"
 
-static int parse_hex(const char *str, uint32_t *ret)
-{
-	char c;
-	int valid = 0;
-	uint32_t result = 0;
-
-	while ((c = *str++)) {
-		int units = 0;
-		if (c >= '0' && c <= '9') {
-			units = c - '0';
-		} else if (c >= 'A' && c <= 'F') {
-			units = 10 + (c - 'A');
-		} else if (c >= 'a' && c <= 'f') {
-			units = 10 + (c - 'a');
-		} else {
-			break;
-		}
-
-		result *= 0x10;
-		result += units;
-		valid++;
-	}
-
-	*ret = result;
-
-	return valid;
-}
-
 static void fastboot_cmd_continue(struct FastbootOps *fb, const char *arg)
 {
 	fastboot_okay(fb, "Continuing boot");
@@ -89,9 +61,10 @@ static void fastboot_cmd_upload(struct FastbootOps *fb, const char *arg)
 
 static void fastboot_cmd_download(struct FastbootOps *fb, const char *arg)
 {
-	uint32_t size = 0;
-	int digits = parse_hex(arg, &size);
-	if (arg[digits] != '\0') {
+	char *end;
+	uint32_t size = strtoul(arg, &end, 16);
+
+	if (arg == end || *end != '\0') {
 		fastboot_fail(fb, "Invalid argument");
 		return;
 	}
@@ -430,16 +403,17 @@ static int fastboot_parse_ufs_desc_args(struct FastbootOps *fb,
 					uint32_t *idn,
 					uint32_t *idx)
 {
-	int pos = parse_hex(arg, idn);
-	if (pos == 0 || arg[pos] != ',') {
-		fastboot_fail(fb, "Invalid argument, should be '%x,%x'");
-		return false;
+	char *arg_end;
+
+	*idn = strtoul(arg, &arg_end, 16);
+	if (arg == arg_end || *arg_end != ',') {
+		fastboot_fail(fb, "Invalid argument, should be '%%x,%%x'");
+		return -1;
 	}
-	pos++;
-	int idx_pos = parse_hex(arg+pos, idx);
-	idx_pos += pos;
-	if (idx_pos == pos || arg[idx_pos] != 0) {
-		fastboot_fail(fb, "Invalid argument, should be '%x,%x'");
+	arg = arg_end + 1;
+	*idx = strtoul(arg, &arg_end, 16);
+	if (arg == arg_end || *arg_end != '\0') {
+		fastboot_fail(fb, "Invalid argument, should be '%%x,%%x'");
 		return -1;
 	}
 
