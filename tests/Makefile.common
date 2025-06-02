@@ -97,7 +97,7 @@ TEST_CFLAGS += -include $(corebootsrc)/src/commonlib/bsd/include/commonlib/bsd/c
 # -Wmissing-prototypes just make working with the test framework cumbersome.
 # Only put conservative warnings here that really detect code that's obviously
 # unintentional.
-TEST_CFLAGS += -Wall -Werror -Wundef -Wstrict-prototypes
+TEST_CFLAGS += -Wall -Werror -Wundef -Wstrict-prototypes -Wno-format-zero-length
 
 TEST_CFLAGS += -std=gnu11
 TEST_CFLAGS += -ffunction-sections -fdata-sections -fno-builtin

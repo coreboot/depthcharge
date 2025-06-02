@@ -24,7 +24,8 @@ endif
 
 alltests :=
 subdirs := tests/arch tests/base tests/board tests/boot tests/debug \
-	tests/diag tests/drivers tests/image tests/net tests/netboot tests/vboot
+	tests/diag tests/drivers tests/fastboot tests/image tests/net \
+	tests/netboot tests/vboot
 
 define tests-handler
 alltests += $(1)$(2)
