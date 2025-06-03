@@ -79,7 +79,7 @@ static void ec_setup(void)
 __weak const struct tpm_config *variant_get_tpm_config(void)
 {
 	static const struct tpm_config config = {
-		.pci_dev = PCI_DEV_I2C3,
+		.pci_dev = PCI_DEV_I2C1,
 	};
 
 	return &config;
@@ -87,7 +87,7 @@ __weak const struct tpm_config *variant_get_tpm_config(void)
 
 __weak int gsc_irq_status(void)
 {
-	return pantherlake_get_gpe(GPE0_DW1_15); /* GPP_D15 */
+	return pantherlake_get_gpe(GPE0_DW0_17); /* GPP_B17 */
 }
 
 static void tpm_setup(void)
