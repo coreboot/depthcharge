@@ -20,6 +20,7 @@
 
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/ec/cros/lpc_mec.h"
+#include "drivers/ec/cros/lpc_rtk.h"
 
 static int wait_for_sync(CrosEcBusOps *me, uint64_t timeout_us)
 {
@@ -29,6 +30,22 @@ static int wait_for_sync(CrosEcBusOps *me, uint64_t timeout_us)
 	while (timer_us(start) < timeout_us) {
 		me->read(&data, EC_LPC_ADDR_HOST_CMD, 1);
 		if (!(data & EC_LPC_STATUS_BUSY_MASK))
+			return 0;
+	}
+	return -1;
+}
+
+static int wait_for_data_ready(CrosEcBusOps *me, uint64_t timeout_us)
+{
+	uint64_t start = timer_us(0);
+	uint8_t data;
+
+	if (!CONFIG(CROS_EC_ENABLE_RTK))
+		return 0;
+
+	while (timer_us(start) < timeout_us) {
+		me->read(&data, EC_LPC_ADDR_HOST_CMD, 1);
+		if (data & EC_LPC_CMDR_DATA)
 			return 0;
 	}
 	return -1;
@@ -124,6 +141,28 @@ static void mec_read(uint8_t *data, uint16_t port, int size)
 		lpc_read(data, port, size);
 }
 
+static void rtk_write(const uint8_t *data, uint16_t port, int size)
+{
+	uint8_t *ptr = (uint8_t *)(RTK_SHARED_MEM_BASE + (port - RTK_EMI_RANGE_START));
+	if (port >= RTK_EMI_RANGE_START && port <= RTK_EMI_RANGE_END) {
+		for (int i = 0; i < size; ++i)
+			ptr[i] = data[i];
+	} else {
+		lpc_write(data, port, size);
+	}
+}
+
+static void rtk_read(uint8_t *data, uint16_t port, int size)
+{
+	uint8_t *ptr = (uint8_t *)(RTK_SHARED_MEM_BASE + (port - RTK_EMI_RANGE_START));
+	if (port >= RTK_EMI_RANGE_START && port <= RTK_EMI_RANGE_END) {
+		for (int i = 0; i < size; ++i)
+			data[i] = ptr[i];
+	} else {
+		lpc_read(data, port, size);
+	}
+}
+
 static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 		       void *din, uint32_t din_len)
 {
@@ -164,6 +203,13 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 	if (wait_for_sync(me, timeout)) {
 		if (rq->command != EC_CMD_HELLO)
 			printf("%s: Timeout waiting ready (%lld ms)\n",
+				__func__, timeout / 1000);
+		return -EC_RES_TIMEOUT;
+	}
+
+	if (CONFIG(CROS_EC_ENABLE_RTK) && wait_for_data_ready(me, timeout)) {
+		if (rq->command != EC_CMD_HELLO)
+			printf("%s: Timeout waiting data ready (%lld ms)\n",
 				__func__, timeout / 1000);
 		return -EC_RES_TIMEOUT;
 	}
@@ -226,6 +272,10 @@ CrosEcLpcBus *new_cros_ec_lpc_bus(CrosEcLpcBusVariant variant)
 	case CROS_EC_LPC_BUS_MEC:
 		bus->ops.read = mec_read;
 		bus->ops.write = mec_write;
+		break;
+	case CROS_EC_LPC_BUS_RTK:
+		bus->ops.read = rtk_read;
+		bus->ops.write = rtk_write;
 		break;
 	default:
 		printf("%s: Unknown LPC variant %d\n", __func__, variant);
