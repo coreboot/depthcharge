@@ -794,8 +794,8 @@ Rts545x *new_rts5453(CrosECTunnelI2c *bus, int ec_pd_id,
 	return me;
 }
 
-static const VbootAuxfwOps *new_rts545x_from_chip_info(struct ec_response_pd_chip_info_v2 *r,
-						       uint8_t ec_pd_id)
+const VbootAuxfwOps *new_rts545x_from_chip_info(struct ec_response_pd_chip_info_v2 *r,
+						uint8_t ec_pd_id)
 {
 	Rts545x *rts545x;
 

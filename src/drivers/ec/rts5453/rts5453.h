@@ -6,6 +6,9 @@
 
 #include "drivers/ec/cros/ec.h"
 
+const VbootAuxfwOps *new_rts545x_from_chip_info(struct ec_response_pd_chip_info_v2 *r,
+						uint8_t ec_pd_id);
+
 /**
  * @brief Board-provided function used by RTS5453 driver to obtain the FW
  *        binary and hash file to flash to the PDC. Board logic is used to
