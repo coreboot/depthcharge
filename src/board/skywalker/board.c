@@ -136,6 +136,22 @@ static void sound_setup(void)
 		printf("no amps found\n");
 }
 
+static void rts545x_register(void)
+{
+	/*
+	 * Skywalker's PDC FW 1.61.1 contains the wrong PID 0x5065.
+	 * To allow updating from 1.61.1 to newer versions,
+	 * register a fake chip with the wrong PID.
+	 */
+	const uint32_t old_pid = 0x5065;
+	static CrosEcAuxfwChipInfo rts5453_info = {
+		.vid = CONFIG_DRIVER_EC_RTS545X_VID,
+		.pid = old_pid,
+		.new_chip_aux_fw_ops = new_rts545x_from_chip_info,
+	};
+	list_insert_after(&rts5453_info.list_node, &ec_aux_fw_chip_list);
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
@@ -193,6 +209,9 @@ static int board_setup(void)
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11260000);
 	set_usb_init_callback(usb_host, enable_usb_vbus);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	if (CONFIG(DRIVER_EC_RTS5453))
+		rts545x_register();
 
 	return 0;
 }
