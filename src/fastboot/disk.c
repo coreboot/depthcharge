@@ -16,8 +16,11 @@
  */
 
 #include <commonlib/list.h>
+#include <libpayload.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
+#include <vb2_gpt.h>
 
 #include "base/gpt.h"
 #include "ctype.h"
@@ -25,10 +28,6 @@
 #include "fastboot/disk.h"
 #include "fastboot/fastboot.h"
 #include "fastboot/sparse.h"
-#include "gpt.h"
-#include "gpt_misc.h"
-#include <libpayload.h>
-#include <string.h>
 
 bool fastboot_disk_init(struct fastboot_disk *disk)
 {

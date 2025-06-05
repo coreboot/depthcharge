@@ -5,9 +5,8 @@
 
 #include <assert.h>
 #include <commonlib/list.h>
-#include <gpt.h>
-#include <gpt_misc.h>
 #include <vb2_api.h>
+#include <vb2_gpt.h>
 #include <vboot_api.h>
 
 #include "debug/firmware_shell/common.h"

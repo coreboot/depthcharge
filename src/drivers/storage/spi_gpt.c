@@ -19,10 +19,7 @@
 #include <libpayload.h>
 #include <stdio.h>
 #include <string.h>
-
-/* Headers from vboot for GPT manipulation */
-#include <gpt.h>
-#include <gpt_misc.h>
+#include <vb2_gpt.h>
 
 #include "base/device_tree.h"
 #include "drivers/flash/flash.h"
