@@ -327,7 +327,7 @@ sub check_config_macro {
             my $file   = $1;
             my $lineno = $2;
             $line = $3;
-            if ( $file =~ /.*\.(c|h|asl|ld)/ ) {
+            if ( $file =~ /.*\.(c|h|asl|ld)$/ ) {
                 while ( $line =~ /(.*)\bCONFIG_(\w+)(.*)/ && $1 !~ /\/\/|\/\*/ ) {
                     my $symbol = $2;
                     $line = $1 . $3;
