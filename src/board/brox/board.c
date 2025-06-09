@@ -64,6 +64,11 @@ __weak int gsc_irq_status(void)
 	return alderlake_get_gpe(GPE0_DW2_02); /* GPP_E2 */
 }
 
+__weak const CrosEcLpcBusVariant variant_get_ec_lpc_bus(void)
+{
+	return CROS_EC_LPC_BUS_GENERIC;
+}
+
 static GpioOps *mkbp_int_ops(void)
 {
 	GpioCfg *mkbp_int_gpio = new_platform_gpio_input(variant_get_ec_int());
@@ -73,8 +78,8 @@ static GpioOps *mkbp_int_ops(void)
 
 static void ec_setup(void)
 {
-	CrosEcLpcBus *cros_ec_lpc_bus =
-		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
+	const CrosEcLpcBusVariant variant = variant_get_ec_lpc_bus();
+	CrosEcLpcBus *cros_ec_lpc_bus = new_cros_ec_lpc_bus(variant);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, mkbp_int_ops());
 	register_vboot_ec(&cros_ec->vboot);
 }
