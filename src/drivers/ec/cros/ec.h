@@ -303,6 +303,15 @@ int cros_ec_set_motion_sense_activity(uint32_t activity, uint32_t value);
 int cros_ec_battery_cutoff(uint8_t flags);
 
 /**
+ * set sustain battery on ChromeOS EC device.
+ *
+ * @param lower		Lower thresholds for battery sustainer.
+ * @param upper		Upper thresholds for battery sustainer.
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_battery_sustain(unsigned char lower, unsigned char upper);
+
+/**
  * Read the value of present battery voltage.
  *
  * @param volt		Buffer to read present battery voltage.

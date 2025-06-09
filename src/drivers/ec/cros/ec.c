@@ -562,6 +562,32 @@ int cros_ec_battery_cutoff(uint8_t flags)
 	return 0;
 }
 
+int cros_ec_battery_sustain(unsigned char lower, unsigned char upper)
+{
+	struct ec_params_charge_control p;
+	int version;
+
+	p.cmd = EC_CHARGE_CONTROL_CMD_SET;
+	p.mode = CHARGE_CONTROL_NORMAL;
+	p.sustain_soc.lower = lower;
+	p.sustain_soc.upper = upper;
+
+	if (cros_ec_cmd_version_supported(EC_CMD_CHARGE_CONTROL, 3))
+		version = 3;
+	else
+		version = 2;
+
+	int rv = ec_command(cros_ec_get(), EC_CMD_CHARGE_CONTROL, version,
+			&p, sizeof(p), NULL, 0);
+
+	if (rv < 0)
+		printf("error, set battery sustainer fail!\n");
+
+	printf("sustain battery at %d~%d\n", lower, upper);
+
+	return rv;
+}
+
 int cros_ec_set_motion_sense_activity(uint32_t activity, uint32_t value)
 {
 	struct ec_params_motion_sense params;

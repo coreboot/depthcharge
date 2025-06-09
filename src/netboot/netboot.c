@@ -23,6 +23,7 @@
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
 #include "base/timestamp.h"
+#include "drivers/ec/cros/ec.h"
 #include "drivers/input/input.h"
 #include "drivers/net/net.h"
 #include "drivers/power/power.h"
@@ -211,6 +212,10 @@ int netboot_entry(void)
 	if (netboot_params_read(&tftp_ip, cmd_line, sizeof(cmd_line),
 				&bootfile, &argsfile))
 		printf("ERROR: Failed to read netboot parameters from flash\n");
+
+	// sustain battery at 40%~50% during netboot download
+	if (CONFIG(DRIVER_EC_CROS))
+		cros_ec_battery_sustain(40, 50);
 
 	netboot(tftp_ip, bootfile, argsfile, cmd_line, NULL);
 
