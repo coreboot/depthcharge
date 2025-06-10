@@ -30,6 +30,7 @@
 typedef struct StreamOps {
 	uint64_t (*read)(struct StreamOps *me, uint64_t count,
 			 void *buffer);
+	uint64_t (*skip)(struct StreamOps *me, uint64_t count);
 	void (*close)(struct StreamOps *me);
 } StreamOps;
 

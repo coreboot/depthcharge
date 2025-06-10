@@ -34,41 +34,88 @@ typedef struct {
 	BlockDev *blockdev;
 	lba_t current_sector;
 	lba_t end_sector;
+	void *block_buf;
+	size_t buf_used;
 } SimpleStream;
 
+/*
+ * Read bytes from a stream. Returns number of bytes successfully written to
+ * the buffer. If buffer is NULL, then skip 'count' number of bytes from the stream.
+ */
 uint64_t simple_stream_read(StreamOps *me, uint64_t count, void *buffer)
 {
 	SimpleStream *stream = container_of(me, SimpleStream, stream);
 	unsigned block_size = stream->blockdev->block_size;
+	uint64_t bytes_read = 0;
 
-	/* TODO(dehrenberg): implement buffering so that unaligned reads are
-	 * possible because alignment constraints are obscure */
-	if (count & (block_size - 1)) {
-		printf("read_stream_simple(%lld) not LBA multiple\n", count);
-		return 0;
+	/* Handle bytes that are left from previous partial block read */
+	if (stream->buf_used < block_size) {
+		bytes_read = MIN(count, block_size - stream->buf_used);
+		if (buffer) {
+			memcpy(buffer, stream->block_buf + stream->buf_used, bytes_read);
+			buffer += bytes_read;
+		}
+		stream->buf_used += bytes_read;
+		count -= bytes_read;
+		if (stream->buf_used == block_size)
+			stream->current_sector++;
 	}
 
+	if (count == 0)
+		return bytes_read;
+
+	/* Handle sectors that are block aligned */
 	uint64_t sectors = count / block_size;
 	if (sectors > stream->end_sector - stream->current_sector) {
 		printf("read_stream_simple past the end, "
 		       "end_sector=%lld, current_sector=%lld, sectors=%lld\n",
 		       stream->end_sector, stream->current_sector, sectors);
-		return 0;
+		return bytes_read;
 	}
 
-	int ret = stream->blockdev->ops.read(&stream->blockdev->ops,
-					     stream->current_sector, sectors,
-					     buffer);
-	if (ret != sectors)
-		return ret;
-
+	if (buffer && sectors > 0) {
+		if (stream->blockdev->ops.read(&stream->blockdev->ops,
+					       stream->current_sector, sectors,
+					       buffer) != sectors)
+			return bytes_read;
+		buffer += sectors * block_size;
+	}
+	bytes_read += sectors * block_size;
+	count -= sectors * block_size;
 	stream->current_sector += sectors;
-	return count;
+
+	/* Handle partial block read */
+	if (count) {
+		if (stream->current_sector == stream->end_sector) {
+			printf("read_stream_simple past the end, "
+			       "end_sector=%lld, current_sector=%lld\n",
+			       stream->end_sector, stream->current_sector);
+			return bytes_read;
+		}
+		if (stream->blockdev->ops.read(&stream->blockdev->ops,
+					       stream->current_sector, 1,
+					       stream->block_buf) != 1)
+			return bytes_read;
+		if (buffer)
+			memcpy(buffer, stream->block_buf, count);
+		bytes_read += count;
+		stream->buf_used = count;
+	}
+
+	return bytes_read;
+}
+
+uint64_t simple_stream_skip(StreamOps *me, uint64_t count)
+{
+	/* Calling read with NULL buffer will skip bytes from stream */
+	return simple_stream_read(me, count, NULL);
 }
 
 static void simple_stream_close(StreamOps *me)
 {
 	SimpleStream *stream = container_of(me, SimpleStream, stream);
+
+	free(stream->block_buf);
 	free(stream);
 }
 
@@ -81,6 +128,10 @@ StreamOps *new_simple_stream(BlockDevOps *me, lba_t start, lba_t count)
 	stream->end_sector = start + count;
 	stream->stream.read = simple_stream_read;
 	stream->stream.close = simple_stream_close;
+	stream->stream.skip = simple_stream_skip;
+	/* Mark that there is no data in the block_buf to read right away */
+	stream->buf_used = blockdev->block_size;
+	stream->block_buf = xmalloc(blockdev->block_size);
 	/* Check that block size is a power of 2 */
 	assert((blockdev->block_size & (blockdev->block_size - 1)) == 0);
 	return &stream->stream;

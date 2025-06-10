@@ -58,6 +58,23 @@ vb2_error_t VbExStreamOpen(vb2ex_disk_handle_t handle, uint64_t lba_start,
 	return VB2_SUCCESS;
 }
 
+vb2_error_t VbExStreamSkip(VbExStream_t stream, uint32_t bytes)
+{
+	StreamOps *dev = (StreamOps *)stream;
+
+	if (!dev->skip) {
+		printf("Stream skip function not implemented.\n");
+		return VB2_ERROR_UNKNOWN;
+	}
+
+	if (dev->skip(dev, bytes) != bytes) {
+		printf("Stream skip failed.\n");
+		return VB2_ERROR_UNKNOWN;
+	}
+
+	return VB2_SUCCESS;
+}
+
 vb2_error_t VbExStreamRead(VbExStream_t stream, uint32_t bytes, void *buffer)
 {
 	StreamOps *dev = (StreamOps *)stream;
