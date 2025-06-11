@@ -52,6 +52,11 @@ __weak const int variant_get_ec_int(void)
 	return EC_SOC_INT_ODL;
 }
 
+__weak const CrosEcLpcBusVariant variant_get_ec_lpc_bus(void)
+{
+	return CROS_EC_LPC_BUS_GENERIC;
+}
+
 static GpioOps *mkbp_int_ops(void)
 {
 	GpioCfg *mkbp_int_gpio = new_platform_gpio_input(variant_get_ec_int());
@@ -66,7 +71,7 @@ static void ec_setup(void)
 		return;
 
 	CrosEcLpcBus *cros_ec_lpc_bus;
-	CrosEcLpcBusVariant variant = CROS_EC_LPC_BUS_GENERIC;
+	CrosEcLpcBusVariant variant = variant_get_ec_lpc_bus();
 
 	if (CONFIG(CROS_EC_ENABLE_MEC))
 		variant = CROS_EC_LPC_BUS_MEC;
