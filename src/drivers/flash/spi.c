@@ -17,6 +17,7 @@
  */
 
 #include <assert.h>
+#include <coreboot_tables.h>
 #include <endian.h>
 #include <libpayload.h>
 
@@ -32,6 +33,34 @@ typedef enum {
 	ReadId = 0x9f
 } SpiFlashCommands;
 
+/*
+ * Checks if the SPI flash is currently operating in 4-byte addressing mode.
+ * This is determined by inspecting the flags passed from the coreboot table
+ * via `lib_sysinfo.spi_flash.flags`.
+ *
+ * Returns:
+ * true (1) if in 4-byte address mode, false (0) otherwise.
+ */
+static bool spi_flash_is_4byte_address_mode(void)
+{
+	return lib_sysinfo.spi_flash.flags & CB_SPI_FLASH_FLAG_IN_4BYTE_ADDR_MODE;
+}
+
+static int spi_flash_addr(uint32_t addr, uint8_t *cmd)
+{
+	/* cmd[0] is actual command */
+	int len = 1;
+
+	if (spi_flash_is_4byte_address_mode())
+		cmd[len++] = (addr >> 24) & 0xFF;
+
+	cmd[len++] = (addr >> 16) & 0xFF;
+	cmd[len++] = (addr >> 8) & 0xFF;
+	cmd[len++] = (addr >> 0) & 0xFF;
+
+	return len;
+}
+
 static int spi_flash_read(FlashOps *me, void *buffer, uint32_t offset,
 			  uint32_t size)
 {
@@ -44,9 +73,11 @@ static int spi_flash_read(FlashOps *me, void *buffer, uint32_t offset,
 		return -1;
 	}
 
-	uint32_t command = htobe32((ReadCommand << 24) | offset);
+	uint8_t command[5];
+	command[0] = ReadCommand;
+	size_t cmd_size = spi_flash_addr(offset, command);
 
-	if (flash->spi->transfer(flash->spi, NULL, &command, sizeof(command))) {
+	if (flash->spi->transfer(flash->spi, NULL, command, cmd_size)) {
 		printf("%s: Failed to send read command.\n", __func__);
 		flash->spi->stop(flash->spi);
 		return -1;
@@ -182,10 +213,7 @@ static int spi_flash_modify(SpiFlash *flash, const void *buffer,
 			    uint32_t offset, uint32_t size, uint8_t opcode,
 			    const char *opname)
 {
-	union {
-		uint8_t bytes[4]; // We're using 3 byte addresses.
-		uint32_t whole;
-	} command;
+	uint8_t command[5];
 
 	int stop_needed = 0;
 	uint32_t rv = -1;
@@ -199,7 +227,7 @@ static int spi_flash_modify(SpiFlash *flash, const void *buffer,
 			break;
 		}
 
-		command.bytes[0] = WriteEnableCommand;
+		command[0] = WriteEnableCommand;
 		if (flash->spi->transfer(flash->spi, NULL, &command, 1)) {
 			printf("%s: Failed to send write enable command.\n",
 			       __func__);
@@ -215,8 +243,9 @@ static int spi_flash_modify(SpiFlash *flash, const void *buffer,
 			break;
 
 		stop_needed = 1;
-		command.whole = htobe32((opcode << 24) | offset);
-		if (flash->spi->transfer(flash->spi, NULL, &command, 4)) {
+		command[0] = opcode;
+		size_t cmd_size = spi_flash_addr(offset, command);
+		if (flash->spi->transfer(flash->spi, NULL, command, cmd_size)) {
 			printf("%s: Failed to send %s command.\n",
 			       __func__, opname);
 			break;
