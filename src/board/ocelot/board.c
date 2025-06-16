@@ -32,7 +32,7 @@
 #if CONFIG(CROS_EC_ENABLE_MEC)
 #define EC_SOC_INT_ODL	0 /* Not Connected */
 #else
-#define EC_SOC_INT_ODL	GPP_E07
+#define EC_SOC_INT_ODL	GPP_E08
 #endif
 
 #define I2C_FS_HZ	400000 /* 400KHz */
