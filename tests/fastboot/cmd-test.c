@@ -207,6 +207,23 @@ void fastboot_write(struct FastbootOps *fb, const char *partition_name,
 	expect_value(fastboot_write, data_len, length); \
 } while (0)
 
+void fastboot_write_raw(struct FastbootOps *fb, const uint64_t start_block, void *data,
+			size_t data_len)
+{
+	check_expected_ptr(fb);
+	check_expected(start_block);
+	check_expected_ptr(data);
+	check_expected(data_len);
+}
+
+/* Setup for fastboot_write mock */
+#define WILL_WRITE_RAW(fb_ptr, start, length) do { \
+	expect_value(fastboot_write_raw, fb, fb_ptr); \
+	expect_value(fastboot_write_raw, start_block, start); \
+	expect_value(fastboot_write_raw, data, &_kernel_start); \
+	expect_value(fastboot_write_raw, data_len, length); \
+} while (0)
+
 void fastboot_erase(struct FastbootOps *fb, const char *partition_name)
 {
 	check_expected_ptr(fb);
@@ -564,6 +581,71 @@ static void test_fb_cmd_flash(void **state)
 	WILL_WRITE(fb, "partitionname", 0, 123);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_flash_raw_sector(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "flash:raw-sector:10";
+
+	fb->has_staged_data = true;
+	fb->memory_buffer_len = 123;
+	test_disk.block_count = 200;
+
+	WILL_WRITE_RAW(fb, 10, 123);
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_flash_raw_sector_0(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "flash:raw-sector:0";
+
+	fb->has_staged_data = true;
+	fb->memory_buffer_len = 123;
+	test_disk.block_count = 200;
+
+	WILL_WRITE_RAW(fb, 0, 123);
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_flash_raw_sector_bad_arg(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "flash:raw-sector:-10";
+
+	fb->has_staged_data = true;
+	fb->memory_buffer_len = 123;
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd1[] = "flash:raw-sector:";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd1, sizeof(cmd1) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd2[] = "flash:raw-sector:30abc";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd2, sizeof(cmd2) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd3[] = "flash:raw-sector:abc";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd3, sizeof(cmd3) - 1);
 	assert_int_equal(fb->state, COMMAND);
 }
 
@@ -1799,6 +1881,9 @@ int main(void)
 		TEST(test_fb_cmd_erase),
 		TEST(test_fb_cmd_flash_no_download),
 		TEST(test_fb_cmd_flash),
+		TEST(test_fb_cmd_flash_raw_sector),
+		TEST(test_fb_cmd_flash_raw_sector_0),
+		TEST(test_fb_cmd_flash_raw_sector_bad_arg),
 		TEST(test_fb_cmd_getvar),
 		TEST(test_fb_cmd_set_active_no_slot),
 		TEST(test_fb_cmd_set_active),

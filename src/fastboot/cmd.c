@@ -79,6 +79,9 @@ static void fastboot_cmd_download(struct FastbootOps *fb, char *arg)
 	fastboot_data(fb, size);
 }
 
+#define FASTBOOT_RAW_WRITE_ARG "raw-sector:"
+#define FASTBOOT_RAW_WRITE_ARG_LEN (sizeof(FASTBOOT_RAW_WRITE_ARG) - 1)
+
 static void fastboot_cmd_flash(struct FastbootOps *fb, char *arg)
 {
 	if (!fb->has_staged_data) {
@@ -88,7 +91,23 @@ static void fastboot_cmd_flash(struct FastbootOps *fb, char *arg)
 
 	uint64_t data_len;
 	void *data = fastboot_get_memory_buffer(fb, &data_len);
-	fastboot_write(fb, arg, 0, data, (uint32_t)data_len);
+
+	if (!strncmp(arg, FASTBOOT_RAW_WRITE_ARG, FASTBOOT_RAW_WRITE_ARG_LEN)) {
+		const char *start_block_str = arg + FASTBOOT_RAW_WRITE_ARG_LEN;
+		char *start_block_end = NULL;
+		long long int start_block = strtoll(start_block_str, &start_block_end, 0);
+
+		if (start_block < 0 || start_block_str == start_block_end ||
+		    *start_block_end != '\0') {
+			fastboot_fail(fb, "Invalid start block for raw-sector (\"%s\")",
+				      start_block_str);
+			return;
+		}
+		fastboot_write_raw(fb, start_block, data, data_len);
+		return;
+	}
+
+	fastboot_write(fb, arg, 0, data, data_len);
 }
 
 static void fastboot_cmd_erase(struct FastbootOps *fb, char *arg)
