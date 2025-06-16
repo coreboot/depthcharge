@@ -131,6 +131,11 @@ config DRIVER_GPIO_PANTHERLAKE
 	bool "Intel Pantherlake GPIO driver"
 	default n
 
+config DRIVER_GPIO_WILDCATLAKE
+	bool "Intel Wildcatlake GPIO driver"
+	default n
+	select DRIVER_GPIO_PANTHERLAKE
+
 config DRIVER_GPIO_PANTHERPOINT
 	bool "Intel Pantherpoint PCH GPIO driver"
 	default n
