@@ -15,6 +15,7 @@
  * GNU General Public License for more details.
  */
 
+#include "drivers/storage/ufs.h"
 #include "net/uip.h"
 #include "fastboot/cmd.h"
 #include "fastboot/disk.h"
@@ -178,6 +179,68 @@ static void fastboot_cmd_oem_get_kernels(struct FastbootOps *fb, const char *arg
 	fastboot_succeed(fb);
 }
 
+static int fastboot_parse_ufs_desc_args(struct FastbootOps *fb,
+					const char *arg,
+					uint32_t *idn,
+					uint32_t *idx)
+{
+	int pos = parse_hex(arg, idn);
+	if (pos == 0 || arg[pos] != ',') {
+		fastboot_fail(fb, "Invalid argument, should be '%x,%x'");
+		return false;
+	}
+	pos++;
+	int idx_pos = parse_hex(arg+pos, idx);
+	idx_pos += pos;
+	if (idx_pos == pos || arg[idx_pos] != 0) {
+		fastboot_fail(fb, "Invalid argument, should be '%x,%x'");
+		return -1;
+	}
+
+	if (*idn > 255 || *idx > 255) {
+		fastboot_fail(fb, "IDN and IDX must be in [0, 0x100] range");
+		return -1;
+	}
+
+	return 0;
+}
+
+static void fastboot_cmd_oem_read_ufs_descriptor(struct FastbootOps *fb,
+						 const char *arg)
+{
+	if (!CONFIG(DRIVER_STORAGE_UFS)) {
+		fastboot_fail(fb, "UFS is not supported by the board");
+		return;
+	}
+
+	UfsCtlr *ctlr = ufs_get_ctlr();
+
+	if (!ctlr) {
+		fastboot_fail(fb, "Could not find UFS controller");
+		return;
+	}
+
+	uint32_t idn, idx;
+	if (fastboot_parse_ufs_desc_args(fb, arg, &idn, &idx)) {
+		// Parsing function replies fastboot fail on error.
+		return;
+	}
+
+	void *buf = fastboot_get_memory_buffer(fb, NULL);
+	uint8_t data_len;
+
+	int ret = ufs_read_descriptor(ctlr, (uint8_t)idn, (uint8_t)idx, buf,
+				      FASTBOOT_MAX_DOWNLOAD_SIZE, &data_len);
+	if (ret) {
+		fastboot_fail(fb, "Failed to read UFS descriptor");
+		return;
+	}
+
+	fb->memory_buffer_len = data_len;
+	fb->has_staged_data = true;
+	fastboot_succeed(fb);
+}
+
 static void fastboot_cmd_reboot(struct FastbootOps *fb, const char *arg)
 {
 	fastboot_succeed(fb);
@@ -221,6 +284,7 @@ struct fastboot_cmd fastboot_cmds[] = {
 	CMD_ARGS("flash", ':', fastboot_cmd_flash),
 	CMD_ARGS("getvar", ':', fastboot_cmd_getvar),
 	CMD_NO_ARGS("oem get-kernels", fastboot_cmd_oem_get_kernels),
+	CMD_ARGS("oem read-ufs-descriptor", ':', fastboot_cmd_oem_read_ufs_descriptor),
 	CMD_NO_ARGS("reboot", fastboot_cmd_reboot),
 	CMD_ARGS("set_active", ':', fastboot_cmd_set_active),
 	{

@@ -835,6 +835,9 @@ static inline UfsDescUnit *ufs_ud(UfsDevice *ufs_dev)
 	return (UfsDescUnit *)ufs_dev->unit_desc.raw;
 }
 
+int ufs_read_descriptor(UfsCtlr *ufs, uint8_t idn, uint8_t idx,
+			uint8_t *buf, uint64_t len, uint8_t *resp_len);
+UfsCtlr *ufs_get_ctlr(void);
 int ufs_update(BlockDevCtrlrOps *bdev_ops);
 
 #endif //__DRIVERS_STORAGE_UFS_H__

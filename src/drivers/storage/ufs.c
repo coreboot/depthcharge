@@ -822,13 +822,16 @@ static int ufs_set_refclkfreq(UfsCtlr *ufs)
 }
 
 // Read a UFS descriptor
-static int ufs_read_descriptor(UfsCtlr *ufs, uint8_t idn, uint8_t idx,
-			       uint8_t *buf, uint8_t len, uint8_t *resp_len)
+int ufs_read_descriptor(UfsCtlr *ufs, uint8_t idn, uint8_t idx,
+			uint8_t *buf, uint64_t len, uint8_t *resp_len)
 {
+	uint8_t rl = UFS_DESCRIPTOR_MAX_SIZE;
+	if (len < UFS_DESCRIPTOR_MAX_SIZE)
+		rl = (uint8_t)(len & 0xFF);
 	UfsQryReq req = {
 		.idn = idn,
 		.idx = idx,
-		.resp_data_len = len,
+		.resp_data_len = rl,
 		.resp_data_buf = buf,
 	};
 	int rc;
@@ -1225,6 +1228,24 @@ static int ufs_add_device(UfsCtlr *ufs, uint32_t lun)
 	ufs->ufs_dev[lun] = ufs_dev;
 
 	return 0;
+}
+
+UfsCtlr *ufs_get_ctlr(void)
+{
+	struct list_node *ctrlrs = &fixed_block_dev_controllers;
+	BlockDevCtrlr *ctrlr;
+
+	list_for_each(ctrlr, *ctrlrs, list_node) {
+		if (ctrlr->type != BLOCK_CTRL_UFS)
+			continue;
+		if (ctrlr->ops.update && ctrlr->need_update &&
+		    ctrlr->ops.update(&ctrlr->ops)) {
+			printf("Updating storage controller failed.\n");
+			return NULL;
+		}
+		return container_of(ctrlr, UfsCtlr, bctlr);
+	}
+	return NULL;
 }
 
 int ufs_update(BlockDevCtrlrOps *bdev_ops)
