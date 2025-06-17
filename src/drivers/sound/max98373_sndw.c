@@ -82,32 +82,36 @@ static int sndwbeep(SndwOps *sndw, void *sndwlinkaddr, uint32_t sndwendpointdev,
 	/* Send init commands to perform the software reset and configure the mode. */
 	for (i = 0; i < ARRAY_SIZE(max98373_beep_init_cmds); i++) {
 		if (sndw->sndw_sendwack(sndwlinkaddr, max98373_beep_init_cmds[i],
-									sndwendpointdev)) {
+					sndwendpointdev, NULL)) {
 			printf("Failed to send the beep init command. \n");
 			return -1;
 		}
 	}
 
 	/* Send the cmd to set the tone generator configuration */
-	if (sndw->sndw_sendwack(sndwlinkaddr, max98373_beep_freqcontrol_cmd, sndwendpointdev)) {
+	if (sndw->sndw_sendwack(sndwlinkaddr, max98373_beep_freqcontrol_cmd,
+				sndwendpointdev, NULL)) {
 		printf("Failed to send the beep frequency control command. \n");
 		return -1;
 	}
 
 	/* Send the cmd to set the speaker volume control */
-	if (sndw->sndw_sendwack(sndwlinkaddr, max98373_beep_ampcontrol_cmd, sndwendpointdev)) {
+	if (sndw->sndw_sendwack(sndwlinkaddr, max98373_beep_ampcontrol_cmd,
+				sndwendpointdev, NULL)) {
 		printf("Failed to send the beep amplitude control command. \n");
 		return -1;
 	}
 
 	/* Send the cmd to enable the speaker Path */
-	if (sndw->sndw_sendwack(sndwlinkaddr, max98373_beep_speakeren_cmd, sndwendpointdev)) {
+	if (sndw->sndw_sendwack(sndwlinkaddr, max98373_beep_speakeren_cmd,
+				sndwendpointdev, NULL)) {
 		printf("Failed to send the speaker enable command. \n");
 		return -1;
 	}
 
 	/* Send the cmd for global enable to turn on the beep */
-	if (sndw->sndw_sendwack(sndwlinkaddr, max98373_beepon_cmd, sndwendpointdev)) {
+	if (sndw->sndw_sendwack(sndwlinkaddr, max98373_beepon_cmd,
+				sndwendpointdev, NULL)) {
 		printf("Failed to send the beep ON command. \n");
 		return -1;
 	}
@@ -116,7 +120,8 @@ static int sndwbeep(SndwOps *sndw, void *sndwlinkaddr, uint32_t sndwendpointdev,
 	mdelay(beepduration);
 
 	/* Send the cmd for global enable to turn off the beep */
-	if (sndw->sndw_sendwack(sndwlinkaddr, max98373_beepoff_cmd, sndwendpointdev)) {
+	if (sndw->sndw_sendwack(sndwlinkaddr, max98373_beepoff_cmd,
+				sndwendpointdev, NULL)) {
 		printf("Failed to send the beep OFF command. \n");
 		return -1;
 	}

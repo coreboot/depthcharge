@@ -22,7 +22,7 @@
 typedef struct SndwOps {
 	int (*sndw_enable)(struct SndwOps *me, sndw_codec_info *codecinfo);
 	int (*sndw_sendwack)(void *sndwlinkaddr, sndw_cmd txcmd,
-			     uint32_t deviceindex);
+			     uint32_t deviceindex, uint8_t *val);
 	int (*sndw_disable)(struct SndwOps *me);
 } SndwOps;
 

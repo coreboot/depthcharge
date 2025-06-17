@@ -58,24 +58,28 @@ static int sndw_beep(SndwOps *sndw, void *sndwlinkaddr, uint32_t sndwendpointdev
 	printf("%s start\n", __func__);
 
 	/* Send the cmd to write to scp address page 1 register to access function 4*/
-	if (sndw->sndw_sendwack(sndwlinkaddr, alc721_addr_page1_cmd, sndwendpointdev)) {
+	if (sndw->sndw_sendwack(sndwlinkaddr, alc721_addr_page1_cmd,
+				sndwendpointdev, NULL)) {
 		printf("Failed to send the scp addr page1 command.\n");
 		return -1;
 	}
 	/* Send the cmd to write to scp address page 2 register to access the tone generator */
-	if (sndw->sndw_sendwack(sndwlinkaddr, alc721_addr_page2_cmd, sndwendpointdev)) {
+	if (sndw->sndw_sendwack(sndwlinkaddr, alc721_addr_page2_cmd,
+				sndwendpointdev, NULL)) {
 		printf("Failed to send the scp addr page2 command.\n");
 		return -1;
 	}
 	/* Send the cmd to enable the tone generator */
-	if (sndw->sndw_sendwack(sndwlinkaddr, alc721_beep_on_cmd, sndwendpointdev)) {
+	if (sndw->sndw_sendwack(sndwlinkaddr, alc721_beep_on_cmd,
+				sndwendpointdev, NULL)) {
 		printf("Failed to send the beep ON command.\n");
 		return -1;
 	}
 	/* Beep duration */
 	mdelay(beep_duration);
 	/* Send the cmd to disable the tone generator */
-	if (sndw->sndw_sendwack(sndwlinkaddr, alc721_beep_off_cmd, sndwendpointdev)) {
+	if (sndw->sndw_sendwack(sndwlinkaddr, alc721_beep_off_cmd,
+				sndwendpointdev, NULL)) {
 		printf("Failed to send the beep OFF command.\n");
 		return -1;
 	}

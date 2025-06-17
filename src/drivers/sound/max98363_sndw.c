@@ -178,26 +178,29 @@ static int sndwbeep(SndwOps *sndw, void *sndwlinkaddr, uint32_t sndwendpointdev,
 	/* Send init commands. */
 	for (i = 0; i < ARRAY_SIZE(max98363_beep_init_cmds); i++) {
 		if (sndw->sndw_sendwack(sndwlinkaddr, max98363_beep_init_cmds[i],
-									sndwendpointdev)) {
+					sndwendpointdev, NULL)) {
 			printf("Failed to send init commands. \n");
 			return -1;
 		}
 	}
 
 	/* Check the status of DP1 */
-	if (sndw->sndw_sendwack(sndwlinkaddr, max98363_status_cmd, sndwendpointdev)) {
+	if (sndw->sndw_sendwack(sndwlinkaddr, max98363_status_cmd,
+				sndwendpointdev, NULL)) {
 		printf("Failed to get status of DP1.\n");
 		return -1;
 	}
 
 	/* Send the cmd to activate the DP1 */
-	if (sndw->sndw_sendwack(sndwlinkaddr, max98363_beep_activate_dp1_cmd, sndwendpointdev)) {
+	if (sndw->sndw_sendwack(sndwlinkaddr, max98363_beep_activate_dp1_cmd,
+				sndwendpointdev, NULL)) {
 		printf("Failed to send the DP1 activate command. \n");
 		return -1;
 	}
 
 	/* Send the cmd to enable the tone generator */
-	if (sndw->sndw_sendwack(sndwlinkaddr, max98363_beepon_cmd, sndwendpointdev)) {
+	if (sndw->sndw_sendwack(sndwlinkaddr, max98363_beepon_cmd,
+				sndwendpointdev, NULL)) {
 		printf("Failed to send the beep ON command. \n");
 		return -1;
 	}
@@ -206,7 +209,8 @@ static int sndwbeep(SndwOps *sndw, void *sndwlinkaddr, uint32_t sndwendpointdev,
 	mdelay(beepduration);
 
 	/* Send the cmd to disable the tone generator */
-	if (sndw->sndw_sendwack(sndwlinkaddr, max98363_beepoff_cmd, sndwendpointdev)) {
+	if (sndw->sndw_sendwack(sndwlinkaddr, max98363_beepoff_cmd,
+				sndwendpointdev, NULL)) {
 		printf("Failed to send the beep OFF command. \n");
 		return -1;
 	}

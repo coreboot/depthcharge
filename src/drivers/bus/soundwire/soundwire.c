@@ -607,13 +607,15 @@ static int sndw_enable(struct SndwOps *me, sndw_codec_info *codecinfo)
 }
 
 /*
- * sndw_sendwack -  Function sends one message through the Sndw interface and waits
+ * sndw_sendwack - Function sends one message through the Sndw interface and waits
  * for the corresponding ACK message.
  * sndwlinkaddr - Soundwire Link controller address.
  * txcmd - Message to send.
- * sndwindex - Index of the Soudnwire endpoint device.
+ * deviceindex - Index of the Soudnwire endpoint device.
+ * val - Pointer to store read-back value for read commands. Used to evaluate
+ * specific status bits (e.g., function ready). Must be NULL for write commands.
  */
-static int sndw_sendwack(void *sndwlinkaddr, sndw_cmd txcmd, uint32_t deviceindex)
+static int sndw_sendwack(void *sndwlinkaddr, sndw_cmd txcmd, uint32_t deviceindex, uint8_t *val)
 {
 	uint32_t rxsize;
 	uint32_t *rxcmd;
@@ -630,6 +632,14 @@ static int sndw_sendwack(void *sndwlinkaddr, sndw_cmd txcmd, uint32_t deviceinde
 		printf("Failed to recieve the rx messages\n ");
 		return -1;
 	}
+
+	if (rxsize < 1) {
+		printf("Invalid response size: %u\n", rxsize);
+		return -1;
+	}
+
+	if (txcmd.cmdtype == cmd_read && val)
+		*val = SNDW_EXTRACT_CMD_FIELD(RX, REGDATA, rxcmd[0]);
 
 	return 0;
 }
