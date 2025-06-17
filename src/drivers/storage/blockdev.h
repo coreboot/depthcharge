@@ -81,10 +81,17 @@ typedef struct BlockDevCtrlrOps {
 	int (*is_bdev_owned)(struct BlockDevCtrlrOps *me, BlockDev *bdev);
 } BlockDevCtrlrOps;
 
+typedef enum {
+	BLOCK_CTRL_UNDEF = 0,
+	BLOCK_CTRL_UFS,
+} blockctrl_type_t;
+
 typedef struct BlockDevCtrlr {
 	BlockDevCtrlrOps ops;
 
 	int need_update;
+	blockctrl_type_t type;
+
 	struct list_node list_node;
 } BlockDevCtrlr;
 

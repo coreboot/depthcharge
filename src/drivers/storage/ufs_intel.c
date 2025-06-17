@@ -60,6 +60,7 @@ IntelUfsCtlr *new_intel_ufs_ctlr(pcidev_t dev, UfsRefClkFreq ref_clk_freq)
 	printf("Looking for UFS Controller %02x:%02x:%02x\n",
 			PCI_BUS(dev),PCI_SLOT(dev),PCI_FUNC(dev));
 
+	intel_ufs->ufs.bctlr.type = BLOCK_CTRL_UFS;
 	intel_ufs->ufs.bctlr.ops.update = intel_ufs_update;
 	intel_ufs->ufs.bctlr.need_update = 1;
 	intel_ufs->ufs.refclkfreq = ref_clk_freq;

@@ -57,6 +57,7 @@ MtkUfsCtlr *new_mtk_ufs_ctlr(uintptr_t hci_ioaddr, uintptr_t pericfg_ioaddr)
 {
 	MtkUfsCtlr *mtk_ufs = xzalloc(sizeof(MtkUfsCtlr));
 
+	mtk_ufs->ufs.bctlr.type = BLOCK_CTRL_UFS;
 	mtk_ufs->ufs.bctlr.ops.update = ufs_update;
 	mtk_ufs->ufs.bctlr.need_update = 1;
 	mtk_ufs->ufs.hci_base = (void *)hci_ioaddr;
