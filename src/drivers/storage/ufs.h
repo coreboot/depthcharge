@@ -784,8 +784,8 @@ typedef struct UfsQryReq {
 	uint8_t		idx;			// Index field, input
 	uint8_t		sel;			// Selection field, input
 	uint32_t	val;			// Value field, in/out
-	uint16_t	resp_data_len;		// Response Length, used for descriptor
-	uint8_t		*resp_data_buf;		// Response Data, used for descriptor
+	uint16_t	data_len;		// Buffer Length, used for descriptor
+	uint8_t		*data_buf;		// Buffer Data, used for descriptor
 } UfsQryReq;
 
 #define MIBattrSel(Id, Gs)	((((uint32_t)(Id) << 16) & 0xffff0000) | (Gs))
@@ -835,6 +835,8 @@ static inline UfsDescUnit *ufs_ud(UfsDevice *ufs_dev)
 	return (UfsDescUnit *)ufs_dev->unit_desc.raw;
 }
 
+int ufs_write_descriptor(UfsCtlr *ufs, uint8_t idn, uint8_t idx,
+			 uint8_t *buf, uint64_t len);
 int ufs_read_descriptor(UfsCtlr *ufs, uint8_t idn, uint8_t idx,
 			uint8_t *buf, uint64_t len, uint8_t *resp_len);
 UfsCtlr *ufs_get_ctlr(void);

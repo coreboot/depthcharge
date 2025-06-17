@@ -292,7 +292,11 @@ static int ufs_dev_op(UfsCtlr *ufs, UfsQryReq *req, uint8_t op)
 		c->idn		= req->idn;
 		c->idx		= req->idx;
 		c->sel		= req->sel;
-		c->data_len	= htobe16(req->resp_data_len);
+		c->data_len	= htobe16(req->data_len);
+		if (op == UPIU_QUERY_OP_WRITE_DESCRIPTOR) {
+			c->data_segment_len = c->data_len;
+			memcpy(&c->data, req->data_buf, req->data_len);
+		}
 		if (op == UPIU_QUERY_OP_WRITE_ATTRIBUTE)
 			c->attr_val = htobe32(req->val);
 	}
@@ -319,8 +323,8 @@ static int ufs_dev_op(UfsCtlr *ufs, UfsQryReq *req, uint8_t op)
 		return ufs_err("Error response %#x", UFS_EPROTO, r->response);
 
 	// Copy response data
-	if (req->resp_data_len && req->resp_data_buf)
-		memcpy(req->resp_data_buf, &r->data, req->resp_data_len);
+	if (op == UPIU_QUERY_OP_READ_DESCRIPTOR && req->data_len && req->data_buf)
+		memcpy(req->data_buf, &r->data, req->data_len);
 
 	// Extract the value and return it
 	if (op == UPIU_QUERY_OP_READ_DESCRIPTOR)
@@ -821,6 +825,26 @@ static int ufs_set_refclkfreq(UfsCtlr *ufs)
 	return ufs_write_attribute(ufs, UFS_IDN_BREFCLKFREQ, ufs->refclkfreq);
 }
 
+int ufs_write_descriptor(UfsCtlr *ufs, uint8_t idn, uint8_t idx,
+			 uint8_t *buf, uint64_t len) {
+	if (len > UFS_DESCRIPTOR_MAX_SIZE)
+		return ufs_err("Descriptor size is over 255b %llu", UFS_EINVAL, len);
+	uint8_t rl = (uint8_t)(len & 0xFF);
+	UfsQryReq req = {
+		.idn = idn,
+		.idx = idx,
+		.data_len = rl,
+		.data_buf = buf,
+	};
+	int rc;
+
+	rc = ufs_dev_query_op(ufs, &req, UPIU_QUERY_OP_WRITE_DESCRIPTOR);
+	if (rc)
+		return ufs_err("Failed to write descriptor IDN %u", rc, idn);
+
+	return 0;
+}
+
 // Read a UFS descriptor
 int ufs_read_descriptor(UfsCtlr *ufs, uint8_t idn, uint8_t idx,
 			uint8_t *buf, uint64_t len, uint8_t *resp_len)
@@ -831,8 +855,8 @@ int ufs_read_descriptor(UfsCtlr *ufs, uint8_t idn, uint8_t idx,
 	UfsQryReq req = {
 		.idn = idn,
 		.idx = idx,
-		.resp_data_len = rl,
-		.resp_data_buf = buf,
+		.data_len = rl,
+		.data_buf = buf,
 	};
 	int rc;
 

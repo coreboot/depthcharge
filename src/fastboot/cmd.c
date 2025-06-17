@@ -241,6 +241,52 @@ static void fastboot_cmd_oem_read_ufs_descriptor(struct FastbootOps *fb,
 	fastboot_succeed(fb);
 }
 
+static void fastboot_cmd_oem_write_ufs_descriptor(struct FastbootOps *fb,
+						  const char *arg)
+{
+	if (!CONFIG(DRIVER_STORAGE_UFS)) {
+		fastboot_fail(fb, "UFS is not supported by the board");
+		return;
+	}
+
+	if (!fb->has_staged_data) {
+		fastboot_fail(fb, "No staged data to write");
+		return;
+	}
+
+	uint64_t data_len;
+	void *buf = fastboot_get_memory_buffer(fb, &data_len);
+
+	if (data_len > UFS_DESCRIPTOR_MAX_SIZE) {
+		fastboot_fail(fb, "Staged data is too big");
+		return;
+	}
+
+	UfsCtlr *ctlr = ufs_get_ctlr();
+	if (!ctlr) {
+		fastboot_fail(fb, "Could not find UFS controller");
+		return;
+	}
+
+	uint32_t idn, idx;
+	if (fastboot_parse_ufs_desc_args(fb, arg, &idn, &idx)) {
+		// Parsing function replies fastboot fail on error.
+		return;
+	}
+
+	int ret = ufs_write_descriptor(ctlr, (uint8_t)idn, (uint8_t)idx, buf,
+				       data_len);
+	if (ret) {
+		fastboot_fail(fb, "Failed to write UFS descriptor");
+		return;
+	}
+
+	fastboot_reset_staging(fb);
+
+	fastboot_info(fb, "Reboot when you're done writing descriptors.");
+	fastboot_succeed(fb);
+}
+
 static void fastboot_cmd_reboot(struct FastbootOps *fb, const char *arg)
 {
 	fastboot_succeed(fb);
@@ -285,6 +331,7 @@ struct fastboot_cmd fastboot_cmds[] = {
 	CMD_ARGS("getvar", ':', fastboot_cmd_getvar),
 	CMD_NO_ARGS("oem get-kernels", fastboot_cmd_oem_get_kernels),
 	CMD_ARGS("oem read-ufs-descriptor", ':', fastboot_cmd_oem_read_ufs_descriptor),
+	CMD_ARGS("oem write-ufs-descriptor", ':', fastboot_cmd_oem_write_ufs_descriptor),
 	CMD_NO_ARGS("reboot", fastboot_cmd_reboot),
 	CMD_ARGS("set_active", ':', fastboot_cmd_set_active),
 	{
