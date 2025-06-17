@@ -66,13 +66,13 @@ struct FastbootOps {
 	/* State of the session */
 	enum fastboot_state state;
 
-	/* Download buffer is ready to obtain from fastboot_get_download_buffer() */
-	bool has_download;
+	/* fastboot_get_memory_buffer() has staged data */
+	bool has_staged_data;
 	/*
-	 * Number of bytes in download buffer (or expected number of bytes after transfer
-	 * completes when in DOWNLOAD state)
+	 * Number of bytes in the memory buffer (or expected number of bytes after
+	 * transfer completes when in DOWNLOAD state)
 	 */
-	uint64_t download_len;
+	uint64_t memory_buffer_len;
 	/* Actual number of bytes received when in DOWNLOAD state */
 	uint64_t download_progress;
 	/*
@@ -97,14 +97,18 @@ bool fastboot_is_finished(struct FastbootOps *fb);
 void fastboot_handle_packet(struct FastbootOps *fb, void *data, uint64_t len);
 /* Run fastboot */
 void fastboot(void);
-/* Get the download buffer and the length of the download if a download exists */
-void *fastboot_get_download_buffer(struct FastbootOps *fb, uint64_t *len);
+/* Get the buffer for upload/download and the length of the data in the buffer */
+void *fastboot_get_memory_buffer(struct FastbootOps *fb, uint64_t *len);
+/* Prepares the staging buffer for download */
+void fastboot_prepare_download(struct FastbootOps *fb, uint32_t bytes);
 /* Reset fastboot session to initial state */
 void fastboot_reset_session(struct FastbootOps *fb);
+
 
 /* Responses to the client */
 void fastboot_fail(struct FastbootOps *fb, const char *msg);
 void fastboot_data(struct FastbootOps *fb, uint32_t bytes);
+void fastboot_upload_data(struct FastbootOps *fb, uint32_t bytes);
 void fastboot_okay(struct FastbootOps *fb, const char *fmt, ...)
 	__attribute__((format(printf, 2, 3)));
 void fastboot_info(struct FastbootOps *fb, const char *fmt, ...)

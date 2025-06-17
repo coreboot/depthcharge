@@ -33,14 +33,15 @@ void fastboot_fail(struct FastbootOps *fb, const char *msg)
 	fb->send_packet(fb, msg_buf, len + 1);
 }
 
+void fastboot_prepare_download(struct FastbootOps *fb, uint32_t bytes) {
+	fb->memory_buffer_len = bytes;
+	fb->download_progress = 0;
+	fb->has_staged_data = false;
+	fb->state = DOWNLOAD;
+}
+
 void fastboot_data(struct FastbootOps *fb, uint32_t bytes)
 {
-	/* Set up for data transfer */
-	fb->download_len = bytes;
-	fb->download_progress = 0;
-	fb->has_download = false;
-	fb->state = DOWNLOAD;
-	/* Send acknowledgment to host */
 	int len = snprintf(msg_buf, FASTBOOT_MSG_MAX, "DATA%08x", bytes);
 	fb->send_packet(fb, msg_buf, len + 1);
 }
@@ -75,10 +76,10 @@ bool fastboot_is_finished(struct FastbootOps *fb)
 	return fb->state == FINISHED || fb->state == REBOOT;
 }
 
-void *fastboot_get_download_buffer(struct FastbootOps *fb, uint64_t *len)
+void *fastboot_get_memory_buffer(struct FastbootOps *fb, uint64_t *len)
 {
 	if (len)
-		*len = fb->download_len;
+		*len = fb->memory_buffer_len;
 	return &_kernel_start;
 }
 
@@ -87,18 +88,18 @@ void *fastboot_get_download_buffer(struct FastbootOps *fb, uint64_t *len)
 static void fastboot_handle_download(struct FastbootOps *fb, void *data,
 				     uint64_t len)
 {
-	uint64_t left = fb->download_len - fb->download_progress;
+	uint64_t left = fb->memory_buffer_len - fb->download_progress;
 	if (len > left) {
 		fastboot_fail(fb, "Too much data");
 		fb->state = COMMAND;
 		return;
 	}
 
-	void *buf = fastboot_get_download_buffer(fb, NULL);
+	void *buf = fastboot_get_memory_buffer(fb, NULL);
 	memcpy(buf + fb->download_progress, data, len);
 	fb->download_progress += len;
 	if (len == left) {
-		fb->has_download = true;
+		fb->has_staged_data = true;
 		fb->download_progress = 0;
 		fb->state = COMMAND;
 		fastboot_succeed(fb);
@@ -172,7 +173,8 @@ void fastboot_reset_session(struct FastbootOps *fb)
 {
 	/* Reset common fastboot session */
 	fb->state = COMMAND;
-	fb->has_download = false;
+	fb->has_staged_data = false;
+	fb->memory_buffer_len = 0;
 
 	/* Reset transport layer specific data */
 	if (fb->reset)

@@ -15,6 +15,7 @@
  * GNU General Public License for more details.
  */
 
+#include "net/uip.h"
 #include "fastboot/cmd.h"
 #include "fastboot/disk.h"
 #include "fastboot/fastboot.h"
@@ -56,6 +57,34 @@ static void fastboot_cmd_continue(struct FastbootOps *fb, const char *arg)
 	fb->state = FINISHED;
 }
 
+static void fastboot_cmd_upload(struct FastbootOps *fb, const char *arg)
+{
+	uint64_t len;
+	void *buf = fastboot_get_memory_buffer(fb, &len);
+
+	if (!fb->has_staged_data || len == 0) {
+		fastboot_fail(fb, "No staged data to upload");
+		return;
+	}
+
+	/* TODO(b/430379190): Implement packet splitting for fastboot tcp */
+	if (len > CONFIG_UIP_TCP_MSS) {
+		fastboot_info(fb,
+			      "b/430379190: max upload bytes is %lld, got %lld",
+			      (uint64_t)CONFIG_UIP_TCP_MSS, len);
+		fastboot_fail(fb, "b/430379190: staged buffer is too large");
+		return;
+	}
+
+	fastboot_data(fb, len);
+	fb->send_packet(fb, buf, len);
+	fastboot_succeed(fb);
+
+	// reset the buffer
+	fb->has_staged_data = false;
+	fb->memory_buffer_len = 0;
+}
+
 static void fastboot_cmd_download(struct FastbootOps *fb, const char *arg)
 {
 	uint32_t size = 0;
@@ -70,12 +99,13 @@ static void fastboot_cmd_download(struct FastbootOps *fb, const char *arg)
 		return;
 	}
 
+	fastboot_prepare_download(fb, size);
 	fastboot_data(fb, size);
 }
 
 static void fastboot_cmd_flash(struct FastbootOps *fb, const char *arg)
 {
-	if (!fb->has_download) {
+	if (!fb->has_staged_data) {
 		fastboot_fail(fb, "No data staged to flash");
 		return;
 	}
@@ -87,7 +117,7 @@ static void fastboot_cmd_flash(struct FastbootOps *fb, const char *arg)
 	}
 
 	uint64_t data_len;
-	void *data = fastboot_get_download_buffer(fb, &data_len);
+	void *data = fastboot_get_memory_buffer(fb, &data_len);
 	fastboot_write(fb, &disk, arg, data, (uint32_t)data_len);
 	fastboot_disk_destroy(&disk);
 }
@@ -187,6 +217,7 @@ out:
 	}
 struct fastboot_cmd fastboot_cmds[] = {
 	CMD_NO_ARGS("continue", fastboot_cmd_continue),
+	CMD_NO_ARGS("upload", fastboot_cmd_upload),
 	CMD_ARGS("download", ':', fastboot_cmd_download),
 	CMD_ARGS("erase", ':', fastboot_cmd_erase),
 	CMD_ARGS("flash", ':', fastboot_cmd_flash),
