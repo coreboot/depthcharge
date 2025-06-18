@@ -1,0 +1,49 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/*
+ * Copyright 2025 Google LLC.
+ */
+#ifndef __DRIVERS_SOUND_RT1320_COMMON_REGS_H__
+#define __DRIVERS_SOUND_RT1320_COMMON_REGS_H__
+
+/* RT1320 General Control Registers */
+enum {
+	RT1320_AMP_VOLUME    = 0xde00,
+	RT1320_AMP_MUTE      = 0xde03,
+	RT1320_AMP_MUTE_C570 = 0xc570,
+};
+
+/* RT1320 SCP Address Page Register */
+enum {
+	RT1320_ADDRPAGE1 = 0x48,
+	RT1320_ADDRPAGE2 = 0x49,
+};
+
+/* RT1320 Tone Generator Register */
+enum {
+	RT1320_TONE_GENERATOR = 0x4128,
+};
+
+/* RT1320_TONE_GENERATOR */
+enum {
+	RT1320_TONE_GENERATOR_ENABLE  = 0x08,
+	RT1320_TONE_GENERATOR_DISABLE = 0x00,
+};
+
+/* RT1320_VOLUME */
+enum {
+	RT1320_VOLUME_0dB         = 0x57,
+	RT1320_VOLUME_MINUS_10dB  = 0x49,
+	RT1320_VOLUME_MINUS_15dB  = 0x43,
+	RT1320_VOLUME_MINUS_20dB  = 0x3e,
+	RT1320_VOLUME_MINUS_30dB  = 0x2f,
+};
+
+/* RT1320_UN-MUTE_MUTE */
+enum {
+	RT1320_MUTE_ENABLE       = 0x0d,
+	RT1320_MUTE_DISABLE      = 0x09,
+	RT1320_MUTE_C570_ENABLE  = 0x0a,
+	RT1320_MUTE_C570_DISABLE = 0x0b,
+};
+
+#endif /* __DRIVERS_SOUND_RT1320_COMMON_REGS_H__ */

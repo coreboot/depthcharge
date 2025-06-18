@@ -26,6 +26,7 @@
 #include "drivers/sound/route.h"
 #include "drivers/sound/rt5645.h"
 #include "drivers/sound/rt7xx_sndw.h"
+#include "drivers/sound/rt1320_sndw.h"
 
 /* Default I2S setting 4000 volume, 16bit, 2ch, 48k */
 #define AUD_VOLUME		4000
@@ -265,6 +266,14 @@ static SoundOps *setup_rt7xx_sndw(SndwOps *ops, unsigned int beep_ms)
 	return &new_rt7xx_sndw(ops, beep_ms)->ops;
 }
 
+static SoundOps *setup_rt1320_sndw(SndwOps *ops, unsigned int beep_ms)
+{
+	if (!CONFIG(DRIVER_SOUND_RT1320_SNDW))
+		return NULL;
+
+	return &new_rt1320_sndw(ops, beep_ms)->ops;
+}
+
 static void configure_audio_codec(const struct audio_codec *codec,
 				  struct audio_data *data)
 {
@@ -318,6 +327,12 @@ static void configure_audio_codec(const struct audio_codec *codec,
 		if (data->route)
 			data->ops = &data->route->ops;
 		break;
+
+	case AUDIO_RT1320:
+		if (data->type == AUDIO_SNDW)
+			data->ops = setup_rt1320_sndw(&data->sndw->ops, BEEP_DURATION);
+		break;
+
 	case AUDIO_RT5650:
 		if (data->route) {
 			setup_rt5650(codec, data->route);
