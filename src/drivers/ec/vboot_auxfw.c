@@ -15,6 +15,7 @@
 #include <cbfs.h>
 #include <libpayload.h>
 #include <lp_vboot.h>
+#include <stdbool.h>
 #include <vb2_api.h>
 #include <vboot_api.h>
 
@@ -25,6 +26,7 @@
 static struct {
 	const VbootAuxfwOps *fw_ops;
 	enum vb2_auxfw_update_severity severity;
+	bool updated;
 } vboot_auxfw[NUM_MAX_VBOOT_AUXFW];
 
 static int vboot_auxfw_count = 0;
@@ -153,13 +155,9 @@ static vb2_error_t apply_dev_fw(const VbootAuxfwOps *auxfw)
 	return result;
 }
 
-vb2_error_t update_vboot_auxfw(void)
+static vb2_error_t do_update(void)
 {
-	enum vb2_auxfw_update_severity severity;
-	vb2_error_t status = VB2_SUCCESS;
-	int lid_shutdown_disabled = 0;
-
-	VB2_TRY(display_firmware_sync_screen());
+	vb2_error_t status;
 
 	for (int i = 0; i < vboot_auxfw_count; ++i) {
 		const VbootAuxfwOps *auxfw;
@@ -169,34 +167,63 @@ vb2_error_t update_vboot_auxfw(void)
 		    vboot_auxfw[i].severity == VB2_AUXFW_NO_UPDATE)
 			continue;
 
-		/* Disable lid shutdown on x86 if enabled */
-		if (!lid_shutdown_disabled &&
-		    CONFIG(ARCH_X86) &&
-		    CONFIG(DRIVER_EC_CROS) &&
-		    cros_ec_get_lid_shutdown_mask() > 0) {
-			if (!cros_ec_set_lid_shutdown_mask(0))
-				lid_shutdown_disabled = 1;
-		}
-
 		/* Apply update */
 		printf("Update auxfw %d\n", i);
 		status = apply_dev_fw(auxfw);
-		if (status == VB2_ERROR_EX_AUXFW_PERIPHERAL_BUSY) {
+		if (status == VB2_SUCCESS)
+			vboot_auxfw[i].updated = true;
+		else if (status == VB2_ERROR_EX_AUXFW_PERIPHERAL_BUSY)
 			status = VB2_SUCCESS;
+		else
+			return status;
+	}
+
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t do_post_update(void)
+{
+	enum vb2_auxfw_update_severity severity;
+	vb2_error_t status = VB2_SUCCESS;
+
+	for (int i = 0; i < vboot_auxfw_count; ++i) {
+		vb2_error_t post_status;
+
+		if (vboot_auxfw[i].severity == VB2_AUXFW_NO_DEVICE ||
+		    vboot_auxfw[i].severity == VB2_AUXFW_NO_UPDATE ||
+		    !vboot_auxfw[i].updated)
 			continue;
-		} else if (status != VB2_SUCCESS) {
-			break;
-		}
 
 		/* Re-check hash after update */
-		status = check_dev_fw_hash(auxfw, &severity);
-		if (status != VB2_SUCCESS)
-			break;
-		if (severity != VB2_AUXFW_NO_UPDATE) {
+		post_status = check_dev_fw_hash(vboot_auxfw[i].fw_ops, &severity);
+		if (post_status != VB2_SUCCESS)
+			status = post_status;
+		else if (severity != VB2_AUXFW_NO_UPDATE)
 			status = VB2_ERROR_UNKNOWN;
-			break;
-		}
 	}
+
+	return status;
+}
+
+vb2_error_t update_vboot_auxfw(void)
+{
+	vb2_error_t status, post_status;
+	bool lid_shutdown_disabled = false;
+
+	VB2_TRY(display_firmware_sync_screen());
+
+	/* Disable lid shutdown on x86 if enabled */
+	if (CONFIG(DRIVER_EC_CROS) &&
+	    CONFIG(ARCH_X86) &&
+	    cros_ec_get_lid_shutdown_mask() > 0) {
+		if (!cros_ec_set_lid_shutdown_mask(0))
+			lid_shutdown_disabled = true;
+	}
+
+	status = do_update();
+	post_status = do_post_update();
+	if (status == VB2_SUCCESS && post_status != VB2_SUCCESS)
+		status = post_status;
 
 	/* Re-enable lid shutdown event, if required */
 	if (CONFIG(DRIVER_EC_CROS) && lid_shutdown_disabled)
