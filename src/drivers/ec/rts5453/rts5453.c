@@ -696,7 +696,6 @@ static vb2_error_t rts5453_update_image(const VbootAuxfwOps *vbaux, const uint8_
 	Rts545x *me = container_of(vbaux, Rts545x, fw_ops);
 	vb2_error_t status = VB2_ERROR_UNKNOWN;
 	int protected;
-	uint64_t start;
 	int ret;
 
 	debug("Updating RTS5453 image...\n");
@@ -704,11 +703,11 @@ static vb2_error_t rts5453_update_image(const VbootAuxfwOps *vbaux, const uint8_
 	/* If the I2C tunnel is not known, probe EC for that */
 	if (!me->bus && rts545x_construct_i2c_tunnel(me)) {
 		printf("%s: Error constructing i2c tunnel\n", me->chip_name);
-		goto pd_restart;
+		goto exit;
 	}
 
 	if (rts545x_ec_tunnel_status(vbaux, &protected) != 0)
-		goto pd_restart;
+		goto exit;
 
 	/* force reboot to RO */
 	if (protected)
@@ -716,7 +715,7 @@ static vb2_error_t rts5453_update_image(const VbootAuxfwOps *vbaux, const uint8_
 
 	if (image == NULL || image_size == 0) {
 		status = VB2_ERROR_INVALID_PARAMETER;
-		goto pd_restart;
+		goto exit;
 	}
 
 	rts545x_set_i2c_speed(me);
@@ -731,9 +730,17 @@ static vb2_error_t rts5453_update_image(const VbootAuxfwOps *vbaux, const uint8_
 		status = VB2_SUCCESS;
 	}
 
+exit:
 	rts545x_restore_i2c_speed(me);
+	return status;
+}
 
-pd_restart:
+static vb2_error_t rts5453_post_update(const VbootAuxfwOps *vbaux)
+{
+	Rts545x *me = container_of(vbaux, Rts545x, fw_ops);
+	int ret;
+	uint64_t start;
+
 	/* Re-enable the EC PD stack */
 	ret = cros_ec_pd_control(me->ec_pd_id, PD_RESUME);
 	if (ret) {
@@ -747,7 +754,7 @@ pd_restart:
 	do {
 		mdelay(200);
 		if (is_rts545x_device_present(me, true))
-			return status;
+			return VB2_SUCCESS;
 	} while (timer_us(start) < RTS_RESTART_DELAY_US);
 
 	/* Cannot contact PDC after timeout. Reboot the EC to recover. */
@@ -771,6 +778,7 @@ Rts545x *new_rts5453(CrosECTunnelI2c *bus, int ec_pd_id,
 	VbootAuxfwOps fw_ops = {
 		.check_hash = rts5453_check_hash,
 		.update_image = rts5453_update_image,
+		.post_update = rts5453_post_update,
 	};
 
 	board_rts5453_get_image_paths(&fw_ops.fw_image_name, &fw_ops.fw_hash_name, ec_pd_id, r);
