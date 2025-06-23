@@ -188,14 +188,25 @@ static vb2_error_t do_post_update(void)
 
 	for (int i = 0; i < vboot_auxfw_count; ++i) {
 		vb2_error_t post_status;
+		const VbootAuxfwOps *auxfw;
 
 		if (vboot_auxfw[i].severity == VB2_AUXFW_NO_DEVICE ||
-		    vboot_auxfw[i].severity == VB2_AUXFW_NO_UPDATE ||
-		    !vboot_auxfw[i].updated)
+		    vboot_auxfw[i].severity == VB2_AUXFW_NO_UPDATE)
+			continue;
+
+		/* Run post-update (such as enabling PD) after update */
+		auxfw = vboot_auxfw[i].fw_ops;
+		if (auxfw->post_update) {
+			post_status = auxfw->post_update(auxfw);
+			if (post_status != VB2_SUCCESS)
+				status = post_status;
+		}
+
+		if (!vboot_auxfw[i].updated)
 			continue;
 
 		/* Re-check hash after update */
-		post_status = check_dev_fw_hash(vboot_auxfw[i].fw_ops, &severity);
+		post_status = check_dev_fw_hash(auxfw, &severity);
 		if (post_status != VB2_SUCCESS)
 			status = post_status;
 		else if (severity != VB2_AUXFW_NO_UPDATE)

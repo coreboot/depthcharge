@@ -33,6 +33,11 @@ struct VbootAuxfwOps {
 	 */
 	vb2_error_t (*update_image)(const VbootAuxfwOps *me,
 				  const uint8_t *image, size_t image_size);
+	/*
+	 * Post-update hook to call after all auxfw instances are updated.
+	 * This will be called even if update_image() fails.
+	 */
+	vb2_error_t (*post_update)(const VbootAuxfwOps *me);
 	const char *fw_image_name;
 	const char *fw_hash_name;
 };
