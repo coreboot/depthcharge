@@ -22,8 +22,8 @@ void board_tps6699x_get_image_paths(const char **image_path, const char **hash_p
 void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
 				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
-	*image_path = NULL;
-	*hash_path = NULL;
+	*image_path = "rts5453_GOOG0500.bin";
+	*hash_path = "rts5453_GOOG0500.hash";
 }
 
 const struct audio_config *variant_probe_audio_config(void)
