@@ -181,7 +181,7 @@ void fastboot_reset_staging(struct FastbootOps *fb)
 	fb->memory_buffer_len = 0;
 }
 
-void fastboot(void)
+void fastboot_run(void)
 {
 	struct FastbootOps *fb_session = NULL;
 	enum fastboot_state final_state;

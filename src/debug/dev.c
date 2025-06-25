@@ -52,5 +52,5 @@ void dc_dev_netboot(void)
 
 void dc_dev_fastboot(void)
 {
-	fastboot();
+	fastboot_run();
 }
