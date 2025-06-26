@@ -65,14 +65,6 @@ config KERNEL_FIT_FDT_ADDR
 	  arm64: Within the first 512MB of RAM, but as far away from the start
 	  of RAM as possible (i.e. ideally at 504MB).
 
-config ANDROID_DT_FIXUP
-	bool "Fixup device tree with properties for Android"
-	default n
-	help
-	  Enabling this option will create a /firmware/android node in the
-	  device tree and populate it with the hardware name and other
-	  values from the VPD such as the serial number.
-
 config BOOTCONFIG
 	bool "Support for bootconfig"
 	default n
