@@ -12,7 +12,7 @@
 ##
 
 depthcharge-y += board.c
-
+depthcharge-$(CONFIG_KERNEL_FIT) += pscinode.c
 ifneq ($(CONFIG_VARIANT_NAME), "")
 depthcharge-y += $(call strip_quotes,$(CONFIG_VARIANT_NAME)).c
 endif
