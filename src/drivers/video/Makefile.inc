@@ -12,7 +12,6 @@
 ##
 
 depthcharge-y += display.c
-depthcharge-y += coreboot_fb.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_ARCTICSAND_BACKLIGHT) += arctic_sand_backlight.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_EC_PWM_BACKLIGHT) += ec_pwm_backlight.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_EXYNOS5) += exynos5.c

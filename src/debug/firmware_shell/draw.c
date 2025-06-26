@@ -11,7 +11,6 @@
 
 #include "common.h"
 #include "drivers/video/display.h"
-#include "drivers/video/coreboot_fb.h"
 
 static int initialized = 0;
 
