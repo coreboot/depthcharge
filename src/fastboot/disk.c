@@ -156,8 +156,7 @@ void fastboot_erase(struct FastbootOps *fb, const char *partition_name)
 // Returns 0 if the partition is not valid.
 char get_slot_for_partition_name(GptEntry *e, char *partition_name)
 {
-	const Guid cros_kernel_guid = GPT_ENT_TYPE_CHROMEOS_KERNEL;
-	if (memcmp(&e->type, &cros_kernel_guid, sizeof(cros_kernel_guid)) != 0)
+	if (!IsAndroid(e))
 		return 0;
 	int len = strlen(partition_name);
 	// expect partition names ending with -X or _x
@@ -256,7 +255,7 @@ GptEntry *fastboot_get_kernel_for_slot(GptData *gpt, char slot)
 static bool disable_all_callback(void *ctx, int index, GptEntry *e,
 				 char *partition_name)
 {
-	if (get_slot_for_partition_name(e, partition_name) == 0)
+	if (!IsBootableEntry(e))
 		return false;
 
 	GptUpdateKernelWithEntry((GptData *)ctx, e, GPT_UPDATE_ENTRY_INVALID);
