@@ -140,6 +140,10 @@ config DRIVER_SOUND_RT721_SNDW
 	bool "RT721 Soundwire codec driver"
 	default n
 
+config DRIVER_SOUND_RT722_SNDW
+	bool "RT722 Soundwire codec driver"
+	default n
+
 config DRIVER_SOUND_ROUTE
 	bool "Sound route container"
 	default n

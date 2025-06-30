@@ -260,7 +260,9 @@ static SoundOps *setup_max98363_sndw(SndwOps *ops, unsigned int beep_ms)
 
 static SoundOps *setup_rt7xx_sndw(SndwOps *ops, unsigned int beep_ms)
 {
-	if (!CONFIG(DRIVER_SOUND_RT721_SNDW) && !CONFIG(DRIVER_SOUND_RT712_SNDW))
+	if (!CONFIG(DRIVER_SOUND_RT722_SNDW) &&
+	    !CONFIG(DRIVER_SOUND_RT721_SNDW) &&
+	    !CONFIG(DRIVER_SOUND_RT712_SNDW))
 		return NULL;
 
 	return &new_rt7xx_sndw(ops, beep_ms)->ops;

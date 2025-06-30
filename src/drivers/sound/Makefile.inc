@@ -47,6 +47,7 @@ depthcharge-$(CONFIG_DRIVER_SOUND_RT5682) += rt5682.c
 depthcharge-$(CONFIG_DRIVER_SOUND_RT5682S) += rt5682s.c
 depthcharge-$(CONFIG_DRIVER_SOUND_RT712_SNDW) += rt7xx_sndw.c
 depthcharge-$(CONFIG_DRIVER_SOUND_RT721_SNDW) += rt7xx_sndw.c
+depthcharge-$(CONFIG_DRIVER_SOUND_RT722_SNDW) += rt7xx_sndw.c
 depthcharge-$(CONFIG_DRIVER_SOUND_SSM4567) += ssm4567.c
 depthcharge-$(CONFIG_DRIVER_SOUND_TAS2563) += tas2563.c
 depthcharge-$(CONFIG_DRIVER_SOUND_TEGRA_AUDIO_HUB) += tegra_ahub.c
