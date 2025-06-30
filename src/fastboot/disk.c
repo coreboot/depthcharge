@@ -239,12 +239,12 @@ static bool find_slot_callback(void *ctx, int index, GptEntry *e,
 GptEntry *fastboot_get_kernel_for_slot(GptData *gpt, char slot)
 {
 
-	if (slot < 'a') {
+	if (!isalpha(slot))
 		return NULL;
-	}
+
 	struct find_slot_ctx ctx = {
 		.target_entry = NULL,
-		.desired_slot = slot,
+		.desired_slot = tolower(slot),
 	};
 	if (gpt_foreach_partition(gpt, find_slot_callback, &ctx))
 		return ctx.target_entry;
