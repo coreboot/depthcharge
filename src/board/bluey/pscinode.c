@@ -1,13 +1,14 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+#include <commonlib/list.h>
 #include <libpayload.h>
 #include "base/init_funcs.h"
 #include "base/device_tree.h"
-#include "base/list.h"
 
-static int install_pscinode_data(DeviceTreeFixup *fixup, DeviceTree *tree)
+static int install_pscinode_data(struct device_tree_fixup *fixup,
+				struct device_tree *tree)
 {
-	DeviceTreeNode *psci = dt_find_node_by_path(tree, "/psci", NULL, NULL, 0);
+	struct device_tree_node *psci = dt_find_node_by_path(tree, "/psci", NULL, NULL, 0);
 
 	if (!psci)
 		printf("PSCI not supported.\n");
@@ -17,7 +18,7 @@ static int install_pscinode_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	return 0;
 }
 
-static DeviceTreeFixup psci_data = {
+static struct device_tree_fixup psci_data = {
 	.fixup = &install_pscinode_data
 };
 
