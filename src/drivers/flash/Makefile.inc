@@ -14,7 +14,6 @@
 depthcharge-$(CONFIG_DRIVER_FLASH) += flash.c block_flash.c
 depthcharge-$(CONFIG_DRIVER_FLASH_FAST_SPI) += fast_spi.c
 depthcharge-$(CONFIG_DRIVER_FLASH_MEMMAPPED) += memmapped.c
-depthcharge-$(CONFIG_DRIVER_FLASH_MMAP_BACKED) += memmapped.c
 depthcharge-$(CONFIG_DRIVER_FLASH_SPI) += spi.c
 depthcharge-$(CONFIG_DRIVER_CBFS_FLASH) += cbfs.c
 depthcharge-$(CONFIG_DRIVER_FLASH_MTK_SNFC) += mtk_snfc.c
