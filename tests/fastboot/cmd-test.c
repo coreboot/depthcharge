@@ -3,12 +3,10 @@
 #include "base/android_misc.h"
 #include "drivers/storage/ufs.h"
 #include "fastboot/fastboot.h"
+#include "tests/fastboot/fastboot_common_mocks.h"
 #include "tests/test.h"
 
 /* Mock data */
-struct FastbootOps test_fb;
-BlockDev test_disk;
-GptData test_gpt;
 UfsCtlr test_ufs;
 char _kernel_start[0x100];
 /*
@@ -18,28 +16,6 @@ char _kernel_start[0x100];
 const int test_cmd_magic = 0x123;
 
 /* Mocked functions */
-static int fb_mock_send_packet(struct FastbootOps *fb, void *buf, size_t len)
-{
-	check_expected_ptr(fb);
-	check_expected(buf);
-	check_expected(len);
-
-	return 0;
-}
-
-/* Setup for send_packet mock */
-#define WILL_SEND_EXACT(fb_ptr, data) do { \
-	expect_value(fb_mock_send_packet, fb, fb_ptr); \
-	expect_string(fb_mock_send_packet, buf, data); \
-	expect_value(fb_mock_send_packet, len, sizeof(data)); \
-} while (0)
-
-#define WILL_SEND_PREFIX(fb_ptr, data) do { \
-	expect_value(fb_mock_send_packet, fb, fb_ptr); \
-	expect_memory(fb_mock_send_packet, buf, data, sizeof(data) - 1); \
-	expect_in_range(fb_mock_send_packet, len, sizeof(data), 256); \
-} while (0)
-
 int android_misc_bcb_write(BlockDev *disk, GptData *gpt, struct bootloader_message *bcb)
 {
 	assert_ptr_equal(disk, &test_disk);
@@ -67,15 +43,6 @@ int android_misc_bcb_read(BlockDev *disk, GptData *gpt, struct bootloader_messag
 
 /* Setup for android_misc_bcb_read mock */
 #define WILL_READ_BCB(ret) will_return(android_misc_bcb_read, ret)
-
-/* Setup fb, so only functions that explicitly call this can use disk and gpt */
-int fastboot_disk_gpt_init(struct FastbootOps *fb)
-{
-	fb->disk = &test_disk;
-	fb->gpt = &test_gpt;
-
-	return 0;
-}
 
 int android_misc_oem_cmdline_write(BlockDev *disk, GptData *gpt,
 				   struct android_misc_oem_cmdline *cmd)
@@ -427,9 +394,7 @@ int ufs_write_descriptor(UfsCtlr *ufs, uint8_t idn, uint8_t idx,
 /* Reset mock data (for use before each test) */
 static int setup(void **state)
 {
-	memset(&test_fb, 0, sizeof(test_fb));
-	test_fb.send_packet = fb_mock_send_packet;
-	test_fb.state = COMMAND;
+	setup_test_fb();
 
 	*state = &test_fb;
 
