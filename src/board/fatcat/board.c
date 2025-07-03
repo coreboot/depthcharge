@@ -68,6 +68,11 @@ static GpioOps *mkbp_int_ops(void)
 		return new_gpio_not(&mkbp_int_gpio->ops); // Active-low, has to be inverted
 }
 
+__weak const CrosEcLpcBusVariant variant_get_ec_lpc_bus(void)
+{
+	return CROS_EC_LPC_BUS_GENERIC;
+}
+
 static void ec_setup(void)
 {
 	/* Chrome EC (eSPI) */
@@ -75,7 +80,7 @@ static void ec_setup(void)
 		return;
 
 	CrosEcLpcBus *cros_ec_lpc_bus;
-	CrosEcLpcBusVariant variant = CROS_EC_LPC_BUS_GENERIC;
+	CrosEcLpcBusVariant variant = variant_get_ec_lpc_bus();
 
 	if (CONFIG(CROS_EC_ENABLE_MEC))
 		variant = CROS_EC_LPC_BUS_MEC;

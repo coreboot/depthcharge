@@ -6,6 +6,7 @@
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "base/fw_config.h"
+#include "drivers/ec/cros/lpc.h"
 #include "drivers/gpio/pantherlake.h"
 #include "drivers/soc/pantherlake.h"
 #include "drivers/storage/storage_common.h"
@@ -40,4 +41,9 @@ const struct tpm_config *variant_get_tpm_config(void)
 const int variant_get_ec_int(void)
 {
 	return EC_SOC_INT_ODL;
+}
+
+const CrosEcLpcBusVariant variant_get_ec_lpc_bus(void)
+{
+	return CROS_EC_LPC_BUS_RTK;
 }
