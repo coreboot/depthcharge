@@ -16,8 +16,20 @@
 void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
 					int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
-	*image_path = NULL;
-	*hash_path = NULL;
+	switch (ec_pd_id) {
+	case 0:
+		/* bypass retimer */
+		*image_path = "rts5453_GOOG0900.bin";
+		*hash_path = "rts5453_GOOG0900.hash";
+		break;
+	case 1:
+		/* TUSB546/1044 */
+		*image_path = "rts5453_GOOG0C00.bin";
+		*hash_path = "rts5453_GOOG0C00.hash";
+		break;
+	default:
+		printf("Unknown ec_pd_id %d\n", ec_pd_id);
+	}
 }
 
 const struct audio_config *variant_probe_audio_config(void)
