@@ -103,6 +103,8 @@ void *fastboot_get_memory_buffer(struct FastbootOps *fb, uint64_t *len);
 void fastboot_prepare_download(struct FastbootOps *fb, uint32_t bytes);
 /* Reset fastboot session to initial state */
 void fastboot_reset_session(struct FastbootOps *fb);
+/* Resets the state of the data staging area */
+void fastboot_reset_staging(struct FastbootOps *fb);
 
 
 /* Responses to the client */

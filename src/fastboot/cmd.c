@@ -80,9 +80,7 @@ static void fastboot_cmd_upload(struct FastbootOps *fb, const char *arg)
 	fb->send_packet(fb, buf, len);
 	fastboot_succeed(fb);
 
-	// reset the buffer
-	fb->has_staged_data = false;
-	fb->memory_buffer_len = 0;
+	fastboot_reset_staging(fb);
 }
 
 static void fastboot_cmd_download(struct FastbootOps *fb, const char *arg)

@@ -173,12 +173,17 @@ void fastboot_reset_session(struct FastbootOps *fb)
 {
 	/* Reset common fastboot session */
 	fb->state = COMMAND;
-	fb->has_staged_data = false;
-	fb->memory_buffer_len = 0;
+	fb->download_progress = 0;
 
 	/* Reset transport layer specific data */
 	if (fb->reset)
 		fb->reset(fb);
+}
+
+void fastboot_reset_staging(struct FastbootOps *fb)
+{
+	fb->has_staged_data = false;
+	fb->memory_buffer_len = 0;
 }
 
 void fastboot(void)
@@ -219,6 +224,7 @@ void fastboot(void)
 		return;
 	}
 
+	fastboot_reset_staging(fb_session);
 	fastboot_reset_session(fb_session);
 
 	printf("fastboot starting.\n");
