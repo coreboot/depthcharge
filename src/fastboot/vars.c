@@ -66,9 +66,8 @@ static void fastboot_getvar_all(struct FastbootOps *fb)
 			} while (state == STATE_OK || state == STATE_TRY_NEXT);
 		} else {
 			size_t len = FASTBOOT_MSG_MAX;
-			fastboot_getvar(fb, var->var, NULL, 0, var_buf, &len);
-			fastboot_info(fb, "%s:%.*s", var->name, (int)len,
-				      var_buf);
+			if (fastboot_getvar(fb, var->var, NULL, 0, var_buf, &len) == STATE_OK)
+				fastboot_info(fb, "%s:%.*s", var->name, (int)len, var_buf);
 		}
 	}
 	fastboot_succeed(fb);
