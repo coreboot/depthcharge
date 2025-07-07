@@ -3,6 +3,7 @@
  * Copyright 2014 The ChromiumOS Authors
  */
 
+#include <assert.h>
 #include <commonlib/list.h>
 #include <gpt.h>
 #include <gpt_misc.h>
@@ -41,14 +42,15 @@ static int storage_show(int argc, char *const argv[])
 
 static int storage_read(int argc, char *const argv[])
 {
-	int base_block, num_blocks, *dest_addr, i;
-	int *args[] = {&base_block, &num_blocks, (int*) &dest_addr};
+	lba_t base_block, num_blocks, rc;
+	uintptr_t dest_addr;
 	BlockDev *bd;
 
-	dest_addr = NULL;
+	assert(argc >= 3);
 
-	for (i = 0; i < ARRAY_SIZE(args); i++)
-		*args[i] = strtoul(argv[i], NULL, 0);
+	base_block = strtoull(argv[0], NULL, 0);
+	num_blocks = strtoull(argv[1], NULL, 0);
+	dest_addr = strtoull(argv[2], NULL, 0);
 
 	if ((current_devices.curr_device < 0) ||
 	    (current_devices.curr_device >= current_devices.total)) {
@@ -57,20 +59,21 @@ static int storage_read(int argc, char *const argv[])
 	}
 
 	bd = current_devices.known_devices[current_devices.curr_device];
-	i = bd->ops.read(&bd->ops, base_block, num_blocks, dest_addr);
-	return i != num_blocks;
+	rc = bd->ops.read(&bd->ops, base_block, num_blocks, (void *)dest_addr);
+	return rc != num_blocks;
 }
 
 static int storage_write(int argc, char *const argv[])
 {
-	int base_block, num_blocks, *src_addr, i;
-	int *args[] = {&base_block, &num_blocks, (int *) &src_addr};
+	lba_t base_block, num_blocks, rc;
+	uintptr_t src_addr;
 	BlockDev *bd;
 
-	src_addr = NULL;
+	assert(argc >= 3);
 
-	for (i = 0; i < ARRAY_SIZE(args); i++)
-		*args[i] = strtoul(argv[i], NULL, 0);
+	base_block = strtoull(argv[0], NULL, 0);
+	num_blocks = strtoull(argv[1], NULL, 0);
+	src_addr = strtoull(argv[2], NULL, 0);
 
 	if ((current_devices.curr_device < 0) ||
 	    (current_devices.curr_device >= current_devices.total)) {
@@ -79,18 +82,19 @@ static int storage_write(int argc, char *const argv[])
 	}
 
 	bd = current_devices.known_devices[current_devices.curr_device];
-	i = bd->ops.write(&bd->ops, base_block, num_blocks, src_addr);
-	return i != num_blocks;
+	rc = bd->ops.write(&bd->ops, base_block, num_blocks, (void *)src_addr);
+	return rc != num_blocks;
 }
 
 static int storage_erase(int argc, char *const argv[])
 {
-	int base_block, num_blocks, i;
-	int *args[] = {&base_block, &num_blocks};
+	lba_t base_block, num_blocks, rc;
 	BlockDev *bd;
 
-	for (i = 0; i < ARRAY_SIZE(args); i++)
-		*args[i] = strtoul(argv[i], NULL, 0);
+	assert(argc >= 2);
+
+	base_block = strtoull(argv[0], NULL, 0);
+	num_blocks = strtoull(argv[1], NULL, 0);
 
 	if ((current_devices.curr_device < 0) ||
 	    (current_devices.curr_device >= current_devices.total)) {
@@ -104,8 +108,8 @@ static int storage_erase(int argc, char *const argv[])
 		return CMD_RET_SUCCESS;
 	}
 
-	i = bd->ops.erase(&bd->ops, base_block, num_blocks);
-	return i != num_blocks;
+	rc = bd->ops.erase(&bd->ops, base_block, num_blocks);
+	return rc != num_blocks;
 }
 
 static int storage_dev(int argc, char *const argv[])
