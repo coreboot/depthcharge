@@ -220,7 +220,7 @@ static void backspace(char *buffer, int *np, int *cp)
 
 	console_printf(erase_seq);
 	shift = n - cursor;
-	memcpy(buffer + cursor - 1, buffer + cursor, shift);
+	memmove(buffer + cursor - 1, buffer + cursor, shift);
 	buffer[n - 1] = ' ';
 	buffer[n] = '\0';
 	console_printf("%s", buffer + cursor - 1);
@@ -389,7 +389,7 @@ static void erase_word(char *p_buf, int *np, int *cursor_p)
 	if (!word_start && (word_end != n))
 		word_end++;
 
-	memcpy(p_buf + word_start, p_buf + word_end, n - word_end);
+	memmove(p_buf + word_start, p_buf + word_end, n - word_end);
 	memset(p_buf + n - word_end + word_start, ' ', word_end - word_start);
 	console_printf("%s", p_buf + cursor);
 
