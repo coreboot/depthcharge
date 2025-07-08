@@ -92,7 +92,7 @@ __weak const struct tpm_config *variant_get_tpm_config(void)
 
 __weak int gsc_irq_status(void)
 {
-	return pantherlake_get_gpe(GPE0_DW0_17); /* GPP_B17 */
+	return pantherlake_get_gpe(GPE0_DW1_17); /* GPP_B17 */
 }
 
 static void tpm_setup(void)
