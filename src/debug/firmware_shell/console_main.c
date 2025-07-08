@@ -256,7 +256,7 @@ static const escaped_key  escaped_keys [] = {
 	{ "[B", CHAR_DOWN},
 	{ "[C", CHAR_RIGHT},
 	{ "[D", CHAR_LEFT},
-	{ "zzzz" } /* will never happen */
+	{}, /* End of array */
 };
 
 /*
@@ -313,6 +313,8 @@ static int escape_handled(u8 *cp)
 		       (this_key[0].chars[escape_sn - 1] ==
 			this_key[1].chars[escape_sn - 1])) {
 			this_key++;
+			if (!this_key->chars)
+				break;
 			if (this_key->chars[escape_sn] == c) {
 				on_track = 1;
 				break;
