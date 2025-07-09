@@ -58,6 +58,17 @@ const struct audio_config *variant_probe_audio_config(void)
 				.type = AUDIO_RT721,
 			},
 		};
+	} else if (CONFIG(DRIVER_SOUND_RT722_SNDW) &&
+			fw_config_probe(FW_CONFIG(AUDIO, AUDIO_ALC722_SNDW))) {
+		config = (struct audio_config) {
+			.bus = {
+				.type = AUDIO_SNDW,
+				.sndw.link = AUDIO_SNDW_LINK1,
+			},
+			.codec = {
+				.type = AUDIO_RT721,
+			},
+		};
 	} else {
 		printf("Implement varaint audio config for other FW CONFIG options\n");
 	}
