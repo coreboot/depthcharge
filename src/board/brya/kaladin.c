@@ -62,6 +62,10 @@ static const struct storage_config storage_configs[] = {
 		.pci_dev = PCH_DEV_UFS1,
 		.fw_config = FW_CONFIG(STORAGE, STORAGE_UFS)
 	},
+	{ 	.media = STORAGE_NVME,
+		.pci_dev = PCH_DEV_PCIE10,
+		.fw_config = FW_CONFIG(STORAGE, STORAGE_NVME)
+	},
 	{
 		.media = STORAGE_EMMC,
 		.pci_dev = PCH_DEV_EMMC,
@@ -75,6 +79,10 @@ static const struct storage_config storage_configs[] = {
 	{
 		.media = STORAGE_UFS,
 		.pci_dev = PCH_DEV_UFS1,
+		.fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN)
+	},
+	{ 	.media = STORAGE_NVME,
+		.pci_dev = PCH_DEV_PCIE10,
 		.fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN)
 	},
 };
