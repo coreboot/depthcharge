@@ -75,6 +75,7 @@ int cros_ec_get_next_event(struct ec_response_get_next_event_v1 *e)
 		break;
 	default:
 		fail_msg("Mock event_type %d is not supported", e->event_type);
+		return -EC_RES_ERROR;
 	}
 
 	if (mock_ec_event_fifo_start < mock_ec_event_fifo_end)
