@@ -19,13 +19,13 @@ void board_rts5453_get_image_paths(const char **image_path, const char **hash_pa
 	switch (ec_pd_id) {
 	case 0:
 		/* bypass retimer */
-		*image_path = "rts5453_GOOG0900.bin";
-		*hash_path = "rts5453_GOOG0900.hash";
+		*image_path = "rts5453_GOOG0901.bin";
+		*hash_path = "rts5453_GOOG0901.hash";
 		break;
 	case 1:
 		/* TUSB546/1044 */
-		*image_path = "rts5453_GOOG0C00.bin";
-		*hash_path = "rts5453_GOOG0C00.hash";
+		*image_path = "rts5453_GOOG0F00.bin";
+		*hash_path = "rts5453_GOOG0F00.hash";
 		break;
 	default:
 		printf("Unknown ec_pd_id %d\n", ec_pd_id);
