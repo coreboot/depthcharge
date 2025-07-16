@@ -28,7 +28,7 @@
 #include "fastboot/disk.h"
 #include "fastboot/fastboot.h"
 
-int fastboot_disk_init(struct FastbootOps *fb)
+int fastboot_do_disk_init(struct FastbootOps *fb, bool send_fail)
 {
 	struct list_node *devs;
 
@@ -39,8 +39,9 @@ int fastboot_disk_init(struct FastbootOps *fb)
 	uint32_t count = get_all_bdevs(BLOCKDEV_FIXED, &devs);
 
 	if (count != 1) {
-		fastboot_fail(fb, "wrong number of fixed disks (found %d, wanted 1)\n",
-			      count);
+		if (send_fail)
+			fastboot_fail(fb, "wrong number of fixed disks (found %d, wanted 1)\n",
+				      count);
 		return -1;
 	}
 
@@ -52,7 +53,8 @@ int fastboot_disk_init(struct FastbootOps *fb)
 	}
 
 	if (fb->disk == NULL) {
-		fastboot_fail(fb, "No disk found");
+		if (send_fail)
+			fastboot_fail(fb, "No disk found");
 		return -1;
 	}
 
@@ -61,9 +63,9 @@ int fastboot_disk_init(struct FastbootOps *fb)
 	return 0;
 }
 
-int fastboot_disk_gpt_init(struct FastbootOps *fb)
+int fastboot_do_disk_gpt_init(struct FastbootOps *fb, bool send_fail)
 {
-	if (fastboot_disk_init(fb))
+	if (fastboot_do_disk_init(fb, send_fail))
 		return -1;
 
 	/* GPT already initialized */
@@ -72,7 +74,8 @@ int fastboot_disk_gpt_init(struct FastbootOps *fb)
 
 	fb->gpt = alloc_gpt(fb->disk);
 	if (fb->gpt == NULL) {
-		fastboot_fail(fb, "Invalid GPT on the disk");
+		if (send_fail)
+			fastboot_fail(fb, "Invalid GPT on the disk");
 		return -1;
 	}
 	return 0;

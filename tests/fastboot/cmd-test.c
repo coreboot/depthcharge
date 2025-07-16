@@ -373,6 +373,7 @@ void GptModified(GptData *gpt)
 /* Reset mock data (for use before each test) */
 static int setup(void **state)
 {
+	fastboot_disk_init_could_fail = true;
 	setup_test_fb();
 
 	*state = &test_fb;

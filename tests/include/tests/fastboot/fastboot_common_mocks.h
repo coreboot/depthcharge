@@ -9,6 +9,7 @@
 extern struct FastbootOps test_fb;
 extern BlockDev test_disk;
 extern GptData test_gpt;
+extern bool fastboot_disk_init_could_fail;
 
 /* Setup test_fb with mocked send function and in command state */
 void setup_test_fb(void);

@@ -8,6 +8,7 @@
 struct FastbootOps test_fb;
 BlockDev test_disk;
 GptData test_gpt;
+bool fastboot_disk_init_could_fail = true;
 
 /* Mocked functions */
 static int fb_mock_send_packet(struct FastbootOps *fb, void *buf, size_t len)
@@ -27,16 +28,18 @@ void setup_test_fb(void)
 }
 
 /* Setup fb, so only functions that explicitly call this can use disk and gpt */
-int fastboot_disk_gpt_init(struct FastbootOps *fb)
+int fastboot_do_disk_gpt_init(struct FastbootOps *fb, bool send_fail)
 {
+	assert_true(send_fail == fastboot_disk_init_could_fail);
 	fb->disk = &test_disk;
 	fb->gpt = &test_gpt;
 
 	return 0;
 }
 
-int fastboot_disk_init(struct FastbootOps *fb)
+int fastboot_do_disk_init(struct FastbootOps *fb, bool send_fail)
 {
+	assert_true(send_fail == fastboot_disk_init_could_fail);
 	fb->disk = &test_disk;
 
 	return 0;

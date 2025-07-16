@@ -163,6 +163,7 @@ const u8 *vpd_find(const char *key, const u8 *blob, u32 *offset, u32 *size)
 static int setup(void **state)
 {
 	memset(&lib_sysinfo, 0, sizeof(lib_sysinfo));
+	fastboot_disk_init_could_fail = false;
 
 	setup_test_fb();
 

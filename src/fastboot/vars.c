@@ -191,7 +191,7 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 
 	switch (var) {
 	case VAR_CURRENT_SLOT: {
-		if (fastboot_disk_gpt_init(fb))
+		if (fastboot_disk_gpt_init_no_fail(fb))
 			return STATE_DISK_ERROR;
 
 		/* Make sure that GptNextKernelEntry starts with fresh state */
@@ -220,7 +220,7 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		used_len = snprintf(outbuf, *outbuf_len, "no");
 		break;
 	case VAR_PARTITION_SIZE:
-		if (fastboot_disk_gpt_init(fb))
+		if (fastboot_disk_gpt_init_no_fail(fb))
 			return STATE_DISK_ERROR;
 		if (arg != NULL) {
 			part = gpt_find_partition(fb->gpt, arg);
@@ -248,7 +248,7 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		break;
 	}
 	case VAR_SLOT_COUNT:
-		if (fastboot_disk_gpt_init(fb))
+		if (fastboot_disk_gpt_init_no_fail(fb))
 			return STATE_DISK_ERROR;
 		used_len = snprintf(outbuf, *outbuf_len, "%d",
 				    fastboot_get_slot_count(fb->gpt));
@@ -268,14 +268,14 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		break;
 	}
 	case VAR_SLOT_SUFFIXES:
-		if (fastboot_disk_gpt_init(fb))
+		if (fastboot_disk_gpt_init_no_fail(fb))
 			return STATE_DISK_ERROR;
 		used_len = fastboot_get_slot_suffixes(fb->gpt, outbuf, *outbuf_len);
 		break;
 	case VAR_SLOT_SUCCESSFUL:
 	case VAR_SLOT_RETRY_COUNT:
 	case VAR_SLOT_UNBOOTABLE:
-		if (fastboot_disk_gpt_init(fb))
+		if (fastboot_disk_gpt_init_no_fail(fb))
 			return STATE_DISK_ERROR;
 
 		if (arg != NULL) {
@@ -296,7 +296,7 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		used_len += get_slot_var(var, part, outbuf, *outbuf_len);
 		break;
 	case VAR_LOGICAL_BLOCK_SIZE:
-		if (fastboot_disk_init(fb))
+		if (fastboot_disk_init_no_fail(fb))
 			return STATE_DISK_ERROR;
 
 		used_len = snprintf(outbuf, *outbuf_len, "0x%x", fb->disk->block_size);
@@ -313,7 +313,7 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		break;
 	}
 	case VAR_HAS_SLOT:
-		if (fastboot_disk_gpt_init(fb))
+		if (fastboot_disk_gpt_init_no_fail(fb))
 			return STATE_DISK_ERROR;
 		if (arg != NULL) {
 			slot = fastboot_get_slot_for_partition_name(arg);

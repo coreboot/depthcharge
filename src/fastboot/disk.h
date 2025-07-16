@@ -24,8 +24,8 @@
 #include "fastboot/fastboot.h"
 #include "gpt_misc.h"
 
-int fastboot_disk_init(struct FastbootOps *fb);
-int fastboot_disk_gpt_init(struct FastbootOps *fb);
+int fastboot_do_disk_init(struct FastbootOps *fb, bool send_fail);
+int fastboot_do_disk_gpt_init(struct FastbootOps *fb, bool send_fail);
 int fastboot_save_gpt(struct FastbootOps *fb);
 void fastboot_write(struct FastbootOps *fb, const char *partition_name,
 		    const uint64_t offset, void *data, size_t data_len);
@@ -35,5 +35,25 @@ char fastboot_get_slot_for_partition_name(const char *partition_name);
 GptEntry *fastboot_get_kernel_for_slot(GptData *gpt, char slot);
 int fastboot_get_slot_suffixes(GptData *gpt, char *outbuf, size_t outbuf_len);
 void fastboot_slots_disable_all(GptData *gpt);
+
+static inline int fastboot_disk_init(struct FastbootOps *fb)
+{
+	return fastboot_do_disk_init(fb, true);
+}
+
+static inline int fastboot_disk_gpt_init(struct FastbootOps *fb)
+{
+	return fastboot_do_disk_gpt_init(fb, true);
+}
+
+static inline int fastboot_disk_init_no_fail(struct FastbootOps *fb)
+{
+	return fastboot_do_disk_init(fb, false);
+}
+
+static inline int fastboot_disk_gpt_init_no_fail(struct FastbootOps *fb)
+{
+	return fastboot_do_disk_gpt_init(fb, false);
+}
 
 #endif // __FASTBOOT_DISK_H__
