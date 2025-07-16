@@ -89,6 +89,8 @@ int vboot_check_enable_usb(void)
 
 static vb2_error_t start_fastboot_if_requested(struct vb2_context *ctx)
 {
+	bool found_valid_gpt = false;
+
 	/* Early enter fastboot only in developer mode */
 	if (ctx->boot_mode != VB2_BOOT_MODE_DEVELOPER)
 		return VB2_SUCCESS;
@@ -103,11 +105,18 @@ static vb2_error_t start_fastboot_if_requested(struct vb2_context *ctx)
 		GptData *gpt = alloc_gpt(bdev);
 		if (gpt == NULL)
 			continue;
+		found_valid_gpt = true;
 		cmd = android_misc_get_bcb_command(bdev, gpt);
 		free_gpt(bdev, gpt);
 
 		if (cmd == MISC_BCB_BOOTLOADER_BOOT)
 			fastboot();
+	}
+
+	/* This allows to provision device with empty disk */
+	if (!found_valid_gpt) {
+		printf("No valid GPT found. Wait in fastboot for provisioning.\n");
+		fastboot();
 	}
 
 	return VB2_SUCCESS;
