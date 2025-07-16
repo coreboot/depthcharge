@@ -12,14 +12,14 @@ GptData *test_gpt = (void *)0xbeff;
 
 /* Mocked functions */
 enum gpt_io_ret gpt_read_partition(BlockDev *disk, GptData *gpt, const char *partition_name,
-				   const uint64_t blocks_offset, void *data, size_t data_len)
+				   const uint64_t offset, void *data, size_t data_len)
 {
 	char *to_read;
 
 	assert_ptr_equal(disk, &test_disk);
 	assert_ptr_equal(gpt, test_gpt);
 	assert_string_equal(partition_name, "misc");
-	check_expected(blocks_offset);
+	check_expected(offset);
 	check_expected(data_len);
 
 	to_read = mock_ptr_type(char *);
@@ -30,8 +30,8 @@ enum gpt_io_ret gpt_read_partition(BlockDev *disk, GptData *gpt, const char *par
 }
 
 /* Setup for gpt_read_partition mock */
-#define WILL_READ_MISC(offset, len, content, ret) do { \
-	expect_value(gpt_read_partition, blocks_offset, offset); \
+#define WILL_READ_MISC(offset_val, len, content, ret) do { \
+	expect_value(gpt_read_partition, offset, offset_val); \
 	expect_value(gpt_read_partition, data_len, len); \
 	will_return(gpt_read_partition, content); \
 	will_return(gpt_read_partition, ret); \
@@ -44,12 +44,12 @@ enum gpt_io_ret gpt_read_partition(BlockDev *disk, GptData *gpt, const char *par
 	WILL_READ_MISC(offset, sizeof(struct android_misc_oem_cmdline), content, ret)
 
 enum gpt_io_ret gpt_write_partition(BlockDev *disk, GptData *gpt, const char *partition_name,
-				    const uint64_t blocks_offset, void *data, size_t data_len)
+				    uint64_t offset, void *data, size_t data_len)
 {
 	assert_ptr_equal(disk, &test_disk);
 	assert_ptr_equal(gpt, test_gpt);
 	assert_string_equal(partition_name, "misc");
-	check_expected(blocks_offset);
+	check_expected(offset);
 	check_expected(data_len);
 	check_expected(data);
 
@@ -57,8 +57,8 @@ enum gpt_io_ret gpt_write_partition(BlockDev *disk, GptData *gpt, const char *pa
 }
 
 /* Setup for gpt_write_partition mock */
-#define WILL_WRITE_MISC(offset, len, content, ret) do { \
-	expect_value(gpt_write_partition, blocks_offset, offset); \
+#define WILL_WRITE_MISC(offset_val, len, content, ret) do { \
+	expect_value(gpt_write_partition, offset, offset_val); \
 	expect_value(gpt_write_partition, data_len, len); \
 	expect_memory(gpt_write_partition, data, content, len); \
 	will_return(gpt_write_partition, ret); \
@@ -397,12 +397,12 @@ static void test_android_misc_oem_cmdline_write(void **state)
 	/* Checksum should be fixed before write */
 	cmd.chksum += 5;
 
-	WILL_WRITE_OEM_CMD(8, &expected_cmd, GPT_IO_SUCCESS);
+	WILL_WRITE_OEM_CMD(4096, &expected_cmd, GPT_IO_SUCCESS);
 
 	assert_int_equal(android_misc_oem_cmdline_write(&test_disk, test_gpt, &cmd), 0);
 
 	test_disk.block_size = 4096;
-	WILL_WRITE_OEM_CMD(1, &expected_cmd, GPT_IO_TRANSFER_ERROR);
+	WILL_WRITE_OEM_CMD(4096, &expected_cmd, GPT_IO_TRANSFER_ERROR);
 
 	assert_int_equal(android_misc_oem_cmdline_write(&test_disk, test_gpt, &cmd), -1);
 }
@@ -427,12 +427,12 @@ static void test_android_misc_oem_cmdline_read(void **state)
 	size_t cmd_len = setup_test_cmd(&expected_cmd, "cmdline ", "bootconfig;");
 	setup_test_cmd_chksum(&expected_cmd, cmd_len);
 
-	WILL_READ_OEM_CMD(8, &expected_cmd, GPT_IO_SUCCESS);
+	WILL_READ_OEM_CMD(4096, &expected_cmd, GPT_IO_SUCCESS);
 
 	assert_int_equal(android_misc_oem_cmdline_read(&test_disk, test_gpt, &cmd), 0);
 
 	test_disk.block_size = 4096;
-	WILL_READ_OEM_CMD(1, &expected_cmd, GPT_IO_TRANSFER_ERROR);
+	WILL_READ_OEM_CMD(4096, &expected_cmd, GPT_IO_TRANSFER_ERROR);
 
 	assert_int_equal(android_misc_oem_cmdline_read(&test_disk, test_gpt, &cmd), -1);
 }
@@ -446,7 +446,7 @@ static void test_android_misc_oem_cmdline_read_invalid(void **state)
 	expected_cmd.magic = 0x123;
 	setup_test_cmd_chksum(&expected_cmd, cmd_len);
 
-	WILL_READ_OEM_CMD(8, &expected_cmd, GPT_IO_SUCCESS);
+	WILL_READ_OEM_CMD(4096, &expected_cmd, GPT_IO_SUCCESS);
 
 	/* Should fail, because the loaded cmd is invalid */
 	assert_int_equal(android_misc_oem_cmdline_read(&test_disk, test_gpt, &cmd), -1);

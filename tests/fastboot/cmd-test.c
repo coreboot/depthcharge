@@ -189,20 +189,20 @@ void android_misc_reset_oem_cmd(struct android_misc_oem_cmdline *cmd)
 #define WILL_RESET_CMDLINE expect_function_call(android_misc_reset_oem_cmd)
 
 void fastboot_write(struct FastbootOps *fb, const char *partition_name,
-		    const uint64_t blocks_offset, void *data, size_t data_len)
+		    const uint64_t offset, void *data, size_t data_len)
 {
 	check_expected_ptr(fb);
 	check_expected(partition_name);
-	check_expected(blocks_offset);
+	check_expected(offset);
 	check_expected_ptr(data);
 	check_expected(data_len);
 }
 
 /* Setup for fastboot_write mock */
-#define WILL_WRITE(fb_ptr, part, offset, length) do { \
+#define WILL_WRITE(fb_ptr, part, offset_val, length) do { \
 	expect_value(fastboot_write, fb, fb_ptr); \
 	expect_string(fastboot_write, partition_name, part); \
-	expect_value(fastboot_write, blocks_offset, offset); \
+	expect_value(fastboot_write, offset, offset_val); \
 	expect_value(fastboot_write, data, &_kernel_start); \
 	expect_value(fastboot_write, data_len, length); \
 } while (0)

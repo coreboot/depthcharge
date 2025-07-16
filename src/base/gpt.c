@@ -126,66 +126,127 @@ GptEntry *gpt_get_partition(GptData *gpt, unsigned int index)
 }
 
 enum gpt_io_ret gpt_read_partition(BlockDev *disk, GptData *gpt, const char *partition_name,
-				   const uint64_t blocks_offset, void *data, size_t data_len)
+				   const uint64_t offset, void *data, const size_t data_len)
 {
-	if (data_len % disk->block_size)
-		return GPT_IO_SIZE_NOT_ALIGNED;
-
+	enum gpt_io_ret ret = GPT_IO_SUCCESS;
+	StreamOps *stream;
 	GptEntry *e = gpt_find_partition(gpt, partition_name);
 	if (!e)
 		return GPT_IO_NO_PARTITION;
 
-	const uint64_t space = GptGetEntrySizeLba(e);
-	const uint64_t data_blocks = data_len / disk->block_size;
-	if (blocks_offset > space || data_blocks > space - blocks_offset)
+	const uint64_t space = GptGetEntrySizeBytes(gpt, e);
+	if (offset > space || data_len > space - offset)
 		return GPT_IO_OUT_OF_RANGE;
 
-	printf("Reading LBA %llu to %llu, num blocks = %llu, data len = %zu, block size = %u\n",
-	       e->starting_lba + blocks_offset, e->starting_lba + data_blocks + blocks_offset,
-	       data_blocks, data_len, disk->block_size);
-	const lba_t blocks_read = disk->ops.read(&disk->ops,
-						 e->starting_lba + blocks_offset,
-						 data_blocks, data);
-	if (blocks_read != data_blocks)
-		return GPT_IO_TRANSFER_ERROR;
+	if (disk->ops.new_stream == NULL)
+		return GPT_IO_NO_STREAM;
 
-	return GPT_IO_SUCCESS;
+	stream = disk->ops.new_stream(&disk->ops, e->starting_lba, GptGetEntrySizeLba(e));
+	if (stream == NULL)
+		return GPT_IO_NO_STREAM;
+	if (offset) {
+		if (stream->skip == NULL) {
+			printf("Disk stream doesn't have a skip callback");
+			ret = GPT_IO_STREAM_NO_SKIP_CB;
+			goto out;
+		}
+		if (stream->skip(stream, offset) != offset) {
+			ret = GPT_IO_TRANSFER_ERROR;
+			goto out;
+		}
+	}
+	if (stream->read(stream, data_len, data) != data_len)
+		ret = GPT_IO_TRANSFER_ERROR;
+
+out:
+	stream->close(stream);
+
+	return ret;
+}
+
+static int gpt_write_unaligned(BlockDev *disk, const uint64_t lba, const uint64_t offset,
+			       void *data, size_t data_len)
+{
+	void *block = xmalloc(disk->block_size);
+	int to_write = MIN(disk->block_size - offset, data_len);
+
+	printf("Writing unaligned block to LBA %llu, offset = %llu, data len = %zu, "
+	       "will write = %d, block size = %u\n",
+	       lba, offset, data_len, to_write, disk->block_size);
+	if (disk->ops.read(&disk->ops, lba, 1, block) != 1) {
+		free(block);
+		return -1;
+	}
+
+	memcpy(block + offset, data, to_write);
+
+	if (disk->ops.write(&disk->ops, lba, 1, block) != 1)
+		to_write = -1;
+
+	free(block);
+	return to_write;
 }
 
 enum gpt_io_ret gpt_write_partition(BlockDev *disk, GptData *gpt, const char *partition_name,
-				    const uint64_t blocks_offset, void *data, size_t data_len)
+				    uint64_t offset, void *data, size_t data_len)
 {
+	int written;
 	GptEntry *e = gpt_find_partition(gpt, partition_name);
 	if (!e)
 		return GPT_IO_NO_PARTITION;
 
+	const uint64_t blocks_offset = offset / disk->block_size;
+	offset %= disk->block_size;
 	uint64_t space = GptGetEntrySizeLba(e);
-	const uint64_t start_block = e->starting_lba + blocks_offset;
+	uint64_t start_block = e->starting_lba + blocks_offset;
 	if (space < blocks_offset)
 		return GPT_IO_OUT_OF_RANGE;
 	space -= blocks_offset;
 
 	if (is_sparse_image(data)) {
+		if (offset)
+			return GPT_IO_SPARSE_OFFSET_NOT_ALIGNED;
+
 		printf("Writing sparse image to LBA %llu to %llu\n",
 		       start_block, start_block + space);
 		return write_sparse_image(disk, start_block, space, data, data_len);
 	}
 
-	if (data_len % disk->block_size)
-		return GPT_IO_SIZE_NOT_ALIGNED;
-
-	const uint64_t data_blocks = data_len / disk->block_size;
-	if (data_blocks > space)
+	if (space < DIV_ROUND_UP(data_len + offset, disk->block_size))
 		return GPT_IO_OUT_OF_RANGE;
 
-	printf("Writing LBA %llu to %llu, num blocks = %llu, data "
-		 "len = %zu, block size = %u\n",
-		 start_block, start_block + data_blocks,
-		 data_blocks, data_len, disk->block_size);
-	const lba_t blocks_written = disk->ops.write(&disk->ops, start_block,
-						     data_blocks, data);
-	if (blocks_written != data_blocks)
-		return GPT_IO_TRANSFER_ERROR;
+	if (offset) {
+		written = gpt_write_unaligned(disk, start_block, offset, data, data_len);
+		if (written <= 0)
+			return GPT_IO_TRANSFER_ERROR;
+		data += written;
+		data_len -= written;
+		if (data_len == 0)
+			return GPT_IO_SUCCESS;
+		start_block++;
+	}
+
+	const uint64_t data_blocks = data_len / disk->block_size;
+
+	if (data_blocks) {
+		printf("Writing LBA %llu to %llu, num blocks = %llu, data "
+			 "len = %zu, block size = %u\n",
+			 start_block, start_block + data_blocks,
+			 data_blocks, data_len, disk->block_size);
+		const lba_t blocks_written = disk->ops.write(&disk->ops, start_block,
+							     data_blocks, data);
+		if (blocks_written != data_blocks)
+			return GPT_IO_TRANSFER_ERROR;
+	}
+
+	data_len %= disk->block_size;
+	if (data_len) {
+		data += data_blocks * disk->block_size;
+		written = gpt_write_unaligned(disk, start_block + data_blocks, 0, data,
+					      data_len);
+		if (data_len - written != 0)
+			return GPT_IO_TRANSFER_ERROR;
+	}
 
 	return GPT_IO_SUCCESS;
 }

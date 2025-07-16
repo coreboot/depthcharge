@@ -73,26 +73,26 @@ int android_misc_oem_cmdline_update_checksum(struct android_misc_oem_cmdline *cm
 	return 0;
 }
 
-static int android_misc_read(BlockDev *disk, GptData *gpt, size_t blocks_offset, void *buf,
+static int android_misc_read(BlockDev *disk, GptData *gpt, size_t offset, void *buf,
 			     size_t size)
 {
 	if (gpt_read_partition(disk, gpt, GptPartitionNames[GPT_ANDROID_MISC],
-			       blocks_offset, buf, size) != GPT_IO_SUCCESS) {
+			       offset, buf, size) != GPT_IO_SUCCESS) {
 		printf("Failed to read misc partition (offset %zu, size %zu)\n",
-		       blocks_offset * disk->block_size, size);
+		       offset * disk->block_size, size);
 		return -1;
 	}
 
 	return 0;
 }
 
-static int android_misc_write(BlockDev *disk, GptData *gpt, size_t blocks_offset, void *buf,
+static int android_misc_write(BlockDev *disk, GptData *gpt, size_t offset, void *buf,
 			      size_t size)
 {
-	if (gpt_write_partition(disk, gpt, GptPartitionNames[GPT_ANDROID_MISC],
-			    blocks_offset, buf, size) != GPT_IO_SUCCESS) {
+	if (gpt_write_partition(disk, gpt, GptPartitionNames[GPT_ANDROID_MISC], offset,
+				buf, size) != GPT_IO_SUCCESS) {
 		printf("Failed to write misc partition (offset %zu, size %zu)\n",
-		       blocks_offset * disk->block_size, size);
+		       offset * disk->block_size, size);
 		return -1;
 	}
 
@@ -105,29 +105,15 @@ int android_misc_oem_cmdline_write(BlockDev *disk, GptData *gpt,
 	if (android_misc_oem_cmdline_update_checksum(cmd))
 		return -1;
 
-	if (MISC_VENDOR_SPACE_OEM_CMDLINE_OFFSET % disk->block_size) {
-		printf("Offset %d is not block aligned (%d)\n",
-		       MISC_VENDOR_SPACE_OEM_CMDLINE_OFFSET, disk->block_size);
-		return -1;
-	}
-
-	return android_misc_write(disk, gpt,
-				  MISC_VENDOR_SPACE_OEM_CMDLINE_OFFSET / disk->block_size,
+	return android_misc_write(disk, gpt, MISC_VENDOR_SPACE_OEM_CMDLINE_OFFSET,
 				  cmd, sizeof(*cmd));
 }
 
 int android_misc_oem_cmdline_read(BlockDev *disk, GptData *gpt,
 				  struct android_misc_oem_cmdline *cmd)
 {
-	if (MISC_VENDOR_SPACE_OEM_CMDLINE_OFFSET % disk->block_size) {
-		printf("Offset %d is not block aligned (%d)\n",
-		       MISC_VENDOR_SPACE_OEM_CMDLINE_OFFSET, disk->block_size);
-		return -1;
-	}
-
-	if (android_misc_read(disk, gpt,
-			       MISC_VENDOR_SPACE_OEM_CMDLINE_OFFSET / disk->block_size,
-			       cmd, sizeof(*cmd)))
+	if (android_misc_read(disk, gpt, MISC_VENDOR_SPACE_OEM_CMDLINE_OFFSET,
+			      cmd, sizeof(*cmd)))
 		return -1;
 
 	if (!is_android_misc_oem_cmdline_valid(cmd))

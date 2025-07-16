@@ -28,7 +28,7 @@ int fastboot_disk_init(struct FastbootOps *fb);
 int fastboot_disk_gpt_init(struct FastbootOps *fb);
 int fastboot_save_gpt(struct FastbootOps *fb);
 void fastboot_write(struct FastbootOps *fb, const char *partition_name,
-		    const uint64_t blocks_offset, void *data, size_t data_len);
+		    const uint64_t offset, void *data, size_t data_len);
 void fastboot_erase(struct FastbootOps *fb, const char *partition_name);
 int fastboot_get_slot_count(GptData *gpt);
 char get_slot_for_partition_name(GptEntry *e, char *partition_name);

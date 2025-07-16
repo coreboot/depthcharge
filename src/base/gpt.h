@@ -54,10 +54,12 @@ GptEntry *gpt_get_partition(GptData *gpt, unsigned int index);
 /* Return codes of IO functions */
 enum gpt_io_ret {
 	GPT_IO_SUCCESS = 0,
-	GPT_IO_SIZE_NOT_ALIGNED,
+	GPT_IO_NO_STREAM,
+	GPT_IO_STREAM_NO_SKIP_CB,
 	GPT_IO_NO_PARTITION,
 	GPT_IO_OUT_OF_RANGE,
 	GPT_IO_TRANSFER_ERROR,
+	GPT_IO_SPARSE_OFFSET_NOT_ALIGNED,
 	GPT_IO_SPARSE_TOO_SMALL,
 	GPT_IO_SPARSE_WRONG_HEADER_SIZE,
 	GPT_IO_SPARSE_BLOCK_SIZE_NOT_ALIGNED,
@@ -65,16 +67,13 @@ enum gpt_io_ret {
 	GPT_IO_SPARSE_WRONG_CHUNK_TYPE,
 };
 
-/* Read content of the partition starting from offset specified in disk blocks */
+/* Read content of the partition starting from offset specified in bytes */
 enum gpt_io_ret gpt_read_partition(BlockDev *disk, GptData *gpt, const char *partition_name,
-				   const uint64_t blocks_offset, void *data, size_t data_len);
+				   const uint64_t offset, void *data, size_t data_len);
 
-/*
- * Write content of data buffer to the partition starting from offset specified
- * in disk blocks
- */
+/* Write content of data buffer to the partition starting from offset specified in bytes */
 enum gpt_io_ret gpt_write_partition(BlockDev *disk, GptData *gpt, const char *partition_name,
-				    const uint64_t blocks_offset, void *data, size_t data_len);
+				    uint64_t offset, void *data, size_t data_len);
 
 /* Erase content of the partition */
 enum gpt_io_ret gpt_erase_partition(BlockDev *disk, GptData *gpt,

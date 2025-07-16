@@ -87,19 +87,15 @@ int fastboot_save_gpt(struct FastbootOps *fb)
 }
 
 void fastboot_write(struct FastbootOps *fb, const char *partition_name,
-		    const uint64_t blocks_offset, void *data, size_t data_len)
+		    const uint64_t offset, void *data, size_t data_len)
 {
 	if (fastboot_disk_gpt_init(fb))
 		return;
 
-	switch (gpt_write_partition(fb->disk, fb->gpt, partition_name, blocks_offset,
+	switch (gpt_write_partition(fb->disk, fb->gpt, partition_name, offset,
 				    data, data_len)) {
 	case GPT_IO_SUCCESS:
 		fastboot_succeed(fb);
-		break;
-	case GPT_IO_SIZE_NOT_ALIGNED:
-		fastboot_fail(fb, "Buffer size %lu not aligned to block size of %u", data_len,
-			      fb->disk->block_size);
 		break;
 	case GPT_IO_NO_PARTITION:
 		fastboot_fail(fb, "Could not find partition \"%s\"", partition_name);
@@ -109,6 +105,10 @@ void fastboot_write(struct FastbootOps *fb, const char *partition_name,
 		break;
 	case GPT_IO_TRANSFER_ERROR:
 		fastboot_fail(fb, "Failed to write");
+		break;
+	case GPT_IO_SPARSE_OFFSET_NOT_ALIGNED:
+		fastboot_fail(fb, "Offset %llu not aligned to block size (%u) on sparse write",
+			      offset, fb->disk->block_size);
 		break;
 	case GPT_IO_SPARSE_TOO_SMALL:
 		fastboot_fail(fb, "Sparse image ended abruptly");
