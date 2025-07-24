@@ -17,7 +17,7 @@
 #include "drivers/soc/x1p42100.h"
 #include "variant.h"
 
-#define NVME_PCI_DEV PCI_DEV(0x6, 0, 0)
+#define NVME_PCI_DEV PCI_DEV(0x1, 0, 0)
 
 pcidev_t variant_get_nvme_pcidev()
 {
