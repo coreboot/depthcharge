@@ -143,8 +143,7 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		break;
 	}
 	case VAR_DOWNLOAD_SIZE:
-		used_len = snprintf(outbuf, *outbuf_len, "%llu",
-				    FASTBOOT_MAX_DOWNLOAD_SIZE);
+		used_len = snprintf(outbuf, *outbuf_len, "0x%llx", FASTBOOT_MAX_DOWNLOAD_SIZE);
 		break;
 	case VAR_IS_USERSPACE:
 		used_len = snprintf(outbuf, *outbuf_len, "no");
