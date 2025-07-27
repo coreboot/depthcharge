@@ -8,6 +8,8 @@
 #include "drivers/sound/sndw_common.h"
 #include "drivers/sound/sound.h"
 
+extern const sndw_codec_id rt7xx_id;
+
 /*
  * This driver supports both RT712 and RT721 codecs.
  */

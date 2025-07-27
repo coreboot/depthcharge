@@ -6,7 +6,7 @@
 #include "drivers/sound/rt1320_sndw.h"
 
 /* ALC1320 amplifier ID */
-static const sndw_codec_id rt1320_id = {
+const sndw_codec_id rt1320_id = {
 	.codec = {
 		.version   = 0x30,
 		.mfgid1    = 0x02,

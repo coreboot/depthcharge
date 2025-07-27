@@ -12,6 +12,8 @@
 #include "drivers/sound/sndw_common.h"
 #include "drivers/sound/sound.h"
 
+extern const sndw_codec_id max98373_id;
+
 /* new_max98373_sndw - new structure for Soundwire Max98373 codec. */
 SoundDevice_sndw *new_max98373_sndw(SndwOps *sndw, uint32_t beep_duration);
 

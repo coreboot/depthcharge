@@ -10,6 +10,8 @@
 #include "drivers/sound/sndw_common.h"
 #include "drivers/sound/sound.h"
 
+extern const sndw_codec_id rt1320_id;
+
 /* new_rt1320_sndw - new structure for Soundwire rt1320 amplifier. */
 SoundDevice_sndw *new_rt1320_sndw(SndwOps *sndw, uint32_t beep_duration);
 #endif

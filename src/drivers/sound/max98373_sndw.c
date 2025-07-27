@@ -9,7 +9,7 @@
 #include "drivers/sound/max98373_sndw.h"
 
 /* MAX98373 codec ID */
-static const sndw_codec_id max98373_id = {
+const sndw_codec_id max98373_id = {
 	.codec = {
 		.version   = 0x27,
 		.mfgid1    = 0x01,

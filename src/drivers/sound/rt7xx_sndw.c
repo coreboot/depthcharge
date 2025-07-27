@@ -6,7 +6,7 @@
 #include "drivers/sound/rt7xx_sndw.h"
 
 /* rt721 codec ID */
-static const sndw_codec_id rt7xx_id = {
+const sndw_codec_id rt7xx_id = {
 	.codec = {
 		.version   = 0x30,
 		.mfgid1    = 0x02,
