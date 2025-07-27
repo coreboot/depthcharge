@@ -1,18 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <libpayload.h>
-#include "drivers/ec/tps6699x/tps6699x.h"
+#include "base/fw_config.h"
 #include "board/fatcat/include/variant.h"
 #include "drivers/bus/i2s/cavs-regs.h"
-#include "drivers/bus/i2s/intel_common/max98357a.h"
-#include "base/fw_config.h"
+#include "drivers/bus/soundwire/soundwire.h"
+#include "drivers/ec/tps6699x/tps6699x.h"
 #include "drivers/gpio/pantherlake.h"
 #include "drivers/soc/pantherlake.h"
-#include "drivers/storage/storage_common.h"
-#include "drivers/bus/soundwire/soundwire.h"
-#include "drivers/sound/sndw_common.h"
 #include "drivers/sound/rt1320_sndw.h"
 #include "drivers/sound/rt7xx_sndw.h"
+#include "drivers/sound/sndw_common.h"
+#include "drivers/storage/storage_common.h"
 
 #define EC_SOC_INT_ODL		GPP_E03
 
