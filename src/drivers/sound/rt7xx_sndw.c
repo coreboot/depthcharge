@@ -93,7 +93,7 @@ static int sndw_beep(SndwOps *sndw, void *sndwlinkaddr, uint32_t sndwendpointdev
  */
 static int rt7xxsndw_beep(SoundOps *me, uint32_t msec, uint32_t frequency)
 {
-	rt7xxsndw *codec = container_of(me, rt7xxsndw, ops);
+	SoundDevice_sndw *codec = container_of(me, SoundDevice_sndw, ops);
 	sndw_codec_info maxcodecinfo;
 
 	if (codec->sndw->sndw_enable(codec->sndw, &maxcodecinfo)) {
@@ -129,9 +129,9 @@ static int rt7xxsndw_beep(SoundOps *me, uint32_t msec, uint32_t frequency)
  * new_rt7xx_sndw - new structure for Soundwire rt7xx codec.
  * sndw - Pointer to the Soundwire ops.
  */
-rt7xxsndw *new_rt7xx_sndw(SndwOps *sndw, uint32_t beep_duration)
+SoundDevice_sndw *new_rt7xx_sndw(SndwOps *sndw, uint32_t beep_duration)
 {
-	rt7xxsndw *codec = xzalloc(sizeof(*codec));
+	SoundDevice_sndw *codec = xzalloc(sizeof(*codec));
 	codec->ops.play = &rt7xxsndw_beep;
 	codec->sndw = sndw;
 	codec->beep_duration = beep_duration;

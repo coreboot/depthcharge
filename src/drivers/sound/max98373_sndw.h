@@ -9,15 +9,10 @@
 
 #include "drivers/bus/soundwire/soundwire.h"
 #include "drivers/sound/max98373_common_regs.h"
+#include "drivers/sound/sndw_common.h"
 #include "drivers/sound/sound.h"
 
-typedef struct {
-	SoundOps ops;
-	SndwOps *sndw;
-	uint32_t beepduration;
-} Max98373sndw;
-
 /* new_max98373_sndw - new structure for Soundwire Max98373 codec. */
-Max98373sndw *new_max98373_sndw(SndwOps *sndw, uint32_t beepduration);
+SoundDevice_sndw *new_max98373_sndw(SndwOps *sndw, uint32_t beep_duration);
 
 #endif

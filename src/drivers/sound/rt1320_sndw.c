@@ -358,7 +358,7 @@ static int sndw_beep(SndwOps *sndw, void *sndwlinkaddr, uint32_t sndwendpointdev
  */
 static int rt1320sndw_beep(SoundOps *me, uint32_t msec, uint32_t frequency)
 {
-	rt1320sndw *codec = container_of(me, rt1320sndw, ops);
+	SoundDevice_sndw *codec = container_of(me, SoundDevice_sndw, ops);
 	sndw_codec_info info;
 
 	if (codec->sndw->sndw_enable(codec->sndw, &info)) {
@@ -391,9 +391,9 @@ static int rt1320sndw_beep(SoundOps *me, uint32_t msec, uint32_t frequency)
  * new_rt1320_sndw - new structure for Soundwire rt1320 amplifier.
  * sndw - Pointer to the Soundwire ops.
  */
-rt1320sndw *new_rt1320_sndw(SndwOps *sndw, uint32_t beep_duration)
+SoundDevice_sndw *new_rt1320_sndw(SndwOps *sndw, uint32_t beep_duration)
 {
-	rt1320sndw *codec = xzalloc(sizeof(*codec));
+	SoundDevice_sndw *codec = xzalloc(sizeof(*codec));
 	codec->ops.play = &rt1320sndw_beep;
 	codec->sndw = sndw;
 	codec->beep_duration = beep_duration;

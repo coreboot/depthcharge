@@ -5,6 +5,7 @@
 
 #include "drivers/bus/soundwire/soundwire.h"
 #include "drivers/sound/rt7xx_common_regs.h"
+#include "drivers/sound/sndw_common.h"
 #include "drivers/sound/sound.h"
 
 /*
@@ -22,12 +23,6 @@
 #define RT_7XX_CODEC_PART2_ID 0x22
 #endif
 
-typedef struct {
-	SoundOps ops;
-	SndwOps *sndw;
-	uint32_t beep_duration;
-} rt7xxsndw;
-
 /* new_rt7xx_sndw - new structure for Soundwire rt721 and rt712 codecs. */
-rt7xxsndw *new_rt7xx_sndw(SndwOps *sndw, uint32_t beep_duration);
+SoundDevice_sndw *new_rt7xx_sndw(SndwOps *sndw, uint32_t beep_duration);
 #endif

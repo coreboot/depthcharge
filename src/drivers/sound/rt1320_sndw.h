@@ -7,17 +7,9 @@
 
 #include "drivers/bus/soundwire/soundwire.h"
 #include "drivers/sound/rt1320_common_regs.h"
+#include "drivers/sound/sndw_common.h"
 #include "drivers/sound/sound.h"
 
-/*
- * This driver supports both rt1320 amplifier.
- */
-typedef struct {
-	SoundOps ops;
-	SndwOps *sndw;
-	uint32_t beep_duration;
-} rt1320sndw;
-
 /* new_rt1320_sndw - new structure for Soundwire rt1320 amplifier. */
-rt1320sndw *new_rt1320_sndw(SndwOps *sndw, uint32_t beep_duration);
+SoundDevice_sndw *new_rt1320_sndw(SndwOps *sndw, uint32_t beep_duration);
 #endif

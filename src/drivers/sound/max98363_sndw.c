@@ -224,7 +224,7 @@ static int sndwbeep(SndwOps *sndw, void *sndwlinkaddr, uint32_t sndwendpointdev,
  */
 static int max98363sndw_beep(SoundOps *me, uint32_t msec, uint32_t frequency)
 {
-	Max98363sndw *codec = container_of(me, Max98363sndw, ops);
+	SoundDevice_sndw *codec = container_of(me, SoundDevice_sndw, ops);
 	sndw_codec_info maxcodecinfo;
 
 	if (codec->sndw->sndw_enable(codec->sndw, &maxcodecinfo)) {
@@ -243,7 +243,7 @@ static int max98363sndw_beep(SoundOps *me, uint32_t msec, uint32_t frequency)
 	}
 
 	if (sndwbeep(codec->sndw, maxcodecinfo.sndwlinkaddr, maxcodecinfo.deviceindex,
-							codec->beepduration)) {
+							codec->beep_duration)) {
 		printf("Failed to generate the boot beep.\n");
 		return -1;
 	}
@@ -261,13 +261,13 @@ static int max98363sndw_beep(SoundOps *me, uint32_t msec, uint32_t frequency)
  * new_max98363_sndw - new structure for Soundwire Max98363 codec.
  * sndw - Pointer to the Soundwire ops.
  */
-Max98363sndw *new_max98363_sndw(SndwOps *sndw, uint32_t beepduration)
+SoundDevice_sndw *new_max98363_sndw(SndwOps *sndw, uint32_t beep_duration)
 {
-	Max98363sndw *codec = xzalloc(sizeof(*codec));
+	SoundDevice_sndw *codec = xzalloc(sizeof(*codec));
 
 	codec->ops.play = &max98363sndw_beep;
 	codec->sndw = sndw;
-	codec->beepduration = beepduration;
+	codec->beep_duration = beep_duration;
 
 	return codec;
 }
