@@ -45,4 +45,7 @@ typedef struct {
  */
 Soundwire *new_soundwire(int sndwlinkindex);
 
+/* Initializes SoundWire bus and probes/enables a codec. */
+int sndw_probe_and_enable_codec(Soundwire *sndwbus, sndw_codec_info *codecinfo);
+
 #endif

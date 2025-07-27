@@ -579,6 +579,27 @@ static int enable_hda_dsp(Soundwire *bus)
 	return 0;
 }
 
+/* Helper function for common SoundWire enablement steps */
+static int __sndw_perform_enablement_steps(Soundwire *sndwbus, sndw_codec_info *codecinfo)
+{
+	if (enable_hda_dsp(sndwbus)) {
+		printf("ERROR: Failed to enable HDA/DSP for SoundWire.\n");
+		return -1;
+	}
+
+	if (sndwlink_init(sndwbus)) {
+		printf("ERROR: Failed to initialize the SoundWire link.\n");
+		return -1;
+	}
+
+	if (enable_sndwcodec(sndwbus, codecinfo)) {
+		printf("ERROR: Failed to enable SoundWire codec (possibly not present or misconfigured).\n");
+		return -1;
+	}
+
+	return 0;
+}
+
 /*
  * sndw_enable - Enable HDA, DSP and Soundwire interfaces.
  * me - Pointer to the Soundwire ops.
@@ -588,22 +609,7 @@ static int sndw_enable(struct SndwOps *me, sndw_codec_info *codecinfo)
 {
 	Soundwire *sndwbus = container_of(me, Soundwire, ops);
 
-	if (enable_hda_dsp(sndwbus)) {
-		printf("Failed to reset HDA/DSP.\n");
-		return -1;
-	}
-
-	if (sndwlink_init(sndwbus)) {
-		printf("Failed to initialize the Soundwire link.\n");
-		return -1;
-	}
-
-	if (enable_sndwcodec(sndwbus, codecinfo)) {
-		printf("Failed to enable the Soundwire codec.\n");
-		return -1;
-	}
-
-	return 0;
+	return __sndw_perform_enablement_steps(sndwbus, codecinfo);
 }
 
 /*
@@ -730,4 +736,28 @@ Soundwire *new_soundwire(int sndwlinkindex)
 	bus->sndwlinkindex = sndwlinkindex;
 
 	return bus;
+}
+
+/*
+ * sndw_probe_and_enable_codec - Initializes SoundWire bus and probes/enables a codec.
+ * @sndwbus: Pointer to the Soundwire bus context.
+ * @codecinfo: Pointer to a structure to store discovered codec information.
+ *
+ * This function performs the necessary steps to bring up the SoundWire bus,
+ * including enabling the HDA DSP and initializing the SoundWire link. It then
+ * attempts to probe for and enable a SoundWire codec on the platform. The
+ * `codecinfo` structure will be populated with details of the successfully
+ * enabled codec if found.
+ *
+ * Return: 0 on success (a codec was successfully probed and enabled), -1 on failure.
+ */
+int sndw_probe_and_enable_codec(Soundwire *sndwbus, sndw_codec_info *codecinfo)
+{
+	/* Validate input pointers to prevent potential crashes. */
+	if (!sndwbus || !codecinfo) {
+		printf("ERROR: Invalid NULL pointer for SoundWire bus or codec info.\n");
+		return -1;
+	}
+
+	return __sndw_perform_enablement_steps(sndwbus, codecinfo);
 }
