@@ -17,8 +17,8 @@
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/i2s.h"
-#include "drivers/sound/rt1015p.h"
 #include "drivers/sound/rt5645.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/storage/mtk_ufs.h"
@@ -73,13 +73,13 @@ static void enable_usb_vbus(struct UsbHostController *usb_host)
 	}
 }
 
-static void setup_setup_rt1019(GpioOps *spk_en)
+static void setup_codec_rt1019(GpioOps *spk_en)
 {
-	MtkI2s *mtk_i2s = new_mtk_i2s(0x11050000, 2, 32 * KHz, 16, 16, AFE_TDM_OUT1);
-	I2sSource *i2s_source = new_i2s_source(&mtk_i2s->ops, 32 * KHz, 2, 8000);
+	MtkI2s *mtk_i2s = new_mtk_i2s(0x11050000, 2, 48 * KHz, 16, 16, AFE_TDM_OUT1);
+	I2sSource *i2s_source = new_i2s_source(&mtk_i2s->ops, 48 * KHz, 2, 8000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 
-	rt1015pCodec *codec = new_rt1015p_codec(spk_en);
+	GpioAmpCodec *codec = new_gpio_amp_codec(spk_en);
 	SoundRouteComponent *speaker_amp = &codec->component;
 
 	list_insert_after(&speaker_amp->list_node, &sound_route->components);
@@ -134,7 +134,7 @@ static void sound_setup(void)
 	else if (alc5645_spk_en)
 		setup_codec_alc5645();
 	else if (rt1019_spk_en)
-		setup_setup_rt1019(rt1019_spk_en);
+		setup_codec_rt1019(rt1019_spk_en);
 	else
 		printf("no amps found\n");
 }
