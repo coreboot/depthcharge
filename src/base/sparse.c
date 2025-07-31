@@ -143,8 +143,7 @@ enum gpt_io_ret write_sparse_image(BlockDev *disk, uint64_t part_start_lba,
 		return GPT_IO_SPARSE_WRONG_HEADER_SIZE;
 
 	/* Is image block size multiple of bdev block size? */
-	if (img_hdr->blk_size !=
-	    ALIGN_DOWN(img_hdr->blk_size, bdev_block_size))
+	if (img_hdr->blk_size % bdev_block_size)
 		return GPT_IO_SPARSE_BLOCK_SIZE_NOT_ALIGNED;
 
 	/* Is chunk header size as expected? */
