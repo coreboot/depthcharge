@@ -5,14 +5,38 @@
 #include <libpayload.h>
 #include "drivers/sound/rt7xx_sndw.h"
 
-/* rt721 codec ID */
-const sndw_codec_id rt7xx_id = {
+/* rt712 codec ID */
+const sndw_codec_id rt712_id = {
 	.codec = {
 		.version   = 0x30,
 		.mfgid1    = 0x02,
 		.mfgid2    = 0x5d,
-		.partid1   = RT_7XX_CODEC_PART1_ID,
-		.partid2   = RT_7XX_CODEC_PART2_ID,
+		.partid1   = 0x07,
+		.partid2   = 0x12,
+		.sndwclass = 0x1,
+	}
+};
+
+/* rt721 codec ID */
+const sndw_codec_id rt721_id = {
+	.codec = {
+		.version   = 0x30,
+		.mfgid1    = 0x02,
+		.mfgid2    = 0x5d,
+		.partid1   = 0x07,
+		.partid2   = 0x21,
+		.sndwclass = 0x1,
+	}
+};
+
+/* rt722 codec ID */
+const sndw_codec_id rt722_id = {
+	.codec = {
+		.version   = 0x30,
+		.mfgid1    = 0x02,
+		.mfgid2    = 0x5d,
+		.partid1   = 0x07,
+		.partid2   = 0x22,
 		.sndwclass = 0x1,
 	}
 };
@@ -87,6 +111,36 @@ static int sndw_beep(SndwOps *sndw, void *sndwlinkaddr, uint32_t sndwendpointdev
 	printf("%s end\n", __func__);
 	return 0;
 }
+
+/*
+ * rt7xx_compare_codec_id - Helper to compare a codec info ID with a reference ID.
+ * @info: Pointer to the sndw_codec_info containing the ID to compare.
+ * @ref_id: Pointer to the reference sndw_codec_id to compare against.
+ *
+ * This function iterates through the ID fields and returns true if they all match,
+ * false otherwise.
+ */
+static bool rt7xx_compare_codec_id(const sndw_codec_info *info, const sndw_codec_id *ref_id)
+{
+	for (int i = 0; i < SNDW_DEV_ID_NUM; i++) {
+		if (ref_id->id[i] != info->codecid.id[i])
+			return false;
+	}
+	return true;
+}
+
+static int rt7xx_codec_present(sndw_codec_info *info)
+{
+	if (rt7xx_compare_codec_id(info, &rt712_id))
+		return 0;
+	else if (rt7xx_compare_codec_id(info, &rt721_id))
+		return 0;
+	else if (rt7xx_compare_codec_id(info, &rt722_id))
+		return 0;
+
+	return -1;
+}
+
 /*
  * rt7xxsndw_beep - Function involves enabling of the codec, generate the beep via
  * tone generator and then resets the DSP.
@@ -101,14 +155,12 @@ static int rt7xxsndw_beep(SoundOps *me, uint32_t msec, uint32_t frequency)
 		return -1;
 	}
 
-	for(int i = 0; i < SNDW_DEV_ID_NUM; i++) {
-		if(rt7xx_id.id[i] != maxcodecinfo.codecid.id[i]) {
-			printf("Codecs don't match\n");
-			for(int j = 0; j < SNDW_DEV_ID_NUM; j++)
-				printf(" 0x%x", maxcodecinfo.codecid.id[j]);
-			printf("\n");
-			return -1;
-		}
+	if (rt7xx_codec_present(&maxcodecinfo) < 0) {
+		printf("Codecs don't match\n");
+		for(int j = 0; j < SNDW_DEV_ID_NUM; j++)
+			printf(" 0x%x", maxcodecinfo.codecid.id[j]);
+		printf("\n");
+		return -1;
 	}
 
 	if (sndw_beep(codec->sndw, maxcodecinfo.sndwlinkaddr, maxcodecinfo.deviceindex,

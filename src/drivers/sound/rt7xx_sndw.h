@@ -8,22 +8,9 @@
 #include "drivers/sound/sndw_common.h"
 #include "drivers/sound/sound.h"
 
-extern const sndw_codec_id rt7xx_id;
-
-/*
- * This driver supports both RT712 and RT721 codecs.
- */
-
-#if CONFIG(DRIVER_SOUND_RT712_SNDW)
-#define RT_7XX_CODEC_PART1_ID 0x07
-#define RT_7XX_CODEC_PART2_ID 0x12
-#elif CONFIG(DRIVER_SOUND_RT721_SNDW)
-#define RT_7XX_CODEC_PART1_ID 0x07
-#define RT_7XX_CODEC_PART2_ID 0x21
-#elif CONFIG(DRIVER_SOUND_RT722_SNDW)
-#define RT_7XX_CODEC_PART1_ID 0x07
-#define RT_7XX_CODEC_PART2_ID 0x22
-#endif
+extern const sndw_codec_id rt712_id;
+extern const sndw_codec_id rt721_id;
+extern const sndw_codec_id rt722_id;
 
 /* new_rt7xx_sndw - new structure for Soundwire rt721 and rt712 codecs. */
 SoundDevice_sndw *new_rt7xx_sndw(SndwOps *sndw, uint32_t beep_duration);

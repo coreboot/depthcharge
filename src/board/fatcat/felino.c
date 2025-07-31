@@ -40,7 +40,7 @@ static bool variant_compare_codec_id(const sndw_codec_info *info, const sndw_cod
 
 static bool variant_audio_config_alc712(const sndw_codec_info *info)
 {
-	return variant_compare_codec_id(info, &rt7xx_id);
+	return variant_compare_codec_id(info, &rt712_id);
 }
 
 static bool variant_audio_config_alc1320(const sndw_codec_info *info)
