@@ -315,6 +315,7 @@ static void configure_audio_codec(const struct audio_codec *codec,
 
 	case AUDIO_RT712:
 	case AUDIO_RT721:
+	case AUDIO_RT722:
 		if (data->type == AUDIO_SNDW)
 			data->ops = setup_rt7xx_sndw(&data->sndw->ops, BEEP_DURATION);
 		break;
