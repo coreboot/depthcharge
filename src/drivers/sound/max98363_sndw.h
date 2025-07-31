@@ -7,6 +7,7 @@
 #define __DRIVERS_SOUND_MAX98363_SNDW_H__
 
 #include "drivers/bus/soundwire/soundwire.h"
+#include "drivers/sound/intel_audio_setup.h"
 #include "drivers/sound/max98363_common_regs.h"
 #include "drivers/sound/sndw_common.h"
 #include "drivers/sound/sound.h"
