@@ -27,6 +27,7 @@
 #include "drivers/sound/rt5645.h"
 #include "drivers/sound/rt7xx_sndw.h"
 #include "drivers/sound/rt1320_sndw.h"
+#include "drivers/sound/sndw_common.h"
 
 /* Default I2S setting 4000 volume, 16bit, 2ch, 48k */
 #define AUD_VOLUME		4000
@@ -384,4 +385,61 @@ void common_audio_setup(const struct audio_config *config)
 
 	if (data.ops)
 		sound_set_ops(data.ops);
+}
+
+
+/*
+ * audio_compare_codec_id - Compare a codec info ID with a reference ID.
+ * @info: Pointer to the sndw_codec_info containing the ID to compare.
+ * @ref_id: Pointer to the reference sndw_codec_id to compare against.
+ *
+ * This function iterates through the ID fields and returns true if they all match,
+ * false otherwise.
+ */
+bool audio_compare_codec_id(const sndw_codec_info *info, const sndw_codec_id *ref_id)
+{
+	for (int i = 0; i < SNDW_DEV_ID_NUM; i++) {
+		if (ref_id->id[i] != info->codecid.id[i])
+			return false;
+	}
+	return true;
+}
+
+/*
+ * sndw_get_audio_type() - Detects and returns the type of the SoundWire audio codec.
+ * @link: The SoundWire link number to probe.
+ *
+ * This function attempts to identify the audio codec connected to the specified SoundWire
+ * link. It first initializes the SoundWire bus, then probes and enables the codec.
+ * If successful, it compares the codec's ID against a list of known SoundWire codec IDs
+ * (e.g., RT712, RT721, MAX98363) to determine its type.
+ *
+ * Return: An enum audio_codec_type value indicating the detected codec, or AUDIO_CODEC_NONE
+ * if no known codec is found or if enabling the codec fails.
+ */
+enum audio_codec_type audio_get_type(unsigned int link)
+{
+	Soundwire *bus = new_soundwire(link);
+	sndw_codec_info info;
+
+	if (sndw_probe_and_enable_codec(bus, &info)) {
+		printf("Failed to enable codec.\n");
+		return AUDIO_CODEC_NONE;
+	}
+
+	/* Check for all Soundwire Codec ID */
+	if (CONFIG(DRIVER_SOUND_RT712_SNDW) && audio_compare_codec_id(&info, &rt712_id))
+		return AUDIO_RT712;
+	else if (CONFIG(DRIVER_SOUND_RT721_SNDW) && audio_compare_codec_id(&info, &rt721_id))
+		return AUDIO_RT721;
+	else if (CONFIG(DRIVER_SOUND_RT722_SNDW) && audio_compare_codec_id(&info, &rt722_id))
+		return AUDIO_RT722;
+	else if (CONFIG(DRIVER_SOUND_RT1320_SNDW) && audio_compare_codec_id(&info, &rt1320_id))
+		return AUDIO_RT1320;
+	else if (CONFIG(DRIVER_SOUND_MAX98363_SNDW) && audio_compare_codec_id(&info, &max98363_id))
+		return AUDIO_MAX98363;
+	else if (CONFIG(DRIVER_SOUND_MAX98373_SNDW) && audio_compare_codec_id(&info, &max98373_id))
+		return AUDIO_MAX98373;
+	else
+		return AUDIO_CODEC_NONE;
 }

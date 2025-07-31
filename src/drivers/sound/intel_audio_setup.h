@@ -6,6 +6,7 @@
 #include <stddef.h>
 
 #include "drivers/bus/i2s/intel_common/i2s.h"
+#include "drivers/bus/soundwire/mipi-sndwregs.h"
 
 #define MAX_CODEC	4
 #define MAX_CTRL	2
@@ -91,4 +92,11 @@ struct audio_config {
 
 const struct audio_config *variant_probe_audio_config(void);
 void common_audio_setup(const struct audio_config *config);
+
+/* Detects and returns the type of the SoundWire audio codec. */
+enum audio_codec_type audio_get_type(unsigned int link);
+
+/* Compare a codec info ID with a reference ID. */
+bool audio_compare_codec_id(const sndw_codec_info *info, const sndw_codec_id *ref_id);
+
 #endif /* _AUDIO_SETUP_H_ */

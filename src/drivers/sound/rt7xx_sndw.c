@@ -3,6 +3,7 @@
  * Copyright 2025 Google LLC.
  */
 #include <libpayload.h>
+#include "drivers/sound/intel_audio_setup.h"
 #include "drivers/sound/rt7xx_sndw.h"
 
 /* rt712 codec ID */
@@ -112,30 +113,13 @@ static int sndw_beep(SndwOps *sndw, void *sndwlinkaddr, uint32_t sndwendpointdev
 	return 0;
 }
 
-/*
- * rt7xx_compare_codec_id - Helper to compare a codec info ID with a reference ID.
- * @info: Pointer to the sndw_codec_info containing the ID to compare.
- * @ref_id: Pointer to the reference sndw_codec_id to compare against.
- *
- * This function iterates through the ID fields and returns true if they all match,
- * false otherwise.
- */
-static bool rt7xx_compare_codec_id(const sndw_codec_info *info, const sndw_codec_id *ref_id)
-{
-	for (int i = 0; i < SNDW_DEV_ID_NUM; i++) {
-		if (ref_id->id[i] != info->codecid.id[i])
-			return false;
-	}
-	return true;
-}
-
 static int rt7xx_codec_present(sndw_codec_info *info)
 {
-	if (rt7xx_compare_codec_id(info, &rt712_id))
+	if (audio_compare_codec_id(info, &rt712_id))
 		return 0;
-	else if (rt7xx_compare_codec_id(info, &rt721_id))
+	else if (audio_compare_codec_id(info, &rt721_id))
 		return 0;
-	else if (rt7xx_compare_codec_id(info, &rt722_id))
+	else if (audio_compare_codec_id(info, &rt722_id))
 		return 0;
 
 	return -1;
