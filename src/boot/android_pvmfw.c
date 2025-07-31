@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <commonlib/helpers.h>
+#include <endian.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -61,7 +62,7 @@ static const char session_compat_str[] = "google,session-key-seed";
 static const char auth_token_compat_str[] = "google,auth-token-key-seed";
 
 /* pvmfw's entry 4: Reserved memory blobs with headers */
-struct pvmfw_cfg_rmem_v1 {
+struct pvmfw_cfg_rmem_v0 {
 	/* The number of reserved blobs in the entry */
 	uint32_t count;
 
@@ -101,7 +102,7 @@ struct pvmfw_cfg_rmem_v1 {
 /**
  * BootParam CBOR object flatten into raw C structure.
  */
-struct pvmfw_boot_params_cbor_v1 {
+struct pvmfw_boot_params_cbor_v0 {
 	/*
 	 * 0xA3 - CBOR Map 3 elements
 	 * 0x01 - uint = 1		Version label
@@ -147,13 +148,13 @@ struct pvmfw_boot_params_cbor_v1 {
 	uint8_t android_dice_handover[];
 } __attribute__((packed));
 
-static void copy_reserved_mem_v1(struct pvmfw_boot_params_cbor_v1 *v1,
-				 struct pvmfw_cfg_rmem_v1 *reserved)
+static void copy_reserved_mem_v0(struct pvmfw_boot_params_cbor_v0 *v0,
+				 struct pvmfw_cfg_rmem_v0 *reserved)
 {
 	struct reserved_blobs *blobs = &reserved->blobs;
 
 	/* Clear the size of entry that will be used */
-	memset(reserved, 0, sizeof(struct pvmfw_cfg_rmem_v1));
+	memset(reserved, 0, sizeof(struct pvmfw_cfg_rmem_v0));
 
 	/* Set the count of the reserved memory entiries */
 	reserved->count = PVMFW_CFG_RESERVED_MEM_V1_BLOB_COUNT;
@@ -171,7 +172,7 @@ static void copy_reserved_mem_v1(struct pvmfw_boot_params_cbor_v1 *v1,
 	};
 
 	/* Copy early entropy received from GSC to reserved memory blobs */
-	memcpy(blobs->early_entropy, v1->boot_params.early_entropy, GSC_EARLY_ENTROPY_SIZE);
+	memcpy(blobs->early_entropy, v0->boot_params.early_entropy, GSC_EARLY_ENTROPY_SIZE);
 	memcpy(blobs->entropy_compat, entropy_compat_str, sizeof(entropy_compat_str));
 
 	/* Setup the reserved memory header for session key seed */
@@ -184,7 +185,7 @@ static void copy_reserved_mem_v1(struct pvmfw_boot_params_cbor_v1 *v1,
 	};
 
 	/* Copy session key seed received from GSC to reserved memory blobs */
-	memcpy(blobs->session_key_seed, v1->boot_params.session_key_seed,
+	memcpy(blobs->session_key_seed, v0->boot_params.session_key_seed,
 	       GSC_SESSION_KEY_SEED_SIZE);
 	memcpy(blobs->session_compat, session_compat_str, sizeof(session_compat_str));
 
@@ -198,23 +199,36 @@ static void copy_reserved_mem_v1(struct pvmfw_boot_params_cbor_v1 *v1,
 	};
 
 	/* Copy auth token key seed received from GSC to first reserved memory */
-	memcpy(blobs->auth_token_key_seed, v1->boot_params.auth_token_key_seed,
+	memcpy(blobs->auth_token_key_seed, v0->boot_params.auth_token_key_seed,
 	       GSC_AUTH_TOKEN_SIZE);
 	memcpy(blobs->auth_token_compat, auth_token_compat_str, sizeof(auth_token_compat_str));
 }
 
-static int parse_boot_params_v1(const void *blob, size_t size, struct pvmfw_config_v1_3 *cfg,
-				size_t max_blobs_size)
+/**
+ * Parses the v0 CBOR BootParam = {
+ *   1 : 0,		;  version
+ *   2 : GSCBootParam,
+ *   3 : AndroidDiceHandover
+ * }
+ *
+ * GSCBootParam = {
+ *   1  : bstr .size 64, ; EarlyEntropy
+ *   2  : bstr .size 32, ; SessionKeySeed
+ *   3  : bstr .size 32, ; AuthTokenKeySeed
+ * }
+ */
+static int parse_boot_params_v0(const void *blob, size_t size, struct pvmfw_config_v1_3 *cfg,
+				size_t max_cfg_size)
 {
 	size_t offset_blobs;
 	const char *field;
-	struct pvmfw_boot_params_cbor_v1 *v1 = (void *)blob;
+	struct pvmfw_boot_params_cbor_v0 *v0 = (void *)blob;
 
 	/*
 	 * Verify that the blob is at least big enough to compare the
 	 * constant fragments.
 	 */
-	if (size < sizeof(struct pvmfw_boot_params_cbor_v1)) {
+	if (size < sizeof(struct pvmfw_boot_params_cbor_v0)) {
 		printf("Received BootParams CBOR is too short.\n");
 		return -1;
 	}
@@ -222,36 +236,36 @@ static int parse_boot_params_v1(const void *blob, size_t size, struct pvmfw_conf
 	/*
 	 * Verify that the known constant CBOR fragment match the expected
 	 * values. The following constant byte strings are described in
-	 * pvmfw_boot_params_cbor_v1 comments.
+	 * pvmfw_boot_params_cbor_v0 comments.
 	 */
 	static const uint8_t cbor_label_boot_params = 0x02;
-	if (v1->cbor_label_boot_params != cbor_label_boot_params) {
+	if (v0->cbor_label_boot_params != cbor_label_boot_params) {
 		field = "boot_params";
 		goto mismatch;
 	}
 
 	static const uint8_t cbor_labels_entropy[] = {0xA3, 0x01, 0x58, 0x40};
-	if (memcmp(v1->boot_params.cbor_labels_entropy, cbor_labels_entropy,
+	if (memcmp(v0->boot_params.cbor_labels_entropy, cbor_labels_entropy,
 		   sizeof(cbor_labels_entropy))) {
 		field = "early_entropy";
 		goto mismatch;
 	}
 
 	static const uint8_t cbor_labels_session[] = {0x02, 0x58, 0x20};
-	if (memcmp(v1->boot_params.cbor_labels_session, cbor_labels_session,
+	if (memcmp(v0->boot_params.cbor_labels_session, cbor_labels_session,
 		   sizeof(cbor_labels_session))) {
 		field = "session_key_seed";
 		goto mismatch;
 	}
 
 	static const uint8_t cbor_labels_auth[] = {0x03, 0x58, 0x20};
-	if (memcmp(v1->boot_params.cbor_labels_auth, cbor_labels_auth,
+	if (memcmp(v0->boot_params.cbor_labels_auth, cbor_labels_auth,
 		   sizeof(cbor_labels_auth))) {
 		field = "auth_token_key_seed";
 		goto mismatch;
 	}
 
-	if (v1->cbor_label_handover[0] != 0x03) {
+	if (v0->cbor_label_handover[0] != 0x03) {
 		field = "android_dice_handover";
 		goto mismatch;
 	}
@@ -268,16 +282,16 @@ static int parse_boot_params_v1(const void *blob, size_t size, struct pvmfw_conf
 	 * Place handover right after config header.
 	 */
 	cfg->dice_handover.offset = offsetof(struct pvmfw_config_v1_3, blobs);
-	cfg->dice_handover.size = size - sizeof(struct pvmfw_boot_params_cbor_v1);
+	cfg->dice_handover.size = size - sizeof(struct pvmfw_boot_params_cbor_v0);
 
 	/* Make sure that there is enough space for handover in the buffer */
-	if (cfg->dice_handover.size > max_blobs_size) {
+	if (cfg->dice_handover.offset + cfg->dice_handover.size > max_cfg_size) {
 		printf("Not enough space in the destination buffer for handover data.\n");
 		return -1;
 	}
 
 	/* Copy handover data into place. */
-	memcpy(&cfg->blobs[0], v1->android_dice_handover, cfg->dice_handover.size);
+	memcpy(&cfg->blobs[0], v0->android_dice_handover, cfg->dice_handover.size);
 
 	/*
 	 * Align the entry offsets to pvmfw config alignment bytes to make
@@ -286,16 +300,16 @@ static int parse_boot_params_v1(const void *blob, size_t size, struct pvmfw_conf
 	 */
 	offset_blobs = ALIGN_UP(cfg->dice_handover.size, ANDROID_PVMFW_CFG_BLOB_ALIGN);
 	cfg->reserved_mem.offset = offsetof(struct pvmfw_config_v1_3, blobs) + offset_blobs;
-	cfg->reserved_mem.size = sizeof(struct pvmfw_cfg_rmem_v1);
+	cfg->reserved_mem.size = sizeof(struct pvmfw_cfg_rmem_v0);
 
 	/* Make sure that there is enough space for reserved memory in the buffer */
-	if (offset_blobs + cfg->reserved_mem.size > max_blobs_size) {
+	if (cfg->reserved_mem.offset + cfg->reserved_mem.size > max_cfg_size) {
 		printf("Not enough space in the destination buffer for reserved memory.\n");
 		return -1;
 	}
 
 	/* Copy headers and blobs data into place. */
-	copy_reserved_mem_v1(v1, (struct pvmfw_cfg_rmem_v1 *)&cfg->blobs[offset_blobs]);
+	copy_reserved_mem_v0(v0, (struct pvmfw_cfg_rmem_v0 *)&cfg->blobs[offset_blobs]);
 
 	/* Calculate the total size of the config with blobs, using the last used entry */
 	cfg->total_size = cfg->reserved_mem.offset + cfg->reserved_mem.size;
@@ -308,11 +322,111 @@ mismatch:
 	return 1;
 }
 
+static ssize_t copy_bstr16_to_entry(const void *cbor, size_t cbor_size, size_t cbor_offset,
+				    uint8_t cbor_key, struct pvmfw_config_v1_3 *cfg,
+				    size_t max_cfg_size, struct pvmfw_config_entry *cfg_entry)
+{
+	const struct cbor_map_entry {
+		/* 0x0X      - uint = X ; Entry key  */
+		uint8_t key;
+		/* 0x58      - bstr label */
+		uint8_t cbor_bstr_label;
+		/* 0xXX 0xXX - .size be16 ; Entry size */
+		uint16_t size;
+		uint8_t data[];
+	} *cbor_entry;
+	size_t size;
+
+	_Static_assert(sizeof(struct cbor_map_entry) == 4, "CBOR entry bstr 16 bytes size");
+
+	/* Check if entry labels are in within range */
+	if (cbor_offset + sizeof(*cbor_entry) > cbor_size)
+		return -1;
+
+	cbor_entry = cbor + cbor_offset;
+
+	/* Check if entry key is correct */
+	if (cbor_entry->key != cbor_key)
+		return -2;
+
+	/* Check if bstr label is correct */
+	static const uint8_t cbor_bstr16_label = 0x59;
+	if (cbor_entry->cbor_bstr_label != cbor_bstr16_label)
+		return -3;
+
+	/* bstr 16-bit size stored in big endian */
+	size = be16toh(cbor_entry->size);
+
+	/* Check if bstr contents are within range */
+	if (cbor_offset + sizeof(*cbor_entry) + size > cbor_size)
+		return -4;
+
+	/* Update cfg entry offset and size */
+	cfg_entry->offset = ALIGN_UP(cfg->total_size, ANDROID_PVMFW_CFG_BLOB_ALIGN);
+	cfg_entry->size = size;
+
+	/* Check if destination buffer is big enough */
+	if (cfg_entry->offset + cfg_entry->size > max_cfg_size)
+		return -5;
+
+	/* Copy the actual payload */
+	memcpy(((void *)cfg) + cfg_entry->offset, cbor_entry->data, size);
+
+	/* Update the end of cfg, to the end of appending to blobs */
+	cfg->total_size = cfg_entry->offset + cfg_entry->size;
+
+	/* Return consumed CBOR byte count */
+	return sizeof(*cbor_entry) + size;
+}
+
+/**
+ * Parses the v1 CBOR BootParam = {
+ *   1 : 1,         ; version
+ *   4 : bstr16 .cbor AndroidDiceHandover,
+ *   5 : bstr16,    ; entry 4, VM reserved memory
+ * }
+ */
+static int parse_boot_params_v1(const void *cbor, size_t cbor_size,
+				struct pvmfw_config_v1_3 *cfg, size_t max_cfg_size)
+{
+	ssize_t consumed;
+	const char *field;
+	size_t cbor_rmem_offset;
+
+	/* Set the end of cfg to beginning of blobs */
+	cfg->total_size = offsetof(struct pvmfw_config_v1_3, blobs);
+
+	/* 4 : bstr16 .cbor AndroidDiceHandover */
+	static const uint8_t cbor_dice_key = 0x04;
+	static const uint8_t cbor_dice_offset = PVMFW_BOOT_PARAMS_PREAMBLE_SIZE;
+	consumed = copy_bstr16_to_entry(cbor, cbor_size, cbor_dice_offset, cbor_dice_key, cfg,
+					max_cfg_size, &cfg->dice_handover);
+	if (consumed < 0) {
+		field = "android_dice_handover_v1";
+		goto err;
+	}
+
+	/* 5 : bstr16 ; entry 4, VM reserved memory */
+	static const uint8_t cbor_rmem_key = 0x05;
+	cbor_rmem_offset = cbor_dice_offset + consumed;
+	consumed = copy_bstr16_to_entry(cbor, cbor_size, cbor_rmem_offset, cbor_rmem_key, cfg,
+					max_cfg_size, &cfg->reserved_mem);
+	if (consumed < 0) {
+		field = "reserved_memory";
+		goto err;
+	}
+
+	return 0;
+err:
+	printf("Failed to copy '%s' from CBOR. (consumed: %zd)\n", field, consumed);
+	return -1;
+}
+
 /**
  * Parse BootParam CBOR object and extract relevant data.
  */
 static int parse_boot_params(const void *blob, size_t size, struct pvmfw_config_v1_3 *cfg,
-			     size_t max_blobs_size)
+			     size_t max_cfg_size)
 {
 	/*
 	 * Verify that the blob is at least big enough to compare the
@@ -323,9 +437,14 @@ static int parse_boot_params(const void *blob, size_t size, struct pvmfw_config_
 		return -1;
 	}
 
-	static const uint8_t cbor_labels_preamble_v1[] = {0xA3, 0x01, 0x00};
+	static const uint8_t cbor_labels_preamble_v1[] = {0xA3, 0x01, 0x01};
 	if (!memcmp(blob, cbor_labels_preamble_v1, sizeof(cbor_labels_preamble_v1)))
-		return parse_boot_params_v1(blob, size, cfg, max_blobs_size);
+		return parse_boot_params_v1(blob, size, cfg, max_cfg_size);
+
+
+	static const uint8_t cbor_labels_preamble_v0[] = {0xA3, 0x01, 0x00};
+	if (!memcmp(blob, cbor_labels_preamble_v0, sizeof(cbor_labels_preamble_v0)))
+		return parse_boot_params_v0(blob, size, cfg, max_cfg_size);
 
 	printf("Received BootParams CBOR version not recognized. "
 	       "GSC firmware version is much newer then AP firmware?\n");
