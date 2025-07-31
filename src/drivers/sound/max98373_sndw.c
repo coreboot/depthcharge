@@ -143,11 +143,12 @@ static int max98373sndw_beep(SoundOps *me, uint32_t msec, uint32_t frequency)
 		return -1;
 	}
 
-	for(int i = 0; i < SNDW_DEV_ID_NUM; i++) {
-		if(max98373_id.id[i] != maxcodecinfo.codecid.id[i]) {
-			printf("Codecs don't match\n");
-			return -1;
-		}
+	if (!audio_compare_codec_id(&maxcodecinfo, &max98373_id)) {
+		printf("Codec ID mismatch.\n");
+		for (int j = 0; j < SNDW_DEV_ID_NUM; j++)
+			printf(" 0x%x", maxcodecinfo.codecid.id[j]);
+		printf("\n");
+		return -1;
 	}
 
 	if (sndwbeep(codec->sndw, maxcodecinfo.sndwlinkaddr, maxcodecinfo.deviceindex,
