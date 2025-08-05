@@ -9,6 +9,7 @@
 #include "drivers/soc/alderlake.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/storage/storage_common.h"
+#include "base/fw_config.h"
 
 #define EC_PCH_INT_ODL		GPD2
 
@@ -19,17 +20,24 @@ void board_rts5453_get_image_paths(const char **image_path, const char **hash_pa
 	switch (ec_pd_id) {
 	case 0:
 		/* bypass retimer */
-		*image_path = "rts5453_GOOG0900.bin";
-		*hash_path = "rts5453_GOOG0900.hash";
+		*image_path = "rts5453_GOOG0901.bin";
+		*hash_path = "rts5453_GOOG0901.hash";
 		break;
 	case 1:
-		/* TUSB546/1044 */
-		*image_path = "rts5453_GOOG0C00.bin";
-		*hash_path = "rts5453_GOOG0C00.hash";
+		if (fw_config_probe(FW_CONFIG(PDC, PDC_PUJJOLO))) {
+			/* TUSB546/1044 for pujjolo*/
+			*image_path = "rts5453_GOOG0F01.bin";
+			*hash_path = "rts5453_GOOG0F01.hash";
+		} else {
+			/* TUSB546/1044 for pujjoquince*/
+			*image_path = "rts5453_GOOG0F02.bin";
+			*hash_path = "rts5453_GOOG0F02.hash";
+		}
 		break;
 	default:
 		printf("Unknown ec_pd_id %d\n", ec_pd_id);
 	}
+
 }
 
 const struct audio_config *variant_probe_audio_config(void)
