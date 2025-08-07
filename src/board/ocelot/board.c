@@ -29,7 +29,7 @@
 #include <libpayload.h>
 #include <sysinfo.h>
 
-#if CONFIG(CROS_EC_ENABLE_MEC)
+#if CONFIG(CROS_EC_ENABLE_MEC) || CONFIG(CROS_EC_ENABLE_RTK)
 #define EC_SOC_INT_ODL	0 /* Not Connected */
 #else
 #define EC_SOC_INT_ODL	GPP_E08
@@ -72,6 +72,9 @@ static void ec_setup(void)
 
 	CrosEcLpcBus *cros_ec_lpc_bus;
 	CrosEcLpcBusVariant variant = variant_get_ec_lpc_bus();
+
+	if (CONFIG(CROS_EC_ENABLE_RTK))
+		variant = CROS_EC_LPC_BUS_RTK;
 
 	if (CONFIG(CROS_EC_ENABLE_MEC))
 		variant = CROS_EC_LPC_BUS_MEC;
