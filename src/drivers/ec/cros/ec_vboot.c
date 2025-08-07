@@ -12,7 +12,7 @@
 #include "drivers/power/power.h"
 
 /* Timeout waiting for EC hash calculation completion */
-static const int CROS_EC_HASH_TIMEOUT_MS = 2000;
+static const int CROS_EC_HASH_TIMEOUT_MS = 4000;
 
 /* Time to delay between polling status of EC hash calculation */
 static const int CROS_EC_HASH_CHECK_DELAY_MS = 10;
