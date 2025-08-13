@@ -46,6 +46,8 @@ typedef enum fastboot_var {
 typedef enum fastboot_getvar_result {
 	STATE_OK,
 	STATE_UNKNOWN_VAR,
+	STATE_PARSING_ERROR,
+	STATE_OVERFLOW,
 	STATE_DISK_ERROR,
 	STATE_TRY_NEXT,
 	STATE_LAST,
@@ -61,5 +63,6 @@ typedef struct fastboot_getvar_info {
 void fastboot_cmd_getvar(struct FastbootOps *fb, char *args);
 fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t var,
 					 char *arg, size_t index, char *outbuf,
-					 size_t *outbuf_len);
+					 size_t outbuf_len);
+
 #endif // __FASTBOOT_VARS_H__

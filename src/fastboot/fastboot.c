@@ -29,7 +29,7 @@
 void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t,
 		       const char *fmt, ...)
 {
-	static const char response_prefix[][4] = {
+	static const char response_prefix[][FASTBOOT_PREFIX_LEN] = {
 		[FASTBOOT_RES_OKAY] = "OKAY",
 		[FASTBOOT_RES_FAIL] = "FAIL",
 		[FASTBOOT_RES_DATA] = "DATA",
@@ -37,17 +37,16 @@ void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t,
 		[FASTBOOT_RES_TEXT] = "TEXT",
 	};
 	char msg_buf[FASTBOOT_MSG_MAX];
-	const int prefix_len = sizeof(response_prefix[t]);
 	va_list ap;
 	va_start(ap, fmt);
-	memcpy(msg_buf, response_prefix[t], prefix_len);
-	int len = prefix_len + vsnprintf(&msg_buf[prefix_len],
-					 FASTBOOT_MSG_MAX - prefix_len, fmt, ap);
+	memcpy(msg_buf, response_prefix[t], FASTBOOT_PREFIX_LEN);
+	int len = FASTBOOT_PREFIX_LEN + vsnprintf(&msg_buf[FASTBOOT_PREFIX_LEN],
+						  FASTBOOT_MSG_LEN_WO_PREFIX, fmt, ap);
 	va_end(ap);
-	if (len < prefix_len) {
+	if (len < FASTBOOT_PREFIX_LEN) {
 		/* For some reason vsnprintf failed, send response prefix anyway */
-		printf("fastboot send vsnprintf failed (%d)\n", len - prefix_len);
-		len = prefix_len;
+		printf("fastboot send vsnprintf failed (%d)\n", len - FASTBOOT_PREFIX_LEN);
+		len = FASTBOOT_PREFIX_LEN;
 		/* Make sure that message is ended with NULL char */
 		msg_buf[len] = '\0';
 	} else if (len >= FASTBOOT_MSG_MAX) {

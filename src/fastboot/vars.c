@@ -59,28 +59,31 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 
 static void fastboot_getvar_all(struct FastbootOps *fb)
 {
-	char var_buf[FASTBOOT_MSG_MAX];
+	char var_buf[FASTBOOT_MSG_LEN_WO_PREFIX];
 
 	for (int i = 0; fastboot_vars[i].name != NULL; i++) {
 		fastboot_getvar_info_t *var = &fastboot_vars[i];
+		const size_t val_max_len = FASTBOOT_MSG_LEN_WO_PREFIX - strlen(var->name) - 1;
 
 		if (var->has_args) {
 			fastboot_getvar_result_t state;
 			int arg = 0;
 
 			do {
-				size_t len = FASTBOOT_MSG_MAX;
-
 				state = fastboot_getvar(fb, var->var, NULL, arg++,
-							var_buf, &len);
+							var_buf, val_max_len);
 				if (state == STATE_OK)
-					fastboot_info(fb, "%s:%.*s", var->name, (int)len,
-						      var_buf);
-			} while (state == STATE_OK || state == STATE_TRY_NEXT);
+					fastboot_info(fb, "%s:%s", var->name, var_buf);
+				/*
+				 * Disk error is the only error that may occur before we
+				 * determine that we are on the last valid arg value. We can
+				 * ignore other errors as we eventually hit STATE_LAST.
+				 */
+			} while (state != STATE_LAST && state != STATE_DISK_ERROR);
 		} else {
-			size_t len = FASTBOOT_MSG_MAX;
-			if (fastboot_getvar(fb, var->var, NULL, 0, var_buf, &len) == STATE_OK)
-				fastboot_info(fb, "%s:%.*s", var->name, (int)len, var_buf);
+			if (fastboot_getvar(fb, var->var, NULL, 0, var_buf, val_max_len) ==
+			    STATE_OK)
+				fastboot_info(fb, "%s:%s", var->name, var_buf);
 		}
 	}
 	fastboot_succeed(fb);
@@ -88,7 +91,7 @@ static void fastboot_getvar_all(struct FastbootOps *fb)
 
 void fastboot_cmd_getvar(struct FastbootOps *fb, char *args)
 {
-	char var_buf[FASTBOOT_MSG_MAX];
+	char var_buf[FASTBOOT_MSG_LEN_WO_PREFIX];
 
 	if (!strcmp(args, "all")) {
 		fastboot_getvar_all(fb);
@@ -109,14 +112,14 @@ void fastboot_cmd_getvar(struct FastbootOps *fb, char *args)
 			continue;
 		args += name_len;
 
-		size_t var_len = FASTBOOT_MSG_MAX;
 		fastboot_getvar_result_t state = fastboot_getvar(
-			fb, var->var, args, 0, var_buf, &var_len);
-		if (state == STATE_OK) {
-			fastboot_okay(fb, "%.*s", (int)var_len, var_buf);
-		} else {
+			fb, var->var, args, 0, var_buf, sizeof(var_buf));
+		if (state == STATE_OK)
+			fastboot_okay(fb, "%s", var_buf);
+		else if (state == STATE_OVERFLOW)
+			fastboot_fail(fb, "getvar truncated: %s", var_buf);
+		else
 			fastboot_fail(fb, "getvar failed - internal error");
-		}
 		return;
 	}
 
@@ -211,11 +214,12 @@ static int get_partition_var(fastboot_var_t var, GptData *gpt, GptEntry *e,
 
 fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t var,
 					 char *arg, size_t index, char *outbuf,
-					 size_t *outbuf_len)
+					 size_t outbuf_len)
 {
 	fastboot_getvar_result_t state;
 	GptEntry *part = NULL;
-	size_t used_len = 0;
+	int used_len = 0;
+	int ret;
 	char *name;
 	char slot = 0;
 
@@ -239,20 +243,20 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		while (name[1] != '\0')
 			name++;
 
-		used_len = snprintf(outbuf, *outbuf_len, "%s", name);
+		used_len = snprintf(outbuf, outbuf_len, "%s", name);
 		free(name);
 		break;
 	}
 	case VAR_TOTAL_BLOCK_COUNT:
 		if (fastboot_disk_init_no_fail(fb))
 			return STATE_DISK_ERROR;
-		used_len += snprintf(outbuf, *outbuf_len, "0x%llx", fb->disk->block_count);
+		used_len = snprintf(outbuf, outbuf_len, "0x%llx", fb->disk->block_count);
 		break;
 	case VAR_DOWNLOAD_SIZE:
-		used_len = snprintf(outbuf, *outbuf_len, "0x%llx", FASTBOOT_MAX_DOWNLOAD_SIZE);
+		used_len = snprintf(outbuf, outbuf_len, "0x%llx", FASTBOOT_MAX_DOWNLOAD_SIZE);
 		break;
 	case VAR_IS_USERSPACE:
-		used_len = snprintf(outbuf, *outbuf_len, "no");
+		used_len = snprintf(outbuf, outbuf_len, "no");
 		break;
 	case VAR_PARTITION_SIZE:
 	case VAR_PARTITION_TYPE:
@@ -268,45 +272,53 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 								     &part);
 			if (state != STATE_OK)
 				return state;
-			used_len = snprintf(outbuf, *outbuf_len, "%s:", name);
+			used_len = snprintf(outbuf, outbuf_len, "%s:", name);
+			if (used_len < 0 || used_len > outbuf_len) {
+				free(name);
+				break;
+			}
 			outbuf += used_len;
-			*outbuf_len -= used_len;
 		}
-		used_len += get_partition_var(var, fb->gpt, part, name, outbuf, *outbuf_len);
+		ret = get_partition_var(var, fb->gpt, part, name, outbuf,
+					outbuf_len - used_len);
 		if (name != arg)
 			free(name);
+		if (ret < 0)
+			used_len = ret;
+		else
+			used_len += ret;
 		break;
 	case VAR_PRODUCT: {
 		struct cb_mainboard *mainboard =
 			phys_to_virt(lib_sysinfo.cb_mainboard);
 		const char *mb_part_string = cb_mb_part_string(mainboard);
-		used_len = snprintf(outbuf, *outbuf_len, "%s", mb_part_string);
+		used_len = snprintf(outbuf, outbuf_len, "%s", mb_part_string);
 		break;
 	}
 	case VAR_SLOT_COUNT:
 		if (fastboot_disk_gpt_init_no_fail(fb))
 			return STATE_DISK_ERROR;
-		used_len = snprintf(outbuf, *outbuf_len, "%d",
+		used_len = snprintf(outbuf, outbuf_len, "%d",
 				    fastboot_get_slot_count(fb->gpt));
 		break;
 	case VAR_SECURE:
-		used_len = snprintf(outbuf, *outbuf_len, "no");
+		used_len = snprintf(outbuf, outbuf_len, "no");
 		break;
 	case VAR_VERSION:
-		used_len = snprintf(outbuf, *outbuf_len, "0.4");
+		used_len = snprintf(outbuf, outbuf_len, "0.4");
 		break;
 	case VAR_VERSION_BOOTLOADER: {
 		const char *fw_id = get_active_fw_id();
 		if (fw_id == NULL)
-			used_len = snprintf(outbuf, *outbuf_len, "unknown");
+			used_len = snprintf(outbuf, outbuf_len, "unknown");
 		else
-			used_len = snprintf(outbuf, *outbuf_len, "%s", fw_id);
+			used_len = snprintf(outbuf, outbuf_len, "%s", fw_id);
 		break;
 	}
 	case VAR_SLOT_SUFFIXES:
 		if (fastboot_disk_gpt_init_no_fail(fb))
 			return STATE_DISK_ERROR;
-		used_len = fastboot_get_slot_suffixes(fb->gpt, outbuf, *outbuf_len);
+		used_len = fastboot_get_slot_suffixes(fb->gpt, outbuf, outbuf_len);
 		break;
 	case VAR_SLOT_SUCCESSFUL:
 	case VAR_SLOT_RETRY_COUNT:
@@ -325,27 +337,32 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 			state = fastboot_get_kernel_slot_by_index(fb->gpt, index, &part, &slot);
 			if (state != STATE_OK)
 				return state;
-			used_len = snprintf(outbuf, *outbuf_len, "%c:", slot);
+			used_len = snprintf(outbuf, outbuf_len, "%c:", slot);
+			if (used_len < 0 || used_len > outbuf_len)
+				break;
 			outbuf += used_len;
-			*outbuf_len -= used_len;
 		}
-		used_len += get_slot_var(var, part, outbuf, *outbuf_len);
+		ret = get_slot_var(var, part, outbuf, outbuf_len - used_len);
+		if (ret < 0)
+			used_len = ret;
+		else
+			used_len += ret;
 		break;
 	case VAR_LOGICAL_BLOCK_SIZE:
 		if (fastboot_disk_init_no_fail(fb))
 			return STATE_DISK_ERROR;
 
-		used_len = snprintf(outbuf, *outbuf_len, "0x%x", fb->disk->block_size);
+		used_len = snprintf(outbuf, outbuf_len, "0x%x", fb->disk->block_size);
 		break;
 	case VAR_SERIALNO: {
 		u32 vpd_size;
 		const unsigned char *vpd_data = vpd_find("serial_number", NULL, NULL,
 							 &vpd_size);
 		if (vpd_data && vpd_size > 0)
-			used_len = snprintf(outbuf, *outbuf_len, "%.*s",
+			used_len = snprintf(outbuf, outbuf_len, "%.*s",
 					       (int)vpd_size, vpd_data);
 		else
-			used_len = snprintf(outbuf, *outbuf_len, "unknown");
+			used_len = snprintf(outbuf, outbuf_len, "unknown");
 		break;
 	}
 	case VAR_HAS_SLOT:
@@ -361,7 +378,7 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 			} else {
 				/* Maximum length of GPT name is 36 chars */
 				char name_a[37];
-				int ret = snprintf(name_a, sizeof(name_a), "%s_a", arg);
+				ret = snprintf(name_a, sizeof(name_a), "%s_a", arg);
 				if (ret < 0 || ret > sizeof(name_a))
 					return STATE_UNKNOWN_VAR;
 				part = gpt_find_partition(fb->gpt, name_a);
@@ -382,17 +399,33 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 					return STATE_TRY_NEXT;
 				name_len -= 2;
 			}
-			used_len = snprintf(outbuf, *outbuf_len, "%.*s:", name_len, name);
-			outbuf += used_len;
-			*outbuf_len -= used_len;
+			used_len = snprintf(outbuf, outbuf_len, "%.*s:", name_len, name);
 			free(name);
+			if (used_len < 0 || used_len > outbuf_len)
+				break;
+			outbuf += used_len;
 		}
-		used_len += snprintf(outbuf, *outbuf_len, slot ? "yes" : "no");
+		ret = snprintf(outbuf, outbuf_len - used_len, slot ? "yes" : "no");
+		if (ret < 0)
+			used_len = ret;
+		else
+			used_len += ret;
 		break;
 	default:
 		return STATE_UNKNOWN_VAR;
 	}
 
-	*outbuf_len = used_len;
+	if (used_len < 0) {
+		printf("%s(): snprintf failed(%d) for var %d, arg \"%s\", index %ld\n",
+		       __func__, used_len, var, arg, index);
+		return STATE_PARSING_ERROR;
+	}
+
+	if (used_len > outbuf_len) {
+		printf("%s(): too long output for var %d, arg \"%s\", index %ld\n",
+		       __func__, var, arg, index);
+		return STATE_OVERFLOW;
+	}
+
 	return STATE_OK;
 }

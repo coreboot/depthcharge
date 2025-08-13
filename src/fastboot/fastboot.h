@@ -40,6 +40,8 @@
 #endif
 
 #define FASTBOOT_MSG_MAX 256
+#define FASTBOOT_PREFIX_LEN 4
+#define FASTBOOT_MSG_LEN_WO_PREFIX (FASTBOOT_MSG_MAX - FASTBOOT_PREFIX_LEN)
 /*
  * TODO(b/397865136): Increase chunk size once the super corruption issue is
  * fixed.

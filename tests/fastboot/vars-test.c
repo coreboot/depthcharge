@@ -176,11 +176,9 @@ static int setup(void **state)
 	struct FastbootOps *fb = *state; \
 	char var_buf[FASTBOOT_MSG_MAX]; \
 	size_t out_len = sizeof(var_buf); \
-	assert_int_equal(fastboot_getvar(fb, var, arg, 0, var_buf, &out_len), err); \
-	if (expected != NULL) { \
+	assert_int_equal(fastboot_getvar(fb, var, arg, 0, var_buf, out_len), err); \
+	if (expected != NULL) \
 		assert_string_equal(var_buf, expected); \
-		assert_int_equal(out_len, strlen(expected)); \
-	} \
 } while (0)
 
 #define TEST_FASTBOOT_GETVAR_ERR(var, arg, err) TEST_FASTBOOT_GETVAR(var, arg, NULL, err)
@@ -343,9 +341,8 @@ static void test_fb_getvar_partition_at_index(void **state, fastboot_var_t var, 
 	WILL_GET_NUMBER_OF_PARTITIONS(5);
 	WILL_GET_PARTITION(3, part);
 	WILL_GET_ENTRY_NAME(part, part_name);
-	assert_int_equal(fastboot_getvar(fb, var, NULL, 3, var_buf, &out_len), STATE_OK);
+	assert_int_equal(fastboot_getvar(fb, var, NULL, 3, var_buf, out_len), STATE_OK);
 	assert_string_equal(var_buf, exp_out);
-	assert_int_equal(out_len, strlen(exp_out));
 }
 
 static void test_fb_getvar_kernel_slot_at_index(void **state, fastboot_var_t var,
@@ -370,7 +367,7 @@ static void test_fb_getvar_kernel_slot_at_index_no_slot(void **state, fastboot_v
 	WILL_GET_ENTRY_NAME(part, part_name);
 	WILL_CHECK_ANDROID(part, true);
 	WILL_GET_SLOT_FOR_PARTITION_NAME(part_name, 0);
-	assert_int_equal(fastboot_getvar(fb, var, NULL, 3, var_buf, &out_len), STATE_TRY_NEXT);
+	assert_int_equal(fastboot_getvar(fb, var, NULL, 3, var_buf, out_len), STATE_TRY_NEXT);
 }
 
 static void test_fb_getvar_partition_at_index_not_exist(void **state, fastboot_var_t var)
@@ -381,7 +378,7 @@ static void test_fb_getvar_partition_at_index_not_exist(void **state, fastboot_v
 
 	WILL_GET_NUMBER_OF_PARTITIONS(5);
 	WILL_GET_PARTITION(0, NULL);
-	assert_int_equal(fastboot_getvar(fb, var, NULL, 0, var_buf, &out_len), STATE_TRY_NEXT);
+	assert_int_equal(fastboot_getvar(fb, var, NULL, 0, var_buf, out_len), STATE_TRY_NEXT);
 }
 
 static void test_fb_getvar_partition_at_index_no_name(void **state, fastboot_var_t var)
@@ -394,7 +391,7 @@ static void test_fb_getvar_partition_at_index_no_name(void **state, fastboot_var
 	WILL_GET_NUMBER_OF_PARTITIONS(5);
 	WILL_GET_PARTITION(2, part);
 	WILL_GET_ENTRY_NAME(part, NULL);
-	assert_int_equal(fastboot_getvar(fb, var, NULL, 2, var_buf, &out_len), STATE_TRY_NEXT);
+	assert_int_equal(fastboot_getvar(fb, var, NULL, 2, var_buf, out_len), STATE_TRY_NEXT);
 }
 
 static void test_fb_getvar_partition_at_index_last(void **state, fastboot_var_t var)
@@ -404,7 +401,7 @@ static void test_fb_getvar_partition_at_index_last(void **state, fastboot_var_t 
 	size_t out_len = sizeof(var_buf);
 
 	WILL_GET_NUMBER_OF_PARTITIONS(5);
-	assert_int_equal(fastboot_getvar(fb, var, NULL, 5, var_buf, &out_len), STATE_LAST);
+	assert_int_equal(fastboot_getvar(fb, var, NULL, 5, var_buf, out_len), STATE_LAST);
 }
 
 /* Test functions start here */
@@ -886,7 +883,7 @@ static void test_fb_getvar_has_slot_b_at_index(void **state)
 	WILL_GET_ENTRY_NAME(part, "part_b");
 	WILL_GET_SLOT_FOR_PARTITION_NAME("part_b", 'b');
 	/* Shouldn't print base name for other slots than "a" */
-	assert_int_equal(fastboot_getvar(fb, VAR_HAS_SLOT, NULL, 3, var_buf, &out_len),
+	assert_int_equal(fastboot_getvar(fb, VAR_HAS_SLOT, NULL, 3, var_buf, out_len),
 			 STATE_TRY_NEXT);
 }
 
