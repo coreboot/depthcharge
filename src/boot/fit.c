@@ -350,6 +350,9 @@ static void update_chosen(struct device_tree *tree, char *cmd_line)
 	if (cmd_line)
 		dt_add_string_prop(node, "bootargs", cmd_line);
 
+	if (CONFIG(MOCK_TPM))
+		return;
+
 	ret = TlclGetRandom(seed->tpm_buf, sizeof(seed->tpm_buf), &size);
 	if (ret || size != sizeof(seed->tpm_buf)) {
 		printf("TPM failed to populate kASLR seed buffer.\n");
