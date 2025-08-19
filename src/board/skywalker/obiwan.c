@@ -2,7 +2,9 @@
 
 #include "board/skywalker/include/variant.h"
 
+#define RTS545X_PS8747_OBIWAN_EQ	"0B02"
+
 const char *const rts545x_configs[PDC_PORT_NUM] = {
 	RTS545X_IT5205,
-	RTS545X_PS8747,
+	RTS545X_PS8747_OBIWAN_EQ,
 };

@@ -7,9 +7,9 @@
 
 #define PDC_PORT_NUM 2
 
-#define RTS545X_PS8747	"0B"
-#define RTS545X_TUSB546	"0C"
-#define RTS545X_IT5205	"0D"
+#define RTS545X_PS8747	"0B00"
+#define RTS545X_TUSB546	"0C00"
+#define RTS545X_IT5205	"0D00"
 
 /* Defined in board.c */
 extern const char *const rts545x_configs[PDC_PORT_NUM];
