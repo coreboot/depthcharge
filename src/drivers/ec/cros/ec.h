@@ -388,6 +388,13 @@ int cros_ec_config_powerbtn(uint32_t enable);
 int cros_ec_reboot(uint8_t flags);
 
 /**
+ * AP Shutdown (EC reboot and hold AP at reset)
+ *
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_ap_poweroff(void);
+
+/**
  * Reboot the EC with specified parameters
  *
  * @param ec		EC device
