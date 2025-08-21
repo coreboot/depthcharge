@@ -28,6 +28,7 @@
 #include "base/gpt.h"
 #include "base/timestamp.h"
 #include "boot/android_bootconfig_params.h"
+#include "boot/android_dtboimg.h"
 #include "boot/android_pvmfw.h"
 #include "boot/bootconfig.h"
 #include "boot/commandline.h"
@@ -46,6 +47,7 @@ static int fill_info_cros(struct boot_info *bi,
 	bi->loader = (uint8_t *)bi->kernel + kparams->bootloader_offset;
 	bi->params = (uint8_t *)bi->loader - CrosParamSize;
 	bi->cmd_line = (char *)bi->params - CmdLineSize;
+	bi->kernel_size = (void *)bi->cmd_line - bi->kernel;
 
 	return 0;
 }
@@ -255,6 +257,12 @@ static int fill_info_gki(struct boot_info *bi,
 			printf("Failed to setup pvmfw\n");
 	}
 
+	struct boot_img_hdr_v4 *boot_hdr = (struct boot_img_hdr_v4 *)kparams->kernel_buffer;
+
+	bi->kernel_size = boot_hdr->kernel_size;
+	if (CONFIG(ARCH_ARM))
+		bi->dt = android_parse_dtbs(kparams->dtb, kparams->dtb_size,
+					    kparams->dtbo, kparams->dtbo_size);
 	return 0;
 }
 

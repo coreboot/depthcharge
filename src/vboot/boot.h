@@ -22,6 +22,7 @@
 
 struct boot_info {
 	void *kernel;
+	size_t kernel_size;
 	char *cmd_line;
 	void *params;
 	void *loader;
@@ -30,6 +31,7 @@ struct boot_info {
 	struct vb2_kernel_params *kparams;
 	void *pvmfw_addr;
 	size_t pvmfw_size;
+	struct device_tree *dt;
 };
 
 // To be implemented by each boot method.

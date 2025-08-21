@@ -27,7 +27,6 @@
 
 #include "base/ranges.h"
 #include "base/timestamp.h"
-#include "boot/dt_update.h"
 #include "boot/fit.h"
 #include "drivers/power/power.h"
 #include "image/symbols.h"
@@ -370,7 +369,7 @@ int fit_add_pvmfw(struct device_tree *tree, void *pvmfw_addr, size_t pvmfw_size)
 	return 0;
 }
 
-FitImageNode *fit_load(void *fit, char *cmd_line, struct device_tree **dt)
+FitImageNode *fit_load(void *fit, struct device_tree **dt)
 {
 	FitImageNode *image;
 	FitConfigNode *config;
@@ -494,10 +493,6 @@ FitImageNode *fit_load(void *fit, char *cmd_line, struct device_tree **dt)
 			return NULL;
 		}
 	}
-
-	dt_update_chosen(*dt, cmd_line);
-
-	dt_update_memory(*dt);
 
 	if (to_boot->ramdisk) {
 		if (to_boot->ramdisk->compression != CompressionNone) {

@@ -73,7 +73,7 @@ typedef struct FitOverlayChain
  * compatible string set by fit_add_compat() and unflattening the corresponding
  * kernel device tree.
  */
-FitImageNode *fit_load(void *fit, char *cmd_line, struct device_tree **dt);
+FitImageNode *fit_load(void *fit, struct device_tree **dt);
 
 /*
  * Add a compatible string for the preferred kernel DT to the list for this

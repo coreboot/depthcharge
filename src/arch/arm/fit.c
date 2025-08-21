@@ -20,13 +20,16 @@
 #include "arch/arm/boot.h"
 #include "base/cleanup_funcs.h"
 #include "base/device_tree.h"
+#include "boot/android_dtboimg.h"
 #include "boot/commandline.h"
+#include "boot/dt_update.h"
 #include "boot/fit.h"
 #include "drivers/storage/blockdev.h"
 #include "image/symbols.h"
 #include "vboot/boot.h"
 
 #define CMD_LINE_SIZE	4096
+#define KERNEL_IMG_NAME	"android_kernel"
 
 static void update_cmdline(struct boot_info *bi, struct device_tree *tree)
 {
@@ -63,13 +66,35 @@ fail:
 	printf("WARNING! No cmd line passed to kernel\n");
 }
 
+static FitImageNode *construct_kernel_fit_image_node(void *kernel, size_t kernel_size)
+{
+	FitImageNode *image;
+
+	image = xzalloc(sizeof(*image));
+	image->name = KERNEL_IMG_NAME;
+	image->data = kernel;
+	image->size = kernel_size;
+	image->compression = CompressionLz4;
+	return image;
+}
+
 int boot(struct boot_info *bi)
 {
-	struct device_tree *tree;
-	FitImageNode *kernel = fit_load(bi->kernel, bi->cmd_line, &tree);
+	struct device_tree *tree = NULL;
+	FitImageNode *kernel = fit_load(bi->kernel, &tree);
+
+	/* If kernel is not FIT format and separate partition exists for DTB/DTBO, then
+	   extract the kernel and devicetree from their respective images. */
+	if ((!kernel || !tree) && bi->dt) {
+		tree = bi->dt;
+		kernel = construct_kernel_fit_image_node(bi->kernel, bi->kernel_size);
+	}
 
 	if (!kernel || !tree)
 		return 1;
+
+	dt_update_chosen(tree, bi->cmd_line);
+	dt_update_memory(tree);
 
 	/*
 	 * On ARM, there are two different types of images that can be used for
