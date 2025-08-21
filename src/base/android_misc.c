@@ -259,3 +259,15 @@ enum android_misc_bcb_command android_misc_get_bcb_command(BlockDev *disk, GptDa
 	       (int)sizeof(bcb.command), bcb.command);
 	return MISC_BCB_UNKNOWN;
 }
+
+int android_misc_system_space_write(BlockDev *disk, GptData *gpt,
+				    struct misc_system_space *space)
+{
+	return android_misc_write(disk, gpt, MISC_SYSTEM_SPACE_OFFSET, space, sizeof(*space));
+}
+
+int android_misc_system_space_read(BlockDev *disk, GptData *gpt,
+				   struct misc_system_space *space)
+{
+	return android_misc_read(disk, gpt, MISC_SYSTEM_SPACE_OFFSET, space, sizeof(*space));
+}

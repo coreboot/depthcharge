@@ -43,6 +43,9 @@ enum gpt_io_ret gpt_read_partition(BlockDev *disk, GptData *gpt, const char *par
 #define WILL_READ_OEM_CMD(offset, content, ret) \
 	WILL_READ_MISC(offset, sizeof(struct android_misc_oem_cmdline), content, ret)
 
+#define WILL_READ_SYSTEM_SPACE(content, ret) \
+	WILL_READ_MISC(MISC_SYSTEM_SPACE_OFFSET, sizeof(struct misc_system_space), content, ret)
+
 enum gpt_io_ret gpt_write_partition(BlockDev *disk, GptData *gpt, const char *partition_name,
 				    uint64_t offset, void *data, size_t data_len)
 {
@@ -69,6 +72,10 @@ enum gpt_io_ret gpt_write_partition(BlockDev *disk, GptData *gpt, const char *pa
 
 #define WILL_WRITE_OEM_CMD(offset, content, ret) \
 	WILL_WRITE_MISC(offset, sizeof(struct android_misc_oem_cmdline), content, ret)
+
+#define WILL_WRITE_SYSTEM_SPACE(content, ret) \
+	WILL_WRITE_MISC(MISC_SYSTEM_SPACE_OFFSET, sizeof(struct misc_system_space), content, \
+			ret)
 
 void setup_test_cmd_chksum(struct android_misc_oem_cmdline *cmd, size_t size)
 {
@@ -696,6 +703,37 @@ static void test_android_misc_reset_oem_cmd(void **state)
 	assert_memory_equal(&cmd, &expected_cmd, cmd_len);
 }
 
+static void test_android_misc_system_space_read(void **state)
+{
+	struct misc_system_space space;
+	struct misc_system_space expected_space;
+
+	WILL_READ_SYSTEM_SPACE(NULL, GPT_IO_NO_PARTITION);
+	assert_int_equal(android_misc_system_space_read(&test_disk, test_gpt, &space), -1);
+
+	memset(&space, 0xac, sizeof(space));
+	memset(&expected_space, 0x3e, sizeof(expected_space));
+
+	WILL_READ_SYSTEM_SPACE(&expected_space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_system_space_read(&test_disk, test_gpt, &space), 0);
+	assert_memory_equal(&space, &expected_space, sizeof(expected_space));
+}
+
+static void test_android_misc_system_space_write(void **state)
+{
+	struct misc_system_space space;
+	struct misc_system_space expected_space;
+
+	memset(&space, 0xac, sizeof(space));
+	memset(&expected_space, 0xac, sizeof(expected_space));
+
+	WILL_WRITE_SYSTEM_SPACE(&expected_space, GPT_IO_TRANSFER_ERROR);
+	assert_int_equal(android_misc_system_space_write(&test_disk, test_gpt, &space), -1);
+
+	WILL_WRITE_SYSTEM_SPACE(&expected_space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_system_space_write(&test_disk, test_gpt, &space), 0);
+}
+
 #define TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup)
 
@@ -744,6 +782,8 @@ int main(void)
 		TEST(test_android_misc_set_oem_bootconfig),
 		TEST(test_android_misc_set_oem_bootconfig_too_big),
 		TEST(test_android_misc_reset_oem_cmd),
+		TEST(test_android_misc_system_space_read),
+		TEST(test_android_misc_system_space_write),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }
