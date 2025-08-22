@@ -84,7 +84,7 @@ static void fastboot_getvar_all(struct FastbootOps *fb)
 	fastboot_succeed(fb);
 }
 
-void fastboot_cmd_getvar(struct FastbootOps *fb, const char *args)
+void fastboot_cmd_getvar(struct FastbootOps *fb, char *args)
 {
 	char var_buf[FASTBOOT_MSG_MAX];
 
