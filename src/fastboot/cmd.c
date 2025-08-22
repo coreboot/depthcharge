@@ -374,50 +374,6 @@ static void fastboot_cmd_oem_bootconfig_set(struct FastbootOps *fb, char *arg)
 	fastboot_cmd_cmdline_set(fb, arg, true);
 }
 
-// `fastboot oem get-kernels` returns a list of slot letter:kernel mapping.
-// This is useful for us because the partition tables are more flexible than on
-// more traditional devices, so there could be many kernels.
-// For instance, installing Fuchsia on a Chromebook will result in the device
-// having five kernel partitions:
-// KERN-A
-// KERN-B
-// zircon-a
-// zircon-b
-// zircon-r
-//
-// We map them to fastboot slots by having the first slot be the first partition
-// we found.
-struct get_kernels_ctx {
-	struct FastbootOps *fb;
-};
-static bool get_kernels_cb(void *ctx, int index, GptEntry *e,
-			   char *partition_name)
-{
-	if (!IsAndroid(e))
-		return false;
-
-	char slot = fastboot_get_slot_for_partition_name(partition_name);
-	if (slot == 0)
-		return false;
-
-	struct get_kernels_ctx *gk = (struct get_kernels_ctx *)ctx;
-	fastboot_info(gk->fb, "%c:%s:prio=%d", slot, partition_name,
-		      GetEntryPriority(e));
-	return false;
-}
-static void fastboot_cmd_oem_get_kernels(struct FastbootOps *fb, char *arg)
-{
-	struct get_kernels_ctx ctx = {
-		.fb = fb,
-	};
-
-	if (fastboot_disk_gpt_init(fb))
-		return;
-
-	gpt_foreach_partition(fb->gpt, get_kernels_cb, &ctx);
-	fastboot_succeed(fb);
-}
-
 static int fastboot_parse_ufs_desc_args(struct FastbootOps *fb,
 					const char *arg,
 					uint32_t *idn,
@@ -668,7 +624,6 @@ struct fastboot_cmd fastboot_cmds[] = {
 	CMD_ARGS("oem bootconfig del", ' ', fastboot_cmd_oem_bootconfig_del),
 	CMD_ARGS("oem bootconfig set", ' ', fastboot_cmd_oem_bootconfig_set),
 	CMD_NO_ARGS("oem bootconfig", fastboot_cmd_oem_bootconfig_get),
-	CMD_NO_ARGS("oem get-kernels", fastboot_cmd_oem_get_kernels),
 	CMD_ARGS("oem read-ufs-descriptor", ':', fastboot_cmd_oem_read_ufs_descriptor),
 	CMD_ARGS("oem write-ufs-descriptor", ':', fastboot_cmd_oem_write_ufs_descriptor),
 	CMD_ARGS("oem set-successful", ':', fastboot_cmd_oem_set_successful),

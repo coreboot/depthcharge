@@ -215,22 +215,17 @@ void fastboot_erase(struct FastbootOps *fb, const char *partition_name)
 
 /************************* SLOT LOGIC ******************************/
 
-// Returns 0 if the partition is not valid.
+/* Returns 0 if the partition is not valid */
 char fastboot_get_slot_for_partition_name(const char *partition_name)
 {
 	int len = strlen(partition_name);
 
 	if (len < 2)
 		return 0;
-	/* Expect partition names ending with -X or _x */
-	if (partition_name[len - 2] != '-' && partition_name[len - 2] != '_')
-		return 0;
 
-	if (!isalpha(partition_name[len - 1]))
-		return 0;
-
-	/* Make all slots lowercase */
-	return tolower(partition_name[len - 1]);
+	/* Expect partition names ending with _x */
+	return partition_name[len - 2] == '_' && islower(partition_name[len - 1]) ?
+	       partition_name[len - 1] : 0;
 }
 
 struct kpi_ctx {

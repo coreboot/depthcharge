@@ -1369,38 +1369,6 @@ static void test_fb_cmd_del_bootconfig_fail_write(void **state)
 	assert_string_equal(bootconfig, "param;par_dq=\"val';ue\";param_q='va\"\nlue'\n");
 }
 
-static void test_fb_cmd_oem_get_kernels(void **state)
-{
-	struct FastbootOps *fb = *state;
-	char cmd[] = "oem get-kernels";
-	GptEntry entries[4];
-
-	GPT_FOREACH_WILL_RETURN_ENTRY(&entries[0], 0, "boot_a");
-	WILL_CHECK_ANDROID(&entries[0], true);
-	WILL_GET_SLOT_FOR_PARTITION_NAME("boot_a", 'a');
-	WILL_GET_PRIORITY(&entries[0], 5);
-	WILL_SEND_EXACT(fb, "INFOa:boot_a:prio=5");
-
-	GPT_FOREACH_WILL_RETURN_ENTRY(&entries[1], 1, "boot_b");
-	WILL_CHECK_ANDROID(&entries[1], true);
-	WILL_GET_SLOT_FOR_PARTITION_NAME("boot_b", 'b');
-	WILL_GET_PRIORITY(&entries[1], 7);
-	WILL_SEND_EXACT(fb, "INFOb:boot_b:prio=7");
-
-	GPT_FOREACH_WILL_RETURN_ENTRY(&entries[2], 2, "super");
-	WILL_CHECK_ANDROID(&entries[2], false);
-
-	GPT_FOREACH_WILL_RETURN_ENTRY(&entries[3], 4, "vbmeta");
-	WILL_CHECK_ANDROID(&entries[3], true);
-	WILL_GET_SLOT_FOR_PARTITION_NAME("vbmeta", 0);
-
-	GPT_FOREACH_WILL_END;
-	WILL_SEND_PREFIX(fb, "OKAY");
-
-	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
-	assert_int_equal(fb->state, COMMAND);
-}
-
 static void test_fb_cmd_upload_no_staged(void **state)
 {
 	struct FastbootOps *fb = *state;
@@ -1931,7 +1899,6 @@ int main(void)
 		TEST(test_fb_cmd_del_bootconfig_no_exist),
 		TEST(test_fb_cmd_del_bootconfig_fail_del),
 		TEST(test_fb_cmd_del_bootconfig_fail_write),
-		TEST(test_fb_cmd_oem_get_kernels),
 		TEST(test_fb_cmd_upload_no_staged),
 		TEST(test_fb_cmd_upload_no_len),
 		TEST(test_fb_cmd_upload_no_splitting),
