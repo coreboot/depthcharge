@@ -13,6 +13,7 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/ec/rts5453/rts5453.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
@@ -91,6 +92,22 @@ static void tpm_setup(void)
 				&new_gsc_rec_switch(&tpm->base.ops)->ops);
 }
 
+static void rts545x_register(void)
+{
+	/*
+	 * Pujjocento/Pujjoteenlo's PDC FW 1.71.1 contains the wrong PID 0x5072.
+	 * To allow updating from 1.71.1 to newer versions,
+	 * register a fake chip with the wrong PID.
+	 */
+	const uint32_t old_pid = 0x5072;
+	static CrosEcAuxfwChipInfo rts5453_info = {
+		.vid = CONFIG_DRIVER_EC_RTS545X_VID,
+		.pid = old_pid,
+		.new_chip_aux_fw_ops = new_rts545x_from_chip_info,
+	};
+	list_insert_after(&rts5453_info.list_node, &ec_aux_fw_chip_list);
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -99,6 +116,9 @@ static int board_setup(void)
 	power_set_ops(&alderlake_power_ops);
 	flash_set_ops(&new_mmap_flash()->ops);
 	common_audio_setup(variant_probe_audio_config());
+
+	if (CONFIG(DRIVER_EC_RTS5453))
+		rts545x_register();
 
 	return 0;
 }
