@@ -34,13 +34,14 @@
 void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
 				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
-	assert(ec_pd_id >= 0 && ec_pd_id < PDC_PORT_NUM);
+	assert(ec_pd_id >= 0 && ec_pd_id < MAX_PDC_PORT_NUM);
 
 	const char *config = rts545x_configs[ec_pd_id];
-	static char image[PDC_PORT_NUM][MAX_PATH_LEN];
-	static char hash[PDC_PORT_NUM][MAX_PATH_LEN];
+	static char image[MAX_PDC_PORT_NUM][MAX_PATH_LEN];
+	static char hash[MAX_PDC_PORT_NUM][MAX_PATH_LEN];
 	static const char *pattern = "rts5453_GOOG%s.%s";
 
+	assert(config);
 	snprintf(image[ec_pd_id], MAX_PATH_LEN, pattern, config, "bin");
 	snprintf(hash[ec_pd_id], MAX_PATH_LEN, pattern, config, "hash");
 

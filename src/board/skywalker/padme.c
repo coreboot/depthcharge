@@ -4,5 +4,4 @@
 
 const char *const rts545x_configs[MAX_PDC_PORT_NUM] = {
 	RTS545X_PS8747,
-	RTS545X_PS8747,
 };
