@@ -59,6 +59,15 @@ config DRIVER_SOC_QCOM_SPMI
 	  You ordinarily shouldn't need this unless you need to hack voltage
 	  regulators in depthcharge to work around hardware issues.
 
+config QCOM_SPMI_PMIC_ARB_CHANNEL_SIZE
+	hex "Qualcomm SPMI arbitrator Channel Size"
+	default 0x1000 if DRIVER_SOC_X1P42100
+	default 0x10000
+	depends on DRIVER_SOC_QCOM_SPMI
+	help
+	  You ordinarily shouldn't need this unless you need to hack voltage
+	  regulators in depthcharge to work around hardware issues.
+
 config DRIVER_SOC_QCOM_SDTRAY
 	bool "Qualcomm SD TRAY arbitrator driver"
 	default n

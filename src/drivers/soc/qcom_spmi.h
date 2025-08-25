@@ -4,6 +4,7 @@
 #ifndef __DRIVERS_SOC_QCOM_SPMI_H__
 #define __DRIVERS_SOC_QCOM_SPMI_H__
 
+#include <libpayload.h>
 #include <stdint.h>
 
 // Individual register block per APID
@@ -16,11 +17,11 @@ typedef struct QcomSpmiRegs {
 	uint32_t wdata1;
 	uint32_t rdata0;
 	uint32_t rdata1;
-	uint8_t _reserved_empty_until_next_apid[0x10000 - 0x20];
+	uint8_t _reserved_empty_until_next_apid[CONFIG_QCOM_SPMI_PMIC_ARB_CHANNEL_SIZE - 0x20];
 } QcomSpmiRegs;
 check_member(QcomSpmiRegs, rdata1, 0x1c);
-_Static_assert(sizeof(QcomSpmiRegs) == 0x10000,
-	       "QcomSpmiRegs must be 0x10000 bytes per APID");
+_Static_assert(sizeof(QcomSpmiRegs) == CONFIG_QCOM_SPMI_PMIC_ARB_CHANNEL_SIZE ,
+	       "QcomSpmiRegs must be" STRINGIFY(CONFIG_QCOM_SPMI_PMIC_ARB_CHANNEL_SIZE) " bytes per APID");
 
 typedef struct QcomSpmi {
 	struct QcomSpmiRegs *regs_per_apid;	// indexed by APID
