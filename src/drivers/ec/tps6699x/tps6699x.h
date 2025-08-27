@@ -53,4 +53,7 @@ typedef struct Tps6699x {
 	bool has_updated;
 } Tps6699x;
 
+const VbootAuxfwOps *new_tps6699x_from_chip_info(struct ec_response_pd_chip_info_v2 *r,
+						 uint8_t ec_pd_id);
+
 #endif /* __DRIVERS_EC_TPS6699X_H_ */

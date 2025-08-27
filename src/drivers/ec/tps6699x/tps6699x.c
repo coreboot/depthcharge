@@ -310,13 +310,13 @@ Tps6699x *new_tps6699x(int ec_pd_id)
 	return me;
 }
 
-static const VbootAuxfwOps *new_tps6699x_from_chip_info(struct ec_response_pd_chip_info_v2 *r,
-							uint8_t ec_pd_id)
+const VbootAuxfwOps *new_tps6699x_from_chip_info(struct ec_response_pd_chip_info_v2 *r,
+						 uint8_t ec_pd_id)
 {
 	Tps6699x *tps6699x;
 
 	/* Skip firmware update if fw_update_flags flag is set */
-	if(r->fw_update_flags & USB_PD_CHIP_INFO_FWUP_FLAG_NO_UPDATE) {
+	if (r->fw_update_flags & USB_PD_CHIP_INFO_FWUP_FLAG_NO_UPDATE) {
 		printf("Ignoring port%d to avoid double-upgrade\n", ec_pd_id);
 		return NULL;
 	}
@@ -348,14 +348,20 @@ static const VbootAuxfwOps *new_tps6699x_from_chip_info(struct ec_response_pd_ch
 static CrosEcAuxfwChipInfo aux_fw_tps6699x_info[] = {
 	/* Default TI VID:PID for TPS6699x */
 	TPS6699X_CHIP_ENTRY(0x0451, 0x0000),
-	TPS6699X_CHIP_ENTRY(0x18d1, 0x506c),
+	TPS6699X_CHIP_ENTRY(CONFIG_DRIVER_EC_TPS6699X_VID, CONFIG_DRIVER_EC_TPS6699X_PID),
 };
+
+__weak void board_tps6699x_register(void)
+{
+}
 
 static int tps6699x_register(void)
 {
 	for (int i = 0; i < ARRAY_SIZE(aux_fw_tps6699x_info); i++)
 		list_insert_after(&aux_fw_tps6699x_info[i].list_node, &ec_aux_fw_chip_list);
 
+	/* Override this function in board level if additional PIDs need to be included. */
+	board_tps6699x_register();
 	return 0;
 }
 
