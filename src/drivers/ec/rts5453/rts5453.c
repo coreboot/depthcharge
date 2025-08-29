@@ -17,7 +17,7 @@
 #define FW_MAJOR_VERSION_SHIFT 16
 #define FW_MINOR_VERSION_SHIFT 8
 #define FW_PATCH_VERSION_SHIFT 0
-#define FW_HASH_SIZE 3
+#define FW_VERSION_SIZE 3
 
 #define PING_STATUS_DELAY_MS 10
 #define PING_STATUS_TIMEOUT_US 10000000 /* 10s */
@@ -85,6 +85,7 @@ typedef struct Rts545x {
 		uint16_t vid;
 		uint16_t pid;
 		uint8_t i2c_addr;
+		char project_name[USB_PD_CHIP_INFO_PROJECT_NAME_LEN + 1];
 	} chip_info;
 
 	struct {
@@ -424,6 +425,8 @@ static bool is_rts545x_device_present(Rts545x *me, int live)
 	me->fw_info.major_ver = (r.fw_version_number >> FW_MAJOR_VERSION_SHIFT) & 0xff;
 	me->fw_info.minor_ver = (r.fw_version_number >> FW_MINOR_VERSION_SHIFT) & 0xff;
 	me->fw_info.patch_ver = (r.fw_version_number >> FW_PATCH_VERSION_SHIFT) & 0xff;
+	memcpy(me->chip_info.project_name, r.fw_name_str, USB_PD_CHIP_INFO_PROJECT_NAME_LEN);
+	me->chip_info.project_name[USB_PD_CHIP_INFO_PROJECT_NAME_LEN] = '\0';
 	return true;
 }
 
@@ -538,6 +541,31 @@ bool rts545x_check_update_compatibility(pdc_fw_ver_t current, pdc_fw_ver_t new)
 	}
 }
 
+static vb2_error_t parse_hash(const uint8_t *hash, size_t hash_size, pdc_fw_ver_t *version,
+			      char *name)
+{
+	if (hash_size < FW_VERSION_SIZE) {
+		debug("hash_size %zu unexpected\n", hash_size);
+		return VB2_ERROR_INVALID_PARAMETER;
+	}
+
+	*version = PDC_FWVER_TO_INT(hash[0], hash[1], hash[2]);
+	hash += FW_VERSION_SIZE;
+	hash_size -= FW_VERSION_SIZE;
+
+	if (!hash_size)
+		return VB2_SUCCESS;
+
+	if (hash_size > USB_PD_CHIP_INFO_PROJECT_NAME_LEN) {
+		debug("Project name length exceeds %zu\n", USB_PD_CHIP_INFO_PROJECT_NAME_LEN);
+		return VB2_ERROR_INVALID_PARAMETER;
+	}
+
+	memcpy(name, hash, hash_size);
+	name[hash_size] = '\0';
+	return VB2_SUCCESS;
+}
+
 /*
  * Reading the firmware takes long time (~15-20 s), so we'll just use the
  * firmware rev as a trivial hash.
@@ -549,14 +577,10 @@ static vb2_error_t rts5453_check_hash(const VbootAuxfwOps *vbaux, const uint8_t 
 	Rts545x *me = container_of(vbaux, Rts545x, fw_ops);
 	pdc_fw_ver_t ver_current = PDC_FWVER_TO_INT(
 		me->fw_info.major_ver, me->fw_info.minor_ver, me->fw_info.patch_ver);
-	pdc_fw_ver_t ver_new = PDC_FWVER_TO_INT(hash[0], hash[1], hash[2]);
-	bool dev_is_present;
+	pdc_fw_ver_t ver_new = 0;
+	bool dev_is_present = false;
 	int ret;
-
-	if (hash_size != FW_HASH_SIZE) {
-		debug("hash_size %zu unexpected\n", hash_size);
-		return VB2_ERROR_INVALID_PARAMETER;
-	}
+	char project_name[USB_PD_CHIP_INFO_PROJECT_NAME_LEN + 1] = {0};
 
 	dev_is_present = is_rts545x_device_present(me, false);
 	if (!dev_is_present) {
@@ -565,20 +589,25 @@ static vb2_error_t rts5453_check_hash(const VbootAuxfwOps *vbaux, const uint8_t 
 		return VB2_SUCCESS;
 	}
 
-	if (ver_current == ver_new) {
-		printf("No upgrade necessary for %s. Already at %u.%u.%u.\n", me->chip_name,
+	VB2_TRY(parse_hash(hash, hash_size, &ver_new, project_name));
+
+	if (ver_current == ver_new &&
+	    (!project_name[0] ||
+	     !strncmp(project_name, me->chip_info.project_name, sizeof(project_name)))) {
+		printf("No upgrade necessary for %s. Already at %u.%u.%u(%s).\n", me->chip_name,
 		       PDC_FWVER_MAJOR(ver_current), PDC_FWVER_MINOR(ver_current),
-		       PDC_FWVER_PATCH(ver_current));
+		       PDC_FWVER_PATCH(ver_current), me->chip_info.project_name);
 		*severity = VB2_AUXFW_NO_UPDATE;
 		return VB2_SUCCESS;
 	}
 
 	if (!rts545x_check_update_compatibility(ver_current, ver_new)) {
-		printf("%s: Update FW from %u.%u.%u to %u.%u.%u not supported! Skipping.\n",
+		printf("%s: Update FW from %u.%u.%u(%s) to %u.%u.%u(%s) not supported! "
+		       "Skipping.\n",
 		       me->chip_name, PDC_FWVER_MAJOR(ver_current),
 		       PDC_FWVER_MINOR(ver_current), PDC_FWVER_PATCH(ver_current),
-		       PDC_FWVER_MAJOR(ver_new), PDC_FWVER_MINOR(ver_new),
-		       PDC_FWVER_PATCH(ver_new));
+		       me->chip_info.project_name, PDC_FWVER_MAJOR(ver_new),
+		       PDC_FWVER_MINOR(ver_new), PDC_FWVER_PATCH(ver_new), project_name);
 		*severity = VB2_AUXFW_NO_UPDATE;
 		return VB2_SUCCESS;
 	}
@@ -604,10 +633,11 @@ static vb2_error_t rts5453_check_hash(const VbootAuxfwOps *vbaux, const uint8_t 
 		return VB2_SUCCESS;
 	}
 
-	printf("%s: Update FW from %u.%u.%u to %u.%u.%u\n", me->chip_name,
+	printf("%s: Update FW from %u.%u.%u(%s) to %u.%u.%u(%s)\n", me->chip_name,
 	       PDC_FWVER_MAJOR(ver_current), PDC_FWVER_MINOR(ver_current),
-	       PDC_FWVER_PATCH(ver_current), PDC_FWVER_MAJOR(ver_new), PDC_FWVER_MINOR(ver_new),
-	       PDC_FWVER_PATCH(ver_new));
+	       PDC_FWVER_PATCH(ver_current), me->chip_info.project_name,
+	       PDC_FWVER_MAJOR(ver_new), PDC_FWVER_MINOR(ver_new), PDC_FWVER_PATCH(ver_new),
+	       project_name);
 	*severity = VB2_AUXFW_SLOW_UPDATE;
 	debug("update severity %d\n", *severity);
 	return VB2_SUCCESS;
@@ -824,6 +854,9 @@ const VbootAuxfwOps *new_rts545x_from_chip_info(struct ec_response_pd_chip_info_
 	rts545x->fw_info.major_ver = (r->fw_version_number >> FW_MAJOR_VERSION_SHIFT) & 0xff;
 	rts545x->fw_info.minor_ver = (r->fw_version_number >> FW_MINOR_VERSION_SHIFT) & 0xff;
 	rts545x->fw_info.patch_ver = (r->fw_version_number >> FW_PATCH_VERSION_SHIFT) & 0xff;
+	memcpy(rts545x->chip_info.project_name, r->fw_name_str,
+	       USB_PD_CHIP_INFO_PROJECT_NAME_LEN);
+	rts545x->chip_info.project_name[USB_PD_CHIP_INFO_PROJECT_NAME_LEN] = '\0';
 	printf("RTS5453 VID/PID %04x:%04x\n", rts545x->chip_info.vid, rts545x->chip_info.pid);
 	return &rts545x->fw_ops;
 }
