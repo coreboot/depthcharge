@@ -4,6 +4,7 @@
 #include <commonlib/helpers.h>
 #include <endian.h>
 #include <libpayload.h>
+#include <lz4.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -11,6 +12,7 @@
 #include "boot/android_dtboimg.h"
 #include "boot/android_dt_table.h"
 #include "boot/dt_update.h"
+#include "image/symbols.h"
 
 struct dt_table_entry {
 	uint32_t dt_size;
@@ -98,6 +100,32 @@ static bool is_dt_entry_compatible(const struct dt_table_entry *entry)
 	return false;
 }
 
+static const void *get_dt_entry_data(const void *dtb,
+				     struct dt_table_entry *entry, const char *img_name)
+{
+	/* Reuse the output FDT buffer as a convenient, guaranteed FDT-sized
+	   scratchpad that is still unused (for it's real purpose) right now. */
+	void *buffer = (void *)&_fit_fdt_start;
+	size_t size = _fit_fdt_end - _fit_fdt_start;
+
+	switch (entry->compression_type) {
+	case NO_COMPRESSION:
+		return dtb + entry->dt_offset;
+	case LZ4_COMPRESSION:
+		printf("LZ4 decompressing %s entry @ offset %#x\n", img_name, entry->dt_offset);
+		size = ulz4fn(dtb + entry->dt_offset, entry->dt_size, buffer, size);
+		break;
+	default:
+		printf("ERROR: Unsupported compression format (%d) for %s entry at offset %x\n",
+		       entry->compression_type, img_name, entry->dt_offset);
+		return NULL;
+	}
+
+	void *ret_buffer = xmalloc(size);
+	memcpy(ret_buffer, buffer, size);
+	return ret_buffer;
+}
+
 static const void *get_base_dt_entry(const void *dtb, size_t dtb_size)
 {
 	struct dt_table_header *hdr = (struct dt_table_header *)dtb;
@@ -115,7 +143,7 @@ static const void *get_base_dt_entry(const void *dtb, size_t dtb_size)
 
 		if (is_dt_entry_compatible(&entry)) {
 			printf("%s: Entry %d is compatible with the board\n", __func__, i);
-			return dtb + entry.dt_offset;
+			return get_dt_entry_data(dtb, &entry, "DTB");
 		}
 	}
 	printf("%s: ERROR: Cannot find a matching base DTB\n", __func__);
@@ -143,7 +171,10 @@ static void apply_dt_overlay_entries(struct device_tree *dt, const void *dtbo, s
 			continue;
 
 		printf("%s: Entry %d is compatible with the board\n", __func__, i);
-		overlay = dtbo + entry.dt_offset;
+		overlay = get_dt_entry_data(dtbo, &entry, "DTBO");
+		if (!overlay)
+			continue;
+
 		dt_overlay = fdt_unflatten(overlay);
 		if (!dt_overlay) {
 			printf("Failed to unflatten DTB overlay entry: %d\n", i);

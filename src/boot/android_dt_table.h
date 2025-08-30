@@ -37,6 +37,7 @@ enum dt_compression_info {
 	NO_COMPRESSION,
 	ZLIB_COMPRESSION,
 	GZIP_COMPRESSION,
+	LZ4_COMPRESSION,
 };
 
 struct dt_table_entry_v1 {
