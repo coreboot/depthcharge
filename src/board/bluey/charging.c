@@ -21,6 +21,28 @@
 
 #define DELAY_CHARGING_APPLET_MS 2000 /* 2ms */
 
+#define SCHG_CHGR_CHARGING_FCC 0x260A
+#define SMB1_CHGR_CHARGING_FCC ((SMB1_SLAVE_ID << 16) | SCHG_CHGR_CHARGING_FCC)
+#define SMB2_CHGR_CHARGING_FCC ((SMB2_SLAVE_ID << 16) | SCHG_CHGR_CHARGING_FCC)
+
+static int get_battery_icurr_ma(void)
+{
+	QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
+				    PMIC_REG_CHAN0_ADDR,
+				    PMIC_REG_LAST_CHAN_ADDR - PMIC_REG_FIRST_CHAN_ADDR);
+
+	/* Read battery i-current value */
+	int icurr = pmic_spmi->read8(pmic_spmi, SMB1_CHGR_CHARGING_FCC);
+	if (icurr <= 0)
+		icurr = pmic_spmi->read8(pmic_spmi, SMB2_CHGR_CHARGING_FCC);
+	if (icurr < 0)
+		icurr = 0;
+
+	icurr *= 50;
+	free(pmic_spmi);
+	return icurr;
+}
+
 static void disable_battery_charging(void)
 {
 	QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
@@ -105,9 +127,9 @@ static int launch_charger_applet(void)
 	do {
 		/*
 		 * Read the charger status, bail out if not present or not
-		 * charging or with critical temperature then issue a shutdown
+		 * charging then issue a shutdown
 		 */
-		if (detect_ec_ac_disconnect_input())
+		if (detect_ec_ac_disconnect_input() || !get_battery_icurr_ma())
 			cros_ec_ap_poweroff();
 
 		/*
