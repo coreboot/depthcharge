@@ -52,6 +52,7 @@ ui-test-common-srcs += tests/stubs/libpayload/cache.c
 ui-test-common-srcs += tests/stubs/vboot/firmware_id.c
 ui-test-common-srcs += tests/stubs/vboot/ui/draw.c
 ui-test-common-srcs += src/debug/stubs.c
+ui-test-common-srcs += src/fastboot/fastboot_stubs.c
 ui-test-common-srcs += src/vboot/ui/display.c
 ui-test-common-srcs += src/vboot/ui/log.c
 ui-test-common-srcs += src/vboot/ui/loop.c

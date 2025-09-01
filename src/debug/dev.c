@@ -49,8 +49,3 @@ void dc_dev_netboot(void)
 
 	netboot(tftp_ip, bootfile, argsfile, NULL, NULL);
 }
-
-void dc_dev_fastboot(void)
-{
-	fastboot_run();
-}

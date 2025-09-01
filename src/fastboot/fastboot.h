@@ -107,7 +107,7 @@ bool fastboot_is_finished(struct FastbootOps *fb);
 /* Handle a single fastboot packet, or a chunk of data in a download */
 void fastboot_handle_packet(struct FastbootOps *fb, void *data, uint64_t len);
 /* Run fastboot */
-void fastboot_run(void);
+void fastboot(void);
 /* Get the buffer for upload/download and the length of the data in the buffer */
 void *fastboot_get_memory_buffer(struct FastbootOps *fb, uint64_t *len);
 /* Prepares the staging buffer for download */
@@ -138,12 +138,5 @@ void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t,
 
 /* Sends DATA with the length */
 #define fastboot_data(fb, len) fastboot_send_fmt((fb), FASTBOOT_RES_DATA, "%08x", (len))
-
-static inline void fastboot(void) {
-	if (CONFIG(FASTBOOT_IN_PROD))
-		fastboot_run();
-	else
-		dc_dev_fastboot();
-}
 
 #endif /* __FASTBOOT_FASTBOOT_H__ */

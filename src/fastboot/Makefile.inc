@@ -11,6 +11,8 @@
 ## GNU General Public License for more details.
 ##
 
+depthcharge-y += fastboot_stubs.c
+
 fastboot-y += cmd.c
 fastboot-y += disk.c
 fastboot-y += fastboot.c
