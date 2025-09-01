@@ -92,9 +92,7 @@ static const VpdDeviceTreeMap vpd_dt_map[] = {
 
 static void usb_setup(void)
 {
-	/* Support USB3.0 XHCI controller in firmware. */
-	UsbHostController *usb_host = new_usb_hc(XHCI, QCOM_XHCI_BASE);
-	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+	/* placeholder */
 }
 
 static void storage_setup(void)
