@@ -395,6 +395,13 @@ int cros_ec_reboot(uint8_t flags);
 int cros_ec_ap_poweroff(void);
 
 /**
+ * AP reset (EC resets the AP)
+ *
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_ap_reset(void);
+
+/**
  * Reboot the EC with specified parameters
  *
  * @param ec		EC device

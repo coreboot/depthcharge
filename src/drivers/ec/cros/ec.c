@@ -776,6 +776,11 @@ int cros_ec_ap_poweroff(void)
 	return ec_command(cros_ec_get(), EC_CMD_AP_SHUTDOWN, 0, NULL, 0, NULL, 0);
 }
 
+int cros_ec_ap_reset(void)
+{
+	return ec_command(cros_ec_get(), EC_CMD_AP_RESET, 0, NULL, 0, NULL, 0);
+}
+
 /*
  * Set backlight.  Note that duty value needs to be passed
  * to the EC as a 16 bit number for increased precision.
