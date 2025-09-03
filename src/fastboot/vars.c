@@ -376,8 +376,7 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 			if (part) {
 				slot = 0;
 			} else {
-				/* Maximum length of GPT name is 36 chars */
-				char name_a[37];
+				char name_a[GPTENTRY_NAME_LEN + 1];
 				ret = snprintf(name_a, sizeof(name_a), "%s_a", arg);
 				if (ret < 0 || ret > sizeof(name_a))
 					return STATE_UNKNOWN_VAR;
