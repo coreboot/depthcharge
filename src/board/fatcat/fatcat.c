@@ -82,14 +82,6 @@ static const struct storage_config storage_configs[] = {
 		.fw_config = FW_CONFIG(STORAGE, STORAGE_NVME_GEN5)
 	},
 	{
-		.media = STORAGE_UFS,
-		.pci_dev = PCI_DEV_UFS,
-		.ufs = {
-			.ref_clk_freq = UFS_REFCLKFREQ_38_4
-		},
-		.fw_config = FW_CONFIG(STORAGE, STORAGE_UFS)
-	},
-	{
 		.media = STORAGE_NVME,
 		.pci_dev = PCI_DEV_PCIE5,
 		.fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN)
@@ -102,14 +94,6 @@ static const struct storage_config storage_configs[] = {
 	{
 		.media = STORAGE_NVME,
 		.pci_dev = PCI_DEV_PCIE9,
-		.fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN)
-	},
-	{
-		.media = STORAGE_UFS,
-		.pci_dev = PCI_DEV_UFS,
-		.ufs = {
-			.ref_clk_freq = UFS_REFCLKFREQ_38_4
-		},
 		.fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN)
 	},
 };
