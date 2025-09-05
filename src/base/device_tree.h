@@ -77,9 +77,4 @@ int dt_set_wifi_country_code(struct device_tree *tree, const DtPathMap *maps);
  */
 int dt_set_xo_cal_data(struct device_tree *tree, const DtPathMap *maps);
 
-/*
- * Init/retrieve the /reserved-memory/ node.
- */
-struct device_tree_node *dt_init_reserved_memory_node(struct device_tree *tree);
-
 #endif /* __BASE_DEVICE_TREE_H__ */
