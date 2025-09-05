@@ -239,11 +239,8 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		name = gpt_get_entry_name(part);
 		if (name == NULL || name[0] == '\0')
 			return STATE_DISK_ERROR;
-		/* Get last character */
-		while (name[1] != '\0')
-			name++;
 
-		used_len = snprintf(outbuf, outbuf_len, "%s", name);
+		used_len = snprintf(outbuf, outbuf_len, "%c", name[strlen(name) - 1]);
 		free(name);
 		break;
 	}
