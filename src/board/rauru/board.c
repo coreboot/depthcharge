@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <libpayload.h>
 
+#include "base/device_tree.h"
 #include "base/init_funcs.h"
 #include "boot/commandline.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
@@ -27,6 +28,35 @@
 #include "drivers/video/display.h"
 #include "drivers/video/mtk_ddp.h"
 #include "vboot/util/flag.h"
+
+static int fix_device_tree(struct device_tree_fixup *fixup, struct device_tree *tree)
+{
+	static const char *const reserved_mem[] = {"reserved-memory", "bootlogo", NULL};
+	struct device_tree_node *node;
+	uint32_t addr_cells = 2, size_cells = 1;
+	struct cb_framebuffer *fb = &lib_sysinfo.framebuffer;
+
+	uint64_t fb_addr = fb->physical_address;
+	uint64_t fb_size = fb->bytes_per_line * fb->y_resolution;
+
+	node = dt_find_node(tree->root, reserved_mem, &addr_cells, &size_cells,
+			    /* create */ 1);
+
+	if (!node) {
+		printf("Failed to add reserved-memory node for Boot Logo\n");
+		return -1;
+	}
+
+	dt_add_reg_prop(node, &fb_addr, &fb_size, 1, addr_cells, size_cells);
+	dt_add_iommu_addr_prop(node, &fb_addr, &fb_size, 1, addr_cells, size_cells);
+	dt_add_bin_prop(node, "no-map", NULL, 0);
+
+	return 0;
+}
+
+static struct device_tree_fixup reserve_framebuffer_fixup = {
+	.fixup = fix_device_tree,
+};
 
 static int tpm_irq_status(void)
 {
@@ -203,6 +233,9 @@ static int board_setup(void)
 
 	/* Disable MTE support for ChromeOS. b:375543707 */
 	commandline_append("arm64.nomte");
+
+	if (lib_sysinfo.framebuffer.physical_address)
+		list_insert_after(&reserve_framebuffer_fixup.list_node, &device_tree_fixups);
 
 	return 0;
 }
