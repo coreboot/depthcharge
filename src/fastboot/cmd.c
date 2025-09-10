@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <vb2_gpt.h>
+#include <vb2_sha.h>
 
 #include "base/android_misc.h"
 #include "base/gpt.h"
@@ -108,6 +109,93 @@ static void fastboot_cmd_flash(struct FastbootOps *fb, char *arg)
 	}
 
 	fastboot_write(fb, arg, 0, data, data_len);
+}
+
+static void fastboot_cmd_oem_sha256(struct FastbootOps *fb, char *arg)
+{
+	const char *part_name = strsep(&arg, ":");
+	const char *offset_str = strsep(&arg, ":");
+	const char *len_str = strsep(&arg, ":");
+	char digest_str[VB2_SHA256_DIGEST_SIZE * 2 + 1];
+	uint8_t digest[VB2_SHA256_DIGEST_SIZE];
+	struct vb2_sha256_context ctx;
+	char *arg_end = NULL;
+	enum gpt_io_ret ret;
+	StreamOps *stream;
+	uint64_t to_read;
+	uint64_t offset = 0;
+	uint64_t len = 0;
+	void *buf;
+
+	if (!part_name || arg != NULL) {
+		fastboot_fail(fb, "Invalid arguments. Use: oem "
+				  "sha256:<part_name>[:<offset>[:<len>]]");
+		return;
+	}
+
+	if (offset_str) {
+		offset = strtoull(offset_str, &arg_end, 0);
+		if (arg_end == offset_str || *arg_end != '\0') {
+			fastboot_fail(fb, "Cannot parse \"%s\" as offset", offset_str);
+			return;
+		}
+	}
+
+	if (len_str) {
+		len = strtoull(len_str, &arg_end, 0);
+		if (arg_end == len_str || *arg_end != '\0') {
+			fastboot_fail(fb, "Cannot parse \"%s\" as length", len_str);
+			return;
+		}
+	}
+
+	if (!strncmp(part_name, FASTBOOT_RAW_WRITE_ARG, FASTBOOT_RAW_WRITE_ARG_LEN - 1)) {
+		part_name = NULL;
+		if (fastboot_disk_init(fb))
+			return;
+	} else if (fastboot_disk_gpt_init(fb)) {
+		return;
+	}
+
+	ret = gpt_open_partition_stream(fb->disk, fb->gpt, part_name, offset, &stream,
+					&to_read);
+	if (ret != GPT_IO_SUCCESS) {
+		fastboot_fail(fb, "Failed to open stream");
+		return;
+	}
+
+	if (len > to_read) {
+		stream->close(stream);
+		fastboot_fail(fb, "Length %lld greater than partition size %lld", len, to_read);
+		return;
+	}
+
+	if (len != 0)
+		to_read = len;
+
+	fastboot_reset_staging(fb);
+	buf = fastboot_get_memory_buffer(fb, NULL);
+
+	vb2_sha256_init(&ctx, VB2_HASH_SHA256);
+
+	while (to_read) {
+		size_t chunk_len = MIN(to_read, FASTBOOT_MAX_DOWNLOAD_SIZE);
+		if (stream->read(stream, chunk_len, buf) != chunk_len) {
+			stream->close(stream);
+			fastboot_fail(fb, "Failed to read stream");
+			return;
+		}
+		vb2_sha256_update(&ctx, buf, chunk_len);
+		to_read -= chunk_len;
+	}
+	stream->close(stream);
+
+	vb2_sha256_finalize(&ctx, digest, VB2_HASH_SHA256);
+	for (int i = 0; i < sizeof(digest); i++)
+		snprintf(digest_str + i * 2, 3, "%02x", digest[i]);
+
+	fastboot_info(fb, digest_str);
+	fastboot_succeed(fb);
 }
 
 static void fastboot_cmd_erase(struct FastbootOps *fb, char *arg)
@@ -711,6 +799,7 @@ struct fastboot_cmd fastboot_cmds[] = {
 	CMD_ARGS("oem write-ufs-descriptor", ':', fastboot_cmd_oem_write_ufs_descriptor),
 	CMD_ARGS("oem set-successful", ':', fastboot_cmd_oem_set_successful),
 	CMD_ARGS("oem set-priority", ':', fastboot_cmd_oem_set_priority),
+	CMD_ARGS("oem sha256", ':', fastboot_cmd_oem_sha256),
 	CMD_ARGS("reboot", '-', fastboot_cmd_reboot_to_target),
 	CMD_NO_ARGS("reboot", fastboot_cmd_reboot),
 	CMD_ARGS("set_active", ':', fastboot_cmd_set_active),

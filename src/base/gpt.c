@@ -125,40 +125,75 @@ GptEntry *gpt_get_partition(GptData *gpt, unsigned int index)
 	return (GptEntry *)&gpt->primary_entries[index * h->size_of_entry];
 }
 
-enum gpt_io_ret gpt_read_partition(BlockDev *disk, GptData *gpt, const char *partition_name,
-				   const uint64_t offset, void *data, const size_t data_len)
+enum gpt_io_ret gpt_open_partition_stream(BlockDev *disk, GptData *gpt,
+					  const char *partition_name, uint64_t offset,
+					  StreamOps **stream_out, uint64_t *space_out)
 {
-	enum gpt_io_ret ret = GPT_IO_SUCCESS;
 	StreamOps *stream;
-	GptEntry *e = gpt_find_partition(gpt, partition_name);
-	if (!e)
-		return GPT_IO_NO_PARTITION;
+	uint64_t start_lba;
+	uint64_t space;
 
-	const uint64_t space = GptGetEntrySizeBytes(gpt, e);
-	if (offset > space || data_len > space - offset)
+	if (partition_name) {
+		GptEntry *e = gpt_find_partition(gpt, partition_name);
+		if (!e)
+			return GPT_IO_NO_PARTITION;
+		space = GptGetEntrySizeBytes(gpt, e);
+		start_lba = e->starting_lba;
+	} else {
+		space = disk->block_count * disk->block_size;
+		start_lba = 0;
+	}
+
+	if (offset > space)
 		return GPT_IO_OUT_OF_RANGE;
+
+	space -= offset;
+	start_lba += offset / disk->block_size;
+	offset %= disk->block_size;
 
 	if (disk->ops.new_stream == NULL)
 		return GPT_IO_NO_STREAM;
 
-	stream = disk->ops.new_stream(&disk->ops, e->starting_lba, GptGetEntrySizeLba(e));
+	stream = disk->ops.new_stream(&disk->ops, start_lba,
+				       DIV_ROUND_UP(space, disk->block_size));
 	if (stream == NULL)
 		return GPT_IO_NO_STREAM;
 	if (offset) {
 		if (stream->skip == NULL) {
 			printf("Disk stream doesn't have a skip callback");
-			ret = GPT_IO_STREAM_NO_SKIP_CB;
-			goto out;
+			stream->close(stream);
+			return GPT_IO_STREAM_NO_SKIP_CB;
 		}
 		if (stream->skip(stream, offset) != offset) {
-			ret = GPT_IO_TRANSFER_ERROR;
-			goto out;
+			stream->close(stream);
+			return GPT_IO_TRANSFER_ERROR;
 		}
 	}
+
+	*stream_out = stream;
+	*space_out = space;
+	return GPT_IO_SUCCESS;
+}
+
+enum gpt_io_ret gpt_read_partition(BlockDev *disk, GptData *gpt, const char *partition_name,
+				   const uint64_t offset, void *data, const size_t data_len)
+{
+	StreamOps *stream;
+	uint64_t space;
+
+	enum gpt_io_ret ret = gpt_open_partition_stream(disk, gpt, partition_name, offset,
+							&stream, &space);
+	if (ret != GPT_IO_SUCCESS)
+		return ret;
+
+	if (data_len > space) {
+		stream->close(stream);
+		return GPT_IO_OUT_OF_RANGE;
+	}
+
 	if (stream->read(stream, data_len, data) != data_len)
 		ret = GPT_IO_TRANSFER_ERROR;
 
-out:
 	stream->close(stream);
 
 	return ret;

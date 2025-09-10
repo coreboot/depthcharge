@@ -1,10 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <vb2_sha.h>
+
 #include "base/android_misc.h"
 #include "drivers/storage/ufs.h"
 #include "fastboot/fastboot.h"
 #include "tests/fastboot/fastboot_common_mocks.h"
 #include "tests/test.h"
+
+/* Forward declaration of functions used by mock data */
+static uint64_t test_stream_read(struct StreamOps *me, uint64_t count, void *buffer);
+static void test_stream_close(struct StreamOps *me);
 
 /* Mock data */
 UfsCtlr test_ufs;
@@ -14,6 +20,15 @@ char _kernel_start[0x100];
  * different commands
  */
 const int test_cmd_magic = 0x123;
+StreamOps test_stream = {
+	.read = test_stream_read,
+	.close = test_stream_close,
+};
+/*
+ * Magic number for tests to validate that the same vb2_sha256_context is used for different
+ * commands
+ */
+const uint32_t test_sha256_context_magic = 0xafa;
 
 /* Mocked functions */
 int android_misc_bcb_write(BlockDev *disk, GptData *gpt, struct bootloader_message *bcb)
@@ -398,6 +413,102 @@ void GptModified(GptData *gpt)
 
 /* Setup for GptModified mock */
 #define WILL_MODIFY_GPT expect_function_call(GptModified)
+
+enum gpt_io_ret gpt_open_partition_stream(BlockDev *disk, GptData *gpt,
+					  const char *partition_name, uint64_t offset,
+					  StreamOps **stream, uint64_t *space)
+{
+	check_expected(partition_name);
+	assert_ptr_equal(disk, &test_disk);
+	if (partition_name != NULL)
+		assert_ptr_equal(gpt, &test_gpt);
+	check_expected(offset);
+
+	*stream = &test_stream;
+	*space = mock();
+
+	return mock();
+}
+
+/* Setup for gpt_open_partition_stream mock */
+#define WILL_OPEN_STREAM(off, len, ret) do { \
+	expect_value(gpt_open_partition_stream, offset, off); \
+	will_return(gpt_open_partition_stream, len); \
+	will_return(gpt_open_partition_stream, ret); \
+} while (0)
+
+#define WILL_OPEN_DISK_STREAM(off, len, ret) do { \
+	expect_value(gpt_open_partition_stream, partition_name, NULL); \
+	WILL_OPEN_STREAM(off, len, ret); \
+} while (0)
+
+#define WILL_OPEN_PARTITION_STREAM(name, off, len, ret) do { \
+	expect_string(gpt_open_partition_stream, partition_name, name); \
+	WILL_OPEN_STREAM(off, len, ret); \
+} while (0)
+
+void vb2_sha256_init(struct vb2_sha256_context *ctx, enum vb2_hash_algorithm algo)
+{
+	function_called();
+	assert_int_equal(algo, VB2_HASH_SHA256);
+	ctx->h[0] = test_sha256_context_magic;
+}
+
+/* Setup for vb2_sha256_init mock */
+#define WILL_INIT_VB2_SHA256 expect_function_call(vb2_sha256_init)
+
+void vb2_sha256_update(struct vb2_sha256_context *ctx, const uint8_t *data, uint32_t size)
+{
+	assert_int_equal(ctx->h[0], test_sha256_context_magic);
+	assert_ptr_equal(data, &_kernel_start);
+	check_expected(size);
+}
+
+/* Setup for vb2_sha256_update mock */
+#define WILL_UPDATE_VB2_SHA256(len) expect_value(vb2_sha256_update, size, len)
+
+void vb2_sha256_finalize(struct vb2_sha256_context *ctx, uint8_t *digest,
+			 enum vb2_hash_algorithm algo)
+{
+	assert_int_equal(ctx->h[0], test_sha256_context_magic);
+	assert_int_equal(algo, VB2_HASH_SHA256);
+
+	uint8_t *sha = mock_ptr_type(uint8_t *);
+	int len = mock();
+	memcpy(digest, sha, len);
+}
+
+/* Setup for vb2_sha256_finalize mock */
+#define WILL_FINALIZE_VB2_SHA256(sha, sha_len) do { \
+	will_return(vb2_sha256_finalize, sha); \
+	will_return(vb2_sha256_finalize, sha_len); \
+} while (0)
+
+static uint64_t test_stream_read(struct StreamOps *me, uint64_t count, void *buffer)
+{
+	assert_ptr_equal(me, &test_stream);
+	assert_ptr_equal(buffer, &_kernel_start);
+	check_expected(count);
+
+	return mock();
+}
+
+/* Setup for test_stream_read mock */
+#define WILL_READ_STREAM_FAIL(len, ret) do { \
+	expect_value(test_stream_read, count, len); \
+	will_return(test_stream_read, ret); \
+} while (0)
+
+#define WILL_READ_STREAM(len) WILL_READ_STREAM_FAIL(len, len)
+
+static void test_stream_close(struct StreamOps *me)
+{
+	function_called();
+	assert_ptr_equal(me, &test_stream);
+}
+
+/* Setup for test_stream_close mock */
+#define WILL_CLOSE_STREAM expect_function_call(test_stream_close)
 
 /* Reset mock data (for use before each test) */
 static int setup(void **state)
@@ -1983,6 +2094,274 @@ static void test_fb_cmd_oem_set_priority_bad_arg(void **state)
 	assert_int_equal(fb->state, COMMAND);
 }
 
+static void fill_info_sha_str(char *str, uint8_t *sha, int sha_len)
+{
+	memcpy(str, "INFO", 4);
+
+	for (int i = 0; i < sha_len; i++) {
+		for (int j = 0; j < 2; j++) {
+			uint8_t digit = (sha[i] >> (4 * (1 - j))) & 0xf;
+			str[4 + i * 2 + j] = digit + (digit < 10 ? '0' : 'a' - 10);
+		}
+	}
+	str[4 + sha_len * 2] = '\0';
+}
+
+static void test_fb_cmd_oem_sha256(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "oem sha256:part";
+	uint8_t sha[] = {
+		0xe9, 0x88, 0x4c, 0x9c, 0x74, 0x5f, 0x2b, 0xad,
+		0x79, 0xba, 0x02, 0xfe, 0xe6, 0x79, 0xc8, 0xf5,
+		0x0a, 0x08, 0x81, 0xdd, 0x68, 0x31, 0x4b, 0x68,
+		0x99, 0x19, 0x4e, 0x68, 0x9c, 0xbd, 0x80, 0xfa,
+	};
+	char info_str[sizeof(sha) * 2 + 4 + 1];
+	/* Simulate partition that fits into buffer */
+	const int part_len = FASTBOOT_MAX_DOWNLOAD_SIZE - 16;
+
+	fill_info_sha_str(info_str, sha, sizeof(sha));
+
+	WILL_OPEN_PARTITION_STREAM("part", 0, part_len, GPT_IO_SUCCESS);
+	WILL_INIT_VB2_SHA256;
+	WILL_READ_STREAM(part_len);
+	WILL_UPDATE_VB2_SHA256(part_len);
+	WILL_CLOSE_STREAM;
+	WILL_FINALIZE_VB2_SHA256(sha, sizeof(sha));
+	WILL_SEND_EXACT(fb, info_str);
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_oem_sha256_large(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "oem sha256:part";
+	uint8_t sha[] = {
+		0xe9, 0x88, 0x4c, 0x9c, 0x74, 0x5f, 0x2b, 0xad,
+		0x79, 0xba, 0x02, 0xfe, 0xe6, 0x79, 0xc8, 0xf5,
+		0x0a, 0x08, 0x81, 0xdd, 0x68, 0x31, 0x4b, 0x68,
+		0x99, 0x19, 0x4e, 0x68, 0x9c, 0xbd, 0x80, 0xfa,
+	};
+	char info_str[sizeof(sha) * 2 + 4 + 1];
+	const int part_len = FASTBOOT_MAX_DOWNLOAD_SIZE * 2 + 16;
+
+	fill_info_sha_str(info_str, sha, sizeof(sha));
+
+	WILL_OPEN_PARTITION_STREAM("part", 0, part_len, GPT_IO_SUCCESS);
+	WILL_INIT_VB2_SHA256;
+	WILL_READ_STREAM(FASTBOOT_MAX_DOWNLOAD_SIZE);
+	WILL_UPDATE_VB2_SHA256(FASTBOOT_MAX_DOWNLOAD_SIZE);
+	WILL_READ_STREAM(FASTBOOT_MAX_DOWNLOAD_SIZE);
+	WILL_UPDATE_VB2_SHA256(FASTBOOT_MAX_DOWNLOAD_SIZE);
+	WILL_READ_STREAM(16);
+	WILL_UPDATE_VB2_SHA256(16);
+	WILL_CLOSE_STREAM;
+	WILL_FINALIZE_VB2_SHA256(sha, sizeof(sha));
+	WILL_SEND_EXACT(fb, info_str);
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_oem_sha256_offset(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "oem sha256:part:16";
+	uint8_t sha[] = {
+		0xe9, 0x88, 0x4c, 0x9c, 0x74, 0x5f, 0x2b, 0xad,
+		0x79, 0xba, 0x02, 0xfe, 0xe6, 0x79, 0xc8, 0xf5,
+		0x0a, 0x08, 0x81, 0xdd, 0x68, 0x31, 0x4b, 0x68,
+		0x99, 0x19, 0x4e, 0x68, 0x9c, 0xbd, 0x80, 0xfa,
+	};
+	char info_str[sizeof(sha) * 2 + 4 + 1];
+	const int part_len = FASTBOOT_MAX_DOWNLOAD_SIZE - 16;
+
+	fill_info_sha_str(info_str, sha, sizeof(sha));
+
+	WILL_OPEN_PARTITION_STREAM("part", 16, part_len, GPT_IO_SUCCESS);
+	WILL_INIT_VB2_SHA256;
+	WILL_READ_STREAM(part_len);
+	WILL_UPDATE_VB2_SHA256(part_len);
+	WILL_CLOSE_STREAM;
+	WILL_FINALIZE_VB2_SHA256(sha, sizeof(sha));
+	WILL_SEND_EXACT(fb, info_str);
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_oem_sha256_offset_len(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "oem sha256:part:16:8";
+	uint8_t sha[] = {
+		0xe9, 0x88, 0x4c, 0x9c, 0x74, 0x5f, 0x2b, 0xad,
+		0x79, 0xba, 0x02, 0xfe, 0xe6, 0x79, 0xc8, 0xf5,
+		0x0a, 0x08, 0x81, 0xdd, 0x68, 0x31, 0x4b, 0x68,
+		0x99, 0x19, 0x4e, 0x68, 0x9c, 0xbd, 0x80, 0xfa,
+	};
+	char info_str[sizeof(sha) * 2 + 4 + 1];
+	const int part_len = 16;
+
+	fill_info_sha_str(info_str, sha, sizeof(sha));
+
+	WILL_OPEN_PARTITION_STREAM("part", 16, part_len, GPT_IO_SUCCESS);
+	WILL_INIT_VB2_SHA256;
+	WILL_READ_STREAM(8);
+	WILL_UPDATE_VB2_SHA256(8);
+	WILL_CLOSE_STREAM;
+	WILL_FINALIZE_VB2_SHA256(sha, sizeof(sha));
+	WILL_SEND_EXACT(fb, info_str);
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_oem_sha256_raw_sector(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "oem sha256:raw-sector";
+	uint8_t sha[] = {
+		0xe9, 0x88, 0x4c, 0x9c, 0x74, 0x5f, 0x2b, 0xad,
+		0x79, 0xba, 0x02, 0xfe, 0xe6, 0x79, 0xc8, 0xf5,
+		0x0a, 0x08, 0x81, 0xdd, 0x68, 0x31, 0x4b, 0x68,
+		0x99, 0x19, 0x4e, 0x68, 0x9c, 0xbd, 0x80, 0xfa,
+	};
+	char info_str[sizeof(sha) * 2 + 4 + 1];
+	/* Simulate partition that fits into buffer */
+	const int part_len = FASTBOOT_MAX_DOWNLOAD_SIZE - 16;
+
+	fill_info_sha_str(info_str, sha, sizeof(sha));
+
+	WILL_OPEN_DISK_STREAM(0, part_len, GPT_IO_SUCCESS);
+	WILL_INIT_VB2_SHA256;
+	WILL_READ_STREAM(part_len);
+	WILL_UPDATE_VB2_SHA256(part_len);
+	WILL_CLOSE_STREAM;
+	WILL_FINALIZE_VB2_SHA256(sha, sizeof(sha));
+	WILL_SEND_EXACT(fb, info_str);
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_oem_sha256_read_fail(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "oem sha256:part";
+	const int part_len = 16;
+
+	WILL_OPEN_PARTITION_STREAM("part", 0, part_len, GPT_IO_SUCCESS);
+	WILL_INIT_VB2_SHA256;
+	WILL_READ_STREAM_FAIL(part_len, part_len - 2);
+	WILL_CLOSE_STREAM;
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_oem_sha256_len_greater_than_part_len(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "oem sha256:part:16:32";
+
+	WILL_OPEN_PARTITION_STREAM("part", 16, 24, GPT_IO_SUCCESS);
+	WILL_CLOSE_STREAM;
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_oem_sha256_fail_open_stream(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "oem sha256:part";
+
+	WILL_OPEN_PARTITION_STREAM("part", 0, 24, GPT_IO_NO_STREAM);
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_oem_sha256_bad_arg(void **state)
+{
+	struct FastbootOps *fb = *state;
+
+	char cmd[] = "oem sha256:vbmeta_a:-16";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd2[] = "oem sha256:vbmeta_a:";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd2, sizeof(cmd2) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd3[] = "oem sha256:vbmeta_a:off";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd3, sizeof(cmd3) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd4[] = "oem sha256:vbmeta_a:5off";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd4, sizeof(cmd4) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd5[] = "oem sha256:vbmeta_a:5:-32";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd5, sizeof(cmd5) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd6[] = "oem sha256:vbmeta_a:5:";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd6, sizeof(cmd6) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd7[] = "oem sha256:vbmeta_a:5:len";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd7, sizeof(cmd7) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd8[] = "oem sha256:vbmeta_a:5:24len";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd8, sizeof(cmd8) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd9[] = "oem sha256:vbmeta_a:5:24:additional";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd9, sizeof(cmd9) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
 #define TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup)
 
@@ -2082,6 +2461,15 @@ int main(void)
 		TEST(test_fb_cmd_oem_set_priority_non_bootable),
 		TEST(test_fb_cmd_oem_set_priority_no_partition),
 		TEST(test_fb_cmd_oem_set_priority_bad_arg),
+		TEST(test_fb_cmd_oem_sha256),
+		TEST(test_fb_cmd_oem_sha256_large),
+		TEST(test_fb_cmd_oem_sha256_offset),
+		TEST(test_fb_cmd_oem_sha256_offset_len),
+		TEST(test_fb_cmd_oem_sha256_raw_sector),
+		TEST(test_fb_cmd_oem_sha256_read_fail),
+		TEST(test_fb_cmd_oem_sha256_len_greater_than_part_len),
+		TEST(test_fb_cmd_oem_sha256_fail_open_stream),
+		TEST(test_fb_cmd_oem_sha256_bad_arg),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }

@@ -67,6 +67,14 @@ enum gpt_io_ret {
 	GPT_IO_SPARSE_WRONG_CHUNK_TYPE,
 };
 
+/*
+ * Open stream to the partition starting from offset specified in bytes. If partition_name is
+ * NULL, then open stream to the whole disk (in that case gpt can be NULL too).
+ */
+enum gpt_io_ret gpt_open_partition_stream(BlockDev *disk, GptData *gpt,
+					  const char *partition_name, uint64_t offset,
+					  StreamOps **stream, uint64_t *space);
+
 /* Read content of the partition starting from offset specified in bytes */
 enum gpt_io_ret gpt_read_partition(BlockDev *disk, GptData *gpt, const char *partition_name,
 				   const uint64_t offset, void *data, size_t data_len);
