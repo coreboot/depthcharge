@@ -13,6 +13,7 @@
 #include "drivers/soc/intel_common.h"
 #include "drivers/soc/intel_gpio.h"
 #include "drivers/sound/cs35l53.h"
+#include "drivers/sound/cs35l56_sndw.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/gpio_edge_buzzer.h"
 #include "drivers/sound/hda_codec.h"
@@ -133,6 +134,14 @@ static void setup_cs35l53(const struct audio_codec *codec, SoundRoute *route)
 						&route->components);
 		}
 	}
+}
+
+static SoundOps *setup_cs35l56_sndw(SndwOps *ops, unsigned int beep_ms)
+{
+	if (!CONFIG(DRIVER_SOUND_CS35L56_SNDW))
+		return NULL;
+
+	return &new_cs35l56_sndw(ops, beep_ms)->ops;
 }
 
 static void setup_rt5650(const struct audio_codec *codec, SoundRoute *route)
@@ -332,6 +341,12 @@ static void configure_audio_codec(const struct audio_codec *codec,
 			data->ops = &data->route->ops;
 		}
 		break;
+
+	case AUDIO_CS35L56:
+		if (data->type == AUDIO_SNDW)
+			data->ops = setup_cs35l56_sndw(&data->sndw->ops, BEEP_DURATION);
+		break;
+
 	case AUDIO_RT1019:
 		if (data->route)
 			data->ops = &data->route->ops;

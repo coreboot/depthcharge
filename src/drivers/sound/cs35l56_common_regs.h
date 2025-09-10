@@ -1,0 +1,34 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+#ifndef __DRIVERS_SOUND_CS35L56_COMMON_REGS_H__
+#define __DRIVERS_SOUND_CS35L56_COMMON_REGS_H__
+
+/* CS35L56 SCP Address Page Register */
+enum {
+	PCP_ADDR_PAGE1 = 0x48,
+	PCP_ADDR_PAGE2 = 0x49,
+};
+
+/* CS35L56 REGADDR */
+enum {
+	REGADDR0 = 0x9020,
+	REGADDR1 = 0x9021,
+	REGADDR2 = 0x9022,
+	REGADDR3 = 0x9023,
+};
+
+/* CS35L56 SCP Address Page register config */
+enum {
+	PCP_ADDR_PAGE1_CONFIG = 0x0,
+	PCP_ADDR_PAGE2_CONFIG = 0x3,
+};
+
+/* TONE_GENERATOR */
+enum {
+	TONE_GENERATOR3 = 0x0B,
+	WRITE_NONE = 0x00,
+	TONE_GENERATOR_ENABLE  = 0x04,
+	TONE_GENERATOR_DISABLE = 0x05,
+};
+
+#endif /* __DRIVERS_SOUND_CS35L56_COMMON_REGS_H__ */
