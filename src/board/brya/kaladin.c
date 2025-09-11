@@ -43,7 +43,7 @@ const struct audio_config *variant_probe_audio_config(void)
 
 int cr50_irq_status(void)
 {
-	return alderlake_get_gpe(GPE0_DW0_17); /* GPP_A17 */
+	return alderlake_get_gpe(GPE0_DW0_13); /* GPP_A13 */
 }
 
 static const struct storage_config storage_configs[] = {
