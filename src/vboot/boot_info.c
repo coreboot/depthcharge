@@ -239,6 +239,9 @@ static int fill_info_gki(struct boot_info *bi,
 			fastboot_bootconfig = android_misc_get_oem_cmd(&fastboot_cmd, true);
 			commandline_append(android_misc_get_oem_cmd(&fastboot_cmd, false));
 		}
+
+		if (gpt != NULL)
+			free_gpt(bdev, gpt);
 	}
 
 	if (CONFIG(BOOTCONFIG)) {
