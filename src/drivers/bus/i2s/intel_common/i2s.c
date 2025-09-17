@@ -355,14 +355,14 @@ static int enable_DSP_SSP(I2s *bus)
 	return 0;
 }
 /*
- * set_ssp_i2s_hw - Configure SSP driver according to settings.
+ * i2s_set_ssp_hw - Configure SSP driver according to settings.
  * @regs: pointer to registers
- * @settings: config settings
+ * @settings: configuration settings
  * @bps: bits per sample
  *
  * Configure SSP driver according to settings.
  */
-static void set_ssp_i2s_hw(I2sRegs *regs, const I2sSettings *settings, int bps)
+void i2s_set_ssp_hw(I2sRegs *regs, const I2sSettings *settings, int bps)
 {
 	uint32_t sscr0;
 	uint32_t sscr1;
@@ -430,7 +430,7 @@ static int i2s_init(I2s *bus)
 		return -1;
 	}
 	i2s_disable(bus->regs);
-	set_ssp_i2s_hw(bus->regs,
+	i2s_set_ssp_hw(bus->regs,
 		       bus->settings,
 		       bus->bits_per_sample);
 	return 0;
@@ -505,7 +505,7 @@ static int i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 
 /*
  * new_i2s_structure - Allocate new I2s data structures.
- * @settings: Codec settigns
+ * @settings: Codec settings
  * @bps: Bits per sample
  * @sdmode: Codec shut-down and mode pin
  * @ssp_i2s_start_address: I2S register start address.

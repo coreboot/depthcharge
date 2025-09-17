@@ -16,6 +16,7 @@
 #define __DRIVERS_BUS_I2S_INTEL_COMMON_I2S_H__
 
 #include "drivers/bus/i2s/i2s.h"
+#include "drivers/bus/i2s/intel_common/i2s-regs.h"
 #include "drivers/gpio/gpio.h"
 
 #define RETRY_COUNT             1000
@@ -143,10 +144,18 @@ typedef struct {
 
 /*
  * new_i2s_structure - Allocate new I2s data structures.
- * @settings: Codec settigns
+ * @settings: Codec settings
  * @bps: Bits per sample
  */
 I2s *new_i2s_structure(const I2sSettings *settings, int bps, GpioOps *sdmode,
 	uintptr_t ssp_i2s_start_address);
+
+/*
+ * i2s_set_ssp_hw - Configure SSP driver according to settings.
+ * @regs: pointer to registers
+ * @settings: configuration settings
+ * @bps: bits per sample
+ */
+void i2s_set_ssp_hw(I2sRegs *regs, const I2sSettings *settings, int bps);
 
 #endif
