@@ -22,15 +22,15 @@
 #include "drivers/bus/i2s/cavs-regs.h"
 
 #define DEFINE_REG(reg, offset) \
-	const uint8_t OFFSET_ ## reg = offset; \
+	static const uint16_t OFFSET_ ## reg = offset; \
 	static inline uint32_t read_ ## reg(void *p) \
 		{ return read32(p + (OFFSET_ ## reg)); } \
 	static inline void write_ ## reg(uint32_t v, void *p) \
 		{ write32(p + (OFFSET_ ## reg), v); }
 
 #define DEFINE_FIELD(reg, field, mask, shift) \
-	const uint32_t reg ## _ ## field ## _MASK = (uint32_t)(mask);  \
-	const uint8_t  reg ## _ ## field ## _SHIFT = (uint8_t)(shift);  \
+	static const uint32_t reg ## _ ## field ## _MASK = (uint32_t)(mask);  \
+	static const uint8_t  reg ## _ ## field ## _SHIFT = (uint8_t)(shift);  \
 							\
 	static inline uint32_t extract_ ## reg ## _ ## field \
 				(uint32_t reg_value) { \
@@ -118,8 +118,12 @@ DEFINE_FIELD(SSPSP, DMYSTOP, 0x3, 7)
 DEFINE_FIELD(SSMODYTSA, TTSA, 0xFF, 0)
 /* SSP SSMIDYTSA fields definitions */
 DEFINE_FIELD(SSMIDYTSA, RTSA, 0xFF, 0)
+/* SSP SSMODYCS fields definitions */
 DEFINE_FIELD(SSMODYCS, TXEN, 0x1, 0)
 DEFINE_FIELD(SSMODYCS, TSRE, 0x3, 1)
+DEFINE_FIELD(SSMODYCS, TFL, 0xFF, 16)	/* Transmit FIFO Level */
+DEFINE_FIELD(SSMODYCS, TNF, 0x1, 26)	/* Transmit FIFO Not Full */
+DEFINE_FIELD(SSMODYCS, TUR, 0x1, 28)	/* Transmit Underrun */
 #else /* !CONFIG(INTEL_COMMON_I2S_ACE_3_x) */
 /* SSP SSTSA fields definitions */
 DEFINE_FIELD(SSTSA, TXEN, 0x1, 8)
