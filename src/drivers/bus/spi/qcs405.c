@@ -420,7 +420,7 @@ static int __blsp_spi_read(struct qcs_spi_slave *ds, u8 *data_buffer,
 		}
 	} while (!(val & MAX_INPUT_DONE_FLAG));
 
- out:
+out:
 	/*
 	 * Put the SPI Core back in the Reset State
 	 * to end the transfer
@@ -552,7 +552,7 @@ static int __blsp_spi_write(struct qcs_spi_slave *ds, const u8 *cmd_buffer,
 
 	} while (!(val & MAX_OUTPUT_DONE_FLAG));
 
- out:
+out:
 	/*
 	 * Put the SPI Core back in the Reset State
 	 * to end the transfer

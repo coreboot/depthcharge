@@ -59,7 +59,7 @@ static void update_cmdline(struct boot_info *bi, struct device_tree *tree)
 
 	return;
 
- fail:
+fail:
 	printf("WARNING! No cmd line passed to kernel\n");
 }
 

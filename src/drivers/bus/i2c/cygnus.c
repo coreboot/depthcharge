@@ -139,7 +139,7 @@ static int i2c_write(CygnusI2cReg *reg_addr, I2cSeg *segment)
 
 	return 0;
 
- flush_fifo:
+flush_fifo:
 	i2c_flush_fifo(reg_addr);
 	return ret;
 }
@@ -178,7 +178,7 @@ static int i2c_read(CygnusI2cReg *reg_addr, I2cSeg *segment)
 
 	return 0;
 
- flush_fifo:
+flush_fifo:
 	i2c_flush_fifo(reg_addr);
 	return ret;
 }

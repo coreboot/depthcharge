@@ -340,7 +340,7 @@ uip_connect(uip_ipaddr_t *ripaddr, uint16_t rport)
   register struct uip_conn *conn, *cconn;
   
   /* Find an unused local port. */
- again:
+again:
   ++lastport;
 
   if(lastport >= 32000) {
@@ -404,7 +404,7 @@ uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport)
   register struct uip_udp_conn *conn;
   
   /* Find an unused local port. */
- again:
+again:
   ++lastport;
 
   if(lastport >= 32000) {
@@ -590,7 +590,7 @@ uip_reass(void)
     }
   }
 
- nullreturn:
+nullreturn:
   return 0;
 }
 /*---------------------------------------------------------------------------*/
@@ -861,7 +861,7 @@ uip_process(uint8_t flag)
     goto drop;
   }
 
- icmp_input:
+icmp_input:
   UIP_STAT(++uip_stat.icmp.recv);
 
   /* ICMP echo (i.e., ping) processing. This is simple, we only change
@@ -901,7 +901,7 @@ uip_process(uint8_t flag)
   /* End of IPv4 input header processing code. */
 
   /* UDP input processing. */
- udp_input:
+udp_input:
   /* UDP processing is really just a hack. We don't do anything to the
      UDP/IP headers, but let the UDP application do all the hard
      work. If the application sets uip_slen, it has a packet to
@@ -950,14 +950,14 @@ uip_process(uint8_t flag)
     UIP_LOG("udp: no matching connection found");
     goto drop;
 
- udp_found:
+udp_found:
     uip_conn = NULL;
     uip_flags = UIP_NEWDATA;
     uip_sappdata = uip_appdata = &uip_buf[CONFIG_UIP_LLH_LEN + UIP_IPUDPH_LEN];
     uip_slen = 0;
     UIP_UDP_APPCALL();
 
- udp_send:
+udp_send:
     if(uip_slen == 0) {
       goto drop;
     }
@@ -992,7 +992,7 @@ uip_process(uint8_t flag)
   }
   
   /* TCP input processing. */
- tcp_input:
+tcp_input:
   UIP_STAT(++uip_stat.tcp.recv);
 
   /* Start of TCP input header processing code. */
@@ -1042,7 +1042,7 @@ uip_process(uint8_t flag)
   /* No matching connection found, so we send a RST packet. */
   UIP_STAT(++uip_stat.tcp.synrst);
 
- reset:
+reset:
   /* We do not send resets in response to resets. */
   if(BUF->flags & TCP_RST) {
     goto drop;
@@ -1097,7 +1097,7 @@ uip_process(uint8_t flag)
   /* This label will be jumped to if we matched the incoming packet
      with a connection in LISTEN. In that case, we should create a new
      connection and send a SYNACK in return. */
- found_listen:
+found_listen:
   /* First we check if there are any connections avaliable. Unused
      connections are kept in the same table as used connections, but
      unused ones have the tcpstate set to CLOSED. Also, connections in
@@ -1187,10 +1187,10 @@ uip_process(uint8_t flag)
   }
   
   /* Our response will be a SYNACK. */
- tcp_send_synack:
+tcp_send_synack:
   BUF->flags = TCP_ACK;
   
- tcp_send_syn:
+tcp_send_syn:
   BUF->flags |= TCP_SYN;
   
   /* We send out the TCP Maximum Segment Size option with our
@@ -1204,7 +1204,7 @@ uip_process(uint8_t flag)
   goto tcp_send;
 
   /* This label will be jumped to if we found an active connection. */
- found:
+found:
   uip_conn = uip_connr;
   uip_flags = 0;
   /* We do a very naive form of TCP reset processing; we just accept
@@ -1403,7 +1403,7 @@ uip_process(uint8_t flag)
       uip_connr->len = 1;
       uip_connr->tcpstateflags = UIP_LAST_ACK;
       uip_connr->nrtx = 0;
- tcp_send_finack:
+tcp_send_finack:
       BUF->flags = TCP_FIN | TCP_ACK;
       goto tcp_send_nodata;
     }
@@ -1464,7 +1464,7 @@ uip_process(uint8_t flag)
       uip_slen = 0;
       UIP_APPCALL();
 
- appsend:
+appsend:
       
       if(uip_flags & UIP_ABORT) {
 	uip_slen = 0;
@@ -1515,7 +1515,7 @@ uip_process(uint8_t flag)
 	}
       }
       uip_connr->nrtx = 0;
- apprexmit:
+apprexmit:
       uip_appdata = uip_sappdata;
       
       /* If the application has data to be sent, or if the incoming
@@ -1606,20 +1606,20 @@ uip_process(uint8_t flag)
   
   /* We jump here when we are ready to send the packet, and just want
      to set the appropriate TCP sequence numbers in the TCP header. */
- tcp_send_ack:
+tcp_send_ack:
   BUF->flags = TCP_ACK;
   
- tcp_send_nodata:
+tcp_send_nodata:
   uip_len = UIP_IPTCPH_LEN;
 
- tcp_send_noopts:
+tcp_send_noopts:
   BUF->tcpoffset = (UIP_TCPH_LEN / 4) << 4;
 
   /* We're done with the input processing. We are now ready to send a
      reply. Our job is to fill in all the fields of the TCP and IP
      headers before calculating the checksum and finally send the
      packet. */
- tcp_send:
+tcp_send:
   BUF->ackno[0] = uip_connr->rcv_nxt[0];
   BUF->ackno[1] = uip_connr->rcv_nxt[1];
   BUF->ackno[2] = uip_connr->rcv_nxt[2];
@@ -1647,7 +1647,7 @@ uip_process(uint8_t flag)
     BUF->wnd[1] = ((uip_recv_window) & 0xff);
   }
   
- tcp_send_noconn:
+tcp_send_noconn:
   BUF->ttl = CONFIG_UIP_TTL;
   BUF->len[0] = (uip_len >> 8);
   BUF->len[1] = (uip_len & 0xff);
@@ -1658,7 +1658,7 @@ uip_process(uint8_t flag)
   BUF->tcpchksum = 0;
   BUF->tcpchksum = ~(uip_tcpchksum());
 
- ip_send_nolen:
+ip_send_nolen:
   BUF->vhl = 0x45;
   BUF->tos = 0;
   BUF->ipoffset[0] = BUF->ipoffset[1] = 0;
@@ -1678,7 +1678,7 @@ uip_process(uint8_t flag)
   uip_flags = 0;
   return;
 
- drop:
+drop:
   uip_len = 0;
   uip_flags = 0;
   return;

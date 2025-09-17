@@ -716,7 +716,7 @@ static int spi_xfer(SpiOps *ops, void *din, const void *dout, uint32_t bytes)
 	if (ret)
 		goto out;
 
- spi_receive:
+spi_receive:
 	if (!in_bytes) /* Nothing to read. */
 		goto out;
 
@@ -745,7 +745,7 @@ static int spi_xfer(SpiOps *ops, void *din, const void *dout, uint32_t bytes)
 		in_bytes--;
 	}
 
- out:
+out:
 	/*
 	 * Put the SPI Core back in the Reset State
 	 * to end the transfer.

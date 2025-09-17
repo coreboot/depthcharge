@@ -498,7 +498,7 @@ static int gsc_i2c_tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
 
 	return current;
 
- out_err:
+out_err:
 	/*
 	 * Abort current transaction if still pending. This will NOT abort
 	 * it if gsc_i2c_tpm_status() fails, since it returns 0 in that case.
@@ -585,7 +585,7 @@ static int gsc_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 	}
 	return sent;
 
- out_err:
+out_err:
 	/*
 	 * Abort current transaction if still pending. This will NOT abort
 	 * it if gsc_i2c_tpm_status() fails, since it returns 0 in that case.

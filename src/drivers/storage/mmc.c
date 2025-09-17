@@ -1006,7 +1006,7 @@ static int sd_change_freq(MmcMedia *media)
 		mmc_set_timing(media->ctrlr, MMC_TIMING_SD_HS);
 	}
 
- out:
+out:
 	if (media->ctrlr->caps & MMC_CAPS_4BIT &&
 	    media->scr[0] & SD_DATA_4BIT) {
 		cmd.cmdidx = MMC_CMD_APP_CMD;

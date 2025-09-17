@@ -394,7 +394,7 @@ int sdhci_execute_tuning(struct MmcMedia *media)
 	host->tuned_clock = host->clock;
 	return 0;
 
- tuning_failed:
+tuning_failed:
 	printf("%s: Tuning failed after %llu us, %d blocks\n", host->name,
 	       timer_us(start), blocks);
 

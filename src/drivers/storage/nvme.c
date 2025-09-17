@@ -903,7 +903,7 @@ static NVME_STATUS nvme_identify_namespaces(NvmeCtrlr *ctrlr)
 		}
 	}
 
- exit:
+exit:
 	if (active_namespaces != NULL)
 		free(active_namespaces);
 	if (namespace_data != NULL)
@@ -1154,7 +1154,7 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 	cleanup->data = ctrlr;
 	list_insert_after(&cleanup->list_node, &cleanup_funcs);
 
- exit:
+exit:
 	ctrlr->ctrlr.need_update = 0;
 
 	if (status == NVME_UNSUPPORTED)
