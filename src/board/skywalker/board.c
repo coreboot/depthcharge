@@ -30,6 +30,9 @@
 
 #define MAX_PATH_LEN 32
 
+#define USB_PORT0_BASE_ADDRESS 0x11200000
+#define USB_PORT3_BASE_ADDRESS 0x11260000
+
 /* Override of func in src/drivers/ec/rts5453/rts5453.c */
 void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
 				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
@@ -61,6 +64,10 @@ static int tpm_irq_status(void)
 
 static void enable_usb_vbus(struct UsbHostController *usb_host)
 {
+	static bool enabled;
+
+	if (enabled)
+		return;
 	/*
 	 * To avoid USB detection issue, assert GPIO AP_XHCI_INIT_DONE
 	 * to notify EC to enable USB VBUS when xHCI is initialized.
@@ -72,6 +79,14 @@ static void enable_usb_vbus(struct UsbHostController *usb_host)
 		/* After USB VBUS is enabled, delay 500ms for USB detection. */
 		mdelay(500);
 	}
+	enabled = true;
+}
+
+static void setup_usb_host(uintptr_t base_addr)
+{
+	UsbHostController *usb_host = new_usb_hc(XHCI, base_addr);
+	set_usb_init_callback(usb_host, enable_usb_vbus);
+	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 }
 
 static void setup_codec_rt1019(GpioOps *spk_en)
@@ -262,9 +277,9 @@ static int board_setup(void)
 	}
 
 	/* Set up USB */
-	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11260000);
-	set_usb_init_callback(usb_host, enable_usb_vbus);
-	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+	setup_usb_host(USB_PORT3_BASE_ADDRESS);
+	if (CONFIG(BOARD_USE_USB_PORT0))
+		setup_usb_host(USB_PORT0_BASE_ADDRESS);
 
 	/* Set display ops */
 	if (display_init_required())

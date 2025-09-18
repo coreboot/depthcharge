@@ -1,0 +1,7 @@
+## SPDX-License-Identifier: GPL-2.0-only
+
+config BOARD_USE_USB_PORT0
+	bool "Board uses USB Port 0"
+	default n
+	help
+	  Enable this if the board uses USB port 0.

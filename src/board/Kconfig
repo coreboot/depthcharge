@@ -75,6 +75,9 @@ endif
 if BOARD_DIR = "shadowmountain"
 source "src/board/shadowmountain/Kconfig"
 endif
+if BOARD_DIR = "skywalker"
+source "src/board/skywalker/Kconfig"
+endif
 if BOARD_DIR = "adlrvp"
 source "src/board/adlrvp/Kconfig"
 endif
