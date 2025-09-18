@@ -80,7 +80,7 @@ INIT_FUNC(board_cleanup_install);
 
 static bool board_boot_in_low_battery_mode(void)
 {
-	return lib_sysinfo.boot_mode & CB_BOOT_MODE_LOW_BATTERY;
+	return lib_sysinfo.boot_mode == CB_BOOT_MODE_LOW_BATTERY;
 }
 
 static void clear_ec_power_button_input(void)
