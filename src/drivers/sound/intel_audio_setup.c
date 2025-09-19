@@ -7,6 +7,7 @@
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "drivers/bus/i2s/intel_common/max98390.h"
+#include "drivers/bus/i2s/intel_common/i2s-dma.h"
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/soundwire/soundwire.h"
 #include "drivers/soc/intel_common.h"
@@ -183,11 +184,15 @@ static GpioCfg *cfg_i2s_gpio(const struct audio_bus *bus)
 static I2sSource *setup_i2s(const struct audio_bus *bus)
 {
 	GpioCfg *gpio_cfg = cfg_i2s_gpio(bus);
-
+#if CONFIG(INTEL_COMMON_I2S_ACE_3_x)
+	I2s *i2s = new_i2s_dma_structure(bus->i2s.settings,
+		default_if_zero(bus->i2s.depth, AUD_BITDEPTH),
+		gpio_cfg ? &gpio_cfg->ops : NULL, bus->i2s.address);
+#else
 	I2s *i2s = new_i2s_structure(bus->i2s.settings,
 		default_if_zero(bus->i2s.depth, AUD_BITDEPTH),
 		gpio_cfg ? &gpio_cfg->ops : NULL, bus->i2s.address);
-
+#endif
 	I2sSource *i2s_source = new_i2s_source(&i2s->ops,
 		default_if_zero(bus->i2s.rate, AUD_SAMPLE_RATE),
 		default_if_zero(bus->i2s.ch, AUD_NUM_CHANNELS),
