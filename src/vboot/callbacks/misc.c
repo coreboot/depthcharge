@@ -102,10 +102,10 @@ vb2_error_t vb2ex_commit_data(struct vb2_context *ctx)
 	return rv;
 }
 
-vb2_error_t vb2ex_get_android_bootmode(struct vb2_context *ctx,
-				       vb2ex_disk_handle_t disk,
-				       GptData *gpt,
-				       enum vb2_android_bootmode *bootmode)
+vb2_error_t vb2ex_handle_android_misc_partition(struct vb2_context *ctx,
+						vb2ex_disk_handle_t disk,
+						GptData *gpt,
+						enum vb2_android_bootmode *bootmode)
 {
 	enum android_misc_bcb_command cmd;
 	BlockDev *bdev = (BlockDev *)disk;
