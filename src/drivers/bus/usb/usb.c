@@ -28,6 +28,8 @@ struct list_node usb_host_controllers;
 static struct list_node init_callbacks;
 static struct list_node poll_callbacks;
 
+static int usb_initialized;
+
 void usb_generic_create(usbdev_t *dev)
 {
 	// Allocate a structure to keep track of this device.
@@ -83,6 +85,7 @@ static int dc_usb_shutdown(struct CleanupFunc *cleanup, CleanupType type)
 {
 	printf("Shutting down all USB controllers.\n");
 	usb_exit();
+	usb_initialized = 0;
 	return 0;
 }
 
@@ -96,6 +99,10 @@ void dc_usb_initialize(void)
 		CleanupOnHandoff | CleanupOnLegacy,
 		NULL
 	};
+
+	if (usb_initialized)
+		return;
+	usb_initialized = 1;
 
 	// Invoke any callbacks
 	UsbCallbackData *callback;

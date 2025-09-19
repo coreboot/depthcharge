@@ -22,6 +22,7 @@
 
 #include "base/android_misc.h"
 #include "debug/dev.h"
+#include "drivers/bus/usb/usb.h"
 #include "drivers/flash/flash.h"
 #include "fastboot/fastboot.h"
 #include "vboot/nvdata.h"
@@ -133,8 +134,10 @@ vb2_error_t vb2ex_get_android_bootmode(struct vb2_context *ctx,
 	case MISC_BCB_BOOTLOADER_BOOT:
 		*bootmode = VB2_ANDROID_NORMAL_BOOT;
 		/* If GBB flag is set, start fastboot */
-		if (vb2api_gbb_get_flags(ctx) & VB2_GBB_FLAG_FORCE_UNLOCK_FASTBOOT)
+		if (vb2api_gbb_get_flags(ctx) & VB2_GBB_FLAG_FORCE_UNLOCK_FASTBOOT) {
+			dc_usb_initialize();
 			fastboot();
+		}
 		break;
 	}
 
