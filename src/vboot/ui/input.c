@@ -51,6 +51,8 @@ static uint32_t keyboard_get_key(void)
 		return UI_KEY_LEFT;
 	case KEY_ENTER:
 		return UI_KEY_ENTER;
+	case PADENTER:
+		return UI_KEY_ENTER;
 	case MKBP_BUTTON_VOL_DOWN_SHORT_PRESS:
 		return UI_BUTTON_VOL_DOWN_SHORT_PRESS;
 	case MKBP_BUTTON_VOL_UP_SHORT_PRESS:
