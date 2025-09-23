@@ -544,6 +544,7 @@ int main(void)
 		/* Standard V3.0 Matrix only tests. */
 		MKBP_V30_KEY_TEST(1, 6, 'z'),
 		MKBP_V30_KEY_TEST(6, 5, ' '),
+		MKBP_V30_KEY_TEST(17, 7, PADENTER),
 		MKBP_TEST(test_ctrl_r),
 		MKBP_TEST(test_ctrl_u),
 		/* Standard V3.0 TKL Matrix only tests. */

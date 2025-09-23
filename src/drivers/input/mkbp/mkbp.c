@@ -487,6 +487,9 @@ static void more_keys(void)
 			bool key_added = true;
 
 			switch (code) {
+			case 0x60:
+				add_key(PADENTER);
+				break;
 			case 0x6a:
 				add_key(KEY_RIGHT);
 				break;
