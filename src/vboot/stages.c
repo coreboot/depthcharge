@@ -181,13 +181,13 @@ static CleanupFunc commit_and_lock_cleanup = {
 int vboot_select_and_boot_kernel(void)
 {
 	struct vb2_context *ctx = vboot_get_context();
-	static char vboot_cmdline[2 * KiB];
+	static char bootconfig_cmdline[2 * KiB];
 
 	struct vb2_kernel_params kparams = {
 		.kernel_buffer = _kernel_start,
 		.kernel_buffer_size = _kernel_end - _kernel_start,
-		.vboot_cmdline_buffer = vboot_cmdline,
-		.vboot_cmdline_size = sizeof(vboot_cmdline),
+		.bootconfig_cmdline_buffer = bootconfig_cmdline,
+		.bootconfig_cmdline_size = sizeof(bootconfig_cmdline),
 		.pvmfw_buffer = NULL,
 		.pvmfw_buffer_size = 0,
 		/* Default to pvmfw not loaded */

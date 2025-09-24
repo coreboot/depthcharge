@@ -94,7 +94,7 @@ static int gki_setup_bootconfig(struct boot_info *bi, struct vb2_kernel_params *
 		return -1;
 	}
 
-	ret = bootconfig_append_cmdline(&bc, kp->vboot_cmdline_buffer);
+	ret = bootconfig_append_cmdline(&bc, kp->bootconfig_cmdline_buffer);
 	if (ret < 0) {
 		printf("GKI: Cannot copy vboot cmdline to bootconfig\n");
 		return -1;
@@ -229,10 +229,11 @@ static int fill_info_gki(struct boot_info *bi,
 	bi->kernel = kparams->kernel_buffer + BOOT_HEADER_SIZE;
 	bi->ramdisk_addr = kparams->ramdisk;
 	bi->ramdisk_size = kparams->ramdisk_size;
-	bi->cmd_line = kparams->vendor_cmdline_buffer;
+	bi->cmd_line = kparams->real_cmdline_ptr;
 
 	if ((vb2api_gbb_get_flags(vboot_get_context()) & VB2_GBB_FLAG_FORCE_UNLOCK_FASTBOOT) ||
-	    strstr(kparams->vboot_cmdline_buffer, "androidboot.verifiedbootstate=orange")) {
+	    strstr(kparams->bootconfig_cmdline_buffer,
+		   "androidboot.verifiedbootstate=orange")) {
 		BlockDev *bdev = (BlockDev *)kparams->disk_handle;
 		GptData *gpt = alloc_gpt(bdev);
 		if (gpt != NULL && !android_misc_oem_cmdline_read(bdev, gpt, &fastboot_cmd)) {
