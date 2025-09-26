@@ -16,6 +16,7 @@
  * GNU General Public License for more details.
  */
 
+#include <keycodes.h>
 #include <limits.h>
 
 #include "debug/firmware_shell/common.h"
@@ -434,6 +435,7 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 		switch (c) {
 		case '\r':			/* Enter		*/
 		case '\n':
+		case PADENTER:
 			p_buf[n] = '\0';
 			console_printf("\r\n");
 
