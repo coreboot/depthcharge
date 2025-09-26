@@ -1363,18 +1363,27 @@ static vb2_error_t developer_mode_action(struct ui_context *ui)
 
 	/* Boot from default target after timeout. */
 	if (elapsed_ms > dev_delay_ms) {
+		vb2_error_t ret;
 		UI_INFO("Booting default target after %ds\n",
 			dev_delay_ms / MSECS_PER_SEC);
 		ui->state->timer_disabled = 1;
 		default_boot = vb2api_get_dev_default_boot_target(ui->ctx);
 		switch (default_boot) {
 		case VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL:
-			return ui_developer_mode_boot_external_action(ui);
+			ret = ui_developer_mode_boot_external_action(ui);
+			break;
 		case VB2_DEV_DEFAULT_BOOT_TARGET_ALTFW:
-			return ui_developer_mode_boot_altfw_action(ui);
+			ret = ui_developer_mode_boot_altfw_action(ui);
+			break;
 		default:
-			return ui_developer_mode_boot_internal_action(ui);
+			ret = ui_developer_mode_boot_internal_action(ui);
+			break;
 		}
+		if (ret != VB2_REQUEST_UI_EXIT) {
+			UI_WARN("Default boot failed. Wait in fastboot for provisioning.\n");
+			ui_developer_mode_enter_fastboot_action(ui);
+		}
+		return ret;
 	}
 
 	/* Beep at 20 and 20.5 seconds. */

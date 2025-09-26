@@ -11,6 +11,7 @@
 #include <vboot/stages.h>
 
 #include "debug/firmware_shell/common.h"
+#include "fastboot/fastboot.h"
 
 /* Mock functions */
 
@@ -55,6 +56,11 @@ bool dc_dev_firmware_shell_enabled(void)
 }
 
 void dc_dev_enter_firmware_shell(void)
+{
+	function_called();
+}
+
+void fastboot(void)
 {
 	function_called();
 }
@@ -251,6 +257,7 @@ static void test_developer_ui_internal_fail_no_disk(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
+	expect_function_call(fastboot);
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
@@ -317,6 +324,7 @@ static void test_developer_ui_external_disallowed_default_boot(void **state)
 			   VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_keyboard_read, 0);
+	expect_function_call(fastboot);
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
@@ -356,6 +364,7 @@ static void test_developer_ui_external_fail_no_disk(void **state)
 			  VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_keyboard_read, 0);
+	expect_function_call(fastboot);
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
