@@ -69,11 +69,11 @@ typedef struct Key
 } Key;
 
 #define EC_KEY_MATRIX_OFFSET \
-	offsetof(struct ec_response_get_next_event_v1, data.key_matrix)
+	offsetof(struct ec_response_get_next_event_v3, data.key_matrix)
 #define EC_KEY_MATRIX_SIZE \
-	ARRAY_SIZE(((struct ec_response_get_next_event_v1 *)0)->data.key_matrix)
+	ARRAY_SIZE(((struct ec_response_get_next_event_v3 *)0)->data.key_matrix)
 
-static int mkbp_old_cmd_read_event(struct ec_response_get_next_event_v1 *event)
+static int mkbp_old_cmd_read_event(struct ec_response_get_next_event_v3 *event)
 {
 	struct cros_ec_keyscan scan;
 
@@ -90,7 +90,7 @@ static int mkbp_old_cmd_read_event(struct ec_response_get_next_event_v1 *event)
 	return EC_KEY_MATRIX_OFFSET + sizeof(scan.data);
 }
 
-static int mkbp_new_cmd_read_event(struct ec_response_get_next_event_v1 *event)
+static int mkbp_new_cmd_read_event(struct ec_response_get_next_event_v3 *event)
 {
 	int rv;
 
@@ -121,7 +121,7 @@ static int mkbp_new_cmd_read_event(struct ec_response_get_next_event_v1 *event)
  * @return the response size for `event` on success, or -1 on error (no more
  *	   data queued on EC side)
  */
-static int mkbp_read_event(struct ec_response_get_next_event_v1 *event)
+static int mkbp_read_event(struct ec_response_get_next_event_v3 *event)
 {
 	if (CONFIG(DRIVER_INPUT_MKBP_OLD_COMMAND))
 		return mkbp_old_cmd_read_event(event);
@@ -380,7 +380,7 @@ static int mkbp_process_button_long_press(uint16_t *codes, int max_codes)
 static int mkbp_process_events(Modifier *modifiers, uint16_t *codes,
 				int max_codes)
 {
-	struct ec_response_get_next_event_v1 event = {0};
+	struct ec_response_get_next_event_v3 event = {0};
 	int rv;
 
 	if (!more_input_states())

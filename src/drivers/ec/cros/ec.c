@@ -410,9 +410,9 @@ int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 	return 0;
 }
 
-int cros_ec_get_next_event(struct ec_response_get_next_event_v1 *e)
+int cros_ec_get_next_event(struct ec_response_get_next_event_v3 *e)
 {
-	return ec_cmd_get_next_event_v2(cros_ec_get(), e);
+	return ec_cmd_get_next_event_v3(cros_ec_get(), e);
 }
 
 /**

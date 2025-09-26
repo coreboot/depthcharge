@@ -38,18 +38,18 @@ int cros_ec_clear_host_events(uint32_t events)
 }
 
 #define MOCK_EC_FIFO_SIZE 64
-static struct ec_response_get_next_event_v1
+static struct ec_response_get_next_event_v3
 	mock_ec_event_fifo[MOCK_EC_FIFO_SIZE];
 static size_t mock_ec_event_fifo_start, mock_ec_event_fifo_end;
 static bool get_next_event_called;
 static bool get_next_event_called_with_empty_fifo;
 
 #define MOCK_EC_KEY_MATRIX_SIZE \
-	(sizeof(((struct ec_response_get_next_event_v1 *)0)->data.key_matrix))
+	(sizeof(((struct ec_response_get_next_event_v3 *)0)->data.key_matrix))
 static uint8_t mock_keys[MOCK_EC_KEY_MATRIX_SIZE];
 static uint32_t mock_buttons;
 
-int cros_ec_get_next_event(struct ec_response_get_next_event_v1 *e)
+int cros_ec_get_next_event(struct ec_response_get_next_event_v3 *e)
 {
 	mock_timer_ms += 20;
 	get_next_event_called = true;
@@ -59,7 +59,7 @@ int cros_ec_get_next_event(struct ec_response_get_next_event_v1 *e)
 	}
 
 	memcpy(e, &mock_ec_event_fifo[mock_ec_event_fifo_start],
-	       sizeof(struct ec_response_get_next_event_v1));
+	       sizeof(struct ec_response_get_next_event_v3));
 	mock_ec_event_fifo_start++;
 
 	size_t data_size;
@@ -117,7 +117,7 @@ static int setup(void **state)
 
 /* Test utilities. */
 
-static void add_event_to_fifo(const struct ec_response_get_next_event_v1 *event)
+static void add_event_to_fifo(const struct ec_response_get_next_event_v3 *event)
 {
 	if (mock_ec_event_fifo_end >= MOCK_EC_FIFO_SIZE)
 		fail_msg("Mock EC event fifo is full");
@@ -133,7 +133,7 @@ static void add_event_to_fifo(const struct ec_response_get_next_event_v1 *event)
 
 static void add_key_matrix_event_to_fifo(const uint8_t *key_matrix)
 {
-	struct ec_response_get_next_event_v1 event = {
+	struct ec_response_get_next_event_v3 event = {
 		.event_type = EC_MKBP_EVENT_KEY_MATRIX,
 	};
 	memcpy(event.data.key_matrix, key_matrix, MOCK_EC_KEY_MATRIX_SIZE);
@@ -142,7 +142,7 @@ static void add_key_matrix_event_to_fifo(const uint8_t *key_matrix)
 
 static void add_button_event_to_fifo(uint32_t buttons)
 {
-	struct ec_response_get_next_event_v1 event = {
+	struct ec_response_get_next_event_v3 event = {
 		.event_type = EC_MKBP_EVENT_BUTTON,
 		.data.buttons = buttons,
 	};
@@ -459,7 +459,7 @@ static void test_no_more_events(void **state)
 {
 	/* Add an event that will be ignored, and without the
 	   EC_MKBP_HAS_MORE_EVENTS flag. */
-	struct ec_response_get_next_event_v1 event = {
+	struct ec_response_get_next_event_v3 event = {
 		.event_type = EC_MKBP_EVENT_SENSOR_FIFO,
 	};
 	add_event_to_fifo(&event);
