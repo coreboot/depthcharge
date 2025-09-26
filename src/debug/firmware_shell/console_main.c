@@ -16,6 +16,8 @@
  * GNU General Public License for more details.
  */
 
+#include <limits.h>
+
 #include "debug/firmware_shell/common.h"
 #include "debug/firmware_shell/command.h"
 #include "vboot/ui.h"
@@ -108,7 +110,7 @@ static void history_add(const char *string)
 }
 
 /* The user hit a history browsing button. */
-static void history_case(u8 c, char *p_buf, int *np, int *cursor_p)
+static void history_case(int c, char *p_buf, int *np, int *cursor_p)
 {
 	int n = *np, cursor = *cursor_p, new_n, tmp;
 
@@ -279,9 +281,9 @@ static const escaped_key  escaped_keys [] = {
  *
  * If no mapping is defined - return true so that the sequence is ignored.
  */
-static int escape_handled(u8 *cp)
+static int escape_handled(int *cp)
 {
-	u8 c = *cp;
+	int c = *cp;
 	/* pointer to the row matching the sequence so far */
 	static const escaped_key *this_key;
 	/*
@@ -413,7 +415,7 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 	int n = 0;				/* buffer index		*/
 	int cursor;				/* cursor position in buffer */
 	int shift;
-	u8  c;
+	int c;
 
 	p_buf[0] = '\0';
 
@@ -519,7 +521,9 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 			break;
 
 		default:
-			if ((c != '\t') && (c < ' '))
+			if (!isascii(c))
+				break;
+			if ((c != '\t') && iscntrl(c))
 				/* No other control characters please. */
 				break;
 			/*
@@ -536,7 +540,7 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 				p_buf[cursor++] = c;
 				n++;
 				p_buf[n] = '\0';
-				console_printf("%c%s", c, p_buf + cursor);
+				console_printf("%c%s", (char)c, p_buf + cursor);
 				move_cursor_left(shift);
 				break;
 			}
