@@ -2,6 +2,7 @@
 
 #include <libpayload.h>
 
+#include "base/fw_config.h"
 #include "drivers/bus/soundwire/cavs_2_5-sndwregs.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/tps6699x/tps6699x.h"
@@ -13,15 +14,30 @@
 const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
-	config = (struct audio_config){
-		.bus = {
-			.type = AUDIO_SNDW,
-			.sndw.link = AUDIO_SNDW_LINK3,
-		},
-		.codec = {
-			.type = AUDIO_RT721,
-		},
-	};
+	if (CONFIG(DRIVER_SOUND_RT721_SNDW) &&
+			fw_config_probe(FW_CONFIG(AUDIO, AUDIO_ALC721_SNDW))){
+		config = (struct audio_config){
+			.bus = {
+				.type = AUDIO_SNDW,
+				.sndw.link = AUDIO_SNDW_LINK3,
+			},
+			.codec = {
+				.type = AUDIO_RT721,
+			},
+		};
+	} else if (CONFIG(DRIVER_SOUND_RT1320_SNDW) &&
+			fw_config_probe(FW_CONFIG(AUDIO, AUDIO_ALC1320_ALC721_SNDW))) {
+		config = (struct audio_config) {
+			.bus = {
+				.type = AUDIO_SNDW,
+				.sndw.link = AUDIO_SNDW_LINK3,
+			},
+			.codec = {
+				.type = AUDIO_RT1320,
+			},
+		};
+	} else
+		printf("Implement varaint audio config for other FW CONFIG options\n");
 
 	return &config;
 }
