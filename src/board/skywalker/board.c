@@ -17,6 +17,7 @@
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/sound/cs35l53.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/rt5645.h"
@@ -136,13 +137,39 @@ static void setup_codec_alc5645(void)
 	printf("%s done\n", __func__);
 }
 
+static void setup_codec_cs35l51(GpioOps *spk_rst)
+{
+	MtkI2s *mtk_i2s = new_mtk_i2s(0x11050000, 2, 48000, 16, 16, AFE_TDM_OUT1);
+	I2sSource *i2s_source = new_i2s_source(&mtk_i2s->ops, 48000, 2, 8000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+
+	MTKI2c *i2c7 = new_mtk_i2c(0x11F30000, 0x11300900, I2C_APDMA_ASYNC);
+	cs35l53Codec *cs35l51r = new_cs35l53_codec(&i2c7->ops, 0x40);
+	cs35l53Codec *cs35l51l = new_cs35l53_codec(&i2c7->ops, 0x42);
+
+	list_insert_after(&cs35l51r->component.list_node,
+			  &sound_route->components);
+	list_insert_after(&cs35l51l->component.list_node,
+			  &sound_route->components);
+
+	gpio_set(spk_rst, 1);
+	mdelay(20);
+	gpio_set(spk_rst, 0);
+	mdelay(20);
+
+	sound_set_ops(&sound_route->ops);
+	printf("%s done\n", __func__);
+}
+
 static void sound_setup(void)
 {
-	GpioOps *rt9123_spk_en = sysinfo_lookup_gpio("rt9123_spk_en", 1,
-						     new_mtk_gpio_output);
 	GpioOps *alc5645_spk_en = sysinfo_lookup_gpio("alc5645_spk_en", 1,
 						      new_mtk_gpio_output);
+	GpioOps *cs35l51_spk_rst = sysinfo_lookup_gpio("cs35l51_spk_rst", 1,
+						       new_mtk_gpio_output);
 	GpioOps *rt1019_spk_en = sysinfo_lookup_gpio("rt1019_spk_en", 1,
+						     new_mtk_gpio_output);
+	GpioOps *rt9123_spk_en = sysinfo_lookup_gpio("rt9123_spk_en", 1,
 						     new_mtk_gpio_output);
 
 	if (rt9123_spk_en)
@@ -151,6 +178,8 @@ static void sound_setup(void)
 		setup_codec_alc5645();
 	else if (rt1019_spk_en)
 		setup_codec_rt1019(rt1019_spk_en);
+	else if (cs35l51_spk_rst)
+		setup_codec_cs35l51(cs35l51_spk_rst);
 	else
 		printf("no amps found\n");
 }
