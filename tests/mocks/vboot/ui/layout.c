@@ -53,3 +53,17 @@ vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
 	*chars_per_line = ui_mock_chars_per_line();
 	return mock_type(vb2_error_t);
 }
+
+vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
+{
+	return VB2_SUCCESS;
+}
+
+vb2_error_t ui_draw_text(const char *text,
+			 int32_t x, int32_t y, int32_t height,
+			 const struct rgb_color *bg_color,
+			 const struct rgb_color *fg_color,
+			 uint32_t flags, int reverse)
+{
+	return VB2_SUCCESS;
+}

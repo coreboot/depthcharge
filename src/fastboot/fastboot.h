@@ -66,6 +66,7 @@ enum fastboot_transport_state {
 };
 
 enum fastboot_connection_type {
+	FASTBOOT_NONE_CONN,
 	FASTBOOT_TCP_CONN,
 	FASTBOOT_USB_CONN,
 };

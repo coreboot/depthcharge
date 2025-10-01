@@ -17,12 +17,15 @@
  */
 
 #include <arch/cache.h>
+#include <assert.h>
 #include <commonlib/list.h>
 #include <libpayload.h>
 #include <lp_vboot.h>
 #include <vb2_api.h>
 
+#include "base/android_misc.h"
 #include "base/elog.h"
+#include "base/gpt.h"
 #include "base/vpd_util.h"
 #include "boot/android_vpd.h"
 #include "boot/payload.h"
@@ -624,8 +627,9 @@ static const struct ui_screen_info broken_screen = {
 
 #define ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE 1
 #define ADVANCED_OPTIONS_ITEM_DEBUG_INFO 2
-#define ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY 4
-#define ADVANCED_OPTIONS_ITEM_FIRMWARE_SHELL 5
+#define ADVANCED_OPTIONS_ITEM_ENTER_FASTBOOT 3
+#define ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY 5
+#define ADVANCED_OPTIONS_ITEM_FIRMWARE_SHELL 6
 
 static vb2_error_t boot_nbr_impl(struct ui_context *ui, int non_active_only)
 {
@@ -659,6 +663,11 @@ vb2_error_t advanced_options_init(struct ui_context *ui)
 		ui->state->focused_item = ADVANCED_OPTIONS_ITEM_DEBUG_INFO;
 	}
 
+	/* Hide "Bootloader fastboot" button if not enabled. */
+	if (!(ui->ctx->flags & VB2_CONTEXT_FASTBOOT_ALLOWED))
+		UI_SET_BIT(ui->state->hidden_item_mask,
+			   ADVANCED_OPTIONS_ITEM_ENTER_FASTBOOT);
+
 	if (ui->ctx->boot_mode != VB2_BOOT_MODE_MANUAL_RECOVERY)
 		UI_SET_BIT(ui->state->hidden_item_mask,
 			   ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY);
@@ -680,22 +689,6 @@ vb2_error_t ui_developer_mode_enter_fwshell_action(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-/* TODO(b/370988331): Implement UI for this action */
-vb2_error_t ui_developer_mode_enter_fastboot_action(struct ui_context *ui)
-{
-	fastboot();
-
-	/*
-	 * The only way to get here is via "fastboot continue". Drain any
-	 * pending characters (because the user probably spammed ctrl-f).
-	 */
-	while (havechar())
-		getchar();
-
-	ui->force_display = 1;
-	return VB2_SUCCESS;
-}
-
 static const struct ui_menu_item advanced_options_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	[ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE] = {
@@ -707,6 +700,11 @@ static const struct ui_menu_item advanced_options_items[] = {
 		.name = "Debug info",
 		.file = "btn_debug_info.bmp",
 		.target = UI_SCREEN_DEBUG_INFO,
+	},
+	[ADVANCED_OPTIONS_ITEM_ENTER_FASTBOOT] = {
+		.name = "Bootloader fastboot",
+		.file = "btn_fastboot.bmp",
+		.target = UI_SCREEN_FASTBOOT,
 	},
 	{
 		.name = "Firmware log",
@@ -1080,6 +1078,153 @@ static const struct ui_screen_info recovery_to_dev_screen = {
 };
 
 /******************************************************************************/
+/* UI_SCREEN_FASTBOOT */
+
+static const char *const fastboot_desc[] = {
+	[FASTBOOT_NONE_CONN] = "fastboot_wait_conn_desc.bmp",
+	[FASTBOOT_TCP_CONN] = "fastboot_tcp_conn_desc.bmp",
+	[FASTBOOT_USB_CONN] = "fastboot_usb_conn_desc.bmp",
+};
+
+static vb2_error_t fastboot_screen_init(struct ui_context *ui)
+{
+	/* Validity check, should never happen */
+	if (!(ui->ctx->flags & VB2_CONTEXT_FASTBOOT_ALLOWED)) {
+		UI_ERROR("ERROR: Fastboot not allowed\n");
+		return ui_screen_back(ui);
+	}
+
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t draw_fastboot_desc_bitmap(
+	struct ui_state *state,
+	int32_t *y)
+{
+	const char *bitmap_name = NULL;
+	struct ui_bitmap desc_bitmap;
+	const char *locale_code = state->locale->code;
+	const int reverse = state->locale->rtl;
+	const int32_t x = UI_MARGIN_H;
+	const int32_t w = UI_SIZE_AUTO;
+	const int32_t h = UI_DESC_TEXT_HEIGHT;
+	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
+
+	/* Choose correct description based on fastboot session state */
+	if (state->fb_session == NULL || state->fb_session->type >= ARRAY_SIZE(fastboot_desc))
+		bitmap_name = fastboot_desc[FASTBOOT_NONE_CONN];
+	else
+		bitmap_name = fastboot_desc[state->fb_session->type];
+
+	VB2_TRY(ui_get_bitmap(bitmap_name, locale_code, 0, &desc_bitmap));
+	assert(ui_get_bitmap_num_lines(&desc_bitmap) == 1);
+	VB2_TRY(ui_draw_bitmap(&desc_bitmap, x, *y, w, h, flags, reverse));
+	*y += h + UI_DESC_TEXT_LINE_SPACING;
+
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t draw_fastboot_desc(
+	struct ui_context *ui,
+	const struct ui_state *prev_state,
+	int32_t *y)
+{
+	struct ui_state *state = ui->state;
+	struct FastbootOps *fb_session = state->fb_session;
+	const int reverse = state->locale->rtl;
+	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
+	const int32_t x = UI_MARGIN_H;
+	char *serial;
+
+	VB2_TRY(draw_fastboot_desc_bitmap(state, y));
+
+	/* Print line with fastboot serial */
+	serial = fb_session && fb_session->serial ? fb_session->serial : "";
+	VB2_TRY(ui_draw_box(x, *y, UI_SCALE - x, UI_BOX_TEXT_HEIGHT, &ui_color_bg, reverse));
+	VB2_TRY(ui_draw_text(serial, x, *y, UI_BOX_TEXT_HEIGHT,
+			     &ui_color_bg, &ui_color_fg, flags, reverse));
+	*y += UI_BOX_TEXT_HEIGHT + UI_BOX_TEXT_LINE_SPACING;
+
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t fastboot_action(struct ui_context *ui)
+{
+	struct ui_state *state = ui->state;
+
+	if (ui->key == UI_KEY_ENTER ||
+	    (CONFIG(DETACHABLE) && ui->key == UI_BUTTON_POWER_SHORT_PRESS)) {
+		ui->key = 0;
+		return ui_screen_back(ui);
+	}
+
+	if (state->fb_session == NULL) {
+		/* Try to init fastboot */
+		state->fb_session = fastboot_init();
+		if (state->fb_session == NULL)
+			return VB2_SUCCESS;
+		/* Change the description based on new fastboot state */
+		ui->force_display = 1;
+	}
+
+	if (fastboot_is_finished(state->fb_session)) {
+		enum fastboot_state final_state = fastboot_release(state->fb_session);
+		state->fb_session = NULL;
+
+		/* Transport layer disconnected, not triggered by a user; re-init fastboot */
+		if (final_state == DISCONNECTED) {
+			/* Change the description based on new fastboot state */
+			ui->force_display = 1;
+			return VB2_SUCCESS;
+		}
+
+		/* Exit initiated by the user */
+		return ui_screen_back(ui);
+	}
+
+	/*
+	 * Poll for at most 1000ms when connection is busy (e.g. in download state) otherwise
+	 * fastboot will return after polling transport layer once (up to 100ms).
+	 */
+	fastboot_poll(state->fb_session, 1000);
+
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t fastboot_exit(struct ui_context *ui)
+{
+	struct ui_state *state = ui->state;
+
+	if (state->fb_session) {
+		fastboot_release(state->fb_session);
+		state->fb_session = NULL;
+	}
+
+	/*
+	 * If fastboot was requested in misc partition, reset timer, so after exiting fastboot
+	 * default action is performed
+	 */
+	if (!ui->state->timer_disabled)
+		ui->start_time_ms = vb2ex_mtime();
+
+	return VB2_SUCCESS;
+}
+
+static const struct ui_screen_info fastboot_screen = {
+	.id = UI_SCREEN_FASTBOOT,
+	.name = "Fastboot",
+	.icon = UI_ICON_TYPE_NONE,
+	.title = "fastboot_title.bmp",
+	.init = fastboot_screen_init,
+	.action = fastboot_action,
+	.exit = fastboot_exit,
+	.draw_desc = draw_fastboot_desc,
+	.mesg = "Fastboot",
+	.no_footer = 1,
+	.is_fullview = 1,
+};
+
+/******************************************************************************/
 /* UI_SCREEN_RECOVERY_SELECT */
 
 #define RECOVERY_SELECT_ITEM_EXTERNAL_DISK 1
@@ -1290,6 +1435,33 @@ static const struct ui_screen_info recovery_invalid_screen = {
 #define DEVELOPER_MODE_ITEM_BOOT_EXTERNAL 3
 #define DEVELOPER_MODE_ITEM_SELECT_ALTFW 4
 
+static vb2_error_t start_fastboot_if_requested(struct ui_context *ui)
+{
+	enum android_misc_bcb_command cmd;
+	struct list_node *devs;
+	get_all_bdevs(BLOCKDEV_FIXED, &devs);
+
+	/* Validity check, should never happen */
+	if (!(ui->ctx->flags & VB2_CONTEXT_FASTBOOT_ALLOWED)) {
+		UI_ERROR("ERROR: Fastboot not allowed\n");
+		return VB2_SUCCESS;
+	}
+
+	BlockDev *bdev = NULL;
+	list_for_each(bdev, *devs, list_node) {
+		GptData *gpt = alloc_gpt(bdev);
+		if (gpt == NULL)
+			continue;
+		cmd = android_misc_get_bcb_command(bdev, gpt);
+		free_gpt(bdev, gpt);
+
+		if (cmd == MISC_BCB_BOOTLOADER_BOOT)
+			return ui_screen_change(ui, UI_SCREEN_FASTBOOT);
+	}
+
+	return VB2_SUCCESS;
+}
+
 static vb2_error_t developer_mode_init(struct ui_context *ui)
 {
 	enum vb2_dev_default_boot_target default_boot =
@@ -1313,6 +1485,8 @@ static vb2_error_t developer_mode_init(struct ui_context *ui)
 		ui->state->focused_item = DEVELOPER_MODE_ITEM_BOOT_INTERNAL;
 		break;
 	}
+
+	start_fastboot_if_requested(ui);
 
 	ui->start_time_ms = vb2ex_mtime();
 
@@ -1407,11 +1581,11 @@ static vb2_error_t developer_mode_action(struct ui_context *ui)
 			ret = ui_developer_mode_boot_internal_action(ui);
 			break;
 		}
-		if (ret != VB2_REQUEST_UI_EXIT) {
-			UI_WARN("Default boot failed. Wait in fastboot for provisioning.\n");
-			ui_developer_mode_enter_fastboot_action(ui);
-		}
-		return ret;
+		if (ret == VB2_REQUEST_UI_EXIT)
+			return ret;
+
+		UI_WARN("Default boot failed. Wait in fastboot for provisioning.\n");
+		return ui_screen_change(ui, UI_SCREEN_FASTBOOT);
 	}
 
 	/* Beep at 20 and 20.5 seconds. */
@@ -2347,6 +2521,7 @@ static const struct ui_screen_info *const screens[] = {
 	&advanced_options_screen,
 	&debug_info_screen,
 	&firmware_log_screen,
+	&fastboot_screen,
 	&recovery_to_dev_screen,
 	&recovery_select_screen,
 	&recovery_disk_step1_screen,

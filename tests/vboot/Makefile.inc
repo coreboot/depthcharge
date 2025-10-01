@@ -47,7 +47,9 @@ ui-test-common-srcs += tests/mocks/vboot/ui/archive.c
 ui-test-common-srcs += tests/mocks/vboot/ui/beep.c
 ui-test-common-srcs += tests/mocks/vboot/ui/bitmap.c
 ui-test-common-srcs += tests/mocks/vboot/ui/layout.c
+ui-test-common-srcs += tests/stubs/base/android_misc.c
 ui-test-common-srcs += tests/stubs/base/elog.c
+ui-test-common-srcs += tests/stubs/base/gpt.c
 ui-test-common-srcs += tests/stubs/base/vpd_util.c
 ui-test-common-srcs += tests/stubs/boot/payload.c
 ui-test-common-srcs += tests/stubs/diag/report.c
@@ -106,8 +108,12 @@ ui-manual-chromebox-test-config += CONFIG_PHYSICAL_PRESENCE_KEYBOARD=0
 
 # ui-developer-test
 $(call copy-test,ui-test-common,ui-developer-test)
-ui-developer-test-srcs := $(filter-out tests/stubs/boot/payload.c, \
-	$(ui-developer-test-srcs))
+ui-developer-test-srcs := $(filter-out \
+	tests/stubs/base/android_misc.c \
+	tests/stubs/base/gpt.c \
+	tests/stubs/boot/payload.c \
+	tests/stubs/drivers/storage/blockdev.c \
+	, $(ui-developer-test-srcs))
 ui-developer-test-srcs += tests/mocks/boot/payload.c
 ui-developer-test-srcs += tests/vboot/ui-developer-test.c
 ui-developer-test-srcs += src/vboot/ui.c

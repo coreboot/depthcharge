@@ -52,7 +52,7 @@ static vb2_error_t ui_manual_recovery_action(struct ui_context *ui)
 	} else if (ui->key == UI_KEY_DEV_FASTBOOT &&
 		   (ui->ctx->flags & VB2_CONTEXT_FASTBOOT_ALLOWED)) {
 		ui->key = 0;
-		return ui_developer_mode_enter_fastboot_action(ui);
+		return ui_screen_change(ui, UI_SCREEN_FASTBOOT);
 	}
 
 	if (ui->key == '\t') {
@@ -90,6 +90,9 @@ static vb2_error_t developer_action(struct ui_context *ui)
 	if (ui->key == UI_KEY_DEV_TO_NORM) {
 		ui->key = 0;
 		return ui_screen_change(ui, UI_SCREEN_DEVELOPER_TO_NORM);
+	} else if (ui->key == UI_KEY_DEV_FASTBOOT) {
+		ui->key = 0;
+		return ui_screen_change(ui, UI_SCREEN_FASTBOOT);
 	}
 
 	vb2_error_t (*handler)(struct ui_context *ui) = NULL;
@@ -105,8 +108,6 @@ static vb2_error_t developer_action(struct ui_context *ui)
 		handler = ui_developer_mode_boot_altfw_action;
 	else if (ui->key == UI_KEY_DEV_ENTER_FWSHELL)
 		handler = ui_developer_mode_enter_fwshell_action;
-	else if (ui->key == UI_KEY_DEV_FASTBOOT)
-		handler = ui_developer_mode_enter_fastboot_action;
 
 	if (handler) {
 		ui->key = 0;

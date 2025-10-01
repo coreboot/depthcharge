@@ -18,7 +18,6 @@
 #include "netboot/params.h"
 #include "net/uip.h"
 #include "vboot/crossystem/crossystem.h"
-#include "fastboot/fastboot.h"
 
 /*
  * These are the real implementations for developer-build features that override

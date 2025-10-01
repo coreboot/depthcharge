@@ -310,43 +310,13 @@ void fastboot(void)
 		return;
 	}
 
-	/* TODO(b/370988331): Replace this with actual UI */
-	bool video_present = !video_init();
 	do {
-		fb_session = NULL;
-
-		if (video_present) {
-			video_console_clear();
-			/* Print red "Fastboot" on the top */
-			video_console_set_cursor(0, 0);
-			video_printf(1, 0, VIDEO_PRINTF_ALIGN_LEFT, "Fastboot\n");
-			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT,
-				     "(press ENTER or POWER to exit (wait up to 10s after press))\n");
-			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for connection");
-		}
-
-		while (fb_session == NULL) {
+		do {
 			if (fastboot_exit_on_key())
 				return;
 
 			fb_session = fastboot_init();
-		}
-
-		if (video_present) {
-			video_console_set_cursor(0, 2);
-			switch (fb_session->type) {
-			case FASTBOOT_TCP_CONN:
-				video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT,
-					     "Network connected  ");
-				break;
-			case FASTBOOT_USB_CONN:
-				video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT,
-					     "USB connected      ");
-				break;
-			}
-			video_console_set_cursor(0, 3);
-			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, fb_session->serial);
-		}
+		} while (fb_session == NULL);
 
 		while (!fastboot_is_finished(fb_session) && !fastboot_exit_on_key())
 			fastboot_poll(fb_session, FASTBOOT_MIN_POLL_TIME_US);

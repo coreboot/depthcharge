@@ -10,6 +10,8 @@
 #include <vb2_api.h>
 #include <vboot/stages.h>
 
+#include "base/android_misc.h"
+#include "base/gpt.h"
 #include "debug/firmware_shell/common.h"
 #include "fastboot/fastboot.h"
 
@@ -60,9 +62,58 @@ void dc_dev_enter_firmware_shell(void)
 	function_called();
 }
 
-void fastboot(void)
+enum fastboot_state fastboot_release(struct FastbootOps *fb_session)
 {
-	function_called();
+	check_expected(fb_session);
+
+	return mock_type(enum fastboot_state);
+}
+
+struct FastbootOps *fastboot_init(void)
+{
+	return mock_type(struct FastbootOps *);
+}
+
+bool fastboot_is_finished(struct FastbootOps *fb)
+{
+	return mock_type(bool);
+}
+
+void fastboot_poll(struct FastbootOps *fb_session, uint32_t timeout_ms)
+{
+	check_expected_ptr(fb_session);
+}
+
+static struct list_node mock_bdev_list;
+int get_all_bdevs(blockdev_type_t type, struct list_node **bdevs)
+{
+	if (type == BLOCKDEV_FIXED && bdevs != NULL)
+		*bdevs = &mock_bdev_list;
+
+	return list_length(&mock_bdev_list);
+}
+
+GptData *alloc_gpt(BlockDev *bdev)
+{
+	check_expected_ptr(bdev);
+
+	return mock_ptr_type(GptData *);
+}
+
+int free_gpt(BlockDev *bdev, GptData *gpt)
+{
+	check_expected_ptr(bdev);
+	check_expected_ptr(gpt);
+
+	return 0;
+}
+
+enum android_misc_bcb_command android_misc_get_bcb_command(BlockDev *disk, GptData *gpt)
+{
+	check_expected_ptr(disk);
+	check_expected_ptr(gpt);
+
+	return mock_type(enum android_misc_bcb_command);
 }
 
 /* Tests */
@@ -78,6 +129,7 @@ static int setup_context(void **state)
 
 	test_ui_ctx.ctx->flags |= VB2_CONTEXT_DEVELOPER_MODE;
 	test_ui_ctx.ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALLOWED;
+	test_ui_ctx.ctx->flags |= VB2_CONTEXT_FASTBOOT_ALLOWED;
 	set_boot_mode(test_ui_ctx.ctx, VB2_BOOT_MODE_DEVELOPER);
 
 	memset(&test_kparams, 0, sizeof(test_kparams));
@@ -89,6 +141,8 @@ static int setup_context(void **state)
 	mock_time_ms = 31ULL * MSECS_PER_SEC;
 	/* Larger than DEV_DELAY_NORMAL_MS / UI_KEY_DELAY_MS */
 	mock_close_lid_countdown = 3000;
+
+	memset(&mock_bdev_list, 0, sizeof(mock_bdev_list));
 
 	return 0;
 }
@@ -252,12 +306,13 @@ static void test_developer_ui_internal_fail_no_disk(void **state)
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_NORMAL_MS);
-	EXPECT_UI_DISPLAY_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE);
+	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	expect_function_call(fastboot);
+	will_return_always(fastboot_init, NULL);
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
@@ -316,7 +371,8 @@ static void test_developer_ui_external_disallowed_default_boot(void **state)
 {
 	struct ui_context *ui = *state;
 
-	EXPECT_UI_DISPLAY_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE);
+	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_NORMAL_MS);
@@ -324,7 +380,7 @@ static void test_developer_ui_external_disallowed_default_boot(void **state)
 			   VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	expect_function_call(fastboot);
+	will_return_always(fastboot_init, NULL);
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
@@ -355,7 +411,8 @@ static void test_developer_ui_external_fail_no_disk(void **state)
 	struct ui_context *ui = *state;
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
-	EXPECT_UI_DISPLAY_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE);
+	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_NORMAL_MS);
@@ -364,7 +421,7 @@ static void test_developer_ui_external_fail_no_disk(void **state)
 			  VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	expect_function_call(fastboot);
+	will_return_always(fastboot_init, NULL);
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
@@ -444,6 +501,97 @@ static void test_developer_ui_select_external_button(void **state)
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 
 	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
+}
+
+static void test_developer_ui_select_fastboot_keyboard(void **state)
+{
+	struct ui_context *ui = *state;
+
+	EXPECT_UI_DISPLAY_ANY();
+	WILL_PRESS_KEY(UI_KEY_DEV_FASTBOOT, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
+	will_return_maybe(vb2api_gbb_get_flags, 0);
+	will_return_maybe(vb2api_get_dev_default_boot_target,
+			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
+	will_return_maybe(ui_keyboard_read, 0);
+	will_return_always(fastboot_init, NULL);
+
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
+static void test_developer_ui_select_fastboot_requested(void **state)
+{
+	struct ui_context *ui = *state;
+	struct FastbootOps mock_fb_session;
+	BlockDev mock_bdev[3];
+	GptData mock_gpt[2];
+
+	mock_fb_session.type = FASTBOOT_TCP_CONN;
+	mock_fb_session.serial = "IP: 172.16.243.254";
+
+	for (int i = 0; i < ARRAY_SIZE(mock_bdev); i++)
+		list_append(&mock_bdev[i].list_node, &mock_bdev_list);
+
+	/* #1 block device doesn't have GPT */
+	expect_value(alloc_gpt, bdev, &mock_bdev[0]);
+	will_return(alloc_gpt, NULL);
+	/* #2 block device doesn't request fastboot */
+	expect_value(alloc_gpt, bdev, &mock_bdev[1]);
+	will_return(alloc_gpt, &mock_gpt[0]);
+	expect_value(android_misc_get_bcb_command, disk, &mock_bdev[1]);
+	expect_value(android_misc_get_bcb_command, gpt, &mock_gpt[0]);
+	will_return(android_misc_get_bcb_command, MISC_BCB_NORMAL_BOOT);
+	expect_value(free_gpt, bdev, &mock_bdev[1]);
+	expect_value(free_gpt, gpt, &mock_gpt[0]);
+	/* #3 block device requests fastboot */
+	expect_value(alloc_gpt, bdev, &mock_bdev[2]);
+	will_return(alloc_gpt, &mock_gpt[1]);
+	expect_value(android_misc_get_bcb_command, disk, &mock_bdev[2]);
+	expect_value(android_misc_get_bcb_command, gpt, &mock_gpt[1]);
+	will_return(android_misc_get_bcb_command, MISC_BCB_BOOTLOADER_BOOT);
+	expect_value(free_gpt, bdev, &mock_bdev[2]);
+	expect_value(free_gpt, gpt, &mock_gpt[1]);
+
+	/* Enter fastboot */
+	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
+	will_return_count(fastboot_init, NULL, 2);
+	will_return(fastboot_init, &mock_fb_session);
+	/* Will redraw when fastboot is ready */
+	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
+	/* Spend some time in fastboot */
+	will_return_count(fastboot_is_finished, false, 10);
+	expect_value_count(fastboot_poll, fb_session, &mock_fb_session, 10);
+	/* Transport layer disconnects */
+	will_return(fastboot_is_finished, true);
+	expect_value(fastboot_release, fb_session, &mock_fb_session);
+	will_return(fastboot_release, DISCONNECTED);
+	/* Re-init fastboot */
+	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
+	will_return_count(fastboot_init, NULL, 2);
+	will_return(fastboot_init, &mock_fb_session);
+	/* Will redraw when fastboot is ready again */
+	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
+	/* Spend some time in fastboot */
+	will_return_count(fastboot_is_finished, false, 20);
+	expect_value_count(fastboot_poll, fb_session, &mock_fb_session, 20);
+	/* Fastboot command requested exit */
+	will_return(fastboot_is_finished, true);
+	expect_value(fastboot_release, fb_session, &mock_fb_session);
+	will_return(fastboot_release, FINISHED);
+	/* Return to developer screen with correct option selected */
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 2);
+
+	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
+	EXPECT_BEEP(250, 400);
+	EXPECT_BEEP(250, 400);
+	will_return_maybe(vb2api_gbb_get_flags, 0);
+	will_return_maybe(vb2api_get_dev_default_boot_target,
+			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
+	will_return_maybe(ui_keyboard_read, 0);
+
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_SUCCESS);
 }
 
 static void test_developer_ui_select_altfw_keyboard(void **state)
@@ -684,7 +832,8 @@ static void test_developer_ui_select_firmware_shell(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 
 	/* Advanced options: Debug info */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0); /* Enter fastboot */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0); /* Firmware log */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0); /* Firmware Shell */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	expect_function_call(dc_dev_enter_firmware_shell);
@@ -876,7 +1025,7 @@ static void test_developer_screen_advanced_options(void **state)
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);
 	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, MOCK_IGNORE,
-			  0x0, 0x12);
+			  0x0, 0x22);
 	/* End of menu */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -900,6 +1049,7 @@ static void test_developer_screen_advanced_options_screen(void **state)
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_get_locale_count, 10);
 	SET_LOG_DIMENSIONS(40, 20);
+	will_return_maybe(fastboot_init, NULL);
 
 	EXPECT_UI_DISPLAY_ANY();
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -921,22 +1071,29 @@ static void test_developer_screen_advanced_options_screen(void **state)
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO);
-	/* #3: Firmware log */
+	/* #3: Fastboot */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
-	EXPECT_UI_DISPLAY(UI_SCREEN_FIRMWARE_LOG);
-	/* #4: (Hidden) */
-	/* #6: Back */
+	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
+	/* #4: Firmware log */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);  /* #5: Firmware Shell */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 5);
+	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 4);
+	EXPECT_UI_DISPLAY(UI_SCREEN_FIRMWARE_LOG);
+	/* #5: (Hidden) */
+	/* #7: Back */
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);  /* #6: Firmware Shell */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 6);
+	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 7);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE);
 	/* End of menu */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
@@ -959,6 +1116,97 @@ static void test_developer_screen_debug_info(void **state)
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	SET_LOG_DIMENSIONS(40, 20);
+	will_return_maybe(ui_keyboard_read, 0);
+
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
+static void test_developer_screen_fastboot(void **state)
+{
+	struct ui_context *ui = *state;
+
+	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
+	will_return_maybe(vb2api_get_dev_default_boot_target,
+			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
+	will_return_maybe(vb2api_gbb_get_flags, 0);
+
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
+	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
+
+	struct FastbootOps mock_fb_session;
+
+	mock_fb_session.type = FASTBOOT_TCP_CONN;
+	mock_fb_session.serial = "IP: 172.16.243.254";
+
+	will_return_count(fastboot_init, NULL, 2);
+	will_return(fastboot_init, &mock_fb_session);
+	/* Will redraw when fastboot is ready */
+	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
+
+	will_return_count(fastboot_is_finished, false, 10);
+	expect_value_count(fastboot_poll, fb_session, &mock_fb_session, 10);
+	will_return(fastboot_is_finished, true);
+	expect_value(fastboot_release, fb_session, &mock_fb_session);
+	will_return(fastboot_release, FINISHED);
+	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
+
+	will_return_maybe(ui_keyboard_read, 0);
+
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
+static void test_developer_screen_fastboot_key_exit(void **state)
+{
+	struct ui_context *ui = *state;
+
+	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
+	will_return_maybe(vb2api_get_dev_default_boot_target,
+			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
+	will_return_maybe(vb2api_gbb_get_flags, 0);
+
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
+	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
+
+	struct FastbootOps mock_fb_session;
+
+	mock_fb_session.type = FASTBOOT_TCP_CONN;
+	mock_fb_session.serial = "IP: 172.16.243.254";
+
+	will_return_count(ui_keyboard_read, 0, 20);
+
+	will_return_count(fastboot_init, NULL, 2);
+	will_return(fastboot_init, &mock_fb_session);
+	/* Will redraw when fastboot is ready */
+	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
+
+	will_return_always(fastboot_is_finished, false);
+	expect_value_count(fastboot_poll, fb_session, &mock_fb_session, -1);
+
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	expect_value(fastboot_release, fb_session, &mock_fb_session);
+	will_return(fastboot_release, DISCONNECTED);
+	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
+
 	will_return_maybe(ui_keyboard_read, 0);
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
@@ -1024,6 +1272,8 @@ int main(void)
 		UI_TEST(test_developer_ui_select_external_keyboard_fail),
 		UI_TEST(test_developer_ui_select_external_menu),
 		UI_TEST(test_developer_ui_select_external_button),
+		UI_TEST(test_developer_ui_select_fastboot_keyboard),
+		UI_TEST(test_developer_ui_select_fastboot_requested),
 		UI_TEST(test_developer_ui_select_altfw_keyboard),
 		UI_TEST(test_developer_ui_select_altfw_keyboard_disallowed),
 		UI_TEST(test_developer_ui_select_altfw_menu),
@@ -1048,6 +1298,8 @@ int main(void)
 		UI_TEST(test_developer_screen_advanced_options),
 		UI_TEST(test_developer_screen_advanced_options_screen),
 		UI_TEST(test_developer_screen_debug_info),
+		UI_TEST(test_developer_screen_fastboot),
+		UI_TEST(test_developer_screen_fastboot_key_exit),
 		UI_TEST(test_developer_screen_invalid_external_disk),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);

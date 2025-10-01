@@ -36,6 +36,8 @@
 #include <vb2_api.h>
 #include <vboot_api.h>
 
+#include "fastboot/fastboot.h"
+
 #define _UI_PRINT(fmt, args...) printf("%s: " fmt, __func__, ##args)
 #define UI_INFO(...) _UI_PRINT(__VA_ARGS__)
 #define UI_WARN(...) _UI_PRINT(__VA_ARGS__)
@@ -225,6 +227,8 @@ enum ui_screen {
 	UI_SCREEN_DEBUG_INFO				= 0x140,
 	/* Firmware log */
 	UI_SCREEN_FIRMWARE_LOG				= 0x150,
+	/* Fastboot */
+	UI_SCREEN_FASTBOOT				= 0x160,
 	/* First recovery screen to select the recovery method */
 	UI_SCREEN_RECOVERY_SELECT			= 0x200,
 	/* Invalid recovery media inserted */
@@ -450,6 +454,13 @@ struct ui_state {
 
 	/* Do not update screen if UI_TEST_STATE_FINISHED. */
 	enum ui_test_state test_state;
+
+	/***********************************************************************
+	 * Fields for fastboot screen.
+	 */
+
+	/* Pointer to the active fastboot session. */
+	struct FastbootOps *fb_session;
 
 	/***********************************************************************
 	 * Pointer to the previous state in the history stack.
@@ -1118,7 +1129,6 @@ vb2_error_t ui_developer_mode_boot_internal_action(struct ui_context *ui);
 vb2_error_t ui_developer_mode_boot_external_action(struct ui_context *ui);
 vb2_error_t ui_developer_mode_boot_altfw_action(struct ui_context *ui);
 vb2_error_t ui_developer_mode_enter_fwshell_action(struct ui_context *ui);
-vb2_error_t ui_developer_mode_enter_fastboot_action(struct ui_context *ui);
 
 /******************************************************************************/
 /* log.c */
