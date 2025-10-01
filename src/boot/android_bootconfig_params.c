@@ -11,6 +11,7 @@
 #include "base/vpd_util.h"
 #include "boot/android_bootconfig_params.h"
 #include "boot/bootconfig.h"
+#include "drivers/storage/blockdev.h"
 
 #define HWID_KEY_STR "androidboot.product.hardware.id"
 
@@ -106,13 +107,28 @@ static int append_boot_part_uuid(struct bootconfig *bc, struct vb2_kernel_params
 	return bootconfig_append(bc, BOOT_PART_UUID_KEY_STR, guid_str);
 }
 
+#define BOOT_SOURCE_KEY_STR "androidboot.boot_source"
+#define BOOT_SOURCE_VALUE_EXTERNAL_STR "external"
+#define BOOT_SOURCE_VALUE_INTERNAL_STR "internal"
+
+static int append_boot_source(struct bootconfig *bc, struct vb2_kernel_params *kp)
+{
+	BlockDev *bdev = (BlockDev *)kp->disk_handle;
+
+	return bootconfig_append(bc, BOOT_SOURCE_KEY_STR,
+				 bdev->removable ?
+				 BOOT_SOURCE_VALUE_EXTERNAL_STR :
+				 BOOT_SOURCE_VALUE_INTERNAL_STR);
+}
+
 int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_params *kp)
 {
 	return append_hwid(bc) ||
 	       append_serial_num(bc, kp) ||
 	       append_display_orientation(bc, kp) ||
 	       append_skuid(bc) ||
-	       append_boot_part_uuid(bc, kp);
+	       append_boot_part_uuid(bc, kp) ||
+	       append_boot_source(bc, kp);
 }
 
 int append_android_bootconfig_boottime(struct boot_info *bi)
