@@ -11,6 +11,7 @@
 #include <tss_constants.h>
 #include <vb2_api.h>
 
+#include "base/timestamp.h"
 #include "vboot/secdata_tpm.h"
 #include "vboot/util/misc.h"
 #include "vboot/widevine.h"
@@ -218,4 +219,25 @@ fail:
 	free(params);
 	return ret;
 }
-#endif
+#endif /* CONFIG(ANDROID_PVMFW) */
+
+uint32_t secdata_generate_randomness(uint8_t *seed, size_t size)
+{
+	uint32_t ret;
+	uint32_t fetched = 0;
+	uint32_t pos = 0;
+
+	do {
+		ret = TlclGetRandom(seed + pos, size - pos, &fetched);
+		if (ret != TPM_SUCCESS) {
+			printf("TPM: %#x returned by TlclGetRandom\n", ret);
+			return ret;
+		}
+
+		pos += fetched;
+	} while (pos < size && fetched != 0);
+
+	timestamp_mix_in_randomness(seed, pos);
+
+	return pos == size ? TPM_SUCCESS : TPM_E_INVALID_RESPONSE;
+}

@@ -9,6 +9,7 @@
 #include <tss_constants.h>
 #include <vb2_api.h>
 
+#include "base/timestamp.h"
 #include "secdata_tpm.h"
 
 int secdata_kernel_locked = 0;
@@ -336,5 +337,12 @@ uint32_t secdata_get_pvmfw_params(void **boot_params, size_t *params_size)
 
 	*boot_params = params;
 
+	return TPM_SUCCESS;
+}
+
+uint32_t secdata_generate_randomness(uint8_t *seed, size_t size)
+{
+	memset(seed, 0x42, size);
+	timestamp_mix_in_randomness(seed, size);
 	return TPM_SUCCESS;
 }

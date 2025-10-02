@@ -72,3 +72,15 @@ uint32_t TlclExtend(int pcr_num, const uint8_t *in_digest, uint8_t *out_digest)
 
 	return mock_type(uint32_t);
 }
+
+uint32_t TlclGetRandom(uint8_t *data, uint32_t length, uint32_t *size)
+{
+	function_called();
+	check_expected_ptr(data);
+	check_expected(length);
+	check_expected_ptr(size);
+
+	*size = mock_type(uint32_t);
+
+	return mock_type(uint32_t);
+}

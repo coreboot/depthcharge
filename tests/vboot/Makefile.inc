@@ -21,12 +21,14 @@ load_kernel-test-mocks += vb2api_fail
 load_kernel-test-mocks += vb2api_load_kernel vb2api_load_minios_kernel
 
 secdata_tpm-test-srcs += tests/vboot/secdata_tpm-test.c
+secdata_tpm-test-srcs += tests/mocks/base/timestamp.c
 secdata_tpm-test-srcs += tests/mocks/tlcl_rw.c
 secdata_tpm-test-srcs += src/vboot/secdata_tpm.c
 secdata_tpm-test-srcs += src/vboot/callbacks/tpm.c
 secdata_tpm-test-mocks += TlclWrite TlclRead TlclForceClear \
 	TlclSetEnable TlclSetDeactivated TlclExtend \
-	TlclLockPhysicalPresence
+	TlclLockPhysicalPresence TlclGetRandom \
+	timestamp_mix_in_randomness
 
 stages-test-srcs += tests/vboot/stages-test.c
 stages-test-mocks += vb2ex_commit_data vb2api_fail

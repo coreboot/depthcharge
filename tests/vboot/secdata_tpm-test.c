@@ -228,6 +228,49 @@ static void test_secdata_extend_kernel_pcr(void **state)
 	assert_int_equal(secdata_extend_kernel_pcr(ctx), TPM_SUCCESS);
 }
 
+static void test_secdata_generate_randomness_single_chunk(void **state)
+{
+	uint8_t seed[128];
+
+	expect_function_call(TlclGetRandom);
+	expect_value(TlclGetRandom, data, seed);
+	expect_value(TlclGetRandom, length, 128);
+	expect_not_value(TlclGetRandom, size, (uintptr_t)NULL);
+	will_return(TlclGetRandom, 128);
+	will_return(TlclGetRandom, TPM_SUCCESS);
+
+	expect_function_call(timestamp_mix_in_randomness);
+	expect_value(timestamp_mix_in_randomness, buffer, seed);
+	expect_value(timestamp_mix_in_randomness, size, sizeof(seed));
+
+	assert_int_equal(secdata_generate_randomness(seed, sizeof(seed)), TPM_SUCCESS);
+}
+
+static void test_secdata_generate_randomness_multiple_chunks(void **state)
+{
+	uint8_t seed[128];
+
+	expect_function_call(TlclGetRandom);
+	expect_value(TlclGetRandom, data, seed);
+	expect_value(TlclGetRandom, length, 128);
+	expect_not_value(TlclGetRandom, size, (uintptr_t)NULL);
+	will_return(TlclGetRandom, 64);
+	will_return(TlclGetRandom, TPM_SUCCESS);
+
+	expect_function_call(TlclGetRandom);
+	expect_value(TlclGetRandom, data, seed + 64);
+	expect_value(TlclGetRandom, length, 64);
+	expect_not_value(TlclGetRandom, size, (uintptr_t)NULL);
+	will_return(TlclGetRandom, 64);
+	will_return(TlclGetRandom, TPM_SUCCESS);
+
+	expect_function_call(timestamp_mix_in_randomness);
+	expect_value(timestamp_mix_in_randomness, buffer, seed);
+	expect_value(timestamp_mix_in_randomness, size, sizeof(seed));
+
+	assert_int_equal(secdata_generate_randomness(seed, sizeof(seed)), TPM_SUCCESS);
+}
+
 static int setup_firmware_test(void **state)
 {
 	memset(workbuf_firmware, 0, sizeof(workbuf_firmware));
@@ -253,6 +296,8 @@ int main(void)
 							   setup_firmware_test),
 		cmocka_unit_test_setup(test_secdata_extend_kernel_pcr,
 							   setup_kernel_test),
+		cmocka_unit_test(test_secdata_generate_randomness_single_chunk),
+		cmocka_unit_test(test_secdata_generate_randomness_multiple_chunks),
 	};
 
 	return cmocka_run_group_tests(tests, NULL, NULL);

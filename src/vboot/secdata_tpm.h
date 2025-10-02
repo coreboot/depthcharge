@@ -46,4 +46,15 @@ uint32_t secdata_extend_kernel_pcr(struct vb2_context *ctx);
  */
 uint32_t secdata_get_pvmfw_params(void **boot_params, size_t *params_size);
 
+/**
+ * Gets the random bits from GSC and mixes with timestamps.
+ *
+ * @param seed	pointer where the buffer where the seed will placed
+ *		if successful.
+ * @param size	the size of the seed to be generated
+ *
+ * @return TPM_SUCCESS if successful, error code otherwise.
+ */
+uint32_t secdata_generate_randomness(uint8_t *seed, size_t size);
+
 #endif  /* VBOOT_REFERENCE_SECDATA_TPM_H_ */
