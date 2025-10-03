@@ -443,7 +443,10 @@ static bool is_rts545x_device_present(Rts545x *me, int live)
  */
 static bool rts545x_fw_uses_new_config_name_scheme(pdc_fw_ver_t ver)
 {
-	if (PDC_FWVER_MAJOR(ver) == PDC_FWVER_TYPE_BRINGUP) {
+	if (CONFIG(DRIVER_EC_IS_RTS545X_VB)) {
+		/* RTS545X-VB firmware always has the new scheme */
+		return true;
+	} else if (PDC_FWVER_MAJOR(ver) == PDC_FWVER_TYPE_BRINGUP) {
 		return ver >= PDC_FWVER_TO_INT(0, 20, 1) || !ver;
 	} else if (PDC_FWVER_MAJOR(ver) == PDC_FWVER_TYPE_TEST) {
 		return ver > PDC_FWVER_TO_INT(1, 22, 1);

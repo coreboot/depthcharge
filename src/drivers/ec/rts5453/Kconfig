@@ -30,3 +30,10 @@ config DRIVER_EC_RTS545X_PID
 	default 0x5065
 	help
 	  Product ID of RTS5453 chip
+
+config DRIVER_EC_IS_RTS545X_VB
+	bool "RTS5453-VB PDC"
+	depends on DRIVER_EC_RTS5453
+	default n
+	help
+	  Identifier for the RTS545X VB chip is on device
