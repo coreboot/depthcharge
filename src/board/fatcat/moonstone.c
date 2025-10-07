@@ -18,7 +18,7 @@ const struct audio_config *variant_probe_audio_config(void)
 			.sndw.link = AUDIO_SNDW_LINK3,
 		},
 		.codec = {
-			.type = AUDIO_RT721,
+			.type = AUDIO_RT1320,
 		},
 	};
 
