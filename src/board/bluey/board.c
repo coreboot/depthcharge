@@ -47,6 +47,12 @@ static void usb_setup(void)
 	/* Support USB3.0 XHCI controller in firmware. */
 	UsbHostController *usb_host = new_usb_hc(XHCI, QCOM_XHCI_TYPE_A_BASE);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	usb_host = new_usb_hc(XHCI, QCOM_XHCI_TYPE_C0_BASE);
+	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	usb_host = new_usb_hc(XHCI, QCOM_XHCI_TYPE_C1_BASE);
+	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 }
 
 static void storage_setup(void)
