@@ -35,3 +35,5 @@ dev-y += video.c
 
 dev-y += net.c
 dev-y += enet.c
+
+dev-$(CONFIG_DRIVER_SOC_QCOM_SPMI) += spmi.c
