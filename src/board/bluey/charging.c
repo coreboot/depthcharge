@@ -133,16 +133,18 @@ static int launch_charger_applet(void)
 			cros_ec_ap_poweroff();
 
 		/*
-		 * Sample the Power Button press to reset the device to ensure a fresh boot
+		 * Sample the Power Button press and exit the charging loop.
+		 *
+		 * TODO: Reset the device to ensure a fresh boot
 		 * to OS. This is required to avoid any kind of tear-down due to ADSP-lite
 		 * being loaded and need some clean up before loading ADSP firmware by
 		 * linux kernel.
 		 */
 		if (detect_ec_power_button_input())
-			cros_ec_ap_reset();
+			break;
 
 		/* Add static delay before reading the charging applet pre-requisites */
-		mdelay(DELAY_CHARGING_APPLET_MS );
+		mdelay(DELAY_CHARGING_APPLET_MS);
 	} while (true);
 
 	return 0;
