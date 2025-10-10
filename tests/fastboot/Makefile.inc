@@ -16,10 +16,12 @@ fastboot-test-common-config += UIP_CONF_LL_802154=0
 fastboot-test-common-config += UIP_CONF_LL_80211=0
 fastboot-test-common-config += UIP_CONF_ICMP6=0
 fastboot-test-common-srcs += tests/fastboot/fastboot_common_mocks.c
+fastboot-test-common-srcs += tests/mocks/libpayload/cbmem_console.c
 fastboot-test-common-srcs += src/fastboot/fastboot.c
 fastboot-test-common-mocks += GetEntryPriority
 fastboot-test-common-mocks += IsAndroid
 fastboot-test-common-mocks += IsBootableEntry
+fastboot-test-common-mocks += cbmem_console_snapshot
 
 # cmd-test
 $(call copy-test,fastboot-test-common,cmd-test)

@@ -374,6 +374,42 @@ static void fastboot_cmd_oem_bootconfig_set(struct FastbootOps *fb, char *arg)
 	fastboot_cmd_cmdline_set(fb, arg, true);
 }
 
+static void fastboot_cmd_oem_logs(struct FastbootOps *fb, char *arg)
+{
+	char *snapshot = cbmem_console_snapshot();
+	char *str = snapshot;
+
+	if (!str) {
+		fastboot_fail(fb, "Failed to read logs");
+		return;
+	}
+
+	while (*str == '\n')
+		str++;
+
+	for (size_t a = 0, b = 0;; b++) {
+		if (str[b] == 0 || str[b] == '\n' ||
+		    (b - a + 1) >= FASTBOOT_MSG_LEN_WO_PREFIX) {
+			// If the precision in fmt string equals 0, then
+			// libpayload's libc tries to print all characters, instead of 0.
+			if (a != b) {
+				fastboot_send_fmt(fb, FASTBOOT_RES_INFO, 0, "%.*s",
+						  (int)(b - a), str + a);
+			} else {
+				fastboot_send_fmt(fb, FASTBOOT_RES_INFO, 0, "");
+			}
+
+			a = b + 1;
+		}
+
+		if (str[b] == 0)
+			break;
+	}
+
+	fastboot_succeed(fb);
+	free(snapshot);
+}
+
 static int fastboot_parse_ufs_desc_args(struct FastbootOps *fb,
 					const char *arg,
 					uint32_t *idn,
@@ -670,6 +706,7 @@ struct fastboot_cmd fastboot_cmds[] = {
 	CMD_ARGS("oem bootconfig del", ' ', fastboot_cmd_oem_bootconfig_del),
 	CMD_ARGS("oem bootconfig set", ' ', fastboot_cmd_oem_bootconfig_set),
 	CMD_NO_ARGS("oem bootconfig", fastboot_cmd_oem_bootconfig_get),
+	CMD_NO_ARGS("oem logs", fastboot_cmd_oem_logs),
 	CMD_ARGS("oem read-ufs-descriptor", ':', fastboot_cmd_oem_read_ufs_descriptor),
 	CMD_ARGS("oem write-ufs-descriptor", ':', fastboot_cmd_oem_write_ufs_descriptor),
 	CMD_ARGS("oem set-successful", ':', fastboot_cmd_oem_set_successful),

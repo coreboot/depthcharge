@@ -1717,6 +1717,19 @@ static void test_fb_cmd_write_ufs_desc_write_fail(void **state)
 	assert_int_equal(fb->memory_buffer_len, data_len);
 }
 
+static void test_fb_cmd_oem_logs(void **state)
+{
+	struct FastbootOps *fb = *state;
+
+	char cmd[] = "oem logs";
+
+	WILL_SEND_EXACT(fb, "INFOmock cbmem console snapshot");
+	WILL_SEND_EXACT(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
 static void test_fb_cmd_oem_set_successful(void **state)
 {
 	struct FastbootOps *fb = *state;
@@ -2057,6 +2070,7 @@ int main(void)
 		TEST(test_fb_cmd_write_ufs_desc_bad_args),
 		TEST(test_fb_cmd_write_ufs_desc_args_too_big),
 		TEST(test_fb_cmd_write_ufs_desc_write_fail),
+		TEST(test_fb_cmd_oem_logs),
 		TEST(test_fb_cmd_oem_set_successful),
 		TEST(test_fb_cmd_oem_set_unsuccessful),
 		TEST(test_fb_cmd_oem_set_successful_fail_save_gpt),

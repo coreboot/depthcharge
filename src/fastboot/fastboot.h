@@ -130,25 +130,25 @@ void fastboot_reset_session(struct FastbootOps *fb);
 void fastboot_reset_staging(struct FastbootOps *fb);
 
 /* Responses to the client */
-void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t,
-		       const char *fmt, ...) __attribute__((format(printf, 3, 4)));
+void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t, int print_msg,
+		       const char *fmt, ...) __attribute__((format(printf, 4, 5)));
 
 #define fastboot_okay(fb, fmt, ...) \
-	fastboot_send_fmt((fb), FASTBOOT_RES_OKAY, (fmt), ##__VA_ARGS__)
+	fastboot_send_fmt((fb), FASTBOOT_RES_OKAY, 1, (fmt), ##__VA_ARGS__)
 
 #define fastboot_fail(fb, fmt, ...) \
-	fastboot_send_fmt((fb), FASTBOOT_RES_FAIL, (fmt), ##__VA_ARGS__)
+	fastboot_send_fmt((fb), FASTBOOT_RES_FAIL, 1, (fmt), ##__VA_ARGS__)
 
 #define fastboot_info(fb, fmt, ...) \
-	fastboot_send_fmt((fb), FASTBOOT_RES_INFO, (fmt), ##__VA_ARGS__)
+	fastboot_send_fmt((fb), FASTBOOT_RES_INFO, 1, (fmt), ##__VA_ARGS__)
 
 #define fastboot_text(fb, fmt, ...) \
-	fastboot_send_fmt((fb), FASTBOOT_RES_TEXT, (fmt), ##__VA_ARGS__)
+	fastboot_send_fmt((fb), FASTBOOT_RES_TEXT, 1, (fmt), ##__VA_ARGS__)
 
 /* Sends an empty OKAY */
-#define fastboot_succeed(fb) fastboot_send_fmt((fb), FASTBOOT_RES_OKAY, "")
+#define fastboot_succeed(fb) fastboot_send_fmt((fb), FASTBOOT_RES_OKAY, 1, "")
 
 /* Sends DATA with the length */
-#define fastboot_data(fb, len) fastboot_send_fmt((fb), FASTBOOT_RES_DATA, "%08x", (len))
+#define fastboot_data(fb, len) fastboot_send_fmt((fb), FASTBOOT_RES_DATA, 1, "%08x", (len))
 
 #endif /* __FASTBOOT_FASTBOOT_H__ */
