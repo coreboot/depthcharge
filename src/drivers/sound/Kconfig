@@ -28,6 +28,21 @@ config DRIVER_SOUND_CS35L53
 	bool "CS35L53 codec driver"
 	default n
 
+config DRIVER_SOUND_CS35L53_1_5MHZ_REFCLK
+	bool "1.5MHz Refclk setup for CS35L53 beep driver. Default is 3MHz."
+	depends on DRIVER_SOUND_CS35L53
+	default n
+
+config DRIVER_SOUND_CS35L53_INTERNAL_BOOST
+	bool "Internal Boost setup for CS35L53 beep driver. Default is External Boost."
+	depends on DRIVER_SOUND_CS35L53
+	default n
+
+config DRIVER_SOUND_CS35L53_LLRR
+	bool "Left,Left,Right,Right Channel setup for CS35L53 beep driver. Default is RRLL."
+	depends on DRIVER_SOUND_CS35L53
+	default n
+
 config DRIVER_SOUND_GPIO_AMP
 	bool "An amplifier controlled by GPIO value"
 	default n

@@ -34,7 +34,7 @@ typedef struct reg_config {
 } reg_config_t;
 
 reg_config_t config[] = {
-	{CS35L53_RST, CS35L53_SFT_RST, 0x00000000, 0 },
+	{CS35L53_RST, CS35L53_SFT_RST, 0x00000000, 20 },
 	{CS35L53_REFCLK_INPUT, CS35L53_PLL_REFCLK_FREQ, 0x00000000, 0 },
 	{CS35L53_REFCLK_INPUT, CS35L53_PLL_REFCLK_FREQ|CS35L53_PLL_REFCLK_EN, 0x00000000, 0 },
 	{CS35L53_GLOBAL_SAMPLE_RATE, CS35L53_GLOBAL_FS, 0x00000000, 0 },
@@ -49,6 +49,7 @@ reg_config_t config[] = {
 	{CS35L53_BLOCK_ENABLES, CS35L53_AMP_EN, 0x00000000, 0 }
 };
 
+#if !CONFIG(DRIVER_SOUND_CS35L53_INTERNAL_BOOST)
 /* play beep */
 reg_config_t play[] = {
 	{CS35L53_TEST_KEY_CTRL, CS35L53_TEST_KEY_ENABLE_1, 0x00000000, 0 },
@@ -87,6 +88,19 @@ reg_config_t stop[] = {
 	{CS35L53_TEST_KEY_CTRL, CS35L53_TEST_KEY_DISABLE_1, 0x00000000, 0 },
 	{CS35L53_TEST_KEY_CTRL, CS35L53_TEST_KEY_DISABLE_2, 0x00000000, 0 }
 };
+#else
+/* play beep */
+reg_config_t play[] = {
+	{CS35L53_GLOBAL_ENABLES, CS35L53_GLOBAL_EN, 0x00000000, 0 },
+	{CS35L53_IRQ1_STS_1, 0x00000000, CS35L53_MSM_PUP_DONE_STS1, 0 },
+};
+
+/* stop beep */
+reg_config_t stop[] = {
+	{CS35L53_GLOBAL_ENABLES, CS35L53_GLOBAL_DIS, 0x00000000, 0 },
+	{CS35L53_IRQ1_STS_1, 0x00000000, CS35L53_MSM_PDN_DONE_STS1, 0 },
+};
+#endif
 
 static int cs35l53_i2c_readdw(cs35l53Codec *codec, uint32_t reg, uint32_t *data)
 {
@@ -106,22 +120,41 @@ static int cs35l53_i2c_writedw(cs35l53Codec *codec, uint32_t reg, uint32_t data)
 	return 0;
 }
 
-/* Righ ch:0 Left ch:1 fail:-1 */
+#if !CONFIG(DRIVER_SOUND_CS35L53_LLRR)
+/* Right ch:0 Left ch:1 fail:-1 */
 static int cs35l53_ch_check(cs35l53Codec *codec)
 {
 	switch (codec->chip) {
-		case AUD_CS35L53_DEVICE_ADDR1:
-			__attribute__((fallthrough));
-		case AUD_CS35L53_DEVICE_ADDR2:
-			return 0;
-		case AUD_CS35L53_DEVICE_ADDR3:
-			__attribute__((fallthrough));
-		case AUD_CS35L53_DEVICE_ADDR4:
-			return 1;
-		default:
-			return -1;
+	case AUD_CS35L53_DEVICE_ADDR1:
+		__attribute__((fallthrough));
+	case AUD_CS35L53_DEVICE_ADDR2:
+		return 0;
+	case AUD_CS35L53_DEVICE_ADDR3:
+		__attribute__((fallthrough));
+	case AUD_CS35L53_DEVICE_ADDR4:
+		return 1;
+	default:
+		return -1;
 	}
 }
+#else
+/* Right ch:0 Left ch:1 fail:-1 */
+static int cs35l53_ch_check(cs35l53Codec *codec)
+{
+	switch (codec->chip) {
+	case AUD_CS35L53_DEVICE_ADDR1:
+		__attribute__((fallthrough));
+	case AUD_CS35L53_DEVICE_ADDR2:
+		return 1;
+	case AUD_CS35L53_DEVICE_ADDR3:
+		__attribute__((fallthrough));
+	case AUD_CS35L53_DEVICE_ADDR4:
+		return 0;
+	default:
+		return -1;
+	}
+}
+#endif
 
 /* Initialize cs35l53 codec device */
 static int cs35l53_device_init(cs35l53Codec *codec)
