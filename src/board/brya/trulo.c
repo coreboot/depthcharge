@@ -32,7 +32,8 @@ void board_rts5453_get_image_paths(const char **image_path, const char **hash_pa
 }
 
 /* Override of func in src/drivers/ec/tps6699x/tps6699x.c */
-void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path)
+void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path,
+				    int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
 	if (fw_config_probe(FW_CONFIG(PDC_CONTROL, PDC_TI_BYPASS))) {
 		/* Will update path for TI PDC AU later */

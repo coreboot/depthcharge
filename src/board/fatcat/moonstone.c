@@ -44,7 +44,8 @@ int gsc_irq_status(void)
 }
 
 /* Override of func in src/drivers/ec/tps6699x/tps6699x.c */
-void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path)
+void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path,
+				    int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
 	*image_path = "tps6699x_GOOG0700.bin";
 	*hash_path = "tps6699x_GOOG0700.hash";
