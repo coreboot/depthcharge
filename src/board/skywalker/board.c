@@ -184,7 +184,7 @@ static void sound_setup(void)
 		printf("no amps found\n");
 }
 
-static void rts545x_register(void)
+void board_rts545x_register(void)
 {
 	/*
 	 * Skywalker's PDC FW 1.61.1 contains the wrong PID 0x5065.
@@ -316,9 +316,6 @@ static int board_setup(void)
 						0x14002000, 2, 0));
 	else
 		printf("[%s] no display init required!\n", __func__);
-
-	if (CONFIG(DRIVER_EC_RTS5453))
-		rts545x_register();
 
 	return 0;
 }

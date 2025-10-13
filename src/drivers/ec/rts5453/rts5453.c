@@ -870,9 +870,16 @@ static CrosEcAuxfwChipInfo aux_fw_rts5453_info = {
 	.new_chip_aux_fw_ops = new_rts545x_from_chip_info,
 };
 
+/* Override this function in board level if additional PIDs need to be included. */
+__weak void board_rts545x_register(void)
+{
+}
+
 static int rts545x_register(void)
 {
 	list_insert_after(&aux_fw_rts5453_info.list_node, &ec_aux_fw_chip_list);
+
+	board_rts545x_register();
 	return 0;
 }
 

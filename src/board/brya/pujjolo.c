@@ -85,3 +85,18 @@ const int variant_get_ec_int(void)
 {
 	return EC_PCH_INT_ODL;
 }
+
+void board_rts545x_register(void)
+{
+	/*
+	 * Pujjolo/Pujjoquince's PDC FW might contain wrong PID 0x5072.
+	 * Register it to allow updating to the newer versions.
+	 */
+	const uint32_t old_pid = 0x5072;
+	static CrosEcAuxfwChipInfo rts5453_info = {
+		.vid = CONFIG_DRIVER_EC_RTS545X_VID,
+		.pid = old_pid,
+		.new_chip_aux_fw_ops = new_rts545x_from_chip_info,
+	};
+	list_insert_after(&rts5453_info.list_node, &ec_aux_fw_chip_list);
+}
