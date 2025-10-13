@@ -2,7 +2,7 @@
 
 #include "board/skywalker/include/variant.h"
 
-const char *const rts545x_configs[MAX_PDC_PORT_NUM] = {
-	RTS545X_IT5205,
-	RTS545X_PS8747,
-};
+const char *get_rts545x_configs(int ec_pd_id)
+{
+	return ec_pd_id == 0 ? RTS545X_IT5205 : RTS545X_PS8747;
+}

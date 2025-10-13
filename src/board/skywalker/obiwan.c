@@ -4,7 +4,7 @@
 
 #define RTS545X_PS8747_OBIWAN_EQ	"0B02"
 
-const char *const rts545x_configs[MAX_PDC_PORT_NUM] = {
-	RTS545X_IT5205,
-	RTS545X_PS8747_OBIWAN_EQ,
-};
+const char *get_rts545x_configs(int ec_pd_id)
+{
+	return ec_pd_id == 0 ? RTS545X_IT5205 : RTS545X_PS8747_OBIWAN_EQ;
+}
