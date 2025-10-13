@@ -63,17 +63,30 @@ int gsc_irq_status(void)
 /* Override of functions in src/drivers/ec/tps6699x/tps6699x.c */
 void board_tps6699x_register(void)
 {
-	static CrosEcAuxfwChipInfo tps6699x_info = {
-		.vid = CONFIG_DRIVER_EC_TPS6699X_VID,
-		.pid = 0x506c,
-		.new_chip_aux_fw_ops = new_tps6699x_from_chip_info,
+	static CrosEcAuxfwChipInfo tps6699x_info[] = {
+		TPS6699X_CHIP_ENTRY(CONFIG_DRIVER_EC_TPS6699X_VID, 0x506c),
+		TPS6699X_CHIP_ENTRY(CONFIG_DRIVER_EC_TPS6699X_VID, 0x507c),
 	};
-	list_insert_after(&tps6699x_info.list_node, &ec_aux_fw_chip_list);
+	for (int i = 0; i < ARRAY_SIZE(tps6699x_info); i++)
+		list_insert_after(&tps6699x_info[i].list_node, &ec_aux_fw_chip_list);
 }
 
 void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path,
 				    int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
-	*image_path = "tps6699x_GOOG0700.bin";
-	*hash_path = "tps6699x_GOOG0700.hash";
+	switch (ec_pd_id)
+	{
+		case 0:
+		case 1:
+			*image_path = "tps6699x_GOOG0700.bin";
+			*hash_path = "tps6699x_GOOG0700.hash";
+			break;
+		case 2:
+			*image_path = "tps6699x_GOOG0Q00.bin";
+			*hash_path = "tps6699x_GOOG0Q00.hash";
+			break;
+		default:
+			*image_path = NULL;
+			*hash_path = NULL;
+	}
 }

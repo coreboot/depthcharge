@@ -16,6 +16,13 @@
 #define debug(msg, args...)
 #endif
 
+#define TPS6699X_CHIP_ENTRY(VID, PID)                                                          \
+	{                                                                                      \
+		.vid = (VID),                                                                  \
+		.pid = (PID),                                                                  \
+		.new_chip_aux_fw_ops = new_tps6699x_from_chip_info,                            \
+	}
+
 typedef struct Tps6699x {
 	/** This driver's API implementation, passed to Vboot */
 	VbootAuxfwOps fw_ops;

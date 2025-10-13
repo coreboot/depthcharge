@@ -339,13 +339,6 @@ const VbootAuxfwOps *new_tps6699x_from_chip_info(struct ec_response_pd_chip_info
 	return &tps6699x->fw_ops;
 }
 
-#define TPS6699X_CHIP_ENTRY(VID, PID)                                                          \
-	{                                                                                      \
-		.vid = (VID),                                                                  \
-		.pid = (PID),                                                                  \
-		.new_chip_aux_fw_ops = new_tps6699x_from_chip_info,                            \
-	}
-
 /** List of VIDs/PIDs used in conjunction with this chip */
 static CrosEcAuxfwChipInfo aux_fw_tps6699x_info[] = {
 	/* Default TI VID:PID for TPS6699x */
