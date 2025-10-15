@@ -25,7 +25,8 @@ secdata_tpm-test-srcs += tests/mocks/tlcl_rw.c
 secdata_tpm-test-srcs += src/vboot/secdata_tpm.c
 secdata_tpm-test-srcs += src/vboot/callbacks/tpm.c
 secdata_tpm-test-mocks += TlclWrite TlclRead TlclForceClear \
-	TlclSetEnable TlclSetDeactivated
+	TlclSetEnable TlclSetDeactivated TlclExtend \
+	TlclLockPhysicalPresence
 
 stages-test-srcs += tests/vboot/stages-test.c
 stages-test-mocks += vb2ex_commit_data vb2api_fail
