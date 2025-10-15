@@ -21,7 +21,6 @@
 #include <string.h>
 
 #include "die.h"
-#include "drivers/ec/cros/ec.h"
 #include "drivers/net/net.h"
 #include "drivers/power/power.h"
 #include "endian.h"
@@ -420,6 +419,7 @@ static void fastboot_tcp_poll(struct FastbootOps *fb)
 static void fastboot_tcp_release(struct FastbootOps *fb)
 {
 	net_set_callback(NULL);
+	free(fb->serial);
 }
 
 static struct fastboot_tcp_session tcp_session = {
@@ -428,8 +428,23 @@ static struct fastboot_tcp_session tcp_session = {
 		.send_packet = fastboot_tcp_send,
 		.reset = fastboot_tcp_reset,
 		.release = fastboot_tcp_release,
+		.type = FASTBOOT_TCP_CONN,
 	},
 };
+
+static void fastboot_tcp_setup_serial_string(struct FastbootOps *fb, uip_ipaddr_t *ip)
+{
+	const char fmt[] = "IP: %d.%d.%d.%d";
+	int str_len = snprintf(NULL, 0, fmt, uip_ipaddr_to_quad(ip));
+
+	/* If sprintf failed, at least setup empty serial */
+	if (str_len < 0)
+		str_len = 0;
+	str_len++;
+
+	fb->serial = xmalloc(str_len);
+	snprintf(fb->serial, str_len, fmt, uip_ipaddr_to_quad(ip));
+}
 
 struct FastbootOps *fastboot_setup_tcp(void)
 {
@@ -444,11 +459,7 @@ struct FastbootOps *fastboot_setup_tcp(void)
 		printf("Dhcp failed, retrying.\n");
 	uip_gethostaddr(&my_ip);
 
-	video_console_set_cursor(0, 2);
-	video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "IP: %d.%d.%d.%d\n",
-		     uip_ipaddr_to_quad(&my_ip));
-	if (CONFIG(DRIVER_EC_CROS))
-		cros_ec_print("Fastboot IP: %d.%d.%d.%d\n", uip_ipaddr_to_quad(&my_ip));
+	fastboot_tcp_setup_serial_string(&tcp_session.fb_session, &my_ip);
 
 	uip_listen(uip_htons(FASTBOOT_PORT));
 

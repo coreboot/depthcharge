@@ -19,6 +19,7 @@
 #include <stdlib.h>
 
 #include "die.h"
+#include "drivers/ec/cros/ec.h"
 #include "fastboot/cmd.h"
 #include "fastboot/fastboot.h"
 #include "fastboot/tcp.h"
@@ -196,20 +197,12 @@ void fastboot(void)
 		video_console_set_cursor(0, 1);
 		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for USB");
 		fb_session = fastboot_setup_usb();
-		if (fb_session) {
-			video_console_set_cursor(0, 1);
-			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "USB connected");
-		}
 	}
 
 	if (CONFIG(FASTBOOT_TCP) && fb_session == NULL) {
 		video_console_set_cursor(0, 1);
 		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for network");
 		fb_session = fastboot_setup_tcp();
-		if (fb_session) {
-			video_console_set_cursor(0, 1);
-			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Network connected");
-		}
 	}
 
 	if (fb_session == NULL) {
@@ -217,6 +210,21 @@ void fastboot(void)
 		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "No fastboot device");
 		return;
 	}
+
+	video_console_set_cursor(0, 1);
+	switch (fb_session->type) {
+	case FASTBOOT_TCP_CONN:
+		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Network connected");
+		break;
+	case FASTBOOT_USB_CONN:
+		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "USB connected");
+		break;
+	}
+	video_console_set_cursor(0, 2);
+	video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, fb_session->serial);
+
+	if (CONFIG(DRIVER_EC_CROS))
+		cros_ec_print("Fastboot %s\n", fb_session->serial);
 
 	fastboot_reset_staging(fb_session);
 	fastboot_reset_session(fb_session);

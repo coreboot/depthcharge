@@ -61,6 +61,11 @@ enum fastboot_state {
 	REBOOT,
 };
 
+enum fastboot_connection_type {
+	FASTBOOT_TCP_CONN,
+	FASTBOOT_USB_CONN,
+};
+
 /* State of a fastboot session and functions that abstract transport layer */
 struct FastbootOps {
 	/* State of the session */
@@ -94,6 +99,11 @@ struct FastbootOps {
 	 * fastboot_transport shouldn't be called. This function is optional.
 	 */
 	void (*release)(struct FastbootOps *fb);
+
+	/* Type of transport layer */
+	enum fastboot_connection_type type;
+	/* Serial number of connection */
+	char *serial;
 };
 
 enum fastboot_response_type {

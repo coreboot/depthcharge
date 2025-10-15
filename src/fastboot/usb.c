@@ -166,6 +166,8 @@ static int usb_fastboot_probe(GenericUsbDevice *dev)
 	usb_fb_dev->fb_session.poll = usb_fastboot_poll;
 	usb_fb_dev->fb_session.send_packet = usb_fastboot_send;
 	usb_fb_dev->fb_session.release = usb_fastboot_release;
+	usb_fb_dev->fb_session.type = FASTBOOT_USB_CONN;
+	usb_fb_dev->fb_session.serial = "USB";
 
 	list_insert_after(&usb_fb_dev->list_node, &alink_devices);
 
@@ -181,6 +183,7 @@ static void usb_fastboot_remove(GenericUsbDevice *dev)
 	if (is_usb_fastboot_in_use(usb_fb_dev)) {
 		/* Disconnect fastboot and wait for FastbootOps.release */
 		usb_fb_dev->fb_session.state = FINISHED;
+		usb_fb_dev->fb_session.serial = NULL;
 		usb_fb_dev->bulk_in = NULL;
 		usb_fb_dev->bulk_out = NULL;
 		usb_fb_dev->usb_dev = NULL;
