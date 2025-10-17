@@ -136,11 +136,11 @@ struct cros_ec_keyscan {
 };
 
 /**
- * Return non-zero if the EC supports the command and version
+ * Check if the EC supports the command and version
  *
  * @param cmd		Command to check
  * @param ver		Version to check
- * @return non-zero if command version supported; 0 if not.
+ * @return 1 if command version supported; 0 if not; -1 on error.
  */
 int cros_ec_cmd_version_supported(int cmd, int ver);
 

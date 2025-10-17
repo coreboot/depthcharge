@@ -310,8 +310,8 @@ static int ec_flash_write_burst_size(CrosEc *me)
 	 * Determine whether we can use version 1 of the command with more
 	 * data, or only version 0.
 	 */
-	if (!cros_ec_cmd_version_supported(EC_CMD_FLASH_WRITE,
-					   EC_VER_FLASH_WRITE))
+	if (cros_ec_cmd_version_supported(EC_CMD_FLASH_WRITE,
+					  EC_VER_FLASH_WRITE) <= 0)
 		return EC_FLASH_WRITE_VER0_SIZE;
 
 	/*

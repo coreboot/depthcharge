@@ -323,7 +323,7 @@ int cros_ec_cmd_version_supported(int cmd, int ver)
 	uint32_t mask = 0;
 
 	if (get_cmd_versions(cmd, &mask))
-		return 0;
+		return -1;
 
 	return (mask & EC_VER_MASK(ver)) ? 1 : 0;
 }
@@ -572,7 +572,7 @@ int cros_ec_battery_sustain(unsigned char lower, unsigned char upper)
 	p.sustain_soc.lower = lower;
 	p.sustain_soc.upper = upper;
 
-	if (cros_ec_cmd_version_supported(EC_CMD_CHARGE_CONTROL, 3))
+	if (cros_ec_cmd_version_supported(EC_CMD_CHARGE_CONTROL, 3) > 0)
 		version = 3;
 	else
 		version = 2;
@@ -837,8 +837,14 @@ int cros_ec_pd_chip_info(int port, int renew, struct ec_response_pd_chip_info_v2
 	/*
 	 * Check if EC_CMD_PD_CHIP_INFO(v2) is supported,
 	 * if not use EC_CMD_PD_CHIP_INFO instead.
+	 * return -1 if supported version is not sure.
 	 */
-	if (cros_ec_cmd_version_supported(EC_CMD_PD_CHIP_INFO, 2))
+	ret = cros_ec_cmd_version_supported(EC_CMD_PD_CHIP_INFO, 2);
+
+	if (ret < 0)
+		return ret;
+
+	if (ret)
 		ret = ec_cmd_pd_chip_info_v2(cros_ec_get(), &p, r);
 	else
 		ret = ec_cmd_pd_chip_info(cros_ec_get(), &p,
