@@ -422,12 +422,25 @@ static NVME_STATUS nvme_fill_prp(PrpList *prp_list, uint64_t *prp, void *buffer,
 static NVME_STATUS nvme_block_rw(NvmeDrive *drive, void *buffer, lba_t start,
 				 lba_t count, bool read)
 {
+	struct bounce_buffer bbstate;
+	/* Read operation writes to bounce buffer (GEN_BB_WRITE) */
+	unsigned int bbflags = read ? GEN_BB_WRITE : GEN_BB_READ;
+
 	NvmeCtrlr *ctrlr = drive->ctrlr;
 	NVME_SQ *sq;
 	int status = NVME_SUCCESS;
 
 	if (count == 0)
 		return NVME_INVALID_PARAMETER;
+
+	/* Flush cache data to the memory before DMA transfer */
+	const int ret = bounce_buffer_start(&bbstate, buffer,
+					    count * drive->dev.block_size,
+					    bbflags);
+	if (ret) {
+		printf("%s: error: Failed to allocate bounce buffer.\n", __func__);
+		return 0;
+	}
 
 	/* If queue is full, need to complete inflight commands before submitting more */
 	if ((ctrlr->sq_t_dbl[NVME_IO_QUEUE_INDEX] + 1) % ctrlr->iosq_sz ==
@@ -452,7 +465,7 @@ static NVME_STATUS nvme_block_rw(NvmeDrive *drive, void *buffer, lba_t start,
 	sq->cid = ctrlr->cid[NVME_IO_QUEUE_INDEX]++;
 	sq->nsid = drive->namespace_id;
 
-	status = nvme_fill_prp(ctrlr->prp_list[sq->cid], sq->prp, buffer,
+	status = nvme_fill_prp(ctrlr->prp_list[sq->cid], sq->prp, bbstate.bounce_buffer,
 			       count * drive->dev.block_size);
 	if (NVME_ERROR(status)) {
 		printf("%s: error %d generating PRP(s)\n", __func__, status);
@@ -463,6 +476,7 @@ static NVME_STATUS nvme_block_rw(NvmeDrive *drive, void *buffer, lba_t start,
 	sq->cdw11 = (start >> 32);
 	sq->cdw12 = (count - 1) & 0xFFFF;
 
+	bounce_buffer_stop(&bbstate);
 	return nvme_submit_cmd(ctrlr, NVME_IO_QUEUE_INDEX, ctrlr->iosq_sz);
 }
 
@@ -479,9 +493,6 @@ static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
 	uint32_t block_size = drive->dev.block_size;
 	lba_t orig_count = count;
 	int status = NVME_SUCCESS;
-	struct bounce_buffer bbstate;
-	/* Read operation writes to bounce buffer (GEN_BB_WRITE) */
-	unsigned int bbflags = read ? GEN_BB_WRITE : GEN_BB_READ;
 
 	DEBUG("%s: %s namespace %d\n", __func__,
 	      read ? "Reading from" : "Writing to", drive->namespace_id);
@@ -493,30 +504,20 @@ static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
 	    (max_transfer_blocks > NVME_MAX_XFER_BYTES / block_size))
 		max_transfer_blocks = NVME_MAX_XFER_BYTES / block_size;
 
-	/* Flush cache data to the memory before DMA transfer */
-	const int ret = bounce_buffer_start(&bbstate, buffer,
-					    orig_count * drive->dev.block_size,
-					    bbflags);
-	if (ret) {
-		printf("%s: error: Failed to allocate bounce buffer.\n", __func__);
-		return 0;
-	}
-
-	void *bounce_buffer = bbstate.bounce_buffer;
 	const char *op = read ? "read" : "write";
 	while (count > 0) {
 		if (count > max_transfer_blocks) {
 			DEBUG("%s: partial %s of %llu blocks\n",
 			      __func__, op, max_transfer_blocks);
-			status = nvme_block_rw(drive, bounce_buffer, start,
+			status = nvme_block_rw(drive, buffer, start,
 					       max_transfer_blocks, read);
 			count -= max_transfer_blocks;
-			bounce_buffer += max_transfer_blocks * block_size;
+			buffer += max_transfer_blocks * block_size;
 			start += max_transfer_blocks;
 		} else {
 			DEBUG("%s: final %s of %llu blocks\n",
 			      __func__, op, count);
-			status = nvme_block_rw(drive, bounce_buffer, start,
+			status = nvme_block_rw(drive, buffer, start,
 					       count, read);
 			count = 0;
 		}
@@ -534,7 +535,6 @@ static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
 		       __func__, status);
 
 out:
-	bounce_buffer_stop(&bbstate);
 	DEBUG("%s: lba = %#08x, Original = %#08x, Remaining = %#08x, BlockSize = %#x Status = %d\n",
 	      __func__, (uint32_t)start, (uint32_t)orig_count, (uint32_t)count,
 	      block_size, status);
