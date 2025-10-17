@@ -42,8 +42,6 @@ int commandline_subst(const char *src, char *dest, size_t dest_size,
 {
 	static const char cros_secure[] = "cros_secure ";
 	const int cros_secure_size = sizeof(cros_secure) - 1;
-	int devnum = info->devnum;
-	int partnum = info->partnum;
 
 	/* Confidence check on dest size */
 	if (dest_size > 10000)
@@ -86,68 +84,12 @@ int commandline_subst(const char *src, char *dest, size_t dest_size,
 		case '\0':
 			printf("update_cmdline: Input ended with '%%'\n");
 			return 1;
-		case 'D':
-			/* Confidence check */
-			if (devnum < 0 || devnum > 25)
-				return 1;
-			/*
-			 * TODO: Do we have any better way to know whether %D
-			 * is replaced by a letter or digits? So far, this is
-			 * done by a rule of thumb that if %D is followed by a
-			 * 'p' character, then it is replaced by digits.
-			 */
-			if (*src == 'p') {
-				CHECK_SPACE(3);
-				dest = itoa(dest, devnum);
-			} else {
-				CHECK_SPACE(2);
-				*dest++ = 'a' + devnum;
-			}
-			break;
-		case 'P':
-			/* Confidence check */
-			if (partnum < 1 || partnum > 99)
-				return 1;
-			CHECK_SPACE(3);
-			dest = itoa(dest, partnum);
-			break;
 		case 'U':
 			/* GUID replacement needs 36 bytes */
 			CHECK_SPACE(GUID_STRLEN);
 			GptGuidToStr(info->guid, dest, GUID_STRLEN,
 				     GPT_GUID_LOWERCASE);
-			dest += (GUID_STRLEN - 1);;
-			break;
-		case 'R':
-			/*
-			 * If booting from NAND, /dev/ubiblock%P_0
-			 * If booting from disk, PARTUUID=%U/PARTNROFF=1
-			 */
-			if (info->external_gpt) {
-				/* Confidence check */
-				if (partnum < 1 || partnum > 99)
-					return 1;
-				char start[] = "/dev/ubiblock", end[] = "_0";
-				size_t start_size = sizeof(start) - 1,
-					end_size = sizeof(end) - 1;
-				CHECK_SPACE(start_size + 3 + end_size);
-				memcpy(dest, start, start_size);
-				dest += start_size;
-				dest = itoa(dest, partnum);
-				memcpy(dest, end, end_size);
-				dest += end_size;
-			} else {
-				char start[] = "PARTUUID=",
-					end[] = "/PARTNROFF=1";
-				size_t start_size = sizeof(start) - 1,
-					end_size = sizeof(end) - 1;
-				CHECK_SPACE(start_size + 36 + 1 + end_size);
-				memcpy(dest, start, start_size);
-				dest += start_size;
-				dest = emit_guid(dest, info->guid);
-				memcpy(dest, end, end_size);
-				dest += end_size;
-			}
+			dest += (GUID_STRLEN - 1);
 			break;
 		default:
 			CHECK_SPACE(3);

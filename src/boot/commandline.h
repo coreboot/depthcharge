@@ -25,8 +25,6 @@
 #include "base/gpt.h"
 
 struct commandline_info {
-	int devnum;
-	int partnum;
 	Guid *guid;
 	int external_gpt;
 };
