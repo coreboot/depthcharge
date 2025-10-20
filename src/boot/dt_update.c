@@ -10,7 +10,9 @@
 
 #include "base/ranges.h"
 #include "base/timestamp.h"
+#include "vboot/boot.h"
 #include "vboot/stages.h"
+#include "vboot/secdata_tpm.h"
 
 void dt_update_chosen(struct device_tree *tree, const char *cmd_line)
 {
@@ -177,4 +179,58 @@ void dt_update_memory(struct device_tree *tree)
 
 	// Assemble the final property and add it to the device tree.
 	dt_add_bin_prop(node, "reg", data, length);
+}
+
+static int add_pkvm_drng_node(struct device_tree *tree, void *seed_addr, size_t seed_size)
+{
+	static const char *const reserved_mem[] = {"reserved-memory", "pkvm-drng-seed", NULL};
+
+	uint32_t addr_cells, size_cells;
+	uint64_t reg_addr = (uintptr_t)seed_addr;
+	uint64_t reg_size = seed_size;
+	struct device_tree_node *node;
+
+	/* Get or create /reserved-memory/drng-seed node */
+	node = dt_find_node(tree->root, reserved_mem, &addr_cells, &size_cells,
+			    /* create */ 1);
+	if (node == NULL) {
+		printf("Failed to add pKVM DRNG seed to reserved-memory\n");
+		return -1;
+	}
+
+	/* Add required node properties */
+	dt_add_string_prop(node, "compatible", "google,pkvm-drng");
+	dt_add_reg_prop(node, &reg_addr, &reg_size, 1, addr_cells, size_cells);
+	dt_add_bin_prop(node, "no-map", NULL, 0);
+
+	return 0;
+}
+
+#define ANDROID_PKVM_DRNG_SEED_SIZE 128
+
+int dt_add_pkvm_drng(struct device_tree *tree, struct boot_info *bi)
+{
+	uint8_t *seed_buf;
+	uint32_t status;
+
+	timestamp_add_now(TS_PKVM_DRNG_SEED_START);
+
+	/* Put seed after the pvmfw and align to page */
+	seed_buf = (uint8_t *)ALIGN_UP((uintptr_t)bi->pvmfw_addr + bi->pvmfw_size, 4096);
+	/* Make sure there's enough space left in pvmfw buffer */
+	if (((uintptr_t)seed_buf - (uintptr_t)bi->pvmfw_addr) + ANDROID_PKVM_DRNG_SEED_SIZE >
+	    bi->pvmfw_buffer_size) {
+		printf("No enough space for pKVM DRNG seed in pvmfw buffer\n");
+		return -1;
+	}
+
+	status = secdata_generate_randomness(seed_buf, ANDROID_PKVM_DRNG_SEED_SIZE);
+	if (status != TPM_SUCCESS) {
+		printf("Failed to generate pKVM DRNG seed\n");
+		return -1;
+	}
+
+	timestamp_add_now(TS_PKVM_DRNG_SEED_DONE);
+
+	return add_pkvm_drng_node(tree, seed_buf, ANDROID_PKVM_DRNG_SEED_SIZE);
 }

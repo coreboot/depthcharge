@@ -195,6 +195,7 @@ static int setup_pvmfw(struct boot_info *bi, struct vb2_kernel_params *kparams)
 
 	bi->pvmfw_addr = pvmfw_addr;
 	bi->pvmfw_size = pvmfw_size;
+	bi->pvmfw_buffer_size = kparams->pvmfw_buffer_size;
 fail:
 	if (params) {
 		/* Make sure that secrets are no longer in memory */

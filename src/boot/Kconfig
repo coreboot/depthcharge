@@ -88,3 +88,14 @@ config CLEAR_DATA
 	help
 	  Enable clearing .data, .bss, .stack sections and DMA heap before jumping
 	  to the kernel.
+
+config ANDROID_PKVM_DRNG_SEED
+	bool "Support for preparing seed for pKVM Deterministric TRNG"
+	default y
+	depends on ARCH_ARM
+	depends on ANDROID_PVMFW
+	help
+	  Enables preparation of initial seed for pKVM Deterministric TRNG
+	  implementation. The seed is generated using TPM GetRandom and stored
+	  in system memory.
+	  This option can be temporarily disabled for bring up purposes.

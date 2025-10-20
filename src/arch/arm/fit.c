@@ -133,6 +133,14 @@ int boot(struct boot_info *bi)
 		return 1;
 	}
 
+	/* Add DT node if pKVM DRNG seed was prepared to memory */
+	if (CONFIG(ANDROID_PKVM_DRNG_SEED) && bi->pvmfw_addr && bi->pvmfw_buffer_size &&
+	    dt_add_pkvm_drng(tree, bi) != 0) {
+		/* Failed to add pKVM DRNG seed node */
+		printf("ERROR: Failed to add pKVM DRNG seed reserved mem node!\n");
+		return 1;
+	}
+
 	if (dt_apply_fixups(tree))
 		return 1;
 
