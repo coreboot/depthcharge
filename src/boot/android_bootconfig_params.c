@@ -90,7 +90,7 @@ static int append_skuid(struct bootconfig *bc)
 static int append_boot_part_uuid(struct bootconfig *bc, struct vb2_kernel_params *kp)
 {
 	char guid_str[GUID_STRLEN];
-	const Guid *guid = (const Guid *)kp->partition_guid;
+	const Guid *guid = &kp->partition_guid;
 
 	GptGuidToStr(guid, guid_str, ARRAY_SIZE(guid_str), GPT_GUID_LOWERCASE);
 	return bootconfig_append(bc, BOOT_PART_UUID_KEY_STR, guid_str);

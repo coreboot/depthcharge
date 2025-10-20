@@ -329,7 +329,7 @@ void vboot_boot_kernel(struct vb2_kernel_params *kparams)
 	struct commandline_info info = {
 		.devnum = 0,
 		.partnum = kparams->partition_number + 1,
-		.guid = kparams->partition_guid,
+		.guid = &kparams->partition_guid,
 		.external_gpt = bdev->external_gpt,
 	};
 
