@@ -127,20 +127,31 @@ int net_wait_for_link(bool loop)
 	return -1;
 }
 
+/*
+ * It isn't well documented in uIP, but example-mainloop-with-arp is using 500ms interval for
+ * uip_periodic() calls. Documentation of uip_connect() also suggest that 0.5s is typical
+ * interval.
+ */
+#define UIP_PERIODIC_INTERVAL_US (500 * USECS_PER_MSEC)
+/* According to uip_arp_timer it should be called once every 10 seconds */
+#define UIP_ARP_INTERVAL_US (10 * USECS_PER_SEC)
+
 void net_poll(void)
 {
+	int ret;
+	static uint32_t periodic_timer_us = 0;
+	static uint32_t arp_timer_us = 0;
+
 	if (!net_device) {
 		printf("No network device.\n");
 		return;
 	}
 
 	struct uip_eth_hdr *hdr = (struct uip_eth_hdr *)uip_buf;
-	if (net_device->recv(net_device, uip_buf, &uip_len,
-			     CONFIG_UIP_BUFSIZE)) {
-		printf("Receive failed.\n");
-		return;
-	}
-	if (uip_len) {
+	ret = net_device->recv(net_device, uip_buf, &uip_len, CONFIG_UIP_BUFSIZE);
+	if (ret)
+		printf("Receive failed. (%d)\n", ret);
+	if (!ret && uip_len) {
 		if (hdr->type == htonw(UIP_ETHTYPE_IP)) {
 			uip_arp_ipin();
 			uip_input();
@@ -152,6 +163,19 @@ void net_poll(void)
 			uip_arp_arpin();
 			if (uip_len > 0)
 				net_device->send(net_device, uip_buf, uip_len);
+		}
+	} else if (timer_us(periodic_timer_us) > UIP_PERIODIC_INTERVAL_US) {
+		periodic_timer_us = timer_us(0);
+		for (int i = 0; i < CONFIG_UIP_CONNS; i++) {
+			uip_periodic(i);
+			if (uip_len > 0) {
+				uip_arp_out();
+				net_device->send(net_device, uip_buf, uip_len);
+			}
+		}
+		if (timer_us(arp_timer_us) > UIP_ARP_INTERVAL_US) {
+			arp_timer_us = timer_us(0);
+			uip_arp_timer();
 		}
 	}
 }
