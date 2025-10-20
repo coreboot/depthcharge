@@ -80,7 +80,8 @@ static int route_play_components(SoundRoute *route)
 
 	SoundRouteComponent *component;
 	list_for_each(component, route->components, list_node) {
-		if (component->ops.play(&component->ops))
+		if (component->ops.play &&
+		    component->ops.play(&component->ops))
 			res = -1;
 	}
 
@@ -99,10 +100,8 @@ static int route_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 	if (res)
 		goto out;
 
-	if(CONFIG(DRIVER_SOUND_CS35L53))
-		route_play_components(route);
-
-	res = route->source->play(route->source, msec, frequency);
+	res = route_play_components(route);
+	res |= route->source->play(route->source, msec, frequency);
 
 out:
 	res |= route_enable_components(route, 0);
