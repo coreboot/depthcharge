@@ -3,6 +3,7 @@
 tests-y += cmd-test
 tests-y += vars-test
 
+fastboot-test-common-config += CONFIG_KERNEL_SIZE=0x10000
 fastboot-test-common-config += CONFIG_UIP_MAX_TCP_MSS=1
 fastboot-test-common-config += CONFIG_UIP_DEFAULT_RECEIVE_WINDOW=1
 fastboot-test-common-config += CONFIG_UIP_DEFAULT_BUFSIZE=1
