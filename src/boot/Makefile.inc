@@ -13,6 +13,7 @@
 
 subdirs-y := zbi
 depthcharge-y += commandline.c payload.c
+depthcharge-$(CONFIG_ANDROID_MTE) += android_mte.c
 depthcharge-$(CONFIG_BOOTCONFIG) += bootconfig.c
 depthcharge-$(CONFIG_BOOTCONFIG) += android_bootconfig_params.c
 depthcharge-$(CONFIG_KERNEL_DUMMY) += dummy.c

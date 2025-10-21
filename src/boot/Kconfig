@@ -99,3 +99,12 @@ config ANDROID_PKVM_DRNG_SEED
 	  implementation. The seed is generated using TPM GetRandom and stored
 	  in system memory.
 	  This option can be temporarily disabled for bring up purposes.
+
+config ANDROID_MTE
+	bool "MTE bootloader support"
+	depends on ARCH_ARM_V8
+	default n
+	help
+	  By enabling this option, depthcharge reads MTE control values from the
+	  the kernel command line and misc partition and sets the relevant
+	  kernel cmdline accordingly.

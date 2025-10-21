@@ -27,6 +27,7 @@
 #include "base/gpt.h"
 #include "base/timestamp.h"
 #include "base/vpd_util.h"
+#include "boot/android_mte.h"
 #include "boot/android_pvmfw.h"
 #include "boot/commandline.h"
 #include "boot/multiboot.h"
@@ -345,6 +346,9 @@ void vboot_boot_kernel(struct vb2_kernel_params *kparams)
 	if (commandline_subst(bi.cmd_line, cmd_line_buf, sizeof(cmd_line_buf), &info))
 		return;
 	bi.cmd_line = cmd_line_buf;
+
+	if (CONFIG(ANDROID_MTE))
+		android_mte_setup(cmd_line_buf, sizeof(cmd_line_buf));
 
 	post_code(POST_CODE_CROSSYSTEM_SETUP);
 
