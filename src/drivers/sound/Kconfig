@@ -41,7 +41,7 @@ config DRIVER_SOUND_CS35L53_INTERNAL_BOOST
 config DRIVER_SOUND_CS35L53_LLRR
 	bool "Left,Left,Right,Right Channel setup for CS35L53 beep driver. Default is RRLL."
 	depends on DRIVER_SOUND_CS35L53
-        default n
+	default n
 
 config DRIVER_SOUND_CS35L56_SNDW
 	bool "CS35L56 codec driver"
