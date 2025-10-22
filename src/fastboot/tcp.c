@@ -448,15 +448,18 @@ static void fastboot_tcp_setup_serial_string(struct FastbootOps *fb, uip_ipaddr_
 
 struct FastbootOps *fastboot_setup_tcp(void)
 {
-	net_wait_for_link();
+	if (net_wait_for_link(false))
+		return NULL;
 
 	/* Set up the network stack */
 	uip_init();
 
 	uip_ipaddr_t my_ip, next_ip, server_ip;
 	const char *dhcp_bootfile;
-	while (dhcp_request(&next_ip, &server_ip, &dhcp_bootfile))
-		printf("Dhcp failed, retrying.\n");
+	if (dhcp_request(&next_ip, &server_ip, &dhcp_bootfile)) {
+		printf("Dhcp failed\n");
+		return NULL;
+	}
 	uip_gethostaddr(&my_ip);
 
 	fastboot_tcp_setup_serial_string(&tcp_session.fb_session, &my_ip);

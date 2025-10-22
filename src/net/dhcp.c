@@ -358,8 +358,8 @@ static void dhcp_callback(void)
 	dhcp_in_ready = 1;
 }
 
-static void dhcp_send_packet(struct uip_udp_conn *conn, const char *name,
-			     DhcpPacket *out, DhcpPacket *in)
+static int dhcp_send_packet(struct uip_udp_conn *conn, const char *name,
+			    DhcpPacket *out, DhcpPacket *in)
 {
 	// Send the outbound packet.
 	printf("Sending %s... ", name);
@@ -372,9 +372,10 @@ static void dhcp_send_packet(struct uip_udp_conn *conn, const char *name,
 	dhcp_out = out;
 	dhcp_in_ready = 0;
 
-	// Poll network driver until we get a reply. Resend periodically.
+	// Poll network driver for a reply. Try retransmission up to 2 times.
+	// Timeout if there is no reply after second retransmission.
 	net_set_callback(&dhcp_callback);
-	for (;;) {
+	for (int i = 0; i < 3; i++) {
 		uint64_t start = timer_us(0);
 		do {
 			net_poll();
@@ -386,7 +387,12 @@ static void dhcp_send_packet(struct uip_udp_conn *conn, const char *name,
 		uip_udp_packet_send(conn, out, sizeof(*out));
 	}
 	net_set_callback(NULL);
-	printf("done.\n");
+	if (dhcp_in_ready)
+		printf("done.\n");
+	else
+		printf("timed out.\n");
+
+	return !dhcp_in_ready;
 }
 
 static void dhcp_prep_packet(DhcpPacket *packet, uint32_t transaction_id)
@@ -476,7 +482,8 @@ int dhcp_request(uip_ipaddr_t *next_ip, uip_ipaddr_t *server_ip,
 	dhcp_add_option(&options, DhcpTagMaximumDhcpMessageSize,
 			&max_size, sizeof(max_size), &remaining);
 	dhcp_add_option(&options, DhcpTagEndOfList, NULL, 0, &remaining);
-	dhcp_send_packet(conn, "DHCP discover", &out, &in);
+	if (dhcp_send_packet(conn, "DHCP discover", &out, &in))
+		return 1;
 
 	// Extract the DHCP server id.
 	uint32_t server_id;
@@ -505,7 +512,8 @@ int dhcp_request(uip_ipaddr_t *next_ip, uip_ipaddr_t *server_ip,
 	dhcp_add_option(&options, DhcpTagServerIdentifier,
 			&server_id, sizeof(server_id), &remaining);
 	dhcp_add_option(&options, DhcpTagEndOfList, NULL, 0, &remaining);
-	dhcp_send_packet(conn, "DHCP request", &out, &in);
+	if (dhcp_send_packet(conn, "DHCP request", &out, &in))
+		return 1;
 
 	DhcpMessageType type;
 	if (dhcp_process_options(&in, OptionOverloadNone, &dhcp_get_type,

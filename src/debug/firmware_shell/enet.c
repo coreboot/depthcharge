@@ -22,7 +22,7 @@ static NetDevice *get_net_device(void)
 		ndev->ready(ndev, &ready);
 
 	if (!ready) {
-		net_wait_for_link();
+		net_wait_for_link(true);
 		ndev = net_get_device();
 	}
 

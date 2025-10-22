@@ -19,6 +19,7 @@
 #define __DRIVERS_NET_NET_H__
 
 #include <commonlib/list.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "net/uip.h"
@@ -54,7 +55,7 @@ void net_remove_device(NetDevice *dev);
 NetDevice *net_get_device(void);
 void net_poll(void);
 int net_send(void *buf, uint16_t len);
-void net_wait_for_link(void);
+int net_wait_for_link(bool loop);
 const uip_eth_addr *net_get_mac(void);
 
 extern struct list_node net_pollers;

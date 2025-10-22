@@ -63,7 +63,7 @@ static char cmd_line[4096] = "lsm.module_locking=0 cros_netboot_ramfs "
 void netboot(uip_ipaddr_t *tftp_ip, char *bootfile, char *argsfile, char *args,
 	     char *ramdiskfile)
 {
-	net_wait_for_link();
+	net_wait_for_link(true);
 
 	// Start up the network stack.
 	uip_init();

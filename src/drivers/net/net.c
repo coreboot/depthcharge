@@ -84,11 +84,12 @@ static int net_init_device(NetDevice *new_device)
 	return -1;
 }
 
-void net_wait_for_link(void)
+int net_wait_for_link(bool loop)
 {
-	printf("Waiting for link\n");
+	if (loop)
+		printf("Waiting for link\n");
 
-	while (1) {
+	do {
 		NetPoller *net_poller;
 		NetDevice *new_device;
 		int err;
@@ -118,10 +119,12 @@ void net_wait_for_link(void)
 				 */
 				mdelay(200);
 				printf("done.\n");
-				return;
+				return 0;
 			}
 		}
-	}
+	} while (loop);
+
+	return -1;
 }
 
 void net_poll(void)
