@@ -106,6 +106,14 @@ static void fastboot_handle_command(struct FastbootOps *fb, void *data,
 {
 	// "data" contains a command, which is essentially freeform text.
 	char *cmd = (char *)data;
+
+	if (len < FASTBOOT_MSG_MAX && len != 0)
+		printf("FB recv CMD: %.*s\n", (int)len, cmd);
+	else if (len != 0)
+		printf("FB recv CMD (%lld): %.*s...\n", len, FASTBOOT_MSG_MAX, cmd);
+	else
+		printf("FB recv zero length CMD\n");
+
 	for (int i = 0; fastboot_cmds[i].name != NULL; i++) {
 		fastboot_cmd_t *cur = &fastboot_cmds[i];
 		// See if the command's name matches.
