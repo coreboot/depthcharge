@@ -220,28 +220,25 @@ void fastboot(void)
 			     "(press ENTER or POWER to exit (wait up to 10s after press))");
 	}
 
-	if (CONFIG(FASTBOOT_USB_ALINK)) {
-		if (video_present) {
-			video_console_set_cursor(0, 2);
-			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for USB");
-		}
-		fb_session = fastboot_setup_usb();
-	}
+	while (fb_session == NULL) {
+		if (fastboot_exit_on_key())
+			return;
 
-	if (CONFIG(FASTBOOT_TCP) && fb_session == NULL) {
-		if (video_present) {
-			video_console_set_cursor(0, 2);
-			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for network");
+		if (CONFIG(FASTBOOT_USB_ALINK)) {
+			if (video_present) {
+				video_console_set_cursor(0, 2);
+				video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for USB");
+			}
+			fb_session = fastboot_setup_usb();
 		}
-		fb_session = fastboot_setup_tcp();
-	}
 
-	if (fb_session == NULL) {
-		if (video_present) {
-			video_console_set_cursor(0, 2);
-			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "No fastboot device");
+		if (CONFIG(FASTBOOT_TCP) && fb_session == NULL) {
+			if (video_present) {
+				video_console_set_cursor(0, 2);
+				video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for network");
+			}
+			fb_session = fastboot_setup_tcp();
 		}
-		return;
 	}
 
 	if (video_present) {
