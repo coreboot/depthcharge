@@ -17,9 +17,11 @@
 
 #include <libpayload.h>
 #include <stdlib.h>
+#include <vboot/ui.h>
 
 #include "die.h"
 #include "drivers/ec/cros/ec.h"
+#include "drivers/input/mkbp/buttons.h"
 #include "fastboot/cmd.h"
 #include "fastboot/fastboot.h"
 #include "fastboot/tcp.h"
@@ -191,10 +193,21 @@ void fastboot_reset_staging(struct FastbootOps *fb)
 	fb->memory_buffer_len = 0;
 }
 
+static bool fastboot_exit_on_key(void)
+{
+	uint32_t ch = ui_keyboard_read(NULL);
+
+	return ch == UI_KEY_ENTER || ch == UI_BUTTON_POWER_SHORT_PRESS;
+}
+
+/* Minimum time to poll before doing side tasks like checking key presses */
+#define FASTBOOT_MIN_POLL_TIME_US (300 * USECS_PER_MSEC)
+
 void fastboot(void)
 {
 	struct FastbootOps *fb_session = NULL;
 	enum fastboot_state final_state;
+	uint64_t timer_start;
 
 	/* TODO(b/370988331): Replace this with actual UI */
 	bool video_present = !video_init();
@@ -203,11 +216,13 @@ void fastboot(void)
 		/* Print red "Fastboot" on the top */
 		video_console_set_cursor(0, 0);
 		video_printf(1, 0, VIDEO_PRINTF_ALIGN_LEFT, "Fastboot\n");
+		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT,
+			     "(press ENTER or POWER to exit (wait up to 10s after press))");
 	}
 
 	if (CONFIG(FASTBOOT_USB_ALINK)) {
 		if (video_present) {
-			video_console_set_cursor(0, 1);
+			video_console_set_cursor(0, 2);
 			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for USB");
 		}
 		fb_session = fastboot_setup_usb();
@@ -215,7 +230,7 @@ void fastboot(void)
 
 	if (CONFIG(FASTBOOT_TCP) && fb_session == NULL) {
 		if (video_present) {
-			video_console_set_cursor(0, 1);
+			video_console_set_cursor(0, 2);
 			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for network");
 		}
 		fb_session = fastboot_setup_tcp();
@@ -223,14 +238,14 @@ void fastboot(void)
 
 	if (fb_session == NULL) {
 		if (video_present) {
-			video_console_set_cursor(0, 1);
+			video_console_set_cursor(0, 2);
 			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "No fastboot device");
 		}
 		return;
 	}
 
 	if (video_present) {
-		video_console_set_cursor(0, 1);
+		video_console_set_cursor(0, 2);
 		switch (fb_session->type) {
 		case FASTBOOT_TCP_CONN:
 			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Network connected");
@@ -239,7 +254,7 @@ void fastboot(void)
 			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "USB connected");
 			break;
 		}
-		video_console_set_cursor(0, 2);
+		video_console_set_cursor(0, 3);
 		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, fb_session->serial);
 	}
 
@@ -250,8 +265,17 @@ void fastboot(void)
 	fastboot_reset_session(fb_session);
 
 	printf("fastboot starting.\n");
-	while (!fastboot_is_finished(fb_session))
+	timer_start = timer_us(0);
+	while (!fastboot_is_finished(fb_session)) {
 		fb_session->poll(fb_session);
+
+		/* Don't do too much of other things to ensure fastboot is fast */
+		if (timer_us(timer_start) < FASTBOOT_MIN_POLL_TIME_US)
+			continue;
+		timer_start = timer_us(0);
+		if (fastboot_exit_on_key())
+			break;
+	}
 
 	printf("fastboot done.\n");
 	final_state = fb_session->state;
