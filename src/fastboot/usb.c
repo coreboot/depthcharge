@@ -155,7 +155,8 @@ static int usb_fastboot_probe(GenericUsbDevice *dev)
 	if (!(dd->idVendor == PL27A1_VID && dd->idProduct == PL27A1_PID) &&
 	    !(dd->idVendor == GOOGLE_VID && (dd->idProduct == ALINK_CABLE_PID ||
 					     dd->idProduct == ALINK_DONGLE_PID ||
-					     dd->idProduct == ALINKQ_DONGLE_PID)))
+					     dd->idProduct == ALINKQ_DONGLE_PID ||
+					     dd->idProduct == PL27A1_PID)))
 		return 0;
 
 	usb_fb_dev = xzalloc(sizeof(UsbFastbootDevice));
