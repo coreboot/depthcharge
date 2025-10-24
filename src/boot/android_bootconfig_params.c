@@ -28,6 +28,19 @@ static int append_hwid(struct bootconfig *bc)
 	return bootconfig_append(bc, HWID_KEY_STR, hwid);
 }
 
+#define MAX_VPD_BUFFER_SIZE 1024U
+
+static int append_vpd(struct bootconfig *bc, const char *vpd_key,
+		      const char *config_key) {
+	char buffer[MAX_VPD_BUFFER_SIZE];
+
+	if (!vpd_gets(vpd_key, buffer, sizeof(buffer))) {
+		printf("%s not found in VPD\n", vpd_key);
+		return -1;
+	}
+	return bootconfig_append(bc, config_key, buffer);
+}
+
 #define SERIAL_NUM_KEY_STR "androidboot.serialno"
 #define MAX_SERIAL_NUM_LENGTH CB_MAX_SERIALNO_LENGTH
 
@@ -147,14 +160,18 @@ static int append_bootloader_version(struct bootconfig *bc)
 	return bootconfig_append(bc, BOOTLOADER_VERSION_KEY_STR, version_str);
 }
 
+#define MFG_SKU_ID_VPD_KEY "mfg_sku_id"
+#define MFG_SKU_ID_CONFIG_KEY "androidboot.product.hardware.sku"
+
 int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_params *kp)
 {
-	return append_hwid(bc) ||
-	       append_serial_num(bc, kp) ||
-	       append_display_orientation(bc, kp) ||
-	       append_skuid(bc) ||
-	       append_boot_part_uuid(bc, kp) ||
-	       append_boot_source(bc, kp) ||
+	return append_hwid(bc) |
+	       append_vpd(bc, MFG_SKU_ID_VPD_KEY, MFG_SKU_ID_CONFIG_KEY) |
+	       append_serial_num(bc, kp) |
+	       append_display_orientation(bc, kp) |
+	       append_skuid(bc) |
+	       append_boot_part_uuid(bc, kp) |
+	       append_boot_source(bc, kp) |
 	       append_bootloader_version(bc);
 }
 
