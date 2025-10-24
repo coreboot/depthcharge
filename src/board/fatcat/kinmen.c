@@ -71,7 +71,7 @@ void board_tps6699x_register(void)
 	list_insert_after(&tps6699x_info.list_node, &ec_aux_fw_chip_list);
 }
 
-void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path)
+void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path,
 				    int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
 	*image_path = "tps6699x_GOOG0700.bin";
