@@ -487,20 +487,50 @@ static void more_keys(void)
 			bool key_added = true;
 
 			switch (code) {
+			case 0x37:
+				add_key('*');
+				break;
+			case 0x47 ... 0x49: // '7', '8', '9'
+				add_key(code - 0x47 + '7');
+				break;
+			case 0x4A:
+				add_key('-');
+				break;
+			case 0x4B ... 0x4D: // '4', '5', '6'
+				add_key(code - 0x4B + '4');
+				break;
+			case 0x4E:
+				add_key('+');
+				break;
+			case 0x4F ... 0x51: // '1', '2', '3'
+				add_key(code - 0x4F +'1');
+				break;
+			case 0x52:
+				add_key('0');
+				break;
+			case 0x53:
+				add_key('.');
+				break;
 			case 0x60:
 				add_key(PADENTER);
 				break;
-			case 0x6a:
-				add_key(KEY_RIGHT);
-				break;
-			case 0x6c:
-				add_key(KEY_DOWN);
+			case 0x62:
+				add_key('/');
 				break;
 			case 0x67:
 				add_key(KEY_UP);
 				break;
 			case 0x69:
 				add_key(KEY_LEFT);
+				break;
+			case 0x6A:
+				add_key(KEY_RIGHT);
+				break;
+			case 0x6C:
+				add_key(KEY_DOWN);
+				break;
+			case 0x6F: // KEY_DELETE
+				add_key('\x7F'); // ASCII Delete
 				break;
 			case MKBP_BUTTON_VOL_DOWN_SHORT_PRESS:
 			case MKBP_BUTTON_VOL_UP_SHORT_PRESS:
@@ -515,9 +545,8 @@ static void more_keys(void)
 				break;
 			}
 
-			// Make sure the next check will prevent us from
-			// recognizing this key twice.
-			assert(code >= MkbpLayoutSize || !key_added);
+			if (key_added)
+				continue;
 
 			// Ignore the scancode if it's a modifier or too big.
 			if (code == 0x1d || code == 0x61 ||
