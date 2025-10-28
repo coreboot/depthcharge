@@ -12,6 +12,7 @@
 #include "boot/android_bootconfig_params.h"
 #include "boot/bootconfig.h"
 #include "drivers/storage/blockdev.h"
+#include "vboot/firmware_id.h"
 
 #define HWID_KEY_STR "androidboot.product.hardware.id"
 
@@ -121,6 +122,31 @@ static int append_boot_source(struct bootconfig *bc, struct vb2_kernel_params *k
 				 BOOT_SOURCE_VALUE_INTERNAL_STR);
 }
 
+#define BOOTLOADER_VERSION_KEY_STR "androidboot.bootloader"
+#define BOOTLOADER_VERSION_PATTERN "depthcharge-%s/%s"
+/* FWID is 256 bytes - to be safe, double the size of 2 FWIDs */
+#define MAX_BOOTLOADER_VERSION_LENGTH 1024
+
+static int append_bootloader_version(struct bootconfig *bc)
+{
+	char version_str[MAX_BOOTLOADER_VERSION_LENGTH];
+	const char *fwid;
+	const char *ro_fwid;
+	int ret;
+
+	fwid = get_active_fw_id();
+	ro_fwid = get_ro_fw_id();
+
+	ret = snprintf(version_str, sizeof(version_str),
+		       BOOTLOADER_VERSION_PATTERN, ro_fwid, fwid);
+	if (ret <= 0 || ret >= sizeof(version_str)) {
+		printf("Failed to snprintf the message, ret:%d\n", ret);
+		return ret;
+	}
+
+	return bootconfig_append(bc, BOOTLOADER_VERSION_KEY_STR, version_str);
+}
+
 int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_params *kp)
 {
 	return append_hwid(bc) ||
@@ -128,7 +154,8 @@ int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_pa
 	       append_display_orientation(bc, kp) ||
 	       append_skuid(bc) ||
 	       append_boot_part_uuid(bc, kp) ||
-	       append_boot_source(bc, kp);
+	       append_boot_source(bc, kp) ||
+	       append_bootloader_version(bc);
 }
 
 int append_android_bootconfig_boottime(struct boot_info *bi)
