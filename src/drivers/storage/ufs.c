@@ -537,30 +537,17 @@ static int ufs_scsi_unit_rdy(UfsCtlr *ufs, uint32_t lun)
 	return ufs_scsi_command(ufs, &req);
 }
 
-static int ufs_scsi_tfr(UfsDevice *ufs_dev, uint8_t *buf, uint32_t lba,
-			uint32_t blocks, bool read)
+static int ufs_scsi_tfr_block(UfsDevice *ufs_dev, void *buf, lba_t lba, lba_t blocks, bool read)
 {
-	int rc;
-	struct bounce_buffer bbstate;
-
-	// Maximum size of transfer supported by SCSI READ (10) / WRITE (10).
-	// PRDT memory allocation size is also based on this limit.
-	// UFS block size is at least 4096 so this limit means a maximum
-	// transfer size of 262140 KiB (slightly under 256 MiB).
-	if (blocks > 65535)
+	if (lba + blocks > UINT32_MAX || blocks > UINT16_MAX) {
+		printf("Invalid UFS tfr_block parameters: lba=%llu, blocks=%llu", lba, blocks);
 		return UFS_EINVAL;
-
-	rc = bounce_buffer_start(&bbstate, buf, blocks * ufs_dev->dev.block_size,
-				 read ? GEN_BB_WRITE : GEN_BB_READ);
-	if (rc) {
-		printf("%s: error: Failed to allocate bounce buffer.\n", __func__);
-		return UFS_ENOMEM;
 	}
 
 	UfsCmdReq req = {
 		.lun = ufs_dev->lun,
 		.expected_len = blocks * ufs_dev->dev.block_size,
-		.data_buf_phy = virt_to_phys(bbstate.bounce_buffer),
+		.data_buf_phy = virt_to_phys(buf),
 		.cdb = {
 			[2] = lba >> 24,
 			[3] = lba >> 16,
@@ -576,16 +563,45 @@ static int ufs_scsi_tfr(UfsDevice *ufs_dev, uint8_t *buf, uint32_t lba,
 	if (read) {
 		req.cdb[0] = SCSI_CMD_READ10;
 		req.cdb[1] = SCSI_FLAG_FUA;
-		req.flags  = UFS_XFER_FLAGS_READ;
+		req.flags = UFS_XFER_FLAGS_READ;
 	} else {
 		req.cdb[0] = SCSI_CMD_WRITE10;
 		// Use FUA to avoid write cache because we never flush the cache
 		req.cdb[1] = SCSI_FLAG_FUA;
-		req.flags  = UFS_XFER_FLAGS_WRITE;
+		req.flags = UFS_XFER_FLAGS_WRITE;
 	}
 
-	rc = ufs_scsi_command(ufs_dev->ufs, &req);
-	bounce_buffer_stop(&bbstate);
+	return ufs_scsi_command(ufs_dev->ufs, &req);
+}
+
+static int ufs_scsi_tfr(UfsDevice *ufs_dev, void *buf, lba_t lba, lba_t total_blocks, bool read)
+{
+	int rc = 0;
+	lba_t blocks;
+	struct bounce_buffer bbstate;
+
+	while (total_blocks > 0) {
+		blocks = MIN(UFS_MAX_BOUNCE_BUFFER_BYTES / ufs_dev->dev.block_size,
+			     total_blocks);
+
+		rc = bounce_buffer_start(&bbstate, buf, blocks * ufs_dev->dev.block_size,
+					 read ? GEN_BB_WRITE : GEN_BB_READ);
+		if (rc) {
+			printf("%s: error: Failed to allocate bounce buffer.\n", __func__);
+			return UFS_ENOMEM;
+		}
+
+		rc = ufs_scsi_tfr_block(ufs_dev, bbstate.bounce_buffer, lba, blocks, read);
+
+		bounce_buffer_stop(&bbstate);
+
+		if (rc)
+			break;
+
+		total_blocks -= blocks;
+		lba += blocks;
+		buf += blocks * ufs_dev->dev.block_size;
+	}
 
 	return rc;
 }

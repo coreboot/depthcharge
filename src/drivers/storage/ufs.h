@@ -485,6 +485,8 @@ typedef enum {
 #define UFS_MEM_SZ			(UFS_REQ_LIST_SZ + UFS_UCD_SZ)
 // UFSHCI requires 1KB alignment for Request List
 #define UFS_DMA_ALIGN			1024
+// Maximum number of bytes allocated in the bounce buffer
+#define UFS_MAX_BOUNCE_BUFFER_BYTES	(16 * MiB)
 
 // Maximum number of LUNs (excluding Well-Known LUNs)
 #define MAX_LUN				32
