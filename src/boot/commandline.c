@@ -16,7 +16,9 @@
  */
 
 #include <commonlib/list.h>
+#include <ctype.h>
 #include <libpayload.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "boot/commandline.h"
@@ -203,5 +205,81 @@ int commandline_subst(const char *src, char *dest, size_t dest_size,
 	*dest = '\0';
 	printf("Modified kernel command line: %s\n", dest_start);
 
+	return 0;
+}
+
+static const char *get_cmdline_value(const char *cmdline, const char *key)
+{
+	const char *pos = cmdline;
+	size_t key_len;
+
+	if (!cmdline || !key)
+		return NULL;
+
+	key_len = strlen(key);
+
+	while (*pos) {
+		/* Find the start of the next argument */
+		while (isspace(*pos))
+			pos++;
+		if (!*pos)
+			break;
+
+		/* Check if the current argument matches the key */
+		if (strncmp(pos, key, key_len) == 0 && pos[key_len] == '=')
+			return pos + key_len + 1;
+
+		/* Move to the next argument */
+		bool in_quote = false;
+		while (*pos && (in_quote || !isspace(*pos))) {
+			if (*pos == '"')
+				in_quote = !in_quote;
+			pos++;
+		}
+	}
+
+	return NULL;
+}
+
+int get_cmdline_uint32_value(const char *cmdline, const char *key, uint32_t *out)
+{
+	const char *value_start = get_cmdline_value(cmdline, key);
+	unsigned long val;
+	char *endptr;
+	bool quoted = false;
+
+	if (out == NULL)
+		return -1; /* Invalid output pointer */
+
+	if (value_start == NULL)
+		return -1;
+
+	if (*value_start == '"') {
+		quoted = true;
+		value_start++; /* Skip opening quote */
+	}
+
+	val = strtoul(value_start, &endptr, 0);
+
+	/* If no characters were converted */
+	if (value_start == endptr)
+		return -1;
+
+	if (quoted) {
+		/* If it was quoted, endptr must point to the closing quote */
+		if (*endptr != '"')
+			return -1;
+		endptr++; /* Move past the closing quote */
+	}
+
+	/* After the value, it must be end of string or whitespace */
+	if (*endptr != '\0' && !isspace(*endptr))
+		return -1;
+
+	/* Check for overflow */
+	if (val > UINT32_MAX)
+		return -1;
+
+	*out = (uint32_t)val;
 	return 0;
 }

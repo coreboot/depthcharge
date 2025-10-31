@@ -18,8 +18,9 @@
 #ifndef __BOOT_COMMANDLINE_H__
 #define __BOOT_COMMANDLINE_H__
 
-#include <stdint.h>
+#include "boot/commandline.h"
 #include <stddef.h>
+#include <stdint.h>
 
 struct commandline_info {
 	int devnum;
@@ -33,5 +34,16 @@ int commandline_subst(const char *src, char *dest, size_t dest_size,
 
 /* Append a command line parameter to the end of the command line. */
 void commandline_append(const char *param);
+
+
+/*
+ * Get the unsigned integer value of a command line parameter.
+ *
+ * @param cmdline	The command line string to parse.
+ * @param key		The key of the parameter to find.
+ * @param out		Pointer to a uint32_t to store the value.
+ * @return		0 on success, -1 if not found or invalid.
+ */
+int get_cmdline_uint32_value(const char *cmdline, const char *key, uint32_t *out);
 
 #endif /* __BOOT_COMMAND_LINE_H__ */
