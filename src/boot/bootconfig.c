@@ -96,11 +96,21 @@ exit:
 
 int bootconfig_append(struct bootconfig *bc, const char *key, const char *value)
 {
+	const char *forbidden_separators = ";#}'\"\n";
 	char *end;
 	int len;
 	size_t space;
 
 	assert(bc != NULL && key != NULL && value != NULL);
+
+	/* Exit early if the value contains any of the forbidden characters */
+	len = strcspn(value, forbidden_separators);
+	if (len != strlen(value)) {
+		printf("Forbidden character \" %c \" found, \
+			skip appending:\nkey=%s value=%s\n",
+			value[len], key, value);
+		return -1;
+	}
 
 	/* Add parameters at the end */
 	space = bc->limit - bc->size;

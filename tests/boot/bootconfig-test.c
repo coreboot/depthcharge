@@ -46,6 +46,18 @@ static void test_bootconfig_params_validation(void **state)
 	assert_int_equal(bootconfig_append_params(&bc, init_params, strlen(init_params)), -1);
 	assert_int_equal(bootconfig_append_cmdline(&bc, "too long"), -1);
 	assert_int_equal(bootconfig_append(&bc, "too", "long"), -1);
+
+	/* Forbidden character found in bootconfig key value */
+	assert_int_equal(bootconfig_append(&bc, "androidboot.test",
+			 "value\""), -1);
+	assert_int_equal(bootconfig_append(&bc, "androidboot.test",
+			 "value; init=test123"), -1);
+	assert_int_equal(bootconfig_append(&bc, "androidboot.test",
+			 "val#ue"), -1);
+	assert_int_equal(bootconfig_append(&bc, "androidboot.test",
+			 "}value"), -1);
+	assert_int_equal(bootconfig_append(&bc, "androidboot.test",
+			 "va\nlue"), -1);
 }
 
 static void test_bootconfig_unmatched_quote(void **state)
