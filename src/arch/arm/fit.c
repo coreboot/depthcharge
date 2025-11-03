@@ -74,7 +74,8 @@ static FitImageNode *construct_kernel_fit_image_node(void *kernel, size_t kernel
 	image->name = KERNEL_IMG_NAME;
 	image->data = kernel;
 	image->size = kernel_size;
-	image->compression = CompressionLz4;
+	/* TODO(b/457429470): Switch to LZ4 compression once it is supported */
+	image->compression = CompressionNone;
 	return image;
 }
 
