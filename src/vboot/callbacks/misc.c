@@ -21,6 +21,7 @@
 #include <vb2_api.h>
 
 #include "base/android_misc.h"
+#include "boot/android_mte.h"
 #include "debug/dev.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/flash/flash.h"
@@ -140,6 +141,9 @@ vb2_error_t vb2ex_handle_android_misc_partition(struct vb2_context *ctx,
 		}
 		break;
 	}
+
+	if (CONFIG(ANDROID_MTE))
+		android_mte_get_misc_ctrl(bdev, gpt);
 
 	return VB2_SUCCESS;
 }

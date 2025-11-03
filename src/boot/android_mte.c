@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
+#include "base/android_misc.h"
 #include "boot/android_mte.h"
 #include "boot/commandline.h"
 
@@ -45,6 +47,9 @@ struct mte_ctrl {
 		uint16_t raw;
 	};
 };
+
+static bool misc_ctrl_inited;
+static struct mte_ctrl misc_ctrl;
 
 static int append_mte_params_to_cmdline(char *cmdline_buf, size_t size,
 					const struct mte_ctrl *ctrl)
@@ -100,6 +105,22 @@ static int append_mte_params_to_cmdline(char *cmdline_buf, size_t size,
 	return 0;
 }
 
+static void apply_misc_mte_ctrl(struct mte_ctrl *ctrl)
+{
+	if (!misc_ctrl_inited) {
+		printf("%s: No valid MTE control from misc partition\n", __func__);
+		return;
+	}
+
+	ctrl->mte = misc_ctrl.mte || misc_ctrl.mte_once;
+	ctrl->kasan = misc_ctrl.kasan || misc_ctrl.kasan_once;
+
+	if (misc_ctrl.kasan_mode != KASAN_MODE_NOT_SET)
+		ctrl->kasan_mode = misc_ctrl.kasan_mode;
+	if (misc_ctrl.kasan_fault != KASAN_FAULT_NOT_SET)
+		ctrl->kasan_fault = misc_ctrl.kasan_fault;
+}
+
 int android_mte_setup(char *cmdline_buf, size_t size)
 {
 	struct mte_ctrl ctrl;
@@ -114,5 +135,44 @@ int android_mte_setup(char *cmdline_buf, size_t size)
 		ctrl.raw = 0;
 	}
 
+	apply_misc_mte_ctrl(&ctrl);
+
 	return append_mte_params_to_cmdline(cmdline_buf, size, &ctrl);
+}
+
+void android_mte_get_misc_ctrl(BlockDev *bdev, GptData *gpt)
+{
+	struct misc_system_space space;
+	struct misc_memtag_message *msg;
+	uint32_t memtag_mode;
+
+	misc_ctrl_inited = false;
+
+	if (android_misc_system_space_read(bdev, gpt, &space))
+		return;
+
+	msg = &space.memtag_message;
+
+	if (!msg->version || msg->magic != ANDROID_MISC_MEMTAG_MAGIC) {
+		printf("%s: Invalid memtag message data\n", __func__);
+		return;
+	}
+
+	memtag_mode = msg->memtag_mode;
+	misc_ctrl.raw = (uint16_t)msg->memtag_mode;
+	printf("%s: memtag_mode %#x\n", __func__, memtag_mode);
+
+	/*
+	 * According to https://source.android.com/docs/security/test/memory-safety/bootloader-support,
+	 * bootloader MUST clear MISC_MEMTAG_MODE_MEMTAG_ONCE and
+	 * MISC_MEMTAG_MODE_MEMTAG_KERNEL_ONCE on every boot.
+	 * */
+	memtag_mode &= ~(ANDROID_MISC_MEMTAG_MODE_MEMTAG_ONCE |
+			 ANDROID_MISC_MEMTAG_MODE_MEMTAG_KERNEL_ONCE);
+
+	if (memtag_mode != msg->memtag_mode) {
+		msg->memtag_mode = memtag_mode;
+		android_misc_system_space_write(bdev, gpt, &space);
+	}
+	misc_ctrl_inited = true;
 }
