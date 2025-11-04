@@ -200,107 +200,50 @@ void uip_log(char *msg);
 #define UIP_LOG(m)
 #endif /* CONFIG_UIP_LOGGING */
 
-#if !UIP_ARCH_ADD32
 void
 uip_add32(uint8_t *op32, uint16_t op16)
 {
-  uip_acc32[3] = op32[3] + (op16 & 0xff);
-  uip_acc32[2] = op32[2] + (op16 >> 8);
-  uip_acc32[1] = op32[1];
-  uip_acc32[0] = op32[0];
-  
-  if(uip_acc32[2] < (op16 >> 8)) {
-    ++uip_acc32[1];
-    if(uip_acc32[1] == 0) {
-      ++uip_acc32[0];
-    }
-  }
-  
-  
-  if(uip_acc32[3] < (op16 & 0xff)) {
-    ++uip_acc32[2];
-    if(uip_acc32[2] == 0) {
-      ++uip_acc32[1];
-      if(uip_acc32[1] == 0) {
-	++uip_acc32[0];
-      }
-    }
-  }
+	be32enc(uip_acc32, be32dec(op32) + op16);
 }
 
-#endif /* UIP_ARCH_ADD32 */
-
-#if !UIP_ARCH_CHKSUM
-/*---------------------------------------------------------------------------*/
-static uint16_t
-chksum(uint16_t sum, const uint8_t *data, uint16_t len)
-{
-  uint16_t t;
-  const uint8_t *dataptr;
-  const uint8_t *last_byte;
-
-  dataptr = data;
-  last_byte = data + len - 1;
-  
-  while(dataptr < last_byte) {	/* At least two more bytes */
-    t = (dataptr[0] << 8) + dataptr[1];
-    sum += t;
-    if(sum < t) {
-      sum++;		/* carry */
-    }
-    dataptr += 2;
-  }
-  
-  if(dataptr == last_byte) {
-    t = (dataptr[0] << 8) + 0;
-    sum += t;
-    if(sum < t) {
-      sum++;		/* carry */
-    }
-  }
-
-  /* Return sum in host byte order. */
-  return sum;
-}
 /*---------------------------------------------------------------------------*/
 uint16_t
 uip_chksum(uint16_t *data, uint16_t len)
 {
-  return uip_htons(chksum(0, (uint8_t *)data, len));
+	return ~ipchksum(data, len);
 }
 /*---------------------------------------------------------------------------*/
-#ifndef UIP_ARCH_IPCHKSUM
 uint16_t
 uip_ipchksum(void)
 {
-  uint16_t sum;
-
-  sum = chksum(0, &uip_buf[CONFIG_UIP_LLH_LEN], UIP_IPH_LEN);
-  DEBUG_PRINTF("uip_ipchksum: sum 0x%04x\n", sum);
-  return (sum == 0) ? 0xffff : uip_htons(sum);
+	return ~ipchksum(&uip_buf[CONFIG_UIP_LLH_LEN], UIP_IPH_LEN);
 }
-#endif
+
 /*---------------------------------------------------------------------------*/
 static uint16_t
 upper_layer_chksum(uint8_t proto)
 {
-  uint16_t upper_layer_len;
-  uint16_t sum;
-  
-  upper_layer_len = (((uint16_t)(BUF->len[0]) << 8) + BUF->len[1]) - UIP_IPH_LEN;
-  
-  /* First sum pseudoheader. */
-  
-  /* IP protocol and length fields. This addition cannot carry. */
-  sum = upper_layer_len + proto;
-  /* Sum IP source and destination addresses. */
-  sum = chksum(sum, (uint8_t *)&BUF->srcipaddr, 2 * sizeof(uip_ipaddr_t));
+	struct uip_tcpip_hdr *hdr = (struct uip_tcpip_hdr *)&uip_buf[CONFIG_UIP_LLH_LEN];
+	uint16_t upper_layer_len;
+	uint16_t sum1;
+	uint16_t sum2;
 
-  /* Sum TCP header and data. */
-  sum = chksum(sum, &uip_buf[UIP_IPH_LEN + CONFIG_UIP_LLH_LEN],
-	       upper_layer_len);
-    
-  return (sum == 0) ? 0xffff : uip_htons(sum);
+	upper_layer_len = (((uint16_t)(hdr->len[0]) << 8) + hdr->len[1]) - UIP_IPH_LEN;
+
+	/* First sum pseudoheader. */
+
+	/* IP protocol and length fields. This addition cannot carry. */
+	sum1 = ~(htobe16(upper_layer_len + proto));
+	/* Sum IP source and destination addresses. */
+	sum2 = ipchksum((uint8_t *)&hdr->srcipaddr, 2 * sizeof(uip_ipaddr_t));
+
+	sum1 = ipchksum_add(0, sum1, sum2);
+
+	/* Sum TCP header and data. */
+	sum2 = ipchksum(&uip_buf[UIP_IPH_LEN + CONFIG_UIP_LLH_LEN], upper_layer_len);
+
+	sum1 = ipchksum_add(0, sum1, sum2);
+	return ~sum1;
 }
 /*---------------------------------------------------------------------------*/
 uint16_t
@@ -314,7 +257,7 @@ uip_udpchksum(void)
 {
   return upper_layer_chksum(UIP_PROTO_UDP);
 }
-#endif /* UIP_ARCH_CHKSUM */
+
 /*---------------------------------------------------------------------------*/
 void
 uip_init(void)
