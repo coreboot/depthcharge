@@ -121,21 +121,39 @@ static void apply_misc_mte_ctrl(struct mte_ctrl *ctrl)
 		ctrl->kasan_fault = misc_ctrl.kasan_fault;
 }
 
+static void apply_min_mte_ctrl(struct mte_ctrl *ctrl, const struct mte_ctrl *min)
+{
+	ctrl->mte |= min->mte;
+	ctrl->kasan |= min->kasan;
+
+	/* Force MTE off if mte_off is set in `min`. */
+	if (min->mte_off)
+		ctrl->mte = 0;
+
+	if (min->kasan_mode > ctrl->kasan_mode)
+		ctrl->kasan_mode = min->kasan_mode;
+	if (min->kasan_fault > ctrl->kasan_fault)
+		ctrl->kasan_fault = min->kasan_fault;
+}
+
 int android_mte_setup(char *cmdline_buf, size_t size)
 {
-	struct mte_ctrl ctrl;
+	struct mte_ctrl ctrl, min;
 	uint32_t cmdline_value;
 
 	if (!get_cmdline_uint32_value(cmdline_buf, MTE_CMDLINE_CTRL, &cmdline_value)) {
 		printf("%s: cmdline_value %#x\n", __func__, cmdline_value);
 		ctrl.raw = cmdline_value & 0xFFFF;
+		min.raw = (cmdline_value & 0xFFFF0000) >> 16;
 	} else {
 		printf("%s: Cannot get cmdline %s; using 0 to disable MTE\n",
 		       __func__, MTE_CMDLINE_CTRL);
 		ctrl.raw = 0;
+		min.raw = 0;
 	}
 
 	apply_misc_mte_ctrl(&ctrl);
+	apply_min_mte_ctrl(&ctrl, &min);
 
 	return append_mte_params_to_cmdline(cmdline_buf, size, &ctrl);
 }
