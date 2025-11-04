@@ -333,12 +333,9 @@ void vboot_boot_kernel(struct vb2_kernel_params *kparams)
 		.external_gpt = bdev->external_gpt,
 	};
 
-	if (bi.cmd_line) {
-		if (commandline_subst(bi.cmd_line, cmd_line_buf,
-				      sizeof(cmd_line_buf), &info))
-			return;
-		bi.cmd_line = cmd_line_buf;
-	}
+	if (commandline_subst(bi.cmd_line, cmd_line_buf, sizeof(cmd_line_buf), &info))
+		return;
+	bi.cmd_line = cmd_line_buf;
 
 	post_code(POST_CODE_CROSSYSTEM_SETUP);
 
