@@ -41,31 +41,6 @@ static int append_hw_descr(struct bootconfig *bc)
 	return append_vpd(bc, HW_DESCR_VPD_KEY, HW_DESCR_CONFIG_KEY);
 }
 
-#define SERIAL_NUM_KEY_STR "androidboot.serialno"
-#define MAX_SERIAL_NUM_LENGTH CB_MAX_SERIALNO_LENGTH
-
-static int append_serial_num(struct bootconfig *bc, struct vb2_kernel_params *kp)
-{
-	u32 size, offset_unused;
-	const void *buffer = vpd_find("serial_number", NULL, &offset_unused, &size);
-	if (!buffer) {
-		printf("No serial number in vpd\n");
-		return 0;
-	}
-
-	char *scratch = malloc(size + 1);
-	if (!scratch)
-		return -1;
-
-	memcpy(scratch, buffer, size);
-	scratch[size] = '\0';
-	int ret = bootconfig_append(bc, SERIAL_NUM_KEY_STR, scratch);
-
-	free(scratch);
-
-	return ret;
-}
-
 #define DISPLAY_ORIENTATION_KEY_STR "androidboot.surface_flinger.primary_display_orientation"
 #define MAX_DISPLAY_ORIENTATION_LENGTH sizeof("ORIENTATION_xxx")
 
@@ -163,14 +138,17 @@ static int append_bootloader_version(struct bootconfig *bc)
 #define MFG_SKU_ID_VPD_KEY "mfg_sku_id"
 #define MFG_SKU_ID_CONFIG_KEY "androidboot.product.hardware.sku"
 
+#define SERIAL_NUM_VPD_KEY "serial_number"
+#define SERIAL_NUM_CONFIG_KEY "androidboot.serialno"
+
 int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_params *kp)
 {
-	return append_hw_descr(bc) |
+	return append_boot_part_uuid(bc, kp) |
+	       append_hw_descr(bc) |
 	       append_vpd(bc, MFG_SKU_ID_VPD_KEY, MFG_SKU_ID_CONFIG_KEY) |
-	       append_serial_num(bc, kp) |
+	       append_vpd(bc, SERIAL_NUM_VPD_KEY, SERIAL_NUM_CONFIG_KEY) |
 	       append_display_orientation(bc, kp) |
 	       append_skuid(bc) |
-	       append_boot_part_uuid(bc, kp) |
 	       append_boot_source(bc, kp) |
 	       append_bootloader_version(bc);
 }
