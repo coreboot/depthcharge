@@ -14,20 +14,6 @@
 #include "drivers/storage/blockdev.h"
 #include "vboot/firmware_id.h"
 
-#define HWID_KEY_STR "androidboot.product.hardware.id"
-
-static int append_hwid(struct bootconfig *bc)
-{
-	char hwid[VB2_GBB_HWID_MAX_SIZE];
-	uint32_t hwid_size = sizeof(hwid);
-
-	if (vb2api_gbb_read_hwid(vboot_get_context(), hwid, &hwid_size)) {
-		printf("Failed to read HWID in GBB\n");
-		return -1;
-	}
-	return bootconfig_append(bc, HWID_KEY_STR, hwid);
-}
-
 #define MAX_VPD_BUFFER_SIZE 1024U
 
 static int append_vpd(struct bootconfig *bc, const char *vpd_key,
@@ -39,6 +25,20 @@ static int append_vpd(struct bootconfig *bc, const char *vpd_key,
 		return -1;
 	}
 	return bootconfig_append(bc, config_key, buffer);
+}
+
+#define HW_DESCR_VPD_KEY "mfg_sku_id"
+#define HW_DESCR_CONFIG_KEY "androidboot.product.hardware.id"
+
+static int append_hw_descr(struct bootconfig *bc)
+{
+	char hwid[VB2_GBB_HWID_MAX_SIZE];
+	uint32_t hwid_size = sizeof(hwid);
+
+	if (!vb2api_gbb_read_hwid(vboot_get_context(), hwid, &hwid_size))
+		return bootconfig_append(bc, HW_DESCR_CONFIG_KEY, hwid);
+
+	return append_vpd(bc, HW_DESCR_VPD_KEY, HW_DESCR_CONFIG_KEY);
 }
 
 #define SERIAL_NUM_KEY_STR "androidboot.serialno"
@@ -165,7 +165,7 @@ static int append_bootloader_version(struct bootconfig *bc)
 
 int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_params *kp)
 {
-	return append_hwid(bc) |
+	return append_hw_descr(bc) |
 	       append_vpd(bc, MFG_SKU_ID_VPD_KEY, MFG_SKU_ID_CONFIG_KEY) |
 	       append_serial_num(bc, kp) |
 	       append_display_orientation(bc, kp) |
