@@ -74,9 +74,18 @@ static void usb_fastboot_release(struct FastbootOps *fb)
 	}
 }
 
+/*
+ * TODO(b/448577778): If there is no data, usb bulk read will block for 5s. Disable ALink
+ *                    polling when usb_poll() isn't called from fastboot context (e.g. it was
+ *                    called to check usb keyboard state).
+ */
+static bool fastboot_poll_in_progress = false;
+
 static void usb_fastboot_poll(struct FastbootOps *fb)
 {
+	fastboot_poll_in_progress = true;
 	usb_poll();
+	fastboot_poll_in_progress = false;
 }
 
 static void usb_fastboot_dev_poll(usbdev_t *dev)
@@ -85,6 +94,9 @@ static void usb_fastboot_dev_poll(usbdev_t *dev)
 	size_t len;
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)dev->data;
 	UsbFastbootDevice *usb_fb_dev = (UsbFastbootDevice *)gen_dev->dev_data;
+
+	if (!fastboot_poll_in_progress)
+		return;
 
 	/* Process only Alink in use */
 	if (!is_usb_fastboot_in_use(usb_fb_dev))
