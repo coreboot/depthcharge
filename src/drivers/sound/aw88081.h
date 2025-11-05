@@ -1,0 +1,108 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+/*
+ * aw88081.h -- AW88081 ALSA SoC Audio driver
+ *
+ * Copyright 2024 awinic Technology CO., LTD
+ * Copyright 2025 Google LLC
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+#ifndef __DRIVERS_SOUND_AW88081_H__
+#define __DRIVERS_SOUND_AW88081_H__
+
+#include "drivers/bus/i2c/i2c.h"
+#include "drivers/bus/i2s/intel_common/i2s.h"
+#include "drivers/gpio/gpio.h"
+#include "drivers/sound/route.h"
+#include "drivers/sound/sound.h"
+
+typedef struct {
+	SoundOps ops;
+	I2cOps *i2c;
+	uint8_t chip;
+	GpioOps *bclk_gpio;
+	GpioOps *lrclk_gpio;
+	int sample_rate;
+	SoundRouteComponent component;
+} Aw88081Codec;
+
+#define AW88081_SOFT_RESET_REG		0x00
+#define AW88081_SYSCTRL_REG		0x04
+#define AW88081_I2SCTRL3_REG		0x08
+#define AW88081_SOFT_RESET_VALUE	0x55aa
+
+#define AW88081_AMPPD_START_BIT		1
+#define AW88081_AMPPD_BITS_LEN		1
+#define AW88081_AMPPD_MASK		\
+	(((1 << AW88081_AMPPD_BITS_LEN) - 1) << AW88081_AMPPD_START_BIT)
+
+#define AW88081_AMPPD_WORKING_VALUE	1
+#define AW88081_AMPPD_WORKING		\
+	(AW88081_AMPPD_WORKING_VALUE << AW88081_AMPPD_START_BIT)
+
+#define AW88081_AMPPD_POWER_DOWN_VALUE	0
+#define AW88081_AMPPD_POWER_DOWN	\
+	(AW88081_AMPPD_POWER_DOWN_VALUE << AW88081_AMPPD_START_BIT)
+
+/* PWDN bit 0 (SYSCTRL 0x04) */
+#define AW88081_PWDN_START_BIT		0
+#define AW88081_PWDN_BITS_LEN		1
+#define AW88081_PWDN_MASK		\
+	(((1 << AW88081_PWDN_BITS_LEN) - 1) << AW88081_PWDN_START_BIT)
+
+#define AW88081_PWDN_WORKING_VALUE	0
+#define AW88081_PWDN_WORKING		\
+	(AW88081_PWDN_WORKING_VALUE << AW88081_PWDN_START_BIT)
+
+#define AW88081_PWDN_POWER_DOWN_VALUE	1
+#define AW88081_PWDN_POWER_DOWN		\
+	(AW88081_PWDN_POWER_DOWN_VALUE << AW88081_PWDN_START_BIT)
+
+/* HMUTE bit 8 (SYSCTRL 0x04) */
+#define AW88081_HMUTE_START_BIT		8
+#define AW88081_HMUTE_BITS_LEN		1
+#define AW88081_HMUTE_MASK		\
+	(((1 << AW88081_HMUTE_BITS_LEN) - 1) << AW88081_HMUTE_START_BIT)
+
+#define AW88081_HMUTE_DISABLE_VALUE	0
+#define AW88081_HMUTE_DISABLE		\
+	(AW88081_HMUTE_DISABLE_VALUE << AW88081_HMUTE_START_BIT)
+
+#define AW88081_HMUTE_ENABLE_VALUE	1
+#define AW88081_HMUTE_ENABLE		\
+	(AW88081_HMUTE_ENABLE_VALUE << AW88081_HMUTE_START_BIT)
+
+/* ULS_HMUTE bit 14 (SYSCTRL 0x04) */
+#define AW88081_ULS_HMUTE_START_BIT	14
+#define AW88081_ULS_HMUTE_BITS_LEN	1
+#define AW88081_ULS_HMUTE_MASK		\
+	(((1 << AW88081_ULS_HMUTE_BITS_LEN) - 1) << AW88081_ULS_HMUTE_START_BIT)
+
+#define AW88081_ULS_HMUTE_DISABLE_VALUE	0
+#define AW88081_ULS_HMUTE_DISABLE	\
+	(AW88081_ULS_HMUTE_DISABLE_VALUE << AW88081_ULS_HMUTE_START_BIT)
+
+#define AW88081_ULS_HMUTE_ENABLE_VALUE	1
+#define AW88081_ULS_HMUTE_ENABLE	\
+	(AW88081_ULS_HMUTE_ENABLE_VALUE << AW88081_ULS_HMUTE_START_BIT)
+
+/* I2STXEN bit 6 (I2SCTRL3 0x08) */
+#define AW88081_I2STXEN_START_BIT	6
+#define AW88081_I2STXEN_BITS_LEN	1
+#define AW88081_I2STXEN_MASK		\
+	(((1 << AW88081_I2STXEN_BITS_LEN) - 1) << AW88081_I2STXEN_START_BIT)
+
+#define AW88081_I2STXEN_DISABLE_VALUE	0
+#define AW88081_I2STXEN_DISABLE		\
+	(AW88081_I2STXEN_DISABLE_VALUE << AW88081_I2STXEN_START_BIT)
+
+#define AW88081_I2STXEN_ENABLE_VALUE	1
+#define AW88081_I2STXEN_ENABLE		\
+	(AW88081_I2STXEN_ENABLE_VALUE << AW88081_I2STXEN_START_BIT)
+
+Aw88081Codec *new_aw88081_codec(I2cOps *i2c, uint8_t chip);
+
+#endif
