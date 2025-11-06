@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <libpayload.h>
 
+#include "base/cleanup_funcs.h"
 #include "base/fw_config.h"
 #include "base/init_funcs.h"
 #include "board/skywalker/include/variant.h"
@@ -68,30 +69,60 @@ static int tpm_irq_status(void)
 	return gpio_get(tpm_int);
 }
 
-static void enable_usb_vbus(struct UsbHostController *usb_host)
+static int usb_vbus_configure(bool enable)
 {
-	static bool enabled;
-
-	if (enabled)
-		return;
 	/*
 	 * To avoid USB detection issue, assert GPIO AP_XHCI_INIT_DONE
 	 * to notify EC to enable USB VBUS when xHCI is initialized.
 	 */
-	GpioOps *pdn = sysinfo_lookup_gpio("XHCI init done", 1,
-					   new_mtk_gpio_output);
-	if (pdn) {
+	static GpioOps *pdn;
+	if (!pdn)
+		pdn = sysinfo_lookup_gpio("XHCI init done", 1,
+					  new_mtk_gpio_output);
+	if (!pdn) {
+		printf("%s: Cannot find GPIO \"XHCI init done\"\n", __func__);
+		return -1;
+	}
+
+	if (enable) {
 		gpio_set(pdn, 1);
 		/* After USB VBUS is enabled, delay 500ms for USB detection. */
 		mdelay(500);
+	} else {
+		gpio_set(pdn, 0);
 	}
-	enabled = true;
+
+	return 0;
+}
+
+static int usb_vbus_cleanup_func(struct CleanupFunc *c, CleanupType t)
+{
+	return usb_vbus_configure(false);
+}
+
+static CleanupFunc usb_vbus_cleanup = {
+	&usb_vbus_cleanup_func,
+	CleanupOnReboot | CleanupOnPowerOff |
+	CleanupOnHandoff | CleanupOnLegacy,
+	NULL,
+};
+
+static void usb_init(struct UsbHostController *usb_host)
+{
+	static bool inited;
+
+	if (inited)
+		return;
+	if (usb_vbus_configure(true) == 0)
+		list_insert_after(&usb_vbus_cleanup.list_node,
+				  &cleanup_funcs);
+	inited = true;
 }
 
 static void setup_usb_host(uintptr_t base_addr)
 {
 	UsbHostController *usb_host = new_usb_hc(XHCI, base_addr);
-	set_usb_init_callback(usb_host, enable_usb_vbus);
+	set_usb_init_callback(usb_host, usb_init);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 }
 
