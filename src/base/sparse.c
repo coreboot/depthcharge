@@ -178,7 +178,7 @@ enum gpt_io_ret write_sparse_image(BlockDev *disk, uint64_t part_start_lba,
 		if (part_size_lba < chunk_size_lba) {
 			TRACE_SPARSE("part_size_lba:%llx\n", part_size_lba);
 			TRACE_SPARSE("chunk_size_lba:%llx\n", chunk_size_lba);
-			return GPT_IO_SPARSE_WRONG_CHUNK_SIZE;
+			return GPT_IO_OUT_OF_RANGE;
 		}
 
 		switch (chunk_hdr->type) {
