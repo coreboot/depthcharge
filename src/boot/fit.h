@@ -30,6 +30,7 @@ typedef enum CompressionType
 	CompressionNone,
 	CompressionLzma,
 	CompressionLz4,
+	CompressionLegacyLz4,
 } CompressionType;
 
 typedef struct FitImageNode

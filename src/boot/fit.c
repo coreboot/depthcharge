@@ -301,6 +301,9 @@ size_t fit_decompress(FitImageNode *node, void *buffer, size_t bufsize)
 	case CompressionLz4:
 		printf("LZ4 decompressing %s to %p\n", node->name, buffer);
 		return ulz4fn(node->data, node->size, buffer, bufsize);
+	case CompressionLegacyLz4:
+		printf("Legacy LZ4 decompressing %s to %p\n", node->name, buffer);
+		return ulz4ln(node->data, node->size, buffer, bufsize);
 	default:
 		printf("ERROR: Illegal compression algorithm (%d) for %s!\n",
 		       node->compression, node->name);
