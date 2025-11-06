@@ -160,7 +160,7 @@ static void fastboot_cmd_oem_sha256(struct FastbootOps *fb, char *arg)
 	ret = gpt_open_partition_stream(fb->disk, fb->gpt, part_name, offset, &stream,
 					&to_read);
 	if (ret != GPT_IO_SUCCESS) {
-		fastboot_fail(fb, "Failed to open stream");
+		fastboot_fail_with_logs(fb, "Failed to open stream");
 		return;
 	}
 
@@ -182,7 +182,7 @@ static void fastboot_cmd_oem_sha256(struct FastbootOps *fb, char *arg)
 		size_t chunk_len = MIN(to_read, FASTBOOT_MAX_DOWNLOAD_SIZE);
 		if (stream->read(stream, chunk_len, buf) != chunk_len) {
 			stream->close(stream);
-			fastboot_fail(fb, "Failed to read stream");
+			fastboot_fail_with_logs(fb, "Failed to read stream");
 			return;
 		}
 		vb2_sha256_update(&ctx, buf, chunk_len);
@@ -279,12 +279,12 @@ static void fastboot_cmd_cmdline_add(struct FastbootOps *fb, const char *arg,
 	}
 
 	if (android_misc_append_oem_cmd(&cmd, arg, bootconfig)) {
-		fastboot_fail(fb, "Failed to append to cmdline");
+		fastboot_fail_with_logs(fb, "Failed to append to cmdline");
 		return;
 	}
 
 	if (android_misc_oem_cmdline_write(fb->disk, fb->gpt, &cmd)) {
-		fastboot_fail(fb, "Failed to write cmdline to misc");
+		fastboot_fail_with_logs(fb, "Failed to write cmdline to misc");
 		return;
 	}
 
@@ -359,7 +359,7 @@ static void fastboot_cmd_cmdline_del(struct FastbootOps *fb, const char *arg,
 		return;
 
 	if (android_misc_oem_cmdline_read(fb->disk, fb->gpt, &cmd)) {
-		fastboot_fail(fb, "Failed to read cmdline from misc");
+		fastboot_fail_with_logs(fb, "Failed to read cmdline from misc");
 		return;
 	}
 
@@ -375,8 +375,9 @@ static void fastboot_cmd_cmdline_del(struct FastbootOps *fb, const char *arg,
 				param_len++;
 			if (android_misc_del_oem_cmd(&cmd, param - cmdline, param_len,
 						     bootconfig)) {
-				fastboot_fail(fb, "Failed to delete \"%.*s\" from cmdline",
-					      param_len, param);
+				fastboot_fail_with_logs(
+					fb, "Failed to delete \"%.*s\" from cmdline",
+					param_len, param);
 				return;
 			}
 			modified_cmdline = true;
@@ -386,7 +387,7 @@ static void fastboot_cmd_cmdline_del(struct FastbootOps *fb, const char *arg,
 		if (*param_end == '\0') {
 			if (modified_cmdline &&
 			    android_misc_oem_cmdline_write(fb->disk, fb->gpt, &cmd)) {
-				fastboot_fail(fb, "Failed to write cmdline to misc");
+				fastboot_fail_with_logs(fb, "Failed to write cmdline to misc");
 				return;
 			}
 			fastboot_succeed(fb);
@@ -410,12 +411,12 @@ static void fastboot_cmd_cmdline_set(struct FastbootOps *fb, const char *arg,
 	}
 
 	if (android_misc_set_oem_cmd(&cmd, arg, bootconfig)) {
-		fastboot_fail(fb, "Failed to append to cmdline");
+		fastboot_fail_with_logs(fb, "Failed to append to cmdline");
 		return;
 	}
 
 	if (android_misc_oem_cmdline_write(fb->disk, fb->gpt, &cmd)) {
-		fastboot_fail(fb, "Failed to write cmdline to misc");
+		fastboot_fail_with_logs(fb, "Failed to write cmdline to misc");
 		return;
 	}
 
@@ -475,25 +476,7 @@ static void fastboot_cmd_oem_logs(struct FastbootOps *fb, char *arg)
 	while (*str == '\n')
 		str++;
 
-	for (size_t a = 0, b = 0;; b++) {
-		if (str[b] == 0 || str[b] == '\n' ||
-		    (b - a + 1) >= FASTBOOT_MSG_LEN_WO_PREFIX) {
-			// If the precision in fmt string equals 0, then
-			// libpayload's libc tries to print all characters, instead of 0.
-			if (a != b) {
-				fastboot_send_fmt(fb, FASTBOOT_RES_INFO, 0, "%.*s",
-						  (int)(b - a), str + a);
-			} else {
-				fastboot_send_fmt(fb, FASTBOOT_RES_INFO, 0, "");
-			}
-
-			a = b + 1;
-		}
-
-		if (str[b] == 0)
-			break;
-	}
-
+	fastboot_multiline_info(fb, str);
 	fastboot_succeed(fb);
 	free(snapshot);
 }
@@ -551,7 +534,7 @@ static void fastboot_cmd_oem_read_ufs_descriptor(struct FastbootOps *fb, char *a
 	int ret = ufs_read_descriptor(ctlr, (uint8_t)idn, (uint8_t)idx, buf,
 				      FASTBOOT_MAX_DOWNLOAD_SIZE, &data_len);
 	if (ret) {
-		fastboot_fail(fb, "Failed to read UFS descriptor");
+		fastboot_fail_with_logs(fb, "Failed to read UFS descriptor");
 		return;
 	}
 
@@ -595,7 +578,7 @@ static void fastboot_cmd_oem_write_ufs_descriptor(struct FastbootOps *fb, char *
 	int ret = ufs_write_descriptor(ctlr, (uint8_t)idn, (uint8_t)idx, buf,
 				       data_len);
 	if (ret) {
-		fastboot_fail(fb, "Failed to write UFS descriptor");
+		fastboot_fail_with_logs(fb, "Failed to write UFS descriptor");
 		return;
 	}
 
@@ -643,7 +626,7 @@ static void fastboot_cmd_reboot_to_target(struct FastbootOps *fb, char *arg)
 	}
 
 	if (android_misc_bcb_write(fb->disk, fb->gpt, &bcb)) {
-		fastboot_fail(fb, "Failed to write reboot command to misc");
+		fastboot_fail_with_logs(fb, "Failed to write reboot command to misc");
 		return;
 	}
 
@@ -675,7 +658,7 @@ static void fastboot_cmd_set_active(struct FastbootOps *fb, char *arg)
 	fastboot_slots_disable_all(fb->gpt);
 	GptUpdateKernelWithEntry(fb->gpt, slot, GPT_UPDATE_ENTRY_ACTIVE);
 	if (fastboot_save_gpt(fb))
-		fastboot_fail(fb, "Could not save GPT to the disk");
+		fastboot_fail_with_logs(fb, "Could not save GPT to the disk");
 	else
 		fastboot_succeed(fb);
 }
@@ -744,7 +727,7 @@ static void fastboot_cmd_oem_set_priority(struct FastbootOps *fb, char *arg)
 	if (!fastboot_save_gpt(fb))
 		fastboot_succeed(fb);
 	else
-		fastboot_fail(fb, "Failed to save GPT");
+		fastboot_fail_with_logs(fb, "Failed to save GPT");
 }
 
 static void fastboot_cmd_oem_set_successful(struct FastbootOps *fb, char *arg)
@@ -768,7 +751,7 @@ static void fastboot_cmd_oem_set_successful(struct FastbootOps *fb, char *arg)
 	if (!fastboot_save_gpt(fb))
 		fastboot_succeed(fb);
 	else
-		fastboot_fail(fb, "Failed to save GPT");
+		fastboot_fail_with_logs(fb, "Failed to save GPT");
 }
 
 #define CMD_ARGS(_name, _sep, _fn)                                             \

@@ -119,8 +119,10 @@ void fastboot_cmd_getvar(struct FastbootOps *fb, char *args)
 			fastboot_okay(fb, "%s", var_buf);
 		else if (state == STATE_OVERFLOW)
 			fastboot_fail(fb, "getvar truncated: %s", var_buf);
+		else if (state == STATE_UNKNOWN_VAR)
+			fastboot_fail(fb, "Unknown variable");
 		else
-			fastboot_fail(fb, "getvar failed - internal error");
+			fastboot_fail_with_logs(fb, "getvar failed - internal error");
 		return;
 	}
 

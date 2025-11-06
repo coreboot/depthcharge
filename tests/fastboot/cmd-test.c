@@ -550,7 +550,7 @@ static void test_fb_cmd_download_bigger_than_max_download_size(void **state)
 	struct FastbootOps *fb = *state;
 	char cmd[] = "download:ff000000";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -564,7 +564,7 @@ static void test_fb_cmd_download_overflow(void **state)
 	struct FastbootOps *fb = *state;
 	char cmd[] = "download:0ff00000000000000001000";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -575,7 +575,7 @@ static void test_fb_cmd_download_nan(void **state)
 	struct FastbootOps *fb = *state;
 	char cmd[] = "download:0ff0thisisnotnumber";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -626,7 +626,7 @@ static void test_fb_cmd_reboot_recovery_write_fail(void **state)
 
 	WILL_READ_BCB(0);
 	WILL_WRITE_BCB("boot-recovery", "recovery\n", 1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -665,7 +665,7 @@ static void test_fb_cmd_reboot_unknown_target(void **state)
 	char cmd[] = "reboot-non_existing_target";
 
 	WILL_READ_BCB(0);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -687,7 +687,7 @@ static void test_fb_cmd_flash_no_download(void **state)
 	struct FastbootOps *fb = *state;
 	char cmd[] = "flash:partitionname";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -745,28 +745,28 @@ static void test_fb_cmd_flash_raw_sector_bad_arg(void **state)
 	fb->has_staged_data = true;
 	fb->memory_buffer_len = 123;
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd1[] = "flash:raw-sector:";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd1, sizeof(cmd1) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd2[] = "flash:raw-sector:30abc";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd2, sizeof(cmd2) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd3[] = "flash:raw-sector:abc";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd3, sizeof(cmd3) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -789,7 +789,7 @@ static void test_fb_cmd_set_active_no_slot(void **state)
 	char cmd[] = "set_active:x";
 
 	WILL_GET_KERNEL_FOR_SLOT('x', NULL);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -847,7 +847,7 @@ static void test_fb_cmd_set_cmdline_fail_set(void **state)
 
 	WILL_READ_CMDLINE(0);
 	WILL_SET_CMDLINE("testparam=\"value test\"", -1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -861,7 +861,7 @@ static void test_fb_cmd_set_cmdline_fail_write(void **state)
 	WILL_READ_CMDLINE(0);
 	WILL_SET_CMDLINE("testparam=\"value test\"", 0);
 	WILL_WRITE_CMDLINE(-1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -903,7 +903,7 @@ static void test_fb_cmd_set_bootconfig_fail_set(void **state)
 
 	WILL_READ_CMDLINE(0);
 	WILL_SET_BOOTCONFIG("testparam=\"value test\"", -1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -917,7 +917,7 @@ static void test_fb_cmd_set_bootconfig_fail_write(void **state)
 	WILL_READ_CMDLINE(0);
 	WILL_SET_BOOTCONFIG("testparam=\"value test\"", 0);
 	WILL_WRITE_CMDLINE(-1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -959,7 +959,7 @@ static void test_fb_cmd_append_cmdline_fail_set(void **state)
 
 	WILL_READ_CMDLINE(0);
 	WILL_APPEND_CMDLINE("testparam=\"value test\"", -1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -973,7 +973,7 @@ static void test_fb_cmd_append_cmdline_fail_write(void **state)
 	WILL_READ_CMDLINE(0);
 	WILL_APPEND_CMDLINE("testparam=\"value test\"", 0);
 	WILL_WRITE_CMDLINE(-1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -984,7 +984,7 @@ static void test_fb_cmd_append_cmdline_empty_arg(void **state)
 	struct FastbootOps *fb = *state;
 	char cmd[] = "oem cmdline add ";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1026,7 +1026,7 @@ static void test_fb_cmd_append_bootconfig_fail_set(void **state)
 
 	WILL_READ_CMDLINE(0);
 	WILL_APPEND_BOOTCONFIG("testparam=\"value test\"", -1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1040,7 +1040,7 @@ static void test_fb_cmd_append_bootconfig_fail_write(void **state)
 	WILL_READ_CMDLINE(0);
 	WILL_APPEND_BOOTCONFIG("testparam=\"value test\"", 0);
 	WILL_WRITE_CMDLINE(-1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1051,7 +1051,7 @@ static void test_fb_cmd_append_bootconfig_empty_arg(void **state)
 	struct FastbootOps *fb = *state;
 	char cmd[] = "oem bootconfig add ";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1176,7 +1176,7 @@ static void test_fb_cmd_del_cmdline_empty_arg(void **state)
 	struct FastbootOps *fb = *state;
 	char cmd[] = "oem cmdline del ";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1188,7 +1188,7 @@ static void test_fb_cmd_del_cmdline_fail_read(void **state)
 	char cmd[] = "oem cmdline del param";
 
 	WILL_READ_CMDLINE(-1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1299,7 +1299,7 @@ static void test_fb_cmd_del_cmdline_fail_del(void **state)
 	WILL_READ_CMDLINE(0);
 	WILL_GET_CMDLINE(cmdline);
 	WILL_DEL_CMDLINE(cmdline, 0, 6, -1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1315,7 +1315,7 @@ static void test_fb_cmd_del_cmdline_fail_write(void **state)
 	WILL_GET_CMDLINE(cmdline);
 	WILL_DEL_CMDLINE(cmdline, 6, 12, 0);
 	WILL_WRITE_CMDLINE(-1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1344,7 +1344,7 @@ static void test_fb_cmd_del_bootconfig_empty_arg(void **state)
 	struct FastbootOps *fb = *state;
 	char cmd[] = "oem bootconfig del ";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1356,7 +1356,7 @@ static void test_fb_cmd_del_bootconfig_fail_read(void **state)
 	char cmd[] = "oem bootconfig del param";
 
 	WILL_READ_CMDLINE(-1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1469,7 +1469,7 @@ static void test_fb_cmd_del_bootconfig_fail_del(void **state)
 	WILL_READ_CMDLINE(0);
 	WILL_GET_BOOTCONFIG(bootconfig);
 	WILL_DEL_BOOTCONFIG(bootconfig, 0, 6, -1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1485,7 +1485,7 @@ static void test_fb_cmd_del_bootconfig_fail_write(void **state)
 	WILL_GET_BOOTCONFIG(bootconfig);
 	WILL_DEL_BOOTCONFIG(bootconfig, 6, 14, 0);
 	WILL_WRITE_CMDLINE(-1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1500,7 +1500,7 @@ static void test_fb_cmd_upload_no_staged(void **state)
 	fb->has_staged_data = false;
 	fb->memory_buffer_len = 123;
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1514,7 +1514,7 @@ static void test_fb_cmd_upload_no_len(void **state)
 	fb->has_staged_data = true;
 	fb->memory_buffer_len = 0;
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1531,7 +1531,7 @@ static void test_fb_cmd_upload_no_splitting(void **state)
 	fb->memory_buffer_len = 50000;
 
 	WILL_SEND_PREFIX(fb, "INFO");
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1589,7 +1589,7 @@ static void test_fb_cmd_read_ufs_desc_no_ctlr(void **state)
 	char cmd[] = "oem read-ufs-descriptor:4,5";
 
 	WILL_GET_UFS_CTLR(NULL);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1601,35 +1601,35 @@ static void test_fb_cmd_read_ufs_desc_bad_args(void **state)
 	char cmd1[] = "oem read-ufs-descriptor:,5";
 
 	WILL_GET_UFS_CTLR(&test_ufs);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd1, sizeof(cmd1) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd2[] = "oem read-ufs-descriptor:,";
 	WILL_GET_UFS_CTLR(&test_ufs);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd2, sizeof(cmd2) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd3[] = "oem read-ufs-descriptor:3,";
 	WILL_GET_UFS_CTLR(&test_ufs);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd3, sizeof(cmd3) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd4[] = "oem read-ufs-descriptor:";
 	WILL_GET_UFS_CTLR(&test_ufs);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd4, sizeof(cmd4) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd5[] = "oem read-ufs-descriptor:23,12notnum";
 	WILL_GET_UFS_CTLR(&test_ufs);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd5, sizeof(cmd5) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1641,14 +1641,14 @@ static void test_fb_cmd_read_ufs_desc_args_too_big(void **state)
 	char cmd1[] = "oem read-ufs-descriptor:100,5";
 
 	WILL_GET_UFS_CTLR(&test_ufs);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd1, sizeof(cmd1) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd2[] = "oem read-ufs-descriptor:ab,1ef";
 	WILL_GET_UFS_CTLR(&test_ufs);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd2, sizeof(cmd2) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1664,7 +1664,7 @@ static void test_fb_cmd_read_ufs_desc_read_fail(void **state)
 
 	WILL_GET_UFS_CTLR(&test_ufs);
 	WILL_READ_UFS_DESCRIPTOR(&test_ufs, 0x4a, 0x5b, 0x53, -1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1698,7 +1698,7 @@ static void test_fb_cmd_write_ufs_desc_no_data(void **state)
 
 	fb->has_staged_data = false;
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 
@@ -1715,7 +1715,7 @@ static void test_fb_cmd_write_ufs_desc_too_much_data(void **state)
 	fb->has_staged_data = true;
 	fb->memory_buffer_len = data_len;
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 
@@ -1734,7 +1734,7 @@ static void test_fb_cmd_write_ufs_desc_no_ctlr(void **state)
 	fb->memory_buffer_len = data_len;
 
 	WILL_GET_UFS_CTLR(NULL);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 
@@ -1752,35 +1752,35 @@ static void test_fb_cmd_write_ufs_desc_bad_args(void **state)
 	fb->memory_buffer_len = 0x10;
 
 	WILL_GET_UFS_CTLR(&test_ufs);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd1, sizeof(cmd1) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd2[] = "oem write-ufs-descriptor:,";
 	WILL_GET_UFS_CTLR(&test_ufs);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd2, sizeof(cmd2) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd3[] = "oem write-ufs-descriptor:3,";
 	WILL_GET_UFS_CTLR(&test_ufs);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd3, sizeof(cmd3) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd4[] = "oem write-ufs-descriptor:";
 	WILL_GET_UFS_CTLR(&test_ufs);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd4, sizeof(cmd4) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd5[] = "oem write-ufs-descriptor:23,12notnum";
 	WILL_GET_UFS_CTLR(&test_ufs);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd5, sizeof(cmd5) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1795,14 +1795,14 @@ static void test_fb_cmd_write_ufs_desc_args_too_big(void **state)
 	fb->memory_buffer_len = 0x10;
 
 	WILL_GET_UFS_CTLR(&test_ufs);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd1, sizeof(cmd1) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd2[] = "oem read-ufs-descriptor:ab,1ef";
 	WILL_GET_UFS_CTLR(&test_ufs);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd2, sizeof(cmd2) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1819,7 +1819,7 @@ static void test_fb_cmd_write_ufs_desc_write_fail(void **state)
 
 	WILL_GET_UFS_CTLR(&test_ufs);
 	WILL_WRITE_UFS_DESCRIPTOR(&test_ufs, 0x4, 0x5, data_len, -1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 
@@ -1886,7 +1886,7 @@ static void test_fb_cmd_oem_set_successful_fail_save_gpt(void **state)
 	WILL_SET_ENTRY_SUCCESSFUL(part, 1);
 	WILL_MODIFY_GPT;
 	WILL_SAVE_GPT(fb, -1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1900,7 +1900,7 @@ static void test_fb_cmd_oem_set_successful_non_bootable(void **state)
 
 	WILL_FIND_PARTITION("vbmeta_a", part);
 	WILL_CHECK_BOOTABLE_ENTRY(part, false);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1912,7 +1912,7 @@ static void test_fb_cmd_oem_set_successful_no_partition(void **state)
 	char cmd[] = "oem set-successful:vbmeta_a:1";
 
 	WILL_FIND_PARTITION("vbmeta_a", NULL);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1927,28 +1927,28 @@ static void test_fb_cmd_oem_set_successful_bad_arg(void **state)
 
 	WILL_FIND_PARTITION("vbmeta_a", part);
 	WILL_CHECK_BOOTABLE_ENTRY(part, true);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd2[] = "oem set-successful:vbmeta_a:";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd2, sizeof(cmd2) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd3[] = "oem set-successful:vbmeta_a";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd3, sizeof(cmd3) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd4[] = "oem set-successful:";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd4, sizeof(cmd4) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1957,14 +1957,14 @@ static void test_fb_cmd_oem_set_successful_bad_arg(void **state)
 
 	WILL_FIND_PARTITION("vbmeta_b", part);
 	WILL_CHECK_BOOTABLE_ENTRY(part, true);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd5, sizeof(cmd5) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd6[] = "oem set-successful:vbmeta_b:1:additional";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd6, sizeof(cmd6) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1998,7 +1998,7 @@ static void test_fb_cmd_oem_set_priority_fail_save_gpt(void **state)
 	WILL_SET_ENTRY_PRIORITY(part, 3);
 	WILL_MODIFY_GPT;
 	WILL_SAVE_GPT(fb, -1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -2012,7 +2012,7 @@ static void test_fb_cmd_oem_set_priority_non_bootable(void **state)
 
 	WILL_FIND_PARTITION("vbmeta_a", part);
 	WILL_CHECK_BOOTABLE_ENTRY(part, false);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -2024,7 +2024,7 @@ static void test_fb_cmd_oem_set_priority_no_partition(void **state)
 	char cmd[] = "oem set-priority:vbmeta_a:3";
 
 	WILL_FIND_PARTITION("vbmeta_a", NULL);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -2039,56 +2039,56 @@ static void test_fb_cmd_oem_set_priority_bad_arg(void **state)
 
 	WILL_FIND_PARTITION("vbmeta_a", part);
 	WILL_CHECK_BOOTABLE_ENTRY(part, true);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd2[] = "oem set-priority:vbmeta_a:";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd2, sizeof(cmd2) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd3[] = "oem set-priority:vbmeta_a";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd3, sizeof(cmd3) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd4[] = "oem set-priority:";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd4, sizeof(cmd4) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd5[] = "oem set-priority:vbmeta_a:-2";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd5, sizeof(cmd5) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd6[] = "oem set-priority:vbmeta_a:prio";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd6, sizeof(cmd6) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd7[] = "oem set-priority:vbmeta_a:6prio";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd7, sizeof(cmd7) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd8[] = "oem set-priority:vbmeta_b:1:additional";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd8, sizeof(cmd8) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -2263,7 +2263,7 @@ static void test_fb_cmd_oem_sha256_read_fail(void **state)
 	WILL_INIT_VB2_SHA256;
 	WILL_READ_STREAM_FAIL(part_len, part_len - 2);
 	WILL_CLOSE_STREAM;
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -2276,7 +2276,7 @@ static void test_fb_cmd_oem_sha256_len_greater_than_part_len(void **state)
 
 	WILL_OPEN_PARTITION_STREAM("part", 16, 24, GPT_IO_SUCCESS);
 	WILL_CLOSE_STREAM;
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -2288,7 +2288,7 @@ static void test_fb_cmd_oem_sha256_fail_open_stream(void **state)
 	char cmd[] = "oem sha256:part";
 
 	WILL_OPEN_PARTITION_STREAM("part", 0, 24, GPT_IO_NO_STREAM);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -2300,63 +2300,63 @@ static void test_fb_cmd_oem_sha256_bad_arg(void **state)
 
 	char cmd[] = "oem sha256:vbmeta_a:-16";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd2[] = "oem sha256:vbmeta_a:";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd2, sizeof(cmd2) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd3[] = "oem sha256:vbmeta_a:off";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd3, sizeof(cmd3) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd4[] = "oem sha256:vbmeta_a:5off";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd4, sizeof(cmd4) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd5[] = "oem sha256:vbmeta_a:5:-32";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd5, sizeof(cmd5) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd6[] = "oem sha256:vbmeta_a:5:";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd6, sizeof(cmd6) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd7[] = "oem sha256:vbmeta_a:5:len";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd7, sizeof(cmd7) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd8[] = "oem sha256:vbmeta_a:5:24len";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd8, sizeof(cmd8) - 1);
 	assert_int_equal(fb->state, COMMAND);
 
 	char cmd9[] = "oem sha256:vbmeta_a:5:24:additional";
 
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd9, sizeof(cmd9) - 1);
 	assert_int_equal(fb->state, COMMAND);

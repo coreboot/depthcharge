@@ -104,7 +104,7 @@ static void fastboot_handle_gpt_io_ret(enum gpt_io_ret ret, struct FastbootOps *
 		fastboot_fail(fb, "Image is too big");
 		break;
 	case GPT_IO_TRANSFER_ERROR:
-		fastboot_fail(fb, "Failed to write");
+		fastboot_fail_with_logs(fb, "Failed to write");
 		break;
 	case GPT_IO_SPARSE_OFFSET_NOT_ALIGNED:
 		fastboot_fail(fb, "Offset %llu not aligned to block size (%u) on sparse write",
@@ -127,7 +127,7 @@ static void fastboot_handle_gpt_io_ret(enum gpt_io_ret ret, struct FastbootOps *
 		fastboot_fail(fb, "Unrecognised sparse chunk type");
 		break;
 	default:
-		fastboot_fail(fb, "Unknown error while writing");
+		fastboot_fail_with_logs(fb, "Unknown error while writing");
 	}
 }
 
@@ -211,10 +211,10 @@ void fastboot_erase(struct FastbootOps *fb, const char *partition_name)
 		fastboot_fail(fb, "Could not find partition \"%s\"\n", partition_name);
 		break;
 	case GPT_IO_TRANSFER_ERROR:
-		fastboot_fail(fb, "Failed to erase");
+		fastboot_fail_with_logs(fb, "Failed to erase");
 		break;
 	default:
-		fastboot_fail(fb, "Unknown error while writing");
+		fastboot_fail_with_logs(fb, "Unknown error while writing");
 	}
 }
 

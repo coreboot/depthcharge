@@ -29,8 +29,10 @@
 #include "image/symbols.h"
 #include "stdarg.h"
 
-void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t, int print_msg,
-		       const char *fmt, ...)
+static const char CMD_LOG_PREFIX[] = "FB recv CMD";
+
+static void fastboot_send_v(struct FastbootOps *fb, enum fastboot_response_type t,
+			    int print_msg, const char *fmt, va_list ap)
 {
 	static const char response_prefix[][FASTBOOT_PREFIX_LEN] = {
 		[FASTBOOT_RES_OKAY] = "OKAY",
@@ -40,12 +42,9 @@ void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t, in
 		[FASTBOOT_RES_TEXT] = "TEXT",
 	};
 	char msg_buf[FASTBOOT_MSG_MAX];
-	va_list ap;
-	va_start(ap, fmt);
 	memcpy(msg_buf, response_prefix[t], FASTBOOT_PREFIX_LEN);
 	int len = FASTBOOT_PREFIX_LEN + vsnprintf(&msg_buf[FASTBOOT_PREFIX_LEN],
 						  FASTBOOT_MSG_LEN_WO_PREFIX, fmt, ap);
-	va_end(ap);
 	if (len < FASTBOOT_PREFIX_LEN) {
 		/* For some reason vsnprintf failed, send response prefix anyway */
 		printf("fastboot send vsnprintf failed (%d)\n", len - FASTBOOT_PREFIX_LEN);
@@ -61,6 +60,51 @@ void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t, in
 	if (print_msg)
 		printf("FB send %.4s: %s\n", msg_buf, msg_buf + 4);
 	fb->send_packet(fb, msg_buf, len + 1);
+}
+
+void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t, int print_msg,
+		       const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	fastboot_send_v(fb, t, print_msg, fmt, ap);
+	va_end(ap);
+}
+
+void fastboot_fail_with_logs(struct FastbootOps *fb, const char *fmt, ...)
+{
+	va_list ap;
+	char *snapshot = cbmem_console_snapshot();
+
+	if (snapshot && *snapshot) {
+		char *found = snapshot;
+
+		/* Find last occurrence of CMD_LOG_PREFIX */
+		for (char *str = snapshot; str != NULL; str = strstr(str + 1, CMD_LOG_PREFIX))
+			found = str;
+
+		fastboot_multiline_info(fb, found);
+	}
+	free(snapshot);
+
+	va_start(ap, fmt);
+	fastboot_send_v(fb, FASTBOOT_RES_FAIL, 1, fmt, ap);
+	va_end(ap);
+}
+
+void fastboot_multiline_info(struct FastbootOps *fb, const char *msg)
+{
+	size_t line_len;
+
+	do {
+		line_len = strcspn(msg, "\n");
+		do {
+			const size_t to_print = MIN(line_len, FASTBOOT_MSG_LEN_WO_PREFIX - 1);
+			fastboot_send_fmt(fb, FASTBOOT_RES_INFO, 0, "%.*s", (int)to_print, msg);
+			line_len -= to_print;
+			msg += to_print;
+		} while (line_len);
+	} while (*msg++);
 }
 
 void fastboot_prepare_download(struct FastbootOps *fb, uint32_t bytes) {
@@ -111,12 +155,10 @@ static void fastboot_handle_command(struct FastbootOps *fb, void *data,
 	// "data" contains a command, which is essentially freeform text.
 	char *cmd = (char *)data;
 
-	if (len < FASTBOOT_MSG_MAX && len != 0)
-		printf("FB recv CMD: %.*s\n", (int)len, cmd);
-	else if (len != 0)
-		printf("FB recv CMD (%lld): %.*s...\n", len, FASTBOOT_MSG_MAX, cmd);
+	if (len < FASTBOOT_MSG_MAX)
+		printf("%s: %.*s\n", CMD_LOG_PREFIX, (int)len, cmd);
 	else
-		printf("FB recv zero length CMD\n");
+		printf("%s (%lld): %.*s...\n", CMD_LOG_PREFIX, len, FASTBOOT_MSG_MAX, cmd);
 
 	for (int i = 0; fastboot_cmds[i].name != NULL; i++) {
 		fastboot_cmd_t *cur = &fastboot_cmds[i];

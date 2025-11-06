@@ -166,4 +166,14 @@ void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t, in
 /* Sends DATA with the length */
 #define fastboot_data(fb, len) fastboot_send_fmt((fb), FASTBOOT_RES_DATA, 1, "%08x", (len))
 
+/* Sends console logs printed after last fastboot command was received and fail message */
+void fastboot_fail_with_logs(struct FastbootOps *fb, const char *fmt, ...)
+	__attribute__((format(printf, 2, 3)));
+
+/*
+ * Sends msg split into lines or wrapped by FASTBOOT_MSG_LEN_WO_PREFIX chars. Each line is
+ * a separate INFO message.
+ */
+void fastboot_multiline_info(struct FastbootOps *fb, const char *msg);
+
 #endif /* __FASTBOOT_FASTBOOT_H__ */

@@ -27,6 +27,13 @@ void setup_test_fb(void);
 	expect_in_range(fb_mock_send_packet, len, strlen(data) + 1, 256); \
 } while (0)
 
+#define WILL_SEND_FAIL(fb_ptr) WILL_SEND_PREFIX(fb_ptr, "FAIL")
+
+#define WILL_SEND_FAIL_WITH_LOGS(fb_ptr) do { \
+	WILL_SEND_EXACT(fb, "INFOmock cbmem console snapshot"); \
+	WILL_SEND_PREFIX(fb_ptr, "FAIL"); \
+} while (0)
+
 /* Setup for get_slot_for_partition_name mock */
 #define WILL_GET_SLOT_FOR_PARTITION_NAME(n, ret) do { \
 	expect_string(fastboot_get_slot_for_partition_name, partition_name, n); \

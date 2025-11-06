@@ -1152,7 +1152,7 @@ static void test_fb_cmd_getvar_get_fail(void **state)
 
 	/* Intentionally fail fastboot_getvar */
 	WILL_GPT_INIT(-1);
-	WILL_SEND_PREFIX(fb, "FAIL");
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_cmd_getvar(fb, "current-slot");
 }
