@@ -18,6 +18,7 @@
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/sound/aw88081.h"
 #include "drivers/sound/cs35l53.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/i2s.h"
@@ -197,6 +198,27 @@ static void setup_codec_cs35l51(GpioOps *spk_rst)
 	printf("%s done\n", __func__);
 }
 
+static void setup_codec_aw88081(void)
+{
+	MtkI2s *mtk_i2s = new_mtk_i2s(0x11050000, 2, 48 * KHz, 16, 16, AFE_TDM_OUT1);
+	I2sSource *i2s_source = new_i2s_source(&mtk_i2s->ops, 48 * KHz, 2, 8000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+
+	MTKI2c *i2c8 = new_mtk_i2c(0x11f31000, 0x11300a00, I2C_APDMA_ASYNC);
+	Aw88081Codec *aw88081_l = new_aw88081_codec(&i2c8->ops, 0x34);
+	Aw88081Codec *aw88081_r = new_aw88081_codec(&i2c8->ops, 0x35);
+
+	mdelay(1);
+
+	list_insert_after(&aw88081_l->component.list_node,
+			  &sound_route->components);
+	list_insert_after(&aw88081_r->component.list_node,
+			  &sound_route->components);
+
+	sound_set_ops(&sound_route->ops);
+	printf("%s done\n", __func__);
+}
+
 static void sound_setup(void)
 {
 	GpioOps *alc5645_spk_en = sysinfo_lookup_gpio("alc5645_spk_en", 1,
@@ -216,6 +238,8 @@ static void sound_setup(void)
 		setup_codec_rt1019(rt1019_spk_en);
 	else if (cs35l51_spk_rst)
 		setup_codec_cs35l51(cs35l51_spk_rst);
+	else if (fw_config_probe(FW_CONFIG(AUDIO_AMP, AMP_AW88081)))
+		setup_codec_aw88081();
 	else
 		printf("no amps found\n");
 }
