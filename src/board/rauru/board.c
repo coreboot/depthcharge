@@ -238,8 +238,19 @@ static int board_setup(void)
 		printf("[%s] no display_init_required()!\n", __func__);
 	}
 
-	/* Disable MTE support for ChromeOS. b:375543707 */
-	commandline_append("arm64.nomte");
+	if (!CONFIG(ANDROID_MTE)) {
+		/*
+		 * For ChromeOS:
+		 *
+		 * Disable MTE support for ChromeOS. b:375543707
+		 *
+		 * Note, this should go to ChromeOS kernel build stage.
+		 * The bootloader shouldn't insert the kernel cmdline unless
+		 * it is changeable by user, in ChromeOS case, it is not.
+		 */
+		commandline_append("arm64.nomte");
+		printf("chromeos: adding arm64.nomte to kernel cmdline\n");
+	}
 
 	if (lib_sysinfo.framebuffer.physical_address)
 		list_insert_after(&reserve_framebuffer_fixup.list_node, &device_tree_fixups);
