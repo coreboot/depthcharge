@@ -2,7 +2,9 @@
 
 #include "board/skywalker/include/variant.h"
 
+#define RTS545X_PS8747_YODA_EQ "0B01"
+
 const char *get_rts545x_configs(int ec_pd_id)
 {
-	return ec_pd_id == 0 ? RTS545X_IT5205 : RTS545X_PS8747;
+	return ec_pd_id == 0 ? RTS545X_IT5205 : RTS545X_PS8747_YODA_EQ;
 }
