@@ -91,17 +91,24 @@ static void setup_tas2563(GpioOps *spk_rst_l)
 	I2sSource *i2s_source = new_i2s_source(&i2so1->ops, 32 * KHz, 2, 8000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 	MTKI2c *i2c3 = new_mtk_i2c(0x13150000, 0x163C0000, I2C_APDMA_ASYNC);
-	Tas2563Codec *speaker_r = new_tas2563_codec(&i2c3->ops, 0x4c, 1, 0);
-	Tas2563Codec *speaker_l = new_tas2563_codec(&i2c3->ops, 0x4f, 0, 0);
+	Tas2563Codec *speaker_wl = new_tas2563_codec(&i2c3->ops, 0x4d, 0, 0);
+	Tas2563Codec *speaker_tl = new_tas2563_codec(&i2c3->ops, 0x4f, 0, 0);
+	Tas2563Codec *speaker_wr = new_tas2563_codec(&i2c3->ops, 0x4c, 1, 0);
+	Tas2563Codec *speaker_tr = new_tas2563_codec(&i2c3->ops, 0x4e, 1, 0);
 
 	gpio_set(spk_rst_l, 0);
 
 	/* Delay 1ms for I2C ready */
 	mdelay(1);
-	list_insert_after(&speaker_l->component.list_node,
+	list_insert_after(&speaker_wl->component.list_node,
 			  &sound_route->components);
-	list_insert_after(&speaker_r->component.list_node,
+	list_insert_after(&speaker_tl->component.list_node,
 			  &sound_route->components);
+	list_insert_after(&speaker_wr->component.list_node,
+			  &sound_route->components);
+	list_insert_after(&speaker_tr->component.list_node,
+			  &sound_route->components);
+
 	sound_set_ops(&sound_route->ops);
 }
 
