@@ -25,6 +25,11 @@
 #define SMB1_CHGR_CHARGING_FCC ((SMB1_SLAVE_ID << 16) | SCHG_CHGR_CHARGING_FCC)
 #define SMB2_CHGR_CHARGING_FCC ((SMB2_SLAVE_ID << 16) | SCHG_CHGR_CHARGING_FCC)
 
+static bool board_boot_in_low_battery_mode(void)
+{
+	return lib_sysinfo.boot_mode == CB_BOOT_MODE_LOW_BATTERY;
+}
+
 static int get_battery_icurr_ma(void)
 {
 	QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
@@ -45,6 +50,9 @@ static int get_battery_icurr_ma(void)
 
 static void disable_battery_charging(void)
 {
+	if (!board_boot_in_low_battery_mode())
+		return;
+
 	QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
 				    PMIC_REG_CHAN0_ADDR,
 				    PMIC_REG_LAST_CHAN_ADDR - PMIC_REG_FIRST_CHAN_ADDR);
@@ -77,11 +85,6 @@ static int board_cleanup_install(void)
 }
 
 INIT_FUNC(board_cleanup_install);
-
-static bool board_boot_in_low_battery_mode(void)
-{
-	return lib_sysinfo.boot_mode == CB_BOOT_MODE_LOW_BATTERY;
-}
 
 static void clear_ec_power_button_input(void)
 {
