@@ -262,8 +262,7 @@ static int fill_info_gki(struct boot_info *bi,
 
 	bi->kernel_size = boot_hdr->kernel_size;
 	if (CONFIG(ARCH_ARM))
-		bi->dt = android_parse_dtbs(kparams->dtb, kparams->dtb_size,
-					    kparams->dtbo, kparams->dtbo_size);
+		bi->dt = android_parse_dtbs(kparams->dtbo, kparams->dtbo_size);
 	return 0;
 }
 

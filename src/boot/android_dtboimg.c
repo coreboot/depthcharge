@@ -26,32 +26,37 @@ struct dt_table_entry {
 	uint32_t custom2;
 };
 
-static bool is_dtb_image_valid(const void *dtb, size_t dtb_size)
+static bool is_dtbo_image_valid(const void *dtbo, size_t dtbo_size)
 {
-	struct dt_table_header *hdr = (struct dt_table_header *)dtb;
+	struct dt_table_header *hdr = (struct dt_table_header *)dtbo;
 
-	if (dtb_size < sizeof(*hdr)) {
-		printf("%s: Invalid DTB/DTBO size (%zx)\n", __func__, dtb_size);
+	if (!dtbo) {
+		printf("%s: DTBO image is NULL\n", __func__);
+		return false;
+	}
+
+	if (dtbo_size < sizeof(*hdr)) {
+		printf("%s: Invalid DTBO size (%zx)\n", __func__, dtbo_size);
 		return false;
 	}
 
 	if (ntohl(hdr->magic) != DT_TABLE_MAGIC || ntohl(hdr->version) != 1) {
-		printf("%s: Invalid DTB/DTBO magic or version\n", __func__);
+		printf("%s: Invalid DTBO magic or version\n", __func__);
 		return false;
 	}
 
 	if ((ntohl(hdr->dt_entries_offset) +
-	     ntohl(hdr->dt_entry_count) * ntohl(hdr->dt_entry_size)) >= dtb_size) {
+	     ntohl(hdr->dt_entry_count) * ntohl(hdr->dt_entry_size)) >= dtbo_size) {
 		printf("%s: DT Entries overflow image size - (%d + %d * %d) > %zu\n",
 		       __func__, ntohl(hdr->dt_entries_offset), ntohl(hdr->dt_entry_count),
-		       ntohl(hdr->dt_entry_size), dtb_size);
+		       ntohl(hdr->dt_entry_size), dtbo_size);
 		return false;
 	}
 	return true;
 }
 
 static int get_dt_table_entry(const void *buf, struct dt_table_entry *entry,
-			      const char *img_name, size_t img_size)
+			      size_t img_size)
 {
 	const struct dt_table_entry_v1 *v1_entry = buf;
 
@@ -65,8 +70,8 @@ static int get_dt_table_entry(const void *buf, struct dt_table_entry *entry,
 	entry->custom1 = ntohl(v1_entry->custom[1]);
 	entry->custom2 = ntohl(v1_entry->custom[2]);
 	if (entry->dt_offset >= img_size || (entry->dt_offset + entry->dt_size) >= img_size) {
-		printf("%s: ERROR: Entry @offset: %d, size: %d >= %s size %zu\n",
-		       __func__, entry->dt_offset, entry->dt_size, img_name, img_size);
+		printf("%s: ERROR: Entry @offset: %d, size: %d >= DTBO size %zu\n",
+		       __func__, entry->dt_offset, entry->dt_size, img_size);
 		return -1;
 	}
 
@@ -100,8 +105,7 @@ static bool is_dt_entry_compatible(const struct dt_table_entry *entry)
 	return false;
 }
 
-static const void *get_dt_entry_data(const void *dtb,
-				     struct dt_table_entry *entry, const char *img_name)
+static const void *get_dt_entry_data(const void *dtbo, struct dt_table_entry *entry)
 {
 	/* Reuse the output FDT buffer as a convenient, guaranteed FDT-sized
 	   scratchpad that is still unused (for it's real purpose) right now. */
@@ -110,14 +114,14 @@ static const void *get_dt_entry_data(const void *dtb,
 
 	switch (entry->compression_type) {
 	case NO_COMPRESSION:
-		return dtb + entry->dt_offset;
+		return dtbo + entry->dt_offset;
 	case LZ4_COMPRESSION:
-		printf("LZ4 decompressing %s entry @ offset %#x\n", img_name, entry->dt_offset);
-		size = ulz4fn(dtb + entry->dt_offset, entry->dt_size, buffer, size);
+		printf("LZ4 decompressing DTBO entry @ offset %#x\n", entry->dt_offset);
+		size = ulz4fn(dtbo + entry->dt_offset, entry->dt_size, buffer, size);
 		break;
 	default:
-		printf("ERROR: Unsupported compression format (%d) for %s entry at offset %x\n",
-		       entry->compression_type, img_name, entry->dt_offset);
+		printf("ERROR: Unsupported compression format(%d) for DTBO entry @ offset %x\n",
+		       entry->compression_type, entry->dt_offset);
 		return NULL;
 	}
 
@@ -126,91 +130,88 @@ static const void *get_dt_entry_data(const void *dtb,
 	return ret_buffer;
 }
 
-static const void *get_base_dt_entry(const void *dtb, size_t dtb_size)
+struct overlay_dt {
+	struct device_tree *tree;
+	uint32_t entry_id;
+	struct list_node node;
+};
+
+static struct list_node *stash_overlay_dt(struct device_tree *tree, uint32_t entry_id,
+					  struct list_node *overlay_dt_list)
 {
-	struct dt_table_header *hdr = (struct dt_table_header *)dtb;
-	struct dt_table_entry entry;
+	struct overlay_dt *overlay = xzalloc(sizeof(*overlay));
 
-	if (!is_dtb_image_valid(dtb, dtb_size))
-		return NULL;
-
-	printf("%s: Num of DTB entries: %d\n", __func__, ntohl(hdr->dt_entry_count));
-	for (uint32_t i = 0, offset = ntohl(hdr->dt_entries_offset);
-		      i < ntohl(hdr->dt_entry_count);
-		      i++, offset += ntohl(hdr->dt_entry_size)) {
-		if (get_dt_table_entry(dtb + offset, &entry, "DTB", dtb_size))
-			continue;
-
-		if (is_dt_entry_compatible(&entry)) {
-			printf("%s: Entry %d is compatible with the board\n", __func__, i);
-			return get_dt_entry_data(dtb, &entry, "DTB");
-		}
-	}
-	printf("%s: ERROR: Cannot find a matching base DTB\n", __func__);
-	return NULL;
+	overlay->tree = tree;
+	overlay->entry_id = entry_id;
+	list_insert_after(&overlay->node, overlay_dt_list);
+	return &overlay->node;
 }
 
-static void apply_dt_overlay_entries(struct device_tree *dt, const void *dtbo, size_t dtbo_size)
+static int apply_stashed_overlay_dt(struct device_tree *base_dt,
+				     struct list_node *overlay_dt_list)
 {
+	struct overlay_dt *overlay;
+
+	list_for_each(overlay, *overlay_dt_list, node) {
+		if (dt_apply_overlay(base_dt, overlay->tree) != 0) {
+			printf("Failed to apply DTB overlay entry: %d\n", overlay->entry_id);
+			return -1;
+		}
+		free(overlay);
+	}
+	return 0;
+}
+
+struct device_tree *android_parse_dtbs(const void *dtbo, size_t dtbo_size)
+{
+	struct device_tree *base_dt = NULL, *tree;
 	struct dt_table_header *hdr = (struct dt_table_header *)dtbo;
 	struct dt_table_entry entry;
-	struct device_tree *dt_overlay;
-	const void *overlay;
+	const void *dt_entry_data;
+	struct list_node overlay_dt_list = { .next = NULL, .prev = NULL };
+	struct list_node *odt_list_tail = &overlay_dt_list;
 
-	if (!is_dtb_image_valid(dtbo, dtbo_size))
-		return;
+	if (!is_dtbo_image_valid(dtbo, dtbo_size))
+		return NULL;
 
 	printf("%s: Num of DTBO entries: %d\n", __func__, ntohl(hdr->dt_entry_count));
 	for (uint32_t i = 0, offset = ntohl(hdr->dt_entries_offset);
 		      i < ntohl(hdr->dt_entry_count);
 		      i++, offset += ntohl(hdr->dt_entry_size)) {
-		if (get_dt_table_entry(dtbo + offset, &entry, "DTBO", dtbo_size))
+		if (get_dt_table_entry(dtbo + offset, &entry, dtbo_size))
 			continue;
 
 		if (!is_dt_entry_compatible(&entry))
 			continue;
 
 		printf("%s: Entry %d is compatible with the board\n", __func__, i);
-		overlay = get_dt_entry_data(dtbo, &entry, "DTBO");
-		if (!overlay)
+		dt_entry_data = get_dt_entry_data(dtbo, &entry);
+		if (!dt_entry_data)
 			continue;
 
-		dt_overlay = fdt_unflatten(overlay);
-		if (!dt_overlay) {
-			printf("Failed to unflatten DTB overlay entry: %d\n", i);
+		tree = fdt_unflatten(dt_entry_data);
+		if (!tree) {
+			printf("Failed to unflatten DT entry: %d\n", i);
 			continue;
 		}
 
-		if (dt_apply_overlay(dt, dt_overlay) != 0)
-			printf("Failed to apply DTB overlay entry: %d\n", i);
+		if (dt_is_overlay(tree)) {
+			odt_list_tail = stash_overlay_dt(tree, i, odt_list_tail);
+		} else if (!base_dt) {
+			base_dt = tree;
+		} else {
+			printf("ERROR: More than one base DT entry %d\n", i);
+			return NULL;
+		}
 	}
-}
 
-struct device_tree *android_parse_dtbs(void *dtb_addr, size_t dtb_size,
-				       void *dtbo_addr, size_t dtbo_size)
-{
-	const void *base_dtb;
-	struct device_tree *dt;
-
-	if (!dtb_addr) {
-		printf("Base DTB image is NULL.\n");
+	if (!base_dt) {
+		printf("%s ERROR: Base DT is NULL\n", __func__);
 		return NULL;
 	}
 
-	base_dtb = get_base_dt_entry(dtb_addr, dtb_size);
-	if (!base_dtb) {
-		printf("No matching DTB found.\n");
+	if (apply_stashed_overlay_dt(base_dt, &overlay_dt_list) < 0)
 		return NULL;
-	}
 
-	dt = fdt_unflatten(base_dtb);
-	if (!dt) {
-		printf("Failed to unflatten the matching DTB.\n");
-		return NULL;
-	}
-
-	if (dtbo_addr)
-		apply_dt_overlay_entries(dt, dtbo_addr, dtbo_size);
-
-	return dt;
+	return base_dt;
 }
