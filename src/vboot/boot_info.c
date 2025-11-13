@@ -49,6 +49,8 @@ static int fill_info_cros(struct boot_info *bi,
 	bi->cmd_line = (char *)bi->params - CmdLineSize;
 	bi->kernel_size = (void *)bi->cmd_line - bi->kernel;
 
+	commandline_append("cros_secure");
+
 	return 0;
 }
 
