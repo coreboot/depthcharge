@@ -4,6 +4,7 @@
 #include "base/cleanup_funcs.h"
 #include "base/init_funcs.h"
 #include "drivers/ec/cros/ec.h"
+#include "drivers/power/power.h"
 #include "drivers/soc/qcom_spmi.h"
 
 #define PMIC_CORE_REGISTERS_ADDR 0x0C500000
@@ -138,13 +139,13 @@ static int launch_charger_applet(void)
 		/*
 		 * Sample the Power Button press and exit the charging loop.
 		 *
-		 * TODO: Reset the device to ensure a fresh boot
-		 * to OS. This is required to avoid any kind of tear-down due to ADSP-lite
+		 * Reset the device to ensure a fresh boot to OS.
+		 * This is required to avoid any kind of tear-down due to ADSP-lite
 		 * being loaded and need some clean up before loading ADSP firmware by
 		 * linux kernel.
 		 */
 		if (detect_ec_power_button_input())
-			break;
+			reboot();
 
 		/* Add static delay before reading the charging applet pre-requisites */
 		mdelay(DELAY_CHARGING_APPLET_MS);
