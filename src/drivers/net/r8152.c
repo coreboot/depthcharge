@@ -1026,9 +1026,13 @@ static int rtl8152_recv(NetDevice *net_dev, void *buf, uint16_t *len,
 
 	if (partial || offset >= buf_size) {
 		offset = 0;
-		buf_size = usb_dev->controller->bulk(r8152_dev.bulk_in,
-				sizeof(msg) - partial, msg + partial, 0);
-		if (buf_size < 0) {
+		buf_size = usb_dev->controller->bulk_timeout(r8152_dev.bulk_in,
+				sizeof(msg) - partial, msg + partial,
+				USB_ETH_BULK_POLL_TIMEOUT_US);
+		if (buf_size == USB_TIMEOUT) {
+			*len = 0;
+			return 0;
+		} else if (buf_size < 0) {
 			printf("R8152: Bulk read error %#x\n", buf_size);
 			return 1;
 		}
