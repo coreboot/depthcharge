@@ -25,6 +25,9 @@
 #define FB_EP_IN 0x89
 #define FB_EP_OUT 0x08
 
+/* Wait 100ms for transaction. If it timeouts, probably other side doesn't send anything. */
+#define BULK_POLL_TIMEOUT_US 100000
+
 typedef struct UsbFastbootDevice {
 	struct list_node list_node;
 	struct FastbootOps fb_session;
@@ -50,8 +53,11 @@ static int usb_fastboot_recv(UsbFastbootDevice *usb_fb_dev, void *buf, size_t *l
 {
 	int32_t buf_size;
 
-	buf_size = usb_fb_dev->usb_dev->controller->bulk(usb_fb_dev->bulk_in, maxlen, buf, 0);
-	if (buf_size < 0) {
+	buf_size = usb_fb_dev->usb_dev->controller->bulk_timeout(
+			usb_fb_dev->bulk_in, maxlen, buf, BULK_POLL_TIMEOUT_US);
+	if (buf_size == USB_TIMEOUT) {
+		return buf_size;
+	} else if (buf_size < 0) {
 		printf("USBFB: Bulk read error %#x\n", buf_size);
 		return 1;
 	}
@@ -74,18 +80,9 @@ static void usb_fastboot_release(struct FastbootOps *fb)
 	}
 }
 
-/*
- * TODO(b/448577778): If there is no data, usb bulk read will block for 5s. Disable ALink
- *                    polling when usb_poll() isn't called from fastboot context (e.g. it was
- *                    called to check usb keyboard state).
- */
-static bool fastboot_poll_in_progress = false;
-
 static void usb_fastboot_poll(struct FastbootOps *fb)
 {
-	fastboot_poll_in_progress = true;
 	usb_poll();
-	fastboot_poll_in_progress = false;
 }
 
 static void usb_fastboot_dev_poll(usbdev_t *dev)
@@ -94,9 +91,6 @@ static void usb_fastboot_dev_poll(usbdev_t *dev)
 	size_t len;
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)dev->data;
 	UsbFastbootDevice *usb_fb_dev = (UsbFastbootDevice *)gen_dev->dev_data;
-
-	if (!fastboot_poll_in_progress)
-		return;
 
 	/* Process only Alink in use */
 	if (!is_usb_fastboot_in_use(usb_fb_dev))
