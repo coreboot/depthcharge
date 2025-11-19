@@ -4,5 +4,5 @@
 
 const char *get_rts545x_configs(int ec_pd_id)
 {
-	return RTS545X_PS8747;
+	return RTS545XVB_PS8747;
 }
