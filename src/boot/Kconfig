@@ -106,3 +106,15 @@ config ANDROID_MTE
 	default n
 	help
 	  Global flag to turn on/off MTE support in depthcharge.
+
+config ANDROID_MTE_TAG_ADDR
+	hex "MTE tag address in DRAM"
+	depends on ANDROID_MTE
+	help
+	  Hardcoded MTE tag base address.
+
+config ANDROID_MTE_TAG_SIZE
+	hex "MTE tag size in DRAM"
+	depends on ANDROID_MTE
+	help
+	  Hardcoded MTE tag size.
