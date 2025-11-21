@@ -232,8 +232,16 @@ static int board_setup(void)
 
 	/* Set display ops */
 	if (display_init_required()) {
+		uintptr_t ovl_base1 = 0;
+		uintptr_t blender_base1 = 0;
+
+		if (lib_sysinfo.framebuffer.flags.has_dual_pipe) {
+			ovl_base1 = 0x32c50000;
+			blender_base1 = 0x32ce0000;
+		}
 		display_set_ops(new_mtk_display(board_backlight_update,
-						0x32850000, 2, 0x328e0000, 0, 0));
+						0x32850000, 2, 0x328e0000,
+						ovl_base1, blender_base1));
 	} else {
 		printf("[%s] no display_init_required()!\n", __func__);
 	}
