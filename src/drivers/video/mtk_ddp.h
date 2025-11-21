@@ -26,6 +26,8 @@
 DisplayOps *new_mtk_display(int (*backlight_update_fn)
 			    (DisplayOps *me, bool enable),
 			    uintptr_t ovl_base, int lanes,
-			    uintptr_t blender_base);
+			    uintptr_t blender_base,
+			    uintptr_t ovl_base1,
+			    uintptr_t blender_base1);
 
 #endif /* __DRIVERS_VIDEO_MTK_H__ */

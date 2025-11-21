@@ -26,6 +26,8 @@ typedef struct {
 	DisplayOps ops;
 	uintptr_t ovl_base;
 	uintptr_t blender_base;
+	uintptr_t ovl_base1;
+	uintptr_t blender_base1;
 	int lanes;
 	enum ovl_type type;
 } MtkDisplay;
@@ -43,6 +45,7 @@ static int mtk_display_init(DisplayOps *me)
 {
 	uintptr_t phys_addr = lib_sysinfo.framebuffer.physical_address;
 	MtkDisplay *mtk = container_of(me, MtkDisplay, ops);
+	uint32_t offset;
 
 	if (mtk->type == DISP_OVL) {
 		write32p(mtk->ovl_base + DISP_REG_OVL_L0_ADDR, phys_addr);
@@ -54,6 +57,16 @@ static int mtk_display_init(DisplayOps *me)
 		setbits32p(mtk->ovl_base + DISP_REG_EXDMA_EN, BIT(0));
 		setbits32p(mtk->ovl_base + DISP_REG_EXDMA_L_EN, BIT(0));
 		setbits32p(mtk->blender_base + DISP_REG_EXDMA_L_EN, BIT(0));
+
+		if (!mtk->ovl_base1)
+			return 0;
+
+		offset = lib_sysinfo.framebuffer.x_resolution *
+			 lib_sysinfo.framebuffer.bits_per_pixel / 8 / 2;
+		write32p(mtk->ovl_base1 + DISP_REG_OVL_L0_ADDR, phys_addr + offset);
+		setbits32p(mtk->ovl_base1 + DISP_REG_EXDMA_EN, BIT(0));
+		setbits32p(mtk->ovl_base1 + DISP_REG_EXDMA_L_EN, BIT(0));
+		setbits32p(mtk->blender_base1 + DISP_REG_EXDMA_L_EN, BIT(0));
 	}
 
 	return 0;
@@ -71,6 +84,13 @@ static int mtk_display_stop(DisplayOps *me)
 		clrbits32p(mtk->blender_base + DISP_REG_EXDMA_L_EN, BIT(0));
 		clrbits32p(mtk->ovl_base + DISP_REG_EXDMA_EN, BIT(0));
 		clrbits32p(mtk->ovl_base + DISP_REG_EXDMA_L_EN, BIT(0));
+
+		if (!mtk->ovl_base1)
+			return 0;
+
+		clrbits32p(mtk->blender_base1 + DISP_REG_EXDMA_L_EN, BIT(0));
+		clrbits32p(mtk->ovl_base1 + DISP_REG_EXDMA_EN, BIT(0));
+		clrbits32p(mtk->ovl_base1 + DISP_REG_EXDMA_L_EN, BIT(0));
 	}
 
 	return 0;
@@ -79,7 +99,9 @@ static int mtk_display_stop(DisplayOps *me)
 DisplayOps *new_mtk_display(int (*backlight_update_fn)
 			    (DisplayOps *me, bool enable),
 			    uintptr_t ovl_base, int lanes,
-			    uintptr_t blender_base)
+			    uintptr_t blender_base,
+			    uintptr_t ovl_base1,
+			    uintptr_t blender_base1)
 {
 	MtkDisplay *display = xzalloc(sizeof(MtkDisplay));
 
@@ -89,6 +111,8 @@ DisplayOps *new_mtk_display(int (*backlight_update_fn)
 	display->type = blender_base ? DISP_EXDMA : DISP_OVL;
 	display->blender_base = blender_base;
 	display->ovl_base = ovl_base;
+	display->blender_base1 = blender_base1;
+	display->ovl_base1 = ovl_base1;
 	display->lanes = lanes;
 	if (backlight_update_fn)
 		display->ops.backlight_update = backlight_update_fn;
