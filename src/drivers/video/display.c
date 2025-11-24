@@ -27,11 +27,8 @@ static DisplayOps *display_ops;
 static int display_cleanup(struct CleanupFunc *cleanup, CleanupType type)
 {
 	int err = ui_display_clear();
-	if (type != CleanupOnLegacy) {
-		err |= backlight_update(false);
-		if (display_ops && display_ops->stop)
-			err |= display_ops->stop(display_ops);
-	}
+	if (type != CleanupOnLegacy)
+		err |= display_stop();
 	return err ? -1 : 0;
 }
 
@@ -98,4 +95,15 @@ int display_screen(enum ui_screen screen)
 
 	printf("display: %s called but not implemented.\n", __func__);
 	return 0;
+}
+
+int display_stop(void)
+{
+	int err;
+
+	err = backlight_update(false);
+	if (display_ops && display_ops->stop)
+		err |= display_ops->stop(display_ops);
+
+	return err;
 }

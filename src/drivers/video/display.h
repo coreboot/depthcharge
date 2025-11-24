@@ -86,4 +86,6 @@ int backlight_update(bool enable);
 
 int display_screen(enum ui_screen screen);
 
+int display_stop(void);
+
 #endif
