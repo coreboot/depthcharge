@@ -369,6 +369,8 @@ static void configure_audio_codec(const struct audio_codec *codec,
 				data->codec = new_hda_codec();
 				sound_set_ops(&data->codec->ops);
 				set_hda_beep_nid_override(data->codec, 1);
+				/* Class-D connection on ALC256 is 0x14. */
+				set_hda_mute_amp_nid(data->codec, 0x14);
 			}
 		}
 		break;

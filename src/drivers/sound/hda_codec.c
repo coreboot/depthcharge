@@ -30,6 +30,11 @@
 
 #define HDA_VERB_GET_PARAMS 0xF00
 #define HDA_VERB_SET_BEEP 0x70A
+#define HDA_VERB_SET_AMP_GAIN_MUTE 0x300
+
+/* HDA AMP mute/unmute payload */
+#define PAYLOAD_UNMUTE 0xB000
+#define PAYLOAD_MUTE 0xB080
 
 /* GET_PARAMS parameter IDs. */
 #define GET_PARAMS_NODE_COUNT 0x04
@@ -314,10 +319,30 @@ static int set_beep_divisor(HdaCodec *codec, uint8_t divider)
 			      HDA_VERB(beep_nid, HDA_VERB_SET_BEEP, divider));
 }
 
+/* Mute/Unmute the amp if nid is specified in HDA codec. */
+static int set_node_amp_mute(HdaCodec *codec, uint8_t mute)
+{
+	if (codec->mute_amp_nid != -1) {
+		void *base;
+		uint32_t payload;
+
+		base = get_hda_base();
+		if (base == NULL) {
+			printf("Audio: Failed to find HDA controller.\n");
+			return -1;
+		}
+		payload = mute ? PAYLOAD_MUTE : PAYLOAD_UNMUTE;
+		return write_one_verb(base, HDA_VERB(codec->mute_amp_nid,
+				      HDA_VERB_SET_AMP_GAIN_MUTE, payload));
+	}
+	return 0;
+}
+
 static int hda_codec_start(SoundOps *me, uint32_t frequency)
 {
 	uint8_t divider_val;
 	HdaCodec *codec = container_of(me, HdaCodec, ops);
+	int rc;
 
 	if (frequency == 0)
 		divider_val = 0;	// off
@@ -328,12 +353,20 @@ static int hda_codec_start(SoundOps *me, uint32_t frequency)
 	else
 		divider_val = (uint8_t)(0xFF & (BEEP_FREQ_BASE / frequency));
 
-	return set_beep_divisor(codec, divider_val);
+	rc = set_beep_divisor(codec, divider_val);
+	if (rc < 0)
+		return rc;
+	return set_node_amp_mute(codec, 0);
 }
 
 static int hda_codec_stop(SoundOps *me)
 {
 	HdaCodec *codec = container_of(me, HdaCodec, ops);
+	int rc;
+
+	rc = set_node_amp_mute(codec, 1);
+	if (rc < 0)
+		return rc;
 	return set_beep_divisor(codec, 0);
 }
 
@@ -352,10 +385,16 @@ HdaCodec *new_hda_codec(void)
 	codec->ops.stop = &hda_codec_stop;
 	codec->ops.play = &hda_codec_play;
 	codec->beep_nid_override = -1;
+	codec->mute_amp_nid = -1;
 	return codec;
 }
 
 void set_hda_beep_nid_override(HdaCodec *codec, int nid)
 {
 	codec->beep_nid_override = nid;
+}
+
+void set_hda_mute_amp_nid(HdaCodec *codec, int nid)
+{
+	codec->mute_amp_nid = nid;
 }
