@@ -31,6 +31,11 @@ static bool board_boot_in_low_battery_mode(void)
 	return lib_sysinfo.boot_mode == CB_BOOT_MODE_LOW_BATTERY;
 }
 
+static bool board_boot_in_offmode_charging_mode(void)
+{
+	return lib_sysinfo.boot_mode == CB_BOOT_MODE_OFFMODE_CHARGING;
+}
+
 static int get_battery_icurr_ma(void)
 {
 	QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
@@ -51,7 +56,7 @@ static int get_battery_icurr_ma(void)
 
 static void disable_battery_charging(void)
 {
-	if (!board_boot_in_low_battery_mode())
+	if (!board_boot_in_low_battery_mode() || !board_boot_in_offmode_charging_mode())
 		return;
 
 	QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
@@ -120,7 +125,8 @@ static int detect_ec_ac_disconnect_input(void)
 
 static int launch_charger_applet(void)
 {
-	if (!CONFIG(DRIVER_EC_CROS) || !board_boot_in_low_battery_mode())
+	if (!CONFIG(DRIVER_EC_CROS) || !(board_boot_in_low_battery_mode()
+		|| board_boot_in_offmode_charging_mode()))
 		return 0;
 
 	printf("Inside %s. Initiating charging\n", __func__);
