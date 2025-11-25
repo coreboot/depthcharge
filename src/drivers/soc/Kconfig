@@ -76,6 +76,13 @@ config DRIVER_SOC_QCOM_SDTRAY
 	  You ordinarily shouldn't need this unless you need to hack voltage
 	  regulators in depthcharge to work around hardware issues.
 
+config DRIVER_SOC_QCOM_SMEM
+	bool "Qualcomm SMEM driver"
+	default n
+	help
+	  Generic driver to read Qualcomm Shared Memory (SMEM).
+	  Supports reading any SMEM item by ID.
+
 config DRIVER_SOC_X1P42100
 	bool "Qualcomm SOC X1P42100 driver"
 	default n

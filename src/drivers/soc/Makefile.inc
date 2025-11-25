@@ -26,6 +26,7 @@ depthcharge-$(CONFIG_DRIVER_SOC_PICASSO) += picasso.c
 depthcharge-$(CONFIG_DRIVER_SOC_QCOM_QUP_SE) += qcom_qup_se.c
 depthcharge-$(CONFIG_DRIVER_SOC_QCOM_SPMI) += qcom_spmi.c
 depthcharge-$(CONFIG_DRIVER_SOC_QCOM_SDTRAY) += qcom_sd_tray.c
+depthcharge-$(CONFIG_DRIVER_SOC_QCOM_SMEM) += qcom_smem.c
 depthcharge-$(CONFIG_DRIVER_SOC_JASPERLAKE) += intel_common.c
 depthcharge-$(CONFIG_DRIVER_SOC_TIGERLAKE) += tigerlake.c
 depthcharge-$(CONFIG_DRIVER_SOC_TIGERLAKE) += intel_common.c
