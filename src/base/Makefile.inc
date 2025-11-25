@@ -25,4 +25,8 @@ depthcharge-y += sparse.c
 depthcharge-y += state_machine.c
 depthcharge-y += timestamp.c
 depthcharge-y += vpd_decode.c
+ifeq ($(CONFIG_VPD_QCOM),y)
+depthcharge-y += vpd_util_qcom.c
+else
 depthcharge-y += vpd_util.c
+endif

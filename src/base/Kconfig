@@ -19,3 +19,10 @@ config HEADLESS
 	default n
 	help
 	  "Set to 'y' for devices without display screens"
+
+config VPD_QCOM
+	bool "Use Qualcomm VPD implementation"
+	default n
+	help
+	  Use Qualcomm-specific VPD implementation that retrieves data
+	  from SMEM instead of traditional VPD storage.
