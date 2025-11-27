@@ -132,6 +132,7 @@ static int launch_charger_applet(void)
 		 */
 		if (!get_battery_icurr_ma()) {
 			printf("Issuing power-off due to change in charging state.\n");
+			cros_ec_enable_offmode_heartbeat();
 			power_off();
 		}
 
