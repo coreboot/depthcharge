@@ -776,6 +776,11 @@ int cros_ec_ap_poweroff(void)
 	return ec_command(cros_ec_get(), EC_CMD_AP_SHUTDOWN, 0, NULL, 0, NULL, 0);
 }
 
+int cros_ec_enable_offmode_heartbeat(void)
+{
+	return ec_command(cros_ec_get(), EC_CMD_ENABLE_OFFMODE_HEARTBEAT, 0, NULL, 0, NULL, 0);
+}
+
 int cros_ec_ap_reset(void)
 {
 	return ec_command(cros_ec_get(), EC_CMD_AP_RESET, 0, NULL, 0, NULL, 0);
