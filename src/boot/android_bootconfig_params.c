@@ -135,6 +135,33 @@ static int append_bootloader_version(struct bootconfig *bc)
 	return bootconfig_append(bc, BOOTLOADER_VERSION_KEY_STR, version_str);
 }
 
+#define DDR_SIZE_KEY_STR "androidboot.ddr_size"
+#define DDR_SIZE_PATTERN "%zuGB"
+#define DDR_SIZE_VALUE_LENGTH 32
+
+static int append_ddr_size(struct bootconfig *bc)
+{
+	char ddr_size_str[DDR_SIZE_VALUE_LENGTH];
+	const size_t memory_size_mib = sysinfo_get_physical_memory_size_mib();
+
+	if (!memory_size_mib) {
+		printf("ERROR: Unable to get physical memory size from sysinfo\n");
+		return -1;
+	} else if (memory_size_mib % (GiB / MiB) != 0) {
+		printf("WARNING: Reported physical memory size is not aligned to GiB. Will be "
+		       "rounded down. Reported value: %zu MiB (%#zx)\n",
+		       memory_size_mib, memory_size_mib);
+	}
+
+	/* Change MiB to GiB. */
+	int ret = snprintf(ddr_size_str, sizeof(ddr_size_str), DDR_SIZE_PATTERN,
+			   memory_size_mib / (GiB / MiB));
+	if (ret <= 0 || ret >= sizeof(ddr_size_str))
+		return -1;
+
+	return bootconfig_append(bc, DDR_SIZE_KEY_STR, ddr_size_str);
+}
+
 #define MFG_SKU_ID_VPD_KEY "mfg_sku_id"
 #define MFG_SKU_ID_CONFIG_KEY "androidboot.product.hardware.sku"
 
@@ -150,7 +177,8 @@ int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_pa
 	       append_display_orientation(bc, kp) |
 	       append_skuid(bc) |
 	       append_boot_source(bc, kp) |
-	       append_bootloader_version(bc);
+	       append_bootloader_version(bc) |
+	       append_ddr_size(bc);
 }
 
 int append_android_bootconfig_boottime(struct boot_info *bi)
