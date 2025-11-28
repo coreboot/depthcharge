@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <commonlib/helpers.h>
+#include <endian.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <tlcl.h>
 #include <tss_constants.h>
 #include <vb2_api.h>
 
+#include "arch/arm/smc.h"
 #include "vboot/widevine.h"
 
 /* Widevine unique device key index. */
@@ -19,6 +22,8 @@
 #define CROS_OEM_SMC_DRM_SET_HARDWARE_UNIQUE_KEY_FUNC_ID 0xC300C051
 #define CROS_OEM_SMC_DRM_SET_ROOT_OF_TRUST_FUNC_ID 0xC300C052
 
+#define CROS_OEM_QTEE_SMC_DRM_SET_ROOT_OF_TRUST_FUNC_ID 0x72000802
+
 // Widevine RoT
 static const uint8_t widevine_rot_context[] = {'W', 'i', 'd', 'e', 'v', 'i',
 					       'n', 'e', ' ', 'R', 'o', 'T'};
@@ -26,6 +31,10 @@ static const uint8_t widevine_rot_context[] = {'W', 'i', 'd', 'e', 'v', 'i',
 // Widevine HUK
 static const uint8_t widevine_huk_context[] = {'W', 'i', 'd', 'e', 'v', 'i',
 					       'n', 'e', ' ', 'H', 'U', 'K'};
+
+_Static_assert(CONFIG(WIDEVINE_PROVISION_OPTEE) !=
+	           CONFIG(WIDEVINE_PROVISION_QTEE),
+	           "Exactly one of WIDEVINE_PROVISION_OPTEE or WIDEVINE_PROVISION_QTEE must be set");
 
 static uint32_t read_rot_seed(uint8_t *rot_seed)
 {
@@ -80,6 +89,21 @@ static void register_widevine_optee_rot(uint8_t rot[WIDEVINE_ROT_LEN])
 		printf("write TF-A widevine OPTEE ROT failed: %#x\n", ret);
 }
 
+static void register_widevine_qtee_rot(uint8_t rot[WIDEVINE_ROT_LEN])
+{
+	size_t elements = WIDEVINE_ROT_LEN / sizeof(uint64_t);
+	uint64_t qword_keys[elements];
+
+	for (size_t index = 0; index < ARRAY_SIZE(qword_keys); index++)
+		qword_keys[index] = le64dec(rot + index * 8);
+
+	int ret = smc(CROS_OEM_QTEE_SMC_DRM_SET_ROOT_OF_TRUST_FUNC_ID, elements,
+		      qword_keys[0], qword_keys[1], qword_keys[2], qword_keys[3], 0);
+
+	if (ret)
+		printf("write TF-A widevine QTEE ROT failed: %#x\n", ret);
+}
+
 uint32_t prepare_widevine_root_of_trust(struct vb2_context *ctx)
 {
 	uint8_t rot_seed[WIDEVINE_NV_ROT_SEED_LEN];
@@ -101,16 +125,17 @@ uint32_t prepare_widevine_root_of_trust(struct vb2_context *ctx)
 		return TPM_E_INTERNAL_ERROR;
 	}
 
-	if (vb2_hmac_calculate(vb2api_hwcrypto_allowed(ctx), VB2_HASH_SHA256,
-			       rot_seed, sizeof(rot_seed), widevine_huk_context,
-			       sizeof(widevine_huk_context), &huk)) {
-		printf("Failed to calculate hmac for HUK\n");
-		return TPM_E_INTERNAL_ERROR;
-	}
-
 	if (CONFIG(WIDEVINE_PROVISION_OPTEE)) {
+		if (vb2_hmac_calculate(vb2api_hwcrypto_allowed(ctx), VB2_HASH_SHA256,
+				       rot_seed, sizeof(rot_seed), widevine_huk_context,
+				       sizeof(widevine_huk_context), &huk)) {
+			printf("Failed to calculate hmac for HUK\n");
+			return TPM_E_INTERNAL_ERROR;
+		}
 		register_widevine_optee_huk(huk.sha256);
 		register_widevine_optee_rot(rot.sha256);
+	} else {
+		register_widevine_qtee_rot(rot.sha256);
 	}
 
 	return TPM_SUCCESS;
