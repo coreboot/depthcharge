@@ -56,7 +56,7 @@ static uint32_t read_rot_seed(uint8_t *rot_seed)
 	return TPM_SUCCESS;
 }
 
-static void register_widevine_huk(uint8_t huk[WIDEVINE_HUK_LEN])
+static void register_widevine_optee_huk(uint8_t huk[WIDEVINE_HUK_LEN])
 {
 	int ret;
 
@@ -65,10 +65,10 @@ static void register_widevine_huk(uint8_t huk[WIDEVINE_HUK_LEN])
 		WIDEVINE_HUK_LEN);
 
 	if (ret)
-		printf("write TF-A widevine HUK failed: %#x\n", ret);
+		printf("write TF-A widevine OPTEE HUK failed: %#x\n", ret);
 }
 
-static void register_widevine_rot(uint8_t rot[WIDEVINE_ROT_LEN])
+static void register_widevine_optee_rot(uint8_t rot[WIDEVINE_ROT_LEN])
 {
 	int ret;
 
@@ -77,7 +77,7 @@ static void register_widevine_rot(uint8_t rot[WIDEVINE_ROT_LEN])
 		WIDEVINE_ROT_LEN);
 
 	if (ret)
-		printf("write TF-A widevine ROT failed: %#x\n", ret);
+		printf("write TF-A widevine OPTEE ROT failed: %#x\n", ret);
 }
 
 uint32_t prepare_widevine_root_of_trust(struct vb2_context *ctx)
@@ -108,8 +108,10 @@ uint32_t prepare_widevine_root_of_trust(struct vb2_context *ctx)
 		return TPM_E_INTERNAL_ERROR;
 	}
 
-	register_widevine_huk(huk.sha256);
-	register_widevine_rot(rot.sha256);
+	if (CONFIG(WIDEVINE_PROVISION_OPTEE)) {
+		register_widevine_optee_huk(huk.sha256);
+		register_widevine_optee_rot(rot.sha256);
+	}
 
 	return TPM_SUCCESS;
 }
