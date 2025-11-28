@@ -112,7 +112,12 @@ config CROSSYSTEM_FDT
 endchoice
 
 config WIDEVINE_PROVISION
-	bool "Enable the widevine provision for ARM optee"
+	bool "Enable the widevine provision"
 	depends on ARCH_ARM_V8
 	select CLEAR_DATA
+	default y if WIDEVINE_PROVISION_OPTEE
+	default n
+
+config WIDEVINE_PROVISION_OPTEE
+	bool "Enable the widevine provision for ARM optee"
 	default n
