@@ -139,8 +139,10 @@ static int launch_charger_applet(void)
 		 * Read the charger status, bail out if not present or not
 		 * charging then issue a shutdown
 		 */
-		if (detect_ec_ac_disconnect_input() || !get_battery_icurr_ma())
+		if (detect_ec_ac_disconnect_input() || !get_battery_icurr_ma()) {
+			printf("Issuing power-off due to change in charging state.\n");
 			cros_ec_ap_poweroff();
+		}
 
 		/*
 		 * Sample the Power Button press and exit the charging loop.
@@ -150,8 +152,10 @@ static int launch_charger_applet(void)
 		 * being loaded and need some clean up before loading ADSP firmware by
 		 * linux kernel.
 		 */
-		if (detect_ec_power_button_input())
+		if (detect_ec_power_button_input()) {
+			printf("Exiting charging applet to boot to OS\n");
 			reboot();
+		}
 
 		/* Add static delay before reading the charging applet pre-requisites */
 		mdelay(DELAY_CHARGING_APPLET_MS);
