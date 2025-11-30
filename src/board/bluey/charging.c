@@ -141,7 +141,7 @@ static int launch_charger_applet(void)
 		 */
 		if (detect_ec_ac_disconnect_input() || !get_battery_icurr_ma()) {
 			printf("Issuing power-off due to change in charging state.\n");
-			cros_ec_ap_poweroff();
+			power_off();
 		}
 
 		/*
