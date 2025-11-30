@@ -154,7 +154,11 @@ static int launch_charger_applet(void)
 		 */
 		if (detect_ec_power_button_input()) {
 			printf("Exiting charging applet to boot to OS\n");
-			reboot();
+			/* FIXME: b/429523381 - enable warm-reboot
+			 * W/A: Use EC reboot to allow booting to OS.
+			 */
+			// reboot();
+			cros_ec_reboot(0);
 		}
 
 		/* Add static delay before reading the charging applet pre-requisites */
