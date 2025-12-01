@@ -30,6 +30,7 @@ static const struct storage_config storage_configs[] = {
 	{
 		.media = STORAGE_NVME,
 		.pci_dev = PCI_DEV_PCIE1,
+		.fw_config = FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_NVME)
 	},
 	{
 		.media = STORAGE_UFS,
@@ -37,6 +38,20 @@ static const struct storage_config storage_configs[] = {
 		.ufs = {
 			.ref_clk_freq = UFS_REFCLKFREQ_38_4
 		},
+		.fw_config = FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_UFS)
+	},
+	{
+		.media = STORAGE_NVME,
+		.pci_dev = PCI_DEV_PCIE1,
+		.fw_config = FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_UNKNOWN)
+	},
+	{
+		.media = STORAGE_UFS,
+		.pci_dev = PCI_DEV_UFS,
+		.ufs = {
+			.ref_clk_freq = UFS_REFCLKFREQ_38_4
+		},
+		.fw_config = FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_UNKNOWN)
 	},
 };
 
