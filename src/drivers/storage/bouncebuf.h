@@ -83,6 +83,15 @@ int bounce_buffer_start(struct bounce_buffer *state, void *data,
  */
 int bounce_buffer_stop(struct bounce_buffer *state);
 
+/**
+ * bounce_buffer_did_bounce() -- Check if intermediate buffer was allocated
+ * state:	stores state passed between bounce_buffer_{start,stop}
+ */
+inline bool bounce_buffer_did_bounce(struct bounce_buffer *state)
+{
+	return state->user_buffer != state->bounce_buffer;
+}
+
 // TODO(hungte) Eliminate the alignment stuff below and replace them with a
 // better and centralized way to handler non-cache/aligned memory.
 // Helper macros for alignment.

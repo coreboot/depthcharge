@@ -99,7 +99,7 @@ int bounce_buffer_stop(struct bounce_buffer *state)
 		dcache_invalidate_by_mva(state->bounce_buffer,
 					 state->len_aligned);
 
-	if (state->bounce_buffer == state->user_buffer)
+	if (!bounce_buffer_did_bounce(state))
 		return 0;
 
 	if (state->flags & GEN_BB_WRITE)

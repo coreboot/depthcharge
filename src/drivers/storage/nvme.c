@@ -478,7 +478,10 @@ static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
 	uint64_t max_transfer_blocks = 0;
 	uint32_t block_size = drive->dev.block_size;
 	lba_t orig_count = count;
+	lba_t blocks;
 	int status = NVME_SUCCESS;
+	bool needs_sync = false;
+
 	struct bounce_buffer bbstate;
 	/* Read operation writes to bounce buffer (GEN_BB_WRITE) */
 	unsigned int bbflags = read ? GEN_BB_WRITE : GEN_BB_READ;
@@ -493,33 +496,35 @@ static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
 	    (max_transfer_blocks > NVME_MAX_XFER_BYTES / block_size))
 		max_transfer_blocks = NVME_MAX_XFER_BYTES / block_size;
 
-	/* Flush cache data to the memory before DMA transfer */
-	const int ret = bounce_buffer_start(&bbstate, buffer,
-					    orig_count * drive->dev.block_size,
-					    bbflags);
-	if (ret) {
-		printf("%s: error: Failed to allocate bounce buffer.\n", __func__);
-		return 0;
-	}
-
-	void *bounce_buffer = bbstate.bounce_buffer;
 	const char *op = read ? "read" : "write";
 	while (count > 0) {
-		if (count > max_transfer_blocks) {
-			DEBUG("%s: partial %s of %llu blocks\n",
-			      __func__, op, max_transfer_blocks);
-			status = nvme_block_rw(drive, bounce_buffer, start,
-					       max_transfer_blocks, read);
-			count -= max_transfer_blocks;
-			bounce_buffer += max_transfer_blocks * block_size;
-			start += max_transfer_blocks;
-		} else {
-			DEBUG("%s: final %s of %llu blocks\n",
-			      __func__, op, count);
-			status = nvme_block_rw(drive, bounce_buffer, start,
-					       count, read);
-			count = 0;
+		blocks = MIN(count, max_transfer_blocks);
+
+		needs_sync = true;
+		const int ret = bounce_buffer_start(&bbstate, buffer,
+					blocks * drive->dev.block_size,
+					bbflags);
+		if (ret) {
+			printf("%s: error: Failed to allocate bounce buffer.\n",
+				__func__);
+			return 0;
 		}
+
+		DEBUG("%s: %s %s of %llu blocks\n",
+			__func__, (count > blocks) ? "partial" : "final", op, blocks);
+		status = nvme_block_rw(drive, bbstate.bounce_buffer, start,
+					blocks, read);
+		count -= blocks;
+		buffer += blocks * block_size;
+		start += blocks;
+
+		if (!NVME_ERROR(status) && bounce_buffer_did_bounce(&bbstate)) {
+			status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX,
+					       NVME_CCQ_SIZE, NVME_GENERIC_TIMEOUT);
+			needs_sync = false;
+		}
+
+		bounce_buffer_stop(&bbstate);
 
 		if (NVME_ERROR(status)) {
 			printf("%s: Internal %s failed\n", __func__, op);
@@ -527,14 +532,15 @@ static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
 		}
 	}
 
-	status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX, NVME_CCQ_SIZE,
-			       NVME_GENERIC_TIMEOUT);
-	if (NVME_ERROR(status))
-		printf("%s: error %d failed to sync command\n",
-		       __func__, status);
+	if (needs_sync) {
+		status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX, NVME_CCQ_SIZE,
+				NVME_GENERIC_TIMEOUT);
+		if (NVME_ERROR(status))
+			printf("%s: error %d failed to sync command\n",
+			__func__, status);
+	}
 
 out:
-	bounce_buffer_stop(&bbstate);
 	DEBUG("%s: lba = %#08x, Original = %#08x, Remaining = %#08x, BlockSize = %#x Status = %d\n",
 	      __func__, (uint32_t)start, (uint32_t)orig_count, (uint32_t)count,
 	      block_size, status);
