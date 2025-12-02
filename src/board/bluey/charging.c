@@ -92,18 +92,23 @@ static int board_cleanup_install(void)
 
 INIT_FUNC(board_cleanup_install);
 
-static void clear_ec_power_button_input(void)
+static void clear_ec_manual_poweron_event(void)
 {
-	cros_ec_clear_host_events(EC_HOST_EVENT_MASK(EC_HOST_EVENT_POWER_BUTTON));
+	const uint32_t manual_pwron_event_mask =
+		(EC_HOST_EVENT_MASK(EC_HOST_EVENT_POWER_BUTTON) |
+		EC_HOST_EVENT_MASK(EC_HOST_EVENT_LID_OPEN));
+	cros_ec_clear_host_events(manual_pwron_event_mask);
 }
 
-static int detect_ec_power_button_input(void)
+static int detect_ec_manual_poweron_event(void)
 {
-	const uint32_t pwr_btn_mask = EC_HOST_EVENT_MASK(EC_HOST_EVENT_POWER_BUTTON);
+	const uint32_t manual_pwron_event_mask =
+		(EC_HOST_EVENT_MASK(EC_HOST_EVENT_POWER_BUTTON) |
+		EC_HOST_EVENT_MASK(EC_HOST_EVENT_LID_OPEN));
 	uint32_t events;
 
-	if ((cros_ec_get_host_events(&events) == 0) && (events & pwr_btn_mask)) {
-		cros_ec_clear_host_events(pwr_btn_mask);
+	if ((cros_ec_get_host_events(&events) == 0) && (events & manual_pwron_event_mask)) {
+		cros_ec_clear_host_events(manual_pwron_event_mask);
 		return 1;
 	}
 
@@ -118,8 +123,8 @@ static int launch_charger_applet(void)
 
 	printf("Inside %s. Initiating charging\n", __func__);
 
-	/* clear any pending power button press event */
-	clear_ec_power_button_input();
+	/* clear any pending power button press and lid open event */
+	clear_ec_manual_poweron_event();
 
 	do {
 		/*
@@ -131,14 +136,15 @@ static int launch_charger_applet(void)
 		}
 
 		/*
-		 * Sample the Power Button press and exit the charging loop.
+		 * Exit the charging loop in the event of lid open or power
+		 * button press.
 		 *
 		 * Reset the device to ensure a fresh boot to OS.
 		 * This is required to avoid any kind of tear-down due to ADSP-lite
 		 * being loaded and need some clean up before loading ADSP firmware by
 		 * linux kernel.
 		 */
-		if (detect_ec_power_button_input()) {
+		if (detect_ec_manual_poweron_event()) {
 			printf("Exiting charging applet to boot to OS\n");
 			/* FIXME: b/429523381 - enable warm-reboot
 			 * W/A: Use EC reboot to allow booting to OS.
