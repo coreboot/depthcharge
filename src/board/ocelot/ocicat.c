@@ -16,11 +16,6 @@ static const struct storage_config storage_configs[] = {
 		.fw_config = FW_CONFIG(STORAGE, STORAGE_NVME_GEN4)
 	},
 	{
-		.media = STORAGE_NVME,
-		.pci_dev = PCI_DEV_PCIE5,
-		.fw_config = FW_CONFIG(STORAGE, STORAGE_NVME_GEN4)
-	},
-	{
 		.media = STORAGE_UFS,
 		.pci_dev = PCI_DEV_UFS,
 		.ufs = {
@@ -31,11 +26,6 @@ static const struct storage_config storage_configs[] = {
 	{
 		.media = STORAGE_NVME,
 		.pci_dev = PCI_DEV_PCIE1,
-		.fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN)
-	},
-	{
-		.media = STORAGE_NVME,
-		.pci_dev = PCI_DEV_PCIE5,
 		.fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN)
 	},
 	{
@@ -60,4 +50,9 @@ void board_rts5453_get_image_paths(const char **image_path, const char **hash_pa
 {
 		*image_path = NULL;
 		*hash_path = NULL;
+}
+
+int gsc_irq_status(void)
+{
+	return pantherlake_get_gpe(GPE0_DW2_14); /* GPP_E14 */
 }
