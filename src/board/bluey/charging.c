@@ -110,19 +110,6 @@ static int detect_ec_power_button_input(void)
 	return 0;
 }
 
-static int detect_ec_ac_disconnect_input(void)
-{
-	const uint32_t ac_disc_mask = EC_HOST_EVENT_MASK(EC_HOST_EVENT_AC_DISCONNECTED);
-	uint32_t events;
-
-	if ((cros_ec_get_host_events(&events) == 0) && (events & ac_disc_mask)) {
-		cros_ec_clear_host_events(ac_disc_mask);
-		return 1;
-	}
-
-	return 0;
-}
-
 static int launch_charger_applet(void)
 {
 	if (!CONFIG(DRIVER_EC_CROS) || !(board_boot_in_low_battery_mode()
@@ -136,10 +123,9 @@ static int launch_charger_applet(void)
 
 	do {
 		/*
-		 * Read the charger status, bail out if not present or not
-		 * charging then issue a shutdown
+		 * Issue a shutdown if not charging.
 		 */
-		if (detect_ec_ac_disconnect_input() || !get_battery_icurr_ma()) {
+		if (!get_battery_icurr_ma()) {
 			printf("Issuing power-off due to change in charging state.\n");
 			power_off();
 		}
