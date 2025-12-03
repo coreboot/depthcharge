@@ -149,7 +149,8 @@ uint32_t secdata_widevine_prepare(struct vb2_context *ctx)
 {
 	RETURN_ON_FAILURE(prepare_widevine_root_of_trust(ctx));
 
-	RETURN_ON_FAILURE(prepare_widevine_tpm_pubkey());
+	if (CONFIG(WIDEVINE_PROVISION_OPTEE))
+		RETURN_ON_FAILURE(prepare_widevine_tpm_pubkey());
 
 	return TPM_SUCCESS;
 }
