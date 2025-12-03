@@ -296,6 +296,13 @@ enum gpt_io_ret gpt_erase_partition(BlockDev *disk, GptData *gpt,
 	lba_t space = GptGetEntrySizeLba(e);
 	if ((disk->ops.erase == NULL) ||
 	    disk->ops.erase(&disk->ops, e->starting_lba, space)) {
+		/*
+		 * TODO(b/396352272): This is workaround to unblock flows that require erasing
+		 * large partitions. Erase just the beginning of the partition. This approach
+		 * should be evaluated once proper erase method is implemented for common block
+		 * device drivers.
+		 */
+		space = MIN(space, (256 * MiB / disk->block_size));
 		if (blockdev_fill_write(&disk->ops, e->starting_lba, space,
 					0xffffffff) != space)
 			return GPT_IO_TRANSFER_ERROR;
