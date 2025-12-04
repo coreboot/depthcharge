@@ -35,6 +35,7 @@ enum audio_codec_type {
 	AUDIO_RT712,
 	AUDIO_RT721,
 	AUDIO_RT722,
+	AUDIO_TAS2563,
 };
 
 enum audio_amp_type {

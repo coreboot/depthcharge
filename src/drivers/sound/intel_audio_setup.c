@@ -30,6 +30,7 @@
 #include "drivers/sound/rt7xx_sndw.h"
 #include "drivers/sound/rt1320_sndw.h"
 #include "drivers/sound/sndw_common.h"
+#include "drivers/sound/tas2563.h"
 
 /* Default I2S setting 4000 volume, 16bit, 2ch, 48k */
 #define AUD_VOLUME		4000
@@ -55,6 +56,29 @@ struct audio_data {
 static int default_if_zero(int value, int def)
 {
 	return value ? : def;
+}
+
+static void setup_tas2563(const struct audio_codec *codec, SoundRoute *route)
+{
+	if (!CONFIG(DRIVER_SOUND_TAS2563))
+		return;
+
+	DesignwareI2c *i2c = new_pci_designware_i2c(codec->i2c[0].ctrlr,
+		default_if_zero(codec->speed, I2C_FS_HZ), SOC_DW_I2C_MHZ);
+
+	Tas2563Codec *spk_rtw = new_tas2563_codec(&i2c->ops,
+						  codec->i2c[0].i2c_addr[0], 0, 0);
+	Tas2563Codec *spk_ltw = new_tas2563_codec(&i2c->ops,
+						  codec->i2c[0].i2c_addr[1], 0, 0);
+	Tas2563Codec *spk_rwf = new_tas2563_codec(&i2c->ops,
+						  codec->i2c[0].i2c_addr[2], 1, 0);
+	Tas2563Codec *spk_lwf = new_tas2563_codec(&i2c->ops,
+						  codec->i2c[0].i2c_addr[3], 1, 0);
+
+        list_insert_after(&spk_rtw->component.list_node, &route->components);
+        list_insert_after(&spk_ltw->component.list_node, &route->components);
+        list_insert_after(&spk_rwf->component.list_node, &route->components);
+        list_insert_after(&spk_lwf->component.list_node, &route->components);
 }
 
 static void setup_max98390(const struct audio_codec *codec, SoundRoute *route)
@@ -374,6 +398,12 @@ static void configure_audio_codec(const struct audio_codec *codec,
 			}
 		}
 		break;
+	case AUDIO_TAS2563:
+		if (data->type == AUDIO_I2S) {
+                        setup_tas2563(codec, data->route);
+                        data->ops = &data->route->ops;
+                }
+                break;
 	default:
 		break;
 	}
