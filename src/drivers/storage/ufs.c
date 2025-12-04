@@ -615,6 +615,14 @@ static inline bool ufs_is_hs_mode_enable(struct UfsTfrMode *tfr_mode)
 		tfr_mode->tx.pwr_mode == UFS_FASTAUTO_MODE);
 }
 
+static int ufs_dme_configure_adapt(UfsCtlr *ufs, uint32_t agreed_gear, uint32_t adapt_val)
+{
+	if (agreed_gear < UFS_GEAR4)
+		adapt_val = PA_NO_ADAPT;
+
+	return ufs_dme_set(ufs, PA_TXHSADAPTTYPE, adapt_val);
+}
+
 // Refer UFSHCI spec. JESD223D section 7.4 UIC Power Mode Change
 static int ufs_utp_gear_sw(UfsCtlr *ufs)
 {
@@ -685,6 +693,14 @@ static int ufs_utp_gear_sw(UfsCtlr *ufs)
 	    (rc = ufs_dme_set(ufs, DME_LOCALAFC0REQTIMEOUTVAL      , DL_AFC0REQTIMEOUTVAL)))
 		return rc;
 
+	// Set adapt configuration PA_INITIAL_ADAPT for HS G4/G5
+	if (ufs->unipro_version >= UFS_UNIPRO_VERSION_1_8) {
+		if (tfr_mode->rx.pwr_mode == UFS_FAST_MODE ||
+		    tfr_mode->rx.pwr_mode == UFS_FASTAUTO_MODE)
+			rc = ufs_dme_configure_adapt(ufs, tfr_mode->tx.gear, PA_INITIAL_ADAPT);
+		else
+			rc = ufs_dme_configure_adapt(ufs, tfr_mode->tx.gear, PA_NO_ADAPT);
+	}
 
 	// FIXME: b/315440135 Skip HS gear4 switching
 	// Check the power mode request, user config and update accordingly

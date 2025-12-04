@@ -180,6 +180,11 @@ typedef enum {
 #define PA_SAVECONFIGTIME		0x15A4
 #define PA_TXHSADAPTTYPE		0x15D4
 
+/* Adapt type for PA_TXHSADAPTTYPE attribute */
+#define PA_REFRESH_ADAPT		0x00
+#define PA_INITIAL_ADAPT		0x01
+#define PA_NO_ADAPT			0x03
+
 #define PA_VS_CONFIG_REG1		0x9000
 
 #define DME_LOCALFC0PROTECTIONTIMEOUTVAL 0xD041
