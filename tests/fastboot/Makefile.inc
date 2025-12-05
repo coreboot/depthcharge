@@ -43,13 +43,13 @@ cmd-test-mocks += android_misc_append_oem_cmd
 cmd-test-mocks += android_misc_del_oem_cmd
 cmd-test-mocks += android_misc_set_oem_cmd
 cmd-test-mocks += android_misc_reset_oem_cmd
+cmd-test-mocks += android_misc_get_virtual_ab_merge_status
+cmd-test-mocks += android_misc_virtual_ab_cancel_update
 
 # vars-test
 $(call copy-test,fastboot-test-common,vars-test)
 vars-test-srcs += tests/fastboot/vars-test.c
 vars-test-srcs += src/fastboot/vars.c
 vars-test-mocks += GptGetEntrySizeBytes
-vars-test-mocks += GptInit
-vars-test-mocks += GptNextKernelEntry
 vars-test-mocks += GetEntryTries
 vars-test-mocks += IsBootableEntry

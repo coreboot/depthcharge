@@ -271,3 +271,89 @@ int android_misc_system_space_read(BlockDev *disk, GptData *gpt,
 {
 	return android_misc_read(disk, gpt, MISC_SYSTEM_SPACE_OFFSET, space, sizeof(*space));
 }
+
+char android_misc_get_active_slot(GptData *gpt)
+{
+	GptEntry *part = NULL;
+	char *name;
+	char slot;
+
+	/* Make sure that GptNextKernelEntry starts with fresh state */
+	if (GptInit(gpt) != GPT_SUCCESS)
+		return 0;
+
+	part = GptNextKernelEntry(gpt);
+	if (part == NULL)
+		return 0;
+
+	name = gpt_get_entry_name(part);
+	if (name == NULL || name[0] == '\0')
+		return 0;
+
+	slot = name[strlen(name) - 1];
+	free(name);
+
+	return slot;
+}
+
+static bool is_virtual_ab_message_valid(struct misc_virtual_ab_message *msg)
+{
+	return msg->version == ANDROID_MISC_VIRTUAL_AB_MESSAGE_VERSION &&
+	       msg->magic == ANDROID_MISC_VIRTUAL_AB_MAGIC_HEADER;
+}
+
+enum android_misc_virtual_ab_merge_status android_misc_get_virtual_ab_merge_status(
+		BlockDev *disk, GptData *gpt)
+{
+	struct misc_system_space sys_space;
+
+	if (android_misc_system_space_read(disk, gpt, &sys_space))
+		return MISC_VIRTUAL_AB_MERGE_STATUS_DISK_ERROR;
+
+	if (!is_virtual_ab_message_valid(&sys_space.virtual_ab_message))
+		return MISC_VIRTUAL_AB_MERGE_STATUS_NONE;
+
+	switch (sys_space.virtual_ab_message.merge_status) {
+	case MISC_VIRTUAL_AB_MERGE_STATUS_MERGING:
+		return MISC_VIRTUAL_AB_MERGE_STATUS_MERGING;
+	case MISC_VIRTUAL_AB_MERGE_STATUS_SNAPSHOTTED:
+		/*
+		 * Snapshot will be deleted on the next boot if source slot is an active slot
+		 * (snapshot was rolled back), so don't report that there is an active snapshot.
+		 */
+		if (sys_space.virtual_ab_message.source_slot !=
+		    android_misc_slot_to_num(android_misc_get_active_slot(gpt)))
+			return MISC_VIRTUAL_AB_MERGE_STATUS_SNAPSHOTTED;
+
+		return MISC_VIRTUAL_AB_MERGE_STATUS_NONE;
+	default:
+		return MISC_VIRTUAL_AB_MERGE_STATUS_NONE;
+	}
+}
+
+int android_misc_virtual_ab_cancel_update(BlockDev *disk, GptData *gpt)
+{
+	struct misc_system_space sys_space;
+	char slot;
+
+	if (android_misc_system_space_read(disk, gpt, &sys_space))
+		return -1;
+
+	if (!is_virtual_ab_message_valid(&sys_space.virtual_ab_message))
+		return 0;
+
+	if (sys_space.virtual_ab_message.merge_status != MISC_VIRTUAL_AB_MERGE_STATUS_MERGING &&
+	    sys_space.virtual_ab_message.merge_status !=
+	    MISC_VIRTUAL_AB_MERGE_STATUS_SNAPSHOTTED)
+		/* Nothing to cancel */
+		return 0;
+
+	slot = android_misc_get_active_slot(gpt);
+	if (!slot)
+		return -1;
+
+	sys_space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_CANCELLED;
+	sys_space.virtual_ab_message.source_slot = android_misc_slot_to_num(slot);
+
+	return android_misc_system_space_write(disk, gpt, &sys_space) ? -1 : 1;
+}

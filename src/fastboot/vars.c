@@ -20,6 +20,7 @@
 #include <string.h>
 #include <sysinfo.h>
 
+#include "base/android_misc.h"
 #include "base/gpt.h"
 #include "fastboot/disk.h"
 #include "fastboot/fastboot.h"
@@ -227,26 +228,16 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 	char slot = 0;
 
 	switch (var) {
-	case VAR_CURRENT_SLOT: {
+	case VAR_CURRENT_SLOT:
 		if (fastboot_disk_gpt_init_no_fail(fb))
 			return STATE_DISK_ERROR;
 
-		/* Make sure that GptNextKernelEntry starts with fresh state */
-		if (GptInit(fb->gpt) != GPT_SUCCESS)
+		slot = android_misc_get_active_slot(fb->gpt);
+		if (!slot)
 			return STATE_DISK_ERROR;
 
-		part = GptNextKernelEntry(fb->gpt);
-		if (part == NULL)
-			return STATE_DISK_ERROR;
-
-		name = gpt_get_entry_name(part);
-		if (name == NULL || name[0] == '\0')
-			return STATE_DISK_ERROR;
-
-		used_len = snprintf(outbuf, outbuf_len, "%c", name[strlen(name) - 1]);
-		free(name);
+		used_len = snprintf(outbuf, outbuf_len, "%c", slot);
 		break;
-	}
 	case VAR_TOTAL_BLOCK_COUNT:
 		if (fastboot_disk_init_no_fail(fb))
 			return STATE_DISK_ERROR;

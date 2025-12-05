@@ -754,6 +754,49 @@ static void fastboot_cmd_oem_set_successful(struct FastbootOps *fb, char *arg)
 		fastboot_fail_with_logs(fb, "Failed to save GPT");
 }
 
+static void fastboot_cmd_snapshot_update(struct FastbootOps *fb, char *arg)
+{
+	if (fastboot_disk_gpt_init(fb))
+		return;
+
+	if (arg[0] == '\0') {
+		enum android_misc_virtual_ab_merge_status status =
+			android_misc_get_virtual_ab_merge_status(fb->disk, fb->gpt);
+
+		switch (status) {
+		case MISC_VIRTUAL_AB_MERGE_STATUS_DISK_ERROR:
+			fastboot_fail(fb, "Failed to read virtual ab merge status from disk");
+			return;
+		case MISC_VIRTUAL_AB_MERGE_STATUS_MERGING:
+			fastboot_info(fb, "merging");
+			break;
+		case MISC_VIRTUAL_AB_MERGE_STATUS_SNAPSHOTTED:
+			fastboot_info(fb, "snapshotted");
+			break;
+		case MISC_VIRTUAL_AB_MERGE_STATUS_NONE:
+			fastboot_info(fb, "none");
+			break;
+		default:
+			fastboot_fail(fb, "Unknown virtual ab merge status %#x", status);
+			return;
+		}
+	} else if (!strcmp(arg, "cancel")) {
+		int ret = android_misc_virtual_ab_cancel_update(fb->disk, fb->gpt);
+		if (ret < 0) {
+			fastboot_fail(fb, "Failed to write virtual ab merge status");
+			return;
+		}
+
+		if (ret > 0)
+			fastboot_info(fb, "update cancelled");
+	} else {
+		fastboot_fail(fb, "Invalid arguments. Use: snapshot-update[:cancel]");
+		return;
+	}
+
+	fastboot_succeed(fb);
+}
+
 #define CMD_ARGS(_name, _sep, _fn)                                             \
 	{                                                                      \
 		.name = _name, .has_args = true, .sep = _sep, .fn = _fn        \
@@ -786,6 +829,7 @@ struct fastboot_cmd fastboot_cmds[] = {
 	CMD_ARGS("reboot", '-', fastboot_cmd_reboot_to_target),
 	CMD_NO_ARGS("reboot", fastboot_cmd_reboot),
 	CMD_ARGS("set_active", ':', fastboot_cmd_set_active),
+	CMD_ARGS("snapshot-update", ':', fastboot_cmd_snapshot_update),
 	{
 		.name = NULL,
 	},

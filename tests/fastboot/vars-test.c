@@ -73,26 +73,6 @@ uint64_t GptGetEntrySizeBytes(const GptData *gpt, const GptEntry *e)
 	will_return(GptGetEntrySizeBytes, ret); \
 } while (0)
 
-int GptInit(GptData *gpt)
-{
-	assert_ptr_equal(gpt, &test_gpt);
-
-	return mock();
-}
-
-/* Setup for GptInit mock */
-#define WILL_GPT_INIT(ret) will_return(GptInit, ret)
-
-GptEntry *GptNextKernelEntry(GptData *gpt)
-{
-	assert_ptr_equal(gpt, &test_gpt);
-
-	return mock_ptr_type(GptEntry *);
-}
-
-/* Setup for GptNextKernelEntry mock */
-#define WILL_GET_NEXT_KERNEL_ENTRY(ret) will_return(GptNextKernelEntry, ret)
-
 int fastboot_get_slot_suffixes(GptData *gpt, char *outbuf, size_t outbuf_len)
 {
 	assert_ptr_equal(gpt, &test_gpt);
@@ -158,6 +138,16 @@ const u8 *vpd_find(const char *key, const u8 *blob, u32 *offset, u32 *size)
 	will_return(vpd_find, len); \
 	will_return(vpd_find, ret); \
 } while (0)
+
+char android_misc_get_active_slot(GptData *gpt)
+{
+	assert_ptr_equal(gpt, &test_gpt);
+
+	return mock_type(char);
+}
+
+/* Setup for android_misc_get_active_slot mock */
+#define WILL_GET_ACTIVE_SLOT(slot) will_return(android_misc_get_active_slot, slot)
 
 /* Reset mock data (for use before each test) */
 static int setup(void **state)
@@ -545,44 +535,13 @@ static void test_fb_getvar_download_size(void **state)
 
 static void test_fb_getvar_current_slot(void **state)
 {
-	GptEntry *part = (void *)0xcafe;
-
-	WILL_GPT_INIT(GPT_SUCCESS);
-	WILL_GET_NEXT_KERNEL_ENTRY(part);
-	WILL_GET_ENTRY_NAME(part, "vbmeta_a");
+	WILL_GET_ACTIVE_SLOT('a');
 	TEST_FASTBOOT_GETVAR_OK(VAR_CURRENT_SLOT, "", "a");
 }
 
-static void test_fb_getvar_current_slot_fail_gpt_init(void **state)
+static void test_fb_getvar_current_slot_fail(void **state)
 {
-	WILL_GPT_INIT(-1);
-	TEST_FASTBOOT_GETVAR_ERR(VAR_CURRENT_SLOT, "", STATE_DISK_ERROR);
-}
-
-static void test_fb_getvar_current_slot_no_kernel(void **state)
-{
-	WILL_GPT_INIT(GPT_SUCCESS);
-	WILL_GET_NEXT_KERNEL_ENTRY(NULL);
-	TEST_FASTBOOT_GETVAR_ERR(VAR_CURRENT_SLOT, "", STATE_DISK_ERROR);
-}
-
-static void test_fb_getvar_current_slot_no_name(void **state)
-{
-	GptEntry *part = (void *)0xcafe;
-
-	WILL_GPT_INIT(GPT_SUCCESS);
-	WILL_GET_NEXT_KERNEL_ENTRY(part);
-	WILL_GET_ENTRY_NAME(part, NULL);
-	TEST_FASTBOOT_GETVAR_ERR(VAR_CURRENT_SLOT, "", STATE_DISK_ERROR);
-}
-
-static void test_fb_getvar_current_slot_empty_name(void **state)
-{
-	GptEntry *part = (void *)0xcafe;
-
-	WILL_GPT_INIT(GPT_SUCCESS);
-	WILL_GET_NEXT_KERNEL_ENTRY(part);
-	WILL_GET_ENTRY_NAME(part, "");
+	WILL_GET_ACTIVE_SLOT(0);
 	TEST_FASTBOOT_GETVAR_ERR(VAR_CURRENT_SLOT, "", STATE_DISK_ERROR);
 }
 
@@ -934,11 +893,8 @@ static void test_fb_getvar_total_block_count(void **state)
 static void test_fb_cmd_getvar_current_slot(void **state)
 {
 	struct FastbootOps *fb = *state;
-	GptEntry *part = (void *)0xcafe;
 
-	WILL_GPT_INIT(GPT_SUCCESS);
-	WILL_GET_NEXT_KERNEL_ENTRY(part);
-	WILL_GET_ENTRY_NAME(part, "vbmeta_b");
+	WILL_GET_ACTIVE_SLOT('b');
 
 	WILL_SEND_EXACT(fb, "OKAYb");
 
@@ -1151,7 +1107,7 @@ static void test_fb_cmd_getvar_get_fail(void **state)
 	struct FastbootOps *fb = *state;
 
 	/* Intentionally fail fastboot_getvar */
-	WILL_GPT_INIT(-1);
+	WILL_GET_ACTIVE_SLOT(0);
 	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_cmd_getvar(fb, "current-slot");
@@ -1231,7 +1187,6 @@ static void test_fb_cmd_getvar_all(void **state)
 {
 	struct FastbootOps *fb = *state;
 	char expected_max_download_size[64];
-	GptEntry *part;
 
 	memset(&packets_list, 0, sizeof(packets_list));
 	/* Always should get the same FB pointer */
@@ -1239,10 +1194,7 @@ static void test_fb_cmd_getvar_all(void **state)
 	fb->send_packet = fb_mock_send_packet_getvar_all;
 
 	/* Setup for current-slot */
-	part = (void *)0xcafe;
-	WILL_GPT_INIT(GPT_SUCCESS);
-	WILL_GET_NEXT_KERNEL_ENTRY(part);
-	WILL_GET_ENTRY_NAME(part, "vbmeta_a");
+	WILL_GET_ACTIVE_SLOT('a');
 
 	/* Expected response for max-download-size */
 	snprintf(expected_max_download_size, sizeof(expected_max_download_size),
@@ -1360,7 +1312,7 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 		 "INFOmax-download-size:0x%llx", FASTBOOT_MAX_DOWNLOAD_SIZE);
 
 	/* Setup for current-slot - will fail */
-	WILL_GPT_INIT(-1);
+	WILL_GET_ACTIVE_SLOT(0);
 
 	/* Setup for partition-size */
 	setup_partition_table(VAR_PARTITION_SIZE);
@@ -1480,10 +1432,7 @@ int main(void)
 		TEST(test_fb_getvar_partition_type_at_index_last),
 		TEST(test_fb_getvar_download_size),
 		TEST(test_fb_getvar_current_slot),
-		TEST(test_fb_getvar_current_slot_fail_gpt_init),
-		TEST(test_fb_getvar_current_slot_no_kernel),
-		TEST(test_fb_getvar_current_slot_no_name),
-		TEST(test_fb_getvar_current_slot_empty_name),
+		TEST(test_fb_getvar_current_slot_fail),
 		TEST(test_fb_getvar_slot_suffixes),
 		TEST(test_fb_getvar_slot_successful),
 		TEST(test_fb_getvar_slot_unsuccessful),

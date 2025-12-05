@@ -33,6 +33,9 @@ struct misc_virtual_ab_message {
 _Static_assert(sizeof(struct misc_virtual_ab_message) == 64,
 	       "struct misc_virtual_ab_message has wrong size");
 
+#define ANDROID_MISC_VIRTUAL_AB_MESSAGE_VERSION		2
+#define ANDROID_MISC_VIRTUAL_AB_MAGIC_HEADER		0x56740AB0
+
 #define ANDROID_MISC_MEMTAG_MESSAGE_VERSION		1
 #define ANDROID_MISC_MEMTAG_MAGIC			0x5afefe5a
 #define ANDROID_MISC_MEMTAG_MODE_MEMTAG			0x1

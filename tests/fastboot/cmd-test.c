@@ -510,6 +510,29 @@ static void test_stream_close(struct StreamOps *me)
 /* Setup for test_stream_close mock */
 #define WILL_CLOSE_STREAM expect_function_call(test_stream_close)
 
+enum android_misc_virtual_ab_merge_status android_misc_get_virtual_ab_merge_status(
+		BlockDev *disk, GptData *gpt)
+{
+	assert_ptr_equal(disk, &test_disk);
+	assert_ptr_equal(gpt, &test_gpt);
+
+	return mock_type(enum android_misc_virtual_ab_merge_status);
+}
+
+/* Setup for android_misc_get_virtual_ab_merge_status mock */
+#define WILL_GET_AB_MERGE_STATUS(ret) will_return(android_misc_get_virtual_ab_merge_status, ret)
+
+int android_misc_virtual_ab_cancel_update(BlockDev *disk, GptData *gpt)
+{
+	assert_ptr_equal(disk, &test_disk);
+	assert_ptr_equal(gpt, &test_gpt);
+
+	return mock();
+}
+
+/* Setup for android_misc_virtual_ab_cancel_update mock */
+#define WILL_CANCEL_AB_UPDATE(ret) will_return(android_misc_virtual_ab_cancel_update, ret)
+
 /* Reset mock data (for use before each test) */
 static int setup(void **state)
 {
@@ -2362,6 +2385,122 @@ static void test_fb_cmd_oem_sha256_bad_arg(void **state)
 	assert_int_equal(fb->state, COMMAND);
 }
 
+static void test_fb_cmd_snapshot_update_get(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "snapshot-update:";
+
+	WILL_GET_AB_MERGE_STATUS(MISC_VIRTUAL_AB_MERGE_STATUS_NONE);
+	WILL_SEND_EXACT(fb, "INFOnone");
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd2[] = "snapshot-update:";
+	WILL_GET_AB_MERGE_STATUS(MISC_VIRTUAL_AB_MERGE_STATUS_SNAPSHOTTED);
+	WILL_SEND_EXACT(fb, "INFOsnapshotted");
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd2, sizeof(cmd2) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd3[] = "snapshot-update:";
+	WILL_GET_AB_MERGE_STATUS(MISC_VIRTUAL_AB_MERGE_STATUS_MERGING);
+	WILL_SEND_EXACT(fb, "INFOmerging");
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd3, sizeof(cmd3) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_snapshot_update_get_disk_error(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "snapshot-update:";
+
+	WILL_GET_AB_MERGE_STATUS(MISC_VIRTUAL_AB_MERGE_STATUS_DISK_ERROR);
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_snapshot_update_get_unknown_val(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "snapshot-update:";
+
+	WILL_GET_AB_MERGE_STATUS(42);
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_snapshot_update_cancel(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "snapshot-update:cancel";
+
+	WILL_CANCEL_AB_UPDATE(1);
+	WILL_SEND_EXACT(fb, "INFOupdate cancelled");
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_snapshot_update_cancel_no_action(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "snapshot-update:cancel";
+
+	WILL_CANCEL_AB_UPDATE(0);
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_snapshot_update_cancel_fail(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "snapshot-update:cancel";
+
+	WILL_CANCEL_AB_UPDATE(-1);
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_snapshot_update_bad_arg(void **state)
+{
+	struct FastbootOps *fb = *state;
+
+	char cmd[] = "snapshot-update:1234";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd2[] = "snapshot-update:cancelpostfix";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd2, sizeof(cmd2) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	char cmd3[] = "snapshot-update:prefixcancel";
+
+	WILL_SEND_PREFIX(fb, "FAIL");
+
+	fastboot_handle_packet(fb, cmd3, sizeof(cmd3) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
 #define TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup)
 
@@ -2470,6 +2609,13 @@ int main(void)
 		TEST(test_fb_cmd_oem_sha256_len_greater_than_part_len),
 		TEST(test_fb_cmd_oem_sha256_fail_open_stream),
 		TEST(test_fb_cmd_oem_sha256_bad_arg),
+		TEST(test_fb_cmd_snapshot_update_get),
+		TEST(test_fb_cmd_snapshot_update_get_disk_error),
+		TEST(test_fb_cmd_snapshot_update_get_unknown_val),
+		TEST(test_fb_cmd_snapshot_update_cancel),
+		TEST(test_fb_cmd_snapshot_update_cancel_no_action),
+		TEST(test_fb_cmd_snapshot_update_cancel_fail),
+		TEST(test_fb_cmd_snapshot_update_bad_arg),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }

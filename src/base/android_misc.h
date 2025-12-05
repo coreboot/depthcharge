@@ -57,6 +57,17 @@ _Static_assert(sizeof(struct android_misc_oem_cmdline) ==
 	       MISC_VENDOR_SPACE_OEM_CMDLINE_SIZE,
 	       "android_misc_oem_cmdline size is incorrect");
 
+/* Possible values for the Virtual A/B merge status */
+enum android_misc_virtual_ab_merge_status {
+	MISC_VIRTUAL_AB_MERGE_STATUS_NONE = 0,
+	MISC_VIRTUAL_AB_MERGE_STATUS_UNKNOWN = 1,
+	MISC_VIRTUAL_AB_MERGE_STATUS_SNAPSHOTTED = 2,
+	MISC_VIRTUAL_AB_MERGE_STATUS_MERGING = 3,
+	MISC_VIRTUAL_AB_MERGE_STATUS_CANCELLED = 4,
+	/* Status is uint8_t, repurpose higher values as internal errors */
+	MISC_VIRTUAL_AB_MERGE_STATUS_DISK_ERROR = 256,
+};
+
 bool is_android_misc_cmd_separator(const char c, bool bootconfig);
 bool is_android_misc_oem_cmdline_valid(struct android_misc_oem_cmdline *cmd);
 int android_misc_oem_cmdline_update_checksum(struct android_misc_oem_cmdline *cmd);
@@ -79,5 +90,14 @@ int android_misc_system_space_write(BlockDev *disk, GptData *gpt,
 				    struct misc_system_space *space);
 int android_misc_system_space_read(BlockDev *disk, GptData *gpt,
 				   struct misc_system_space *space);
+char android_misc_get_active_slot(GptData *gpt);
+enum android_misc_virtual_ab_merge_status android_misc_get_virtual_ab_merge_status(
+		BlockDev *disk, GptData *gpt);
+int android_misc_virtual_ab_cancel_update(BlockDev *disk, GptData *gpt);
+
+static inline int android_misc_slot_to_num(char slot)
+{
+	return slot - 'a';
+}
 
 #endif /* __BASE_ANDROID_MISC_H__ */

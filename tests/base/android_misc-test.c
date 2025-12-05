@@ -98,6 +98,39 @@ size_t setup_test_cmd(struct android_misc_oem_cmdline *cmd, const char *cmdline,
 	return cmd->data + cmd->cmdline_len + cmd->bootconfig_len - (char *)cmd;
 }
 
+char *gpt_get_entry_name(GptEntry *e)
+{
+	check_expected(e);
+
+	return mock_ptr_type(char *);
+}
+
+/* Setup for gpt_get_entry_name mock */
+#define WILL_GET_ENTRY_NAME(part, ret) do { \
+	expect_value(gpt_get_entry_name, e, part); \
+	will_return(gpt_get_entry_name, ret); \
+} while (0)
+
+int GptInit(GptData *gpt)
+{
+	assert_ptr_equal(gpt, test_gpt);
+
+	return mock();
+}
+
+/* Setup for GptInit mock */
+#define WILL_GPT_INIT(ret) will_return(GptInit, ret)
+
+GptEntry *GptNextKernelEntry(GptData *gpt)
+{
+	assert_ptr_equal(gpt, test_gpt);
+
+	return mock_ptr_type(GptEntry *);
+}
+
+/* Setup for GptNextKernelEntry mock */
+#define WILL_GET_NEXT_KERNEL_ENTRY(ret) will_return(GptNextKernelEntry, ret)
+
 /* Reset mock data (for use before each test) */
 static int setup(void **state)
 {
@@ -734,6 +767,301 @@ static void test_android_misc_system_space_write(void **state)
 	assert_int_equal(android_misc_system_space_write(&test_disk, test_gpt, &space), 0);
 }
 
+static void test_android_misc_get_active_slot(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GPT_INIT(GPT_SUCCESS);
+	WILL_GET_NEXT_KERNEL_ENTRY(part);
+	WILL_GET_ENTRY_NAME(part, "vbmeta_a");
+
+	assert_int_equal(android_misc_get_active_slot(test_gpt), 'a');
+}
+
+static void test_android_misc_get_active_slot_fail_gpt_init(void **state)
+{
+	WILL_GPT_INIT(-1);
+
+	assert_int_equal(android_misc_get_active_slot(test_gpt), 0);
+}
+
+static void test_android_misc_get_active_slot_no_kernel(void **state)
+{
+	WILL_GPT_INIT(GPT_SUCCESS);
+	WILL_GET_NEXT_KERNEL_ENTRY(NULL);
+
+	assert_int_equal(android_misc_get_active_slot(test_gpt), 0);
+}
+
+static void test_android_misc_get_active_slot_no_name(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GPT_INIT(GPT_SUCCESS);
+	WILL_GET_NEXT_KERNEL_ENTRY(part);
+	WILL_GET_ENTRY_NAME(part, NULL);
+
+	assert_int_equal(android_misc_get_active_slot(test_gpt), 0);
+}
+
+static void test_android_misc_get_active_slot_empty_name(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GPT_INIT(GPT_SUCCESS);
+	WILL_GET_NEXT_KERNEL_ENTRY(part);
+	WILL_GET_ENTRY_NAME(part, "");
+
+	assert_int_equal(android_misc_get_active_slot(test_gpt), 0);
+}
+
+static void test_android_misc_slot_to_num(void **state)
+{
+	assert_int_equal(android_misc_slot_to_num('a'), 0);
+	assert_int_equal(android_misc_slot_to_num('b'), 1);
+	assert_true(android_misc_slot_to_num(0) < 0);
+}
+
+static void test_android_misc_get_virtual_ab_merge_status_merging(void **state)
+{
+	struct misc_system_space space;
+
+	space.virtual_ab_message.version = ANDROID_MISC_VIRTUAL_AB_MESSAGE_VERSION;
+	space.virtual_ab_message.magic = ANDROID_MISC_VIRTUAL_AB_MAGIC_HEADER;
+	space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_MERGING;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_get_virtual_ab_merge_status(&test_disk, test_gpt),
+			 MISC_VIRTUAL_AB_MERGE_STATUS_MERGING);
+}
+
+static void test_android_misc_get_virtual_ab_merge_status_snapshotted(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+	struct misc_system_space space;
+
+	space.virtual_ab_message.version = ANDROID_MISC_VIRTUAL_AB_MESSAGE_VERSION;
+	space.virtual_ab_message.magic = ANDROID_MISC_VIRTUAL_AB_MAGIC_HEADER;
+	space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_SNAPSHOTTED;
+	space.virtual_ab_message.source_slot = 1;
+
+	WILL_GPT_INIT(GPT_SUCCESS);
+	WILL_GET_NEXT_KERNEL_ENTRY(part);
+	WILL_GET_ENTRY_NAME(part, "vbmeta_a");
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_get_virtual_ab_merge_status(&test_disk, test_gpt),
+			 MISC_VIRTUAL_AB_MERGE_STATUS_SNAPSHOTTED);
+}
+
+static void test_android_misc_get_virtual_ab_merge_status_snapshotted_same_slot(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+	struct misc_system_space space;
+
+	space.virtual_ab_message.version = ANDROID_MISC_VIRTUAL_AB_MESSAGE_VERSION;
+	space.virtual_ab_message.magic = ANDROID_MISC_VIRTUAL_AB_MAGIC_HEADER;
+	space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_SNAPSHOTTED;
+	space.virtual_ab_message.source_slot = 0;
+
+	WILL_GPT_INIT(GPT_SUCCESS);
+	WILL_GET_NEXT_KERNEL_ENTRY(part);
+	WILL_GET_ENTRY_NAME(part, "vbmeta_a");
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_get_virtual_ab_merge_status(&test_disk, test_gpt),
+			 MISC_VIRTUAL_AB_MERGE_STATUS_NONE);
+}
+
+static void test_android_misc_get_virtual_ab_merge_status_other(void **state)
+{
+	struct misc_system_space space;
+
+	space.virtual_ab_message.version = ANDROID_MISC_VIRTUAL_AB_MESSAGE_VERSION;
+	space.virtual_ab_message.magic = ANDROID_MISC_VIRTUAL_AB_MAGIC_HEADER;
+	space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_NONE;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_get_virtual_ab_merge_status(&test_disk, test_gpt),
+			 MISC_VIRTUAL_AB_MERGE_STATUS_NONE);
+
+	space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_UNKNOWN;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_get_virtual_ab_merge_status(&test_disk, test_gpt),
+			 MISC_VIRTUAL_AB_MERGE_STATUS_NONE);
+
+	space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_CANCELLED;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_get_virtual_ab_merge_status(&test_disk, test_gpt),
+			 MISC_VIRTUAL_AB_MERGE_STATUS_NONE);
+
+	space.virtual_ab_message.merge_status = 42;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_get_virtual_ab_merge_status(&test_disk, test_gpt),
+			 MISC_VIRTUAL_AB_MERGE_STATUS_NONE);
+}
+
+static void test_android_misc_get_virtual_ab_merge_status_disk_error(void **state)
+{
+	WILL_READ_SYSTEM_SPACE(NULL, GPT_IO_NO_PARTITION);
+	assert_int_equal(android_misc_get_virtual_ab_merge_status(&test_disk, test_gpt),
+			 MISC_VIRTUAL_AB_MERGE_STATUS_DISK_ERROR);
+}
+
+static void test_android_misc_get_virtual_ab_merge_status_invalid(void **state)
+{
+	struct misc_system_space space;
+
+	space.virtual_ab_message.version = 0;
+	space.virtual_ab_message.magic = ANDROID_MISC_VIRTUAL_AB_MAGIC_HEADER;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_get_virtual_ab_merge_status(&test_disk, test_gpt),
+			 MISC_VIRTUAL_AB_MERGE_STATUS_NONE);
+
+	space.virtual_ab_message.version = ANDROID_MISC_VIRTUAL_AB_MESSAGE_VERSION;
+	space.virtual_ab_message.magic = 0;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_get_virtual_ab_merge_status(&test_disk, test_gpt),
+			 MISC_VIRTUAL_AB_MERGE_STATUS_NONE);
+
+	space.virtual_ab_message.version = 0;
+	space.virtual_ab_message.magic = 0;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_get_virtual_ab_merge_status(&test_disk, test_gpt),
+			 MISC_VIRTUAL_AB_MERGE_STATUS_NONE);
+}
+
+static void test_android_misc_virtual_ab_cancel_update_merging(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+	struct misc_system_space space;
+	struct misc_system_space expected_space;
+
+	space.virtual_ab_message.version = ANDROID_MISC_VIRTUAL_AB_MESSAGE_VERSION;
+	space.virtual_ab_message.magic = ANDROID_MISC_VIRTUAL_AB_MAGIC_HEADER;
+	space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_MERGING;
+	space.virtual_ab_message.source_slot = 1;
+
+	memcpy(&expected_space, &space, sizeof(space));
+	expected_space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_CANCELLED;
+	expected_space.virtual_ab_message.source_slot = 0;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	WILL_GPT_INIT(GPT_SUCCESS);
+	WILL_GET_NEXT_KERNEL_ENTRY(part);
+	WILL_GET_ENTRY_NAME(part, "vbmeta_a");
+	WILL_WRITE_SYSTEM_SPACE(&expected_space, GPT_IO_SUCCESS);
+
+	assert_int_equal(android_misc_virtual_ab_cancel_update(&test_disk, test_gpt), 1);
+}
+
+static void test_android_misc_virtual_ab_cancel_update_snapshotted(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+	struct misc_system_space space;
+	struct misc_system_space expected_space;
+
+	space.virtual_ab_message.version = ANDROID_MISC_VIRTUAL_AB_MESSAGE_VERSION;
+	space.virtual_ab_message.magic = ANDROID_MISC_VIRTUAL_AB_MAGIC_HEADER;
+	space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_SNAPSHOTTED;
+	space.virtual_ab_message.source_slot = 0;
+
+	memcpy(&expected_space, &space, sizeof(space));
+	expected_space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_CANCELLED;
+	expected_space.virtual_ab_message.source_slot = 1;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	WILL_GPT_INIT(GPT_SUCCESS);
+	WILL_GET_NEXT_KERNEL_ENTRY(part);
+	WILL_GET_ENTRY_NAME(part, "vbmeta_b");
+	WILL_WRITE_SYSTEM_SPACE(&expected_space, GPT_IO_SUCCESS);
+
+	assert_int_equal(android_misc_virtual_ab_cancel_update(&test_disk, test_gpt), 1);
+}
+
+static void test_android_misc_virtual_ab_cancel_update_write_fail(void **state)
+{
+	GptEntry *part = (void *)0xcafe;
+	struct misc_system_space space;
+	struct misc_system_space expected_space;
+
+	space.virtual_ab_message.version = ANDROID_MISC_VIRTUAL_AB_MESSAGE_VERSION;
+	space.virtual_ab_message.magic = ANDROID_MISC_VIRTUAL_AB_MAGIC_HEADER;
+	space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_MERGING;
+	space.virtual_ab_message.source_slot = 1;
+
+	memcpy(&expected_space, &space, sizeof(space));
+	expected_space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_CANCELLED;
+	expected_space.virtual_ab_message.source_slot = 0;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	WILL_GPT_INIT(GPT_SUCCESS);
+	WILL_GET_NEXT_KERNEL_ENTRY(part);
+	WILL_GET_ENTRY_NAME(part, "vbmeta_a");
+	WILL_WRITE_SYSTEM_SPACE(&expected_space, GPT_IO_TRANSFER_ERROR);
+
+	assert_int_equal(android_misc_virtual_ab_cancel_update(&test_disk, test_gpt), -1);
+}
+
+static void test_android_misc_virtual_ab_cancel_update_active_slot_fail(void **state)
+{
+	struct misc_system_space space;
+
+	space.virtual_ab_message.version = ANDROID_MISC_VIRTUAL_AB_MESSAGE_VERSION;
+	space.virtual_ab_message.magic = ANDROID_MISC_VIRTUAL_AB_MAGIC_HEADER;
+	space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_MERGING;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	WILL_GPT_INIT(-1);
+
+	assert_int_equal(android_misc_virtual_ab_cancel_update(&test_disk, test_gpt), -1);
+}
+
+static void test_android_misc_virtual_ab_cancel_update_no_action(void **state)
+{
+	struct misc_system_space space;
+
+	space.virtual_ab_message.version = ANDROID_MISC_VIRTUAL_AB_MESSAGE_VERSION;
+	space.virtual_ab_message.magic = ANDROID_MISC_VIRTUAL_AB_MAGIC_HEADER;
+	space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_NONE;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_virtual_ab_cancel_update(&test_disk, test_gpt), 0);
+
+	space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_CANCELLED;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_virtual_ab_cancel_update(&test_disk, test_gpt), 0);
+
+	space.virtual_ab_message.merge_status = MISC_VIRTUAL_AB_MERGE_STATUS_UNKNOWN;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_virtual_ab_cancel_update(&test_disk, test_gpt), 0);
+}
+
+static void test_android_misc_virtual_ab_cancel_update_invalid_message(void **state)
+{
+	struct misc_system_space space;
+
+	space.virtual_ab_message.version = 0;
+	space.virtual_ab_message.magic = ANDROID_MISC_VIRTUAL_AB_MAGIC_HEADER;
+
+	WILL_READ_SYSTEM_SPACE(&space, GPT_IO_SUCCESS);
+	assert_int_equal(android_misc_virtual_ab_cancel_update(&test_disk, test_gpt), 0);
+}
+
+static void test_android_misc_virtual_ab_cancel_update_disk_error(void **state)
+{
+	WILL_READ_SYSTEM_SPACE(NULL, GPT_IO_NO_PARTITION);
+	assert_int_equal(android_misc_virtual_ab_cancel_update(&test_disk, test_gpt), -1);
+}
+
 #define TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup)
 
@@ -784,6 +1112,25 @@ int main(void)
 		TEST(test_android_misc_reset_oem_cmd),
 		TEST(test_android_misc_system_space_read),
 		TEST(test_android_misc_system_space_write),
+		TEST(test_android_misc_get_active_slot),
+		TEST(test_android_misc_get_active_slot_fail_gpt_init),
+		TEST(test_android_misc_get_active_slot_no_kernel),
+		TEST(test_android_misc_get_active_slot_no_name),
+		TEST(test_android_misc_get_active_slot_empty_name),
+		TEST(test_android_misc_slot_to_num),
+		TEST(test_android_misc_get_virtual_ab_merge_status_merging),
+		TEST(test_android_misc_get_virtual_ab_merge_status_snapshotted),
+		TEST(test_android_misc_get_virtual_ab_merge_status_snapshotted_same_slot),
+		TEST(test_android_misc_get_virtual_ab_merge_status_other),
+		TEST(test_android_misc_get_virtual_ab_merge_status_disk_error),
+		TEST(test_android_misc_get_virtual_ab_merge_status_invalid),
+		TEST(test_android_misc_virtual_ab_cancel_update_merging),
+		TEST(test_android_misc_virtual_ab_cancel_update_snapshotted),
+		TEST(test_android_misc_virtual_ab_cancel_update_write_fail),
+		TEST(test_android_misc_virtual_ab_cancel_update_active_slot_fail),
+		TEST(test_android_misc_virtual_ab_cancel_update_no_action),
+		TEST(test_android_misc_virtual_ab_cancel_update_invalid_message),
+		TEST(test_android_misc_virtual_ab_cancel_update_disk_error),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }

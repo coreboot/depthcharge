@@ -14,3 +14,5 @@ sparse-test-srcs += tests/mocks/test_blockdev.c
 
 android_misc-test-srcs += src/base/android_misc.c
 android_misc-test-srcs += tests/base/android_misc-test.c
+android_misc-test-mocks += GptInit
+android_misc-test-mocks += GptNextKernelEntry
