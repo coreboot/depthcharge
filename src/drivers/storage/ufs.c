@@ -700,6 +700,8 @@ static int ufs_utp_gear_sw(UfsCtlr *ufs)
 			rc = ufs_dme_configure_adapt(ufs, tfr_mode->tx.gear, PA_INITIAL_ADAPT);
 		else
 			rc = ufs_dme_configure_adapt(ufs, tfr_mode->tx.gear, PA_NO_ADAPT);
+		if (rc)
+			return rc;
 	}
 
 	// FIXME: b/315440135 Skip HS gear4 switching
