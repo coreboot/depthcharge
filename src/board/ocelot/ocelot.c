@@ -4,13 +4,17 @@
 
 #include "base/fw_config.h"
 #include "drivers/bus/soundwire/cavs_2_5-sndwregs.h"
+#include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "drivers/ec/rts5453/rts5453.h"
+#include "drivers/gpio/pantherlake.h"
 #include "drivers/soc/pantherlake.h"
 #include "drivers/storage/storage_common.h"
 #include "drivers/sound/intel_audio_setup.h"
 
 #define PDC_RTS5452_PROJ_NAME	"GOOG0800"
 #define PDC_RTS5453_PROJ_NAME	"GOOG0400"
+
+#define SDMODE_PIN GPP_A15
 
 const struct audio_config *variant_probe_audio_config(void)
 {
@@ -25,6 +29,23 @@ const struct audio_config *variant_probe_audio_config(void)
 				.type = AUDIO_ALC256,
 			},
 		};
+        } else if (CONFIG(DRIVER_SOUND_I2S) &&
+                 fw_config_probe(FW_CONFIG(AUDIO, AUDIO_MAX98360_ALC5682I_I2S))) {
+                config = (struct audio_config) {
+                        .bus = {
+                                .type = AUDIO_I2S,
+                                .i2s.address = SSP_I2S1_START_ADDRESS,
+                                .i2s.enable_gpio = { .pad = SDMODE_PIN },
+                                .i2s.settings = &max98357a_settings,
+                        },
+                        .amp = {
+                                .type = AUDIO_GPIO_AMP,
+                                .gpio.enable_gpio = SDMODE_PIN,
+                        },
+                        .codec = {
+                                .type = AUDIO_MAX98357,
+                        },
+                };
 	} else if (CONFIG(DRIVER_SOUND_RT721_SNDW) &&
 			fw_config_probe(FW_CONFIG(AUDIO, AUDIO_ALC721_SNDW))) {
 		config = (struct audio_config) {
