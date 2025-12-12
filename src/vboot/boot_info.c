@@ -250,6 +250,14 @@ static int fill_info_gki(struct boot_info *bi,
 			free_gpt(bdev, gpt);
 	}
 
+	/* Parse devicetree before setting up bootconfig. This will allow to populate
+	   androidboot.dtbo_idx bootconfig parameter for use by FirmwareDtboVerification. */
+	struct boot_img_hdr_v4 *boot_hdr = (struct boot_img_hdr_v4 *)kparams->kernel_buffer;
+
+	bi->kernel_size = boot_hdr->kernel_size;
+	if (CONFIG(ARCH_ARM))
+		bi->dt = android_parse_dtbs(kparams->dtbo, kparams->dtbo_size);
+
 	if (CONFIG(BOOTCONFIG)) {
 		if (gki_setup_bootconfig(bi, kparams, fastboot_bootconfig))
 			return -1;
@@ -260,11 +268,6 @@ static int fill_info_gki(struct boot_info *bi,
 			printf("Failed to setup pvmfw\n");
 	}
 
-	struct boot_img_hdr_v4 *boot_hdr = (struct boot_img_hdr_v4 *)kparams->kernel_buffer;
-
-	bi->kernel_size = boot_hdr->kernel_size;
-	if (CONFIG(ARCH_ARM))
-		bi->dt = android_parse_dtbs(kparams->dtbo, kparams->dtbo_size);
 	return 0;
 }
 
