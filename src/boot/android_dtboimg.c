@@ -69,7 +69,7 @@ static int get_dt_table_entry(const void *buf, struct dt_table_entry *entry,
 	entry->id_type = ntohl(v1_entry->custom[0]) & 0xff;
 	entry->custom1 = ntohl(v1_entry->custom[1]);
 	entry->custom2 = ntohl(v1_entry->custom[2]);
-	if (entry->dt_offset >= img_size || (entry->dt_offset + entry->dt_size) >= img_size) {
+	if (entry->dt_offset >= img_size || (entry->dt_offset + entry->dt_size) > img_size) {
 		printf("%s: ERROR: Entry @offset: %d, size: %d >= DTBO size %zu\n",
 		       __func__, entry->dt_offset, entry->dt_size, img_size);
 		return -1;
