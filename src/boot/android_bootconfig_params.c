@@ -10,6 +10,7 @@
 #include "base/timestamp.h"
 #include "base/vpd_util.h"
 #include "boot/android_bootconfig_params.h"
+#include "boot/android_dtboimg.h"
 #include "boot/bootconfig.h"
 #include "drivers/storage/blockdev.h"
 #include "vboot/firmware_id.h"
@@ -168,6 +169,21 @@ static int append_ddr_size(struct bootconfig *bc)
 #define SERIAL_NUM_VPD_KEY "serial_number"
 #define SERIAL_NUM_CONFIG_KEY "androidboot.serialno"
 
+#define DTBO_IDX_CONFIG_KEY "androidboot.dtbo_idx"
+
+static int append_dtbo_indices(struct bootconfig *bc)
+{
+	if (CONFIG(ARCH_ARM)) {
+		const char *dtbo_indices = android_get_dtbo_indices();
+
+		if (dtbo_indices)
+			return bootconfig_append(bc, DTBO_IDX_CONFIG_KEY, dtbo_indices);
+
+		return -1;
+	}
+	return 0;
+}
+
 int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_params *kp)
 {
 	return append_boot_part_uuid(bc, kp) |
@@ -178,7 +194,8 @@ int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_pa
 	       append_skuid(bc) |
 	       append_boot_source(bc, kp) |
 	       append_bootloader_version(bc) |
-	       append_ddr_size(bc);
+	       append_ddr_size(bc) |
+	       append_dtbo_indices(bc);
 }
 
 int append_android_bootconfig_boottime(struct boot_info *bi)

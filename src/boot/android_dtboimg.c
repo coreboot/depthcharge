@@ -136,6 +136,10 @@ struct overlay_dt {
 	struct list_node node;
 };
 
+#define MAX_DTBO_IDX_BC_LEN 256
+static char dtbo_idx_bc_buf[MAX_DTBO_IDX_BC_LEN];
+static size_t dtbo_idx_bc_len = 0;
+
 static struct list_node *stash_overlay_dt(struct device_tree *tree, uint32_t entry_id,
 					  struct list_node *overlay_dt_list)
 {
@@ -151,12 +155,23 @@ static int apply_stashed_overlay_dt(struct device_tree *base_dt,
 				     struct list_node *overlay_dt_list)
 {
 	struct overlay_dt *overlay;
+	int ret;
 
 	list_for_each(overlay, *overlay_dt_list, node) {
 		if (dt_apply_overlay(base_dt, overlay->tree) != 0) {
 			printf("Failed to apply DTB overlay entry: %d\n", overlay->entry_id);
 			return -1;
 		}
+
+		ret = snprintf(&dtbo_idx_bc_buf[dtbo_idx_bc_len],
+			       sizeof(dtbo_idx_bc_buf) - dtbo_idx_bc_len,
+			       ",%d", overlay->entry_id);
+		if (ret < 0 || ret >= (sizeof(dtbo_idx_bc_buf) - dtbo_idx_bc_len)) {
+			printf("Failed(%d) to populate overlay_dtb index\n", ret);
+			return -1;
+		}
+		dtbo_idx_bc_len += ret;
+
 		free(overlay);
 	}
 	return 0;
@@ -199,6 +214,12 @@ struct device_tree *android_parse_dtbs(const void *dtbo, size_t dtbo_size)
 			odt_list_tail = stash_overlay_dt(tree, i, odt_list_tail);
 		} else if (!base_dt) {
 			base_dt = tree;
+			int ret = snprintf(dtbo_idx_bc_buf, sizeof(dtbo_idx_bc_buf), "%d", i);
+			if (ret < 0 || ret >= sizeof(dtbo_idx_bc_buf)) {
+				printf("Failed(%d) to populate base_dtb index\n", ret);
+				return NULL;
+			}
+			dtbo_idx_bc_len = ret;
 		} else {
 			printf("ERROR: More than one base DT entry %d\n", i);
 			return NULL;
@@ -214,4 +235,9 @@ struct device_tree *android_parse_dtbs(const void *dtbo, size_t dtbo_size)
 		return NULL;
 
 	return base_dt;
+}
+
+const char *android_get_dtbo_indices(void)
+{
+	return dtbo_idx_bc_buf;
 }

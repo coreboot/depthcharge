@@ -10,5 +10,9 @@
  */
 struct device_tree *android_parse_dtbs(const void *dtbo, size_t dtbo_size);
 
+/**
+ * android_get_dtbo_indices - Get the matching DTBO indices in a CSV format
+ */
+const char *android_get_dtbo_indices(void);
 
 #endif /* _BOOT_ANDROID_SEPARATE_DTB_H_ */
