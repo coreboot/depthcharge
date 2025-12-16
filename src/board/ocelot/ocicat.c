@@ -9,6 +9,22 @@
 #include "drivers/storage/storage_common.h"
 #include "drivers/sound/intel_audio_setup.h"
 
+const struct audio_config *variant_probe_audio_config(void)
+{
+	static struct audio_config config;
+
+	config = (struct audio_config){
+		.bus = {
+			.type = AUDIO_HDA,
+		},
+		.codec = {
+			.type = AUDIO_ALC256,
+		},
+	};
+
+	return &config;
+}
+
 static const struct storage_config storage_configs[] = {
 	{
 		.media = STORAGE_NVME,
