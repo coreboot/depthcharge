@@ -72,3 +72,9 @@ config DRIVER_POWER_ARMADA38X
 	default n
 	help
 	  Reboot using the ARMADA38X internals.
+
+config DRIVER_POWER_PSCI_RESET2
+	bool "ARMv8 PSCI v2 based power management"
+	default n
+	help
+	  Reboot or power off using the ARMv8 reset v2 specification.

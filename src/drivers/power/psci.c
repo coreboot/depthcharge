@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Google LLC
+ * Copyright 2016-2026 Google LLC
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -22,7 +22,10 @@
 
 static int psci_reset(PowerOps *me)
 {
-	smc(PSCI_SYSTEM_RESET, 0, 0, 0, 0, 0, 0);
+	if (CONFIG(DRIVER_POWER_PSCI_RESET2))
+		smc(PSCI_SYSTEM_RESET2, 0x80000000, 0, 0, 0, 0, 0);
+	else
+		smc(PSCI_SYSTEM_RESET, 0, 0, 0, 0, 0, 0);
 	halt();
 }
 

@@ -24,6 +24,7 @@
 enum psci_function_id {
 	PSCI_SYSTEM_OFF = 0x84000008,
 	PSCI_SYSTEM_RESET = 0x84000009,
+	PSCI_SYSTEM_RESET2 = 0xc4000012,
 };
 
 // Conforms to ARM SMC Calling Convention (ARM DEN 0028A).
