@@ -107,10 +107,8 @@ static int detect_ec_manual_poweron_event(void)
 		EC_HOST_EVENT_MASK(EC_HOST_EVENT_LID_OPEN));
 	uint32_t events;
 
-	if ((cros_ec_get_host_events(&events) == 0) && (events & manual_pwron_event_mask)) {
-		cros_ec_clear_host_events(manual_pwron_event_mask);
+	if ((cros_ec_get_host_events(&events) == 0) && (events & manual_pwron_event_mask))
 		return 1;
-	}
 
 	return 0;
 }
