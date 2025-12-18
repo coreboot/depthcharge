@@ -16,5 +16,7 @@
 
 const char *get_rts545x_configs(int ec_pd_id,
 				const struct ec_response_pd_chip_info_v2 *r);
+const char *get_pdc_chip_name(int ec_pd_id,
+			      const struct ec_response_pd_chip_info_v2 *r);
 
 #endif /* _BOARD_SKYWALKER_VARIANT_H_ */

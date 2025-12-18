@@ -36,25 +36,33 @@
 #define USB_PORT0_BASE_ADDRESS 0x11200000
 #define USB_PORT3_BASE_ADDRESS 0x11260000
 
+__weak const char *get_pdc_chip_name(int ec_pd_id,
+				     const struct ec_response_pd_chip_info_v2 *r)
+{
+	return "rts5453";
+}
+
 /* Override of func in src/drivers/ec/rts5453/rts5453.c */
 void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
 				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
 	assert(ec_pd_id >= 0 && ec_pd_id < MAX_PDC_PORT_NUM);
 
+	const char *name = get_pdc_chip_name(ec_pd_id, r);
 	const char *config = get_rts545x_configs(ec_pd_id, r);
+
 	static char image[MAX_PDC_PORT_NUM][MAX_PATH_LEN];
 	static char hash[MAX_PDC_PORT_NUM][MAX_PATH_LEN];
-	static const char *pattern = "rts5453_GOOG%s.%s";
+	static const char *pattern = "%s_GOOG%s.%s";
 
-	if (!config) {
+	if (!name || !config) {
 		*image_path = NULL;
 		*hash_path = NULL;
 		return;
 	}
 
-	snprintf(image[ec_pd_id], MAX_PATH_LEN, pattern, config, "bin");
-	snprintf(hash[ec_pd_id], MAX_PATH_LEN, pattern, config, "hash");
+	snprintf(image[ec_pd_id], MAX_PATH_LEN, pattern, name, config, "bin");
+	snprintf(hash[ec_pd_id], MAX_PATH_LEN, pattern, name, config, "hash");
 
 	*image_path = image[ec_pd_id];
 	*hash_path = hash[ec_pd_id];
@@ -257,7 +265,13 @@ void board_rts545x_register(void)
 		.pid = old_pid,
 		.new_chip_aux_fw_ops = new_rts545x_from_chip_info,
 	};
+	static CrosEcAuxfwChipInfo rts5452vb_info = {
+		.vid = CONFIG_DRIVER_EC_RTS545X_VID,
+		.pid = 0x5081,
+		.new_chip_aux_fw_ops = new_rts545x_from_chip_info,
+	};
 	list_insert_after(&rts5453_info.list_node, &ec_aux_fw_chip_list);
+	list_insert_after(&rts5452vb_info.list_node, &ec_aux_fw_chip_list);
 }
 
 static void setup_ufs(void)
