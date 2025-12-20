@@ -71,6 +71,17 @@ int vboot_check_wipe_memory(void)
 	return 0;
 }
 
+/*
+ * Check if EC is in recovery-related mode that requires reset on poweroff
+ * to clear persistent state flags.
+ */
+static int ec_in_recovery(const struct vb2_context *ctx)
+{
+	return ctx->boot_mode == VB2_BOOT_MODE_MANUAL_RECOVERY ||
+	       ctx->boot_mode == VB2_BOOT_MODE_DIAGNOSTICS ||
+	       ctx->boot_mode == VB2_BOOT_MODE_BROKEN_SCREEN;
+}
+
 int vboot_check_enable_usb(void)
 {
 	/* Initialize USB in developer, recovery mode or diagnostics mode,
@@ -284,10 +295,10 @@ fail:
 		power_off();
 	} else if (res == VB2_REQUEST_SHUTDOWN) {
 		printf("Powering off.\n");
-		if (ec && ec->reboot_ap_off && vboot_in_manual_recovery()) {
+		if (ec && ec->reboot_ap_off && ec_in_recovery(ctx)) {
 			/*
-			 * In recovery mode, EC will reset itself on shutdown.
-			 * So, we need to tell it not to start AP.
+			 * In recovery-related modes, EC needs to reset on shutdown
+			 * to clear persistent state flags and ensure clean next boot.
 			 */
 			printf("Powering off (with AP_OFF).\n");
 			ec->reboot_ap_off(ec);
