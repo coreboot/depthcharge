@@ -2,10 +2,9 @@
 
 #include "board/skywalker/include/variant.h"
 
-#define RTS545X_PS8747_YODA_EQ "0B01"
-
-const char *get_rts545x_configs(int ec_pd_id,
-				const struct ec_response_pd_chip_info_v2 *r)
+int override_pdc_chip(struct pdc_chip *pdc)
 {
-	return ec_pd_id == 0 ? RTS545X_IT5205 : RTS545X_PS8747_YODA_EQ;
+	if (pdc->retimer == PDC_RETIMER_PS8747)
+		pdc->config.variant = '1'; /* 0B01 */
+	return 0;
 }

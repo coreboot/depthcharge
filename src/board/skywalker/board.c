@@ -36,10 +36,78 @@
 #define USB_PORT0_BASE_ADDRESS 0x11200000
 #define USB_PORT3_BASE_ADDRESS 0x11260000
 
-__weak const char *get_pdc_chip_name(int ec_pd_id,
-				     const struct ec_response_pd_chip_info_v2 *r)
+const static struct pdc_chip_map {
+	const char *config_id;
+	enum pdc_chip_series chip_series;
+	enum pdc_retimer retimer;
+} pdc_chip_map[] = {
+	{ "09", PDC_RTS5452P, PDC_RETIMER_NONE },
+	{ "0B", PDC_RTS5452P, PDC_RETIMER_PS8747 },
+	{ "0C", PDC_RTS5452P, PDC_RETIMER_TUSB546 },
+	{ "0D", PDC_RTS5452P, PDC_RETIMER_IT5205 },
+	{ "0E", PDC_RTS5453P, PDC_RETIMER_IT5205_2 },
+	{ "0N", PDC_RTS5452P_VB, PDC_RETIMER_NONE },
+	{ "0U", PDC_RTS5452P_VB, PDC_RETIMER_PS8747 },
+};
+
+static struct pdc_chip *parse_pdc(const char *name)
 {
-	return "rts5453";
+	struct pdc_chip *pdc = xzalloc(sizeof(*pdc));
+
+	snprintf(pdc->config.str, sizeof(pdc->config.str), "%s", name);
+	if (strncmp(pdc->config.str, "GOOG", 4) ||
+	    strlen(pdc->config.str) != PDC_FW_NAME_LEN) {
+		printf("%s: Invalid PDC config: %s\n",
+		       __func__, pdc->config.str);
+		goto error;
+	}
+
+	pdc->chip = PDC_UNKNOWN;
+	pdc->retimer = PDC_RETIMER_UNKNOWN;
+
+	for (int i = 0; i < ARRAY_SIZE(pdc_chip_map); i++) {
+		const struct pdc_chip_map *m = &pdc_chip_map[i];
+		if (!strncmp(m->config_id, pdc->config.id,
+			     sizeof(pdc->config.id))) {
+			pdc->chip = m->chip_series;
+			pdc->retimer = m->retimer;
+			break;
+		}
+	}
+
+	return pdc;
+
+error:
+	free(pdc);
+	return NULL;
+}
+
+__weak int override_pdc_chip(struct pdc_chip *pdc)
+{
+	return 0;
+}
+
+static const char *const pdc_chip_series_names[] = {
+	[PDC_UNKNOWN] = "UNKNOWN",
+	[PDC_RTS5452P] = "RTS5452P",
+	[PDC_RTS5453P] = "RTS5453P",
+	[PDC_RTS5452P_VB] = "RTS5452P-VB",
+};
+
+static const char *const pdc_retimer_names[] = {
+	[PDC_RETIMER_UNKNOWN] = "UNKNOWN",
+	[PDC_RETIMER_NONE] = "NONE",
+	[PDC_RETIMER_PS8747] = "PS8747",
+	[PDC_RETIMER_TUSB546] = "TUSB546",
+	[PDC_RETIMER_IT5205] = "IT5205",
+	[PDC_RETIMER_IT5205_2] = "IT5205 x2",
+};
+
+static void print_pdc(const struct pdc_chip *pdc, const char *name)
+{
+	printf("PDC (%s): %s, chip=%s, retimer=%s\n",
+	       name, pdc->config.str, pdc_chip_series_names[pdc->chip],
+	       pdc_retimer_names[pdc->retimer]);
 }
 
 /* Override of func in src/drivers/ec/rts5453/rts5453.c */
@@ -47,25 +115,55 @@ void board_rts5453_get_image_paths(const char **image_path, const char **hash_pa
 				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
 	assert(ec_pd_id >= 0 && ec_pd_id < MAX_PDC_PORT_NUM);
+	*image_path = NULL;
+	*hash_path = NULL;
 
-	const char *name = get_pdc_chip_name(ec_pd_id, r);
-	const char *config = get_rts545x_configs(ec_pd_id, r);
+	char fw_name[sizeof(r->fw_name_str)] = {0};
+	memcpy(fw_name, r->fw_name_str, sizeof(r->fw_name_str) - 1);
+	printf("PDC name (ec_pd_id %d): %s\n", ec_pd_id, fw_name);
+
+	struct pdc_chip *pdc = parse_pdc(fw_name);
+	if (!pdc)
+		return;
+
+	print_pdc(pdc, "origin");
+	pdc->config.revision = '0';
+	pdc->config.variant = '0';
+	if (override_pdc_chip(pdc))
+		goto exit;
+
+	print_pdc(pdc, "modified");
+
+	const char *name;
+	switch (pdc->chip) {
+	case PDC_RTS5452P:
+	case PDC_RTS5453P:
+		name = "rts5453";
+		break;
+	case PDC_RTS5452P_VB:
+		name = "rts5453vb";
+		break;
+	default:
+		printf("%s: Unknown chip for %s; using rts5453\n",
+		       __func__, pdc->config.str);
+		name = "rts5453";
+		break;
+	}
 
 	static char image[MAX_PDC_PORT_NUM][MAX_PATH_LEN];
 	static char hash[MAX_PDC_PORT_NUM][MAX_PATH_LEN];
-	static const char *pattern = "%s_GOOG%s.%s";
+	static const char *pattern = "%s_%s.%s";
 
-	if (!name || !config) {
-		*image_path = NULL;
-		*hash_path = NULL;
-		return;
-	}
-
-	snprintf(image[ec_pd_id], MAX_PATH_LEN, pattern, name, config, "bin");
-	snprintf(hash[ec_pd_id], MAX_PATH_LEN, pattern, name, config, "hash");
+	snprintf(image[ec_pd_id], MAX_PATH_LEN, pattern,
+		 name, pdc->config.str, "bin");
+	snprintf(hash[ec_pd_id], MAX_PATH_LEN, pattern,
+		 name, pdc->config.str, "hash");
 
 	*image_path = image[ec_pd_id];
 	*hash_path = hash[ec_pd_id];
+
+exit:
+	free(pdc);
 }
 
 static int tpm_irq_status(void)
