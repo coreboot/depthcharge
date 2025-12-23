@@ -615,26 +615,13 @@ static inline bool ufs_is_hs_mode_enable(struct UfsTfrMode *tfr_mode)
 		tfr_mode->tx.pwr_mode == UFS_FASTAUTO_MODE);
 }
 
-static int ufs_dme_configure_adapt(UfsCtlr *ufs, uint32_t agreed_gear, uint32_t adapt_val)
-{
-	if (agreed_gear < UFS_GEAR4)
-		adapt_val = PA_NO_ADAPT;
-
-	return ufs_dme_set(ufs, PA_TXHSADAPTTYPE, adapt_val);
-}
-
-// Refer UFSHCI spec. JESD223D section 7.4 UIC Power Mode Change
-static int ufs_utp_gear_sw(UfsCtlr *ufs)
+int ufs_pwr_mode_change(UfsCtlr *ufs)
 {
 	UfsTfrMode *tfr_mode = &ufs->tfr_mode;
 	uint32_t phy_term;
 	uint32_t pwr_mode;
 	uint32_t upmcrs;
 	int rc;
-
-	rc = ufs_hook(ufs, UFS_OP_PRE_GEAR_SWITCH, NULL);
-	if (rc)
-		return ufs_err("UFS_OP_PRE_GEAR_SWITCH failed", rc);
 
 	// Clear the UPMS bit in IS register
 	// Note, UFSHCI_IS is RWC i.e. write 1's to clear bits
@@ -693,17 +680,6 @@ static int ufs_utp_gear_sw(UfsCtlr *ufs)
 	    (rc = ufs_dme_set(ufs, DME_LOCALAFC0REQTIMEOUTVAL      , DL_AFC0REQTIMEOUTVAL)))
 		return rc;
 
-	// Set adapt configuration PA_INITIAL_ADAPT for HS G4/G5
-	if (ufs->unipro_version >= UFS_UNIPRO_VERSION_1_8) {
-		if (tfr_mode->rx.pwr_mode == UFS_FAST_MODE ||
-		    tfr_mode->rx.pwr_mode == UFS_FASTAUTO_MODE)
-			rc = ufs_dme_configure_adapt(ufs, tfr_mode->tx.gear, PA_INITIAL_ADAPT);
-		else
-			rc = ufs_dme_configure_adapt(ufs, tfr_mode->tx.gear, PA_NO_ADAPT);
-		if (rc)
-			return rc;
-	}
-
 	// FIXME: b/315440135 Skip HS gear4 switching
 	// Check the power mode request, user config and update accordingly
 	if(!(CONFIG(DRIVER_STOTRAGE_UFS_BROKEN_HS_MODE)
@@ -729,6 +705,22 @@ static int ufs_utp_gear_sw(UfsCtlr *ufs)
 	} else {
 		printf("HS power mode update requested, skip update.\n");
 	}
+
+	return rc;
+}
+
+// Refer UFSHCI spec. JESD223D section 7.4 UIC Power Mode Change
+static int ufs_utp_gear_sw(UfsCtlr *ufs)
+{
+	int rc;
+
+	rc = ufs_hook(ufs, UFS_OP_PRE_GEAR_SWITCH, NULL);
+	if (rc)
+		return ufs_err("UFS_OP_PRE_GEAR_SWITCH failed", rc);
+
+	rc = ufs_pwr_mode_change(ufs);
+	if (rc)
+		return rc;
 
 	rc = ufs_hook(ufs, UFS_OP_POST_GEAR_SWITCH, NULL);
 	if (rc)

@@ -37,6 +37,93 @@ static void mtk_ufs_reset_device(UfsCtlr *ufs)
 	mdelay(10);
 }
 
+static int ufs_dme_configure_adapt(UfsCtlr *ufs, uint32_t agreed_gear, uint32_t adapt_val)
+{
+	if (agreed_gear < UFS_GEAR4)
+		adapt_val = PA_NO_ADAPT;
+
+	return ufs_dme_set(ufs, PA_TXHSADAPTTYPE, adapt_val);
+}
+
+static bool mtk_ufs_pmc_via_fastauto(UfsCtlr *ufs)
+{
+	UfsTfrMode *tfr_mode = &ufs->tfr_mode;
+
+	if (ufs->unipro_version < UFS_UNIPRO_VERSION_1_8)
+		return false;
+
+	if ((tfr_mode->rx.pwr_mode != UFS_FAST_MODE) &&
+	    (tfr_mode->rx.pwr_mode < UFS_GEAR4))
+		return false;
+
+	if ((tfr_mode->tx.pwr_mode != UFS_FAST_MODE) &&
+	    (tfr_mode->tx.pwr_mode < UFS_GEAR4))
+		return false;
+
+	if ((tfr_mode->tx.pwr_mode == UFS_SLOW_MODE) ||
+	    (tfr_mode->rx.pwr_mode == UFS_SLOW_MODE))
+		return false;
+
+	return true;
+}
+
+static int mtk_ufs_pre_pwr_mode_change(UfsCtlr *ufs)
+{
+	UfsTfrMode *tfr_mode = &ufs->tfr_mode;
+	uint32_t tx_pwr_mode = tfr_mode->tx.pwr_mode;
+	uint32_t rx_pwr_mode = tfr_mode->rx.pwr_mode;
+	uint32_t tx_gear = tfr_mode->tx.gear;
+	uint32_t rx_gear = tfr_mode->rx.gear;
+	uint32_t mib_val;
+	int rc = 0;
+
+	/* Change power mode to FASTAUTO for compatible devices. */
+	if (mtk_ufs_pmc_via_fastauto(ufs)) {
+		rc = ufs_dme_peer_get(ufs, PA_MINRXTRAILINGCLOCKS, &mib_val);
+		if (rc)
+			return rc;
+		rc = ufs_dme_set(ufs, PA_TXTRAILINGCLOCKS, mib_val);
+		if (rc)
+			return rc;
+
+		rc = ufs_dme_get(ufs, PA_MINRXTRAILINGCLOCKS, &mib_val);
+		if (rc)
+			return rc;
+		rc = ufs_dme_peer_set(ufs, PA_TXTRAILINGCLOCKS, mib_val);
+		if (rc)
+			return rc;
+
+		rc = ufs_dme_set(ufs, PA_TXHSADAPTTYPE, PA_NO_ADAPT);
+		if (rc)
+			return rc;
+
+		tfr_mode->tx.pwr_mode = UFS_FASTAUTO_MODE;
+		tfr_mode->rx.pwr_mode = UFS_FASTAUTO_MODE;
+		tfr_mode->tx.gear = UFS_GEAR1;
+		tfr_mode->rx.gear = UFS_GEAR1;
+
+		rc = ufs_pwr_mode_change(ufs);
+		if (rc)
+			return rc;
+
+		tfr_mode->tx.pwr_mode = tx_pwr_mode;
+		tfr_mode->rx.pwr_mode = rx_pwr_mode;
+		tfr_mode->tx.gear = tx_gear;
+		tfr_mode->rx.gear = rx_gear;
+	}
+
+	// Set adapt configuration PA_INITIAL_ADAPT for HS G4/G5
+	if (ufs->unipro_version >= UFS_UNIPRO_VERSION_1_8) {
+		if (tfr_mode->rx.pwr_mode == UFS_FAST_MODE ||
+		    tfr_mode->rx.pwr_mode == UFS_FASTAUTO_MODE)
+			rc = ufs_dme_configure_adapt(ufs, tfr_mode->tx.gear, PA_INITIAL_ADAPT);
+		else
+			rc = ufs_dme_configure_adapt(ufs, tfr_mode->tx.gear, PA_NO_ADAPT);
+	}
+
+	return rc;
+}
+
 static int mtk_ufs_hook_fn(UfsCtlr *ufs, UfsHookOp op, void *data)
 {
 	switch (op) {
@@ -46,6 +133,10 @@ static int mtk_ufs_hook_fn(UfsCtlr *ufs, UfsHookOp op, void *data)
 	case UFS_OP_PRE_LINK_STARTUP:
 		return ufs_dme_set(ufs, PA_LOCAL_TX_LCC_ENABLE, 0);
 	case UFS_OP_POST_LINK_STARTUP:
+		break;
+	case UFS_OP_PRE_GEAR_SWITCH:
+		return mtk_ufs_pre_pwr_mode_change(ufs);
+	case UFS_OP_POST_GEAR_SWITCH:
 		break;
 	default:
 		break;
