@@ -83,6 +83,7 @@ static int get_unused_memory(Ranges *ranges)
 		uint64_t end = range->base + range->size;
 		switch (range->type) {
 		case CB_MEM_RAM:
+		case CB_MEM_TAG:
 			ranges_add(ranges, start, end);
 			break;
 		case CB_MEM_RESERVED:
