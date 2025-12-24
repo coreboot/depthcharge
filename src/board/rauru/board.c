@@ -5,9 +5,7 @@
 
 #include "base/device_tree.h"
 #include "base/init_funcs.h"
-#include "boot/android_mte.h"
 #include "boot/commandline.h"
-#include "commonlib/bsd/mem_chip_info.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/i2s/mtk_v3.h"
@@ -264,35 +262,8 @@ static int board_setup(void)
 		printf("[%s] no display_init_required()!\n", __func__);
 	}
 
-	if (!CONFIG(ANDROID_MTE)) {
-		/*
-		 * For ChromeOS:
-		 *
-		 * Disable MTE support for ChromeOS. b:375543707
-		 *
-		 * Note, this should go to ChromeOS kernel build stage.
-		 * The bootloader shouldn't insert the kernel cmdline unless
-		 * it is changeable by user, in ChromeOS case, it is not.
-		 */
-		commandline_append("arm64.nomte");
-		printf("ChromeOS: adding arm64.nomte to kernel cmdline\n");
-	} else {
-
-		const struct mem_chip_info *info = (const void *)lib_sysinfo.mem_chip_base;
-		const uint64_t dram_size = mem_chip_info_total_density_bytes(info);
-		printf("MTE: DRAM size=0x%llx\n", dram_size);
-
-		/*
-		 * Only 16GiB DRAM device is supported at this moment.
-		 * We are still figuring out the algorithm to support other DRAM size.
-		 */
-		if (dram_size == 0x400000000) {
-			mte_initialize();
-		} else {
-			commandline_append("arm64.nomte");
-			printf("MTE: DRAM not supported: added arm64.nomte\n");
-		}
-	}
+	/* Disable MTE support for ChromeOS. b:375543707 */
+	commandline_append("arm64.nomte");
 
 	return 0;
 }
