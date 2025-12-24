@@ -8,6 +8,7 @@
 #include "base/android_misc.h"
 #include "boot/android_mte.h"
 #include "boot/commandline.h"
+#include "vboot/util/memory.h"
 
 #define MTE_CMDLINE_CTRL	"bl.mtectrl"
 
@@ -136,6 +137,21 @@ static void apply_min_mte_ctrl(struct mte_ctrl *ctrl, const struct mte_ctrl *min
 		ctrl->kasan_fault = min->kasan_fault;
 }
 
+static void update_mem_ranges(struct mte_ctrl *ctrl)
+{
+	bool has_tag_storage = memory_has_tag_storage();
+
+	if (ctrl->mte) {
+		if (!has_tag_storage) {
+			printf("Memory tag storage is not found! Disable MTE.\n");
+			ctrl->mte = 0;
+		}
+	} else {
+		if (has_tag_storage)
+			memory_free_tag_storage();
+	}
+}
+
 int android_mte_setup(char *cmdline_buf, size_t size)
 {
 	struct mte_ctrl ctrl, min;
@@ -154,6 +170,8 @@ int android_mte_setup(char *cmdline_buf, size_t size)
 
 	apply_misc_mte_ctrl(&ctrl);
 	apply_min_mte_ctrl(&ctrl, &min);
+
+	update_mem_ranges(&ctrl);
 
 	return append_mte_params_to_cmdline(cmdline_buf, size, &ctrl);
 }
