@@ -173,3 +173,21 @@ int memory_wipe_unused(void)
 	ranges_teardown(&ranges);
 	return result;
 }
+
+bool memory_has_tag_storage(void)
+{
+	for (int i = 0; i < lib_sysinfo.n_memranges; i++) {
+		if (lib_sysinfo.memrange[i].type == CB_MEM_TAG)
+			return true;
+	}
+
+	return false;
+}
+
+void memory_free_tag_storage(void)
+{
+	for (int i = 0; i < lib_sysinfo.n_memranges; i++) {
+		if (lib_sysinfo.memrange[i].type == CB_MEM_TAG)
+			lib_sysinfo.memrange[i].type = CB_MEM_RAM;
+	}
+}
