@@ -111,10 +111,36 @@ static void update_mem_property(u64 start, u64 end, void *pdata)
 	params->data = data;
 }
 
+#define MEMORY_ALIGNMENT (1 * MiB)
+
+typedef struct AlignParams {
+	Ranges *mem;
+	Ranges *reserved;
+} AlignParams;
+
+static void align_ram_range(u64 start, u64 end, void *pdata)
+{
+	AlignParams *params = (AlignParams *)pdata;
+	uint64_t new_start = ALIGN_UP(start, MEMORY_ALIGNMENT);
+	uint64_t new_end = ALIGN_DOWN(end, MEMORY_ALIGNMENT);
+
+	if (new_start >= new_end) return;
+
+	if (new_start > start)
+		ranges_add(params->reserved, start, new_start);
+
+	if (new_start < new_end)
+		ranges_add(params->mem, new_start, new_end);
+
+	if (new_end < end)
+		ranges_add(params->reserved, new_end, end);
+}
+
 void dt_update_memory(struct device_tree *tree)
 {
 	Ranges mem;
 	Ranges reserved;
+	Ranges available;
 	struct device_tree_node *node;
 	u32 addr_cells = 2, size_cells = 1;
 	dt_read_cell_props(tree->root, &addr_cells, &size_cells);
@@ -130,37 +156,30 @@ void dt_update_memory(struct device_tree *tree)
 	list_insert_after(&node->list_node, &tree->root->children);
 	dt_add_string_prop(node, "device_type", "memory");
 
-	// Read memory info from coreboot (ranges are merged automatically).
-	ranges_init(&mem);
+	// Read memory info from coreboot
+	ranges_init(&available);
 	ranges_init(&reserved);
 
-#define MEMORY_ALIGNMENT (1 << 20)
+	// Merge th adjacent regions with the same type.
 	for (int i = 0; i < lib_sysinfo.n_memranges; i++) {
 		struct memrange *range = &lib_sysinfo.memrange[i];
 		uint64_t start = range->base;
 		uint64_t end = range->base + range->size;
 
-		/*
-		 * Kernel likes its available memory areas at least 1MB
-		 * aligned, let's trim the regions such that unaligned padding
-		 * is added to reserved memory.
-		 */
-		if (range->type == CB_MEM_RAM) {
-			uint64_t new_start = ALIGN_UP(start, MEMORY_ALIGNMENT);
-			uint64_t new_end = ALIGN_DOWN(end, MEMORY_ALIGNMENT);
-
-			if (new_start != start)
-				ranges_add(&reserved, start, new_start);
-
-			if (new_start != new_end)
-				ranges_add(&mem, new_start, new_end);
-
-			if (new_end != end)
-				ranges_add(&reserved, new_end, end);
-		} else {
+		if (range->type == CB_MEM_RAM)
+			ranges_add(&available, start, end);
+		else
 			ranges_add(&reserved, start, end);
-		}
 	}
+
+	/*
+	 * Kernel likes its available memory areas at least 1MB aligned, let's
+	 * trim the regions such that unaligned padding is added to reserved
+	 * memory.
+	 */
+	ranges_init(&mem);
+	AlignParams align_params = { .mem = &mem, .reserved = &reserved };
+	ranges_for_each(&available, &align_ram_range, &align_params);
 
 	// CBMEM regions are both carved out and explicitly reserved.
 	ranges_for_each(&reserved, &update_reserve_map, tree);
