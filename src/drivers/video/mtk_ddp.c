@@ -15,7 +15,9 @@
  * GNU General Public License for more details.
  */
 #include <libpayload.h>
+
 #include "mtk_ddp.h"
+#include "mtk_dsi.h"
 
 enum ovl_type {
 	DISP_OVL = 0,
@@ -28,6 +30,8 @@ typedef struct {
 	uintptr_t blender_base;
 	uintptr_t ovl_base1;
 	uintptr_t blender_base1;
+	uintptr_t dsi_base;
+	uintptr_t dsi_base1;
 	int lanes;
 	enum ovl_type type;
 } MtkDisplay;
@@ -76,6 +80,14 @@ static int mtk_display_stop(DisplayOps *me)
 {
 	MtkDisplay *mtk = container_of(me, MtkDisplay, ops);
 
+	/* Stop DSI if base is set */
+	struct mtk_dsi dsi = {
+		.reg_base = mtk->dsi_base,
+		.reg_base1 = mtk->dsi_base1,
+	};
+	mtk_dsi_stop(&dsi);
+	mtk_dsi_wait_for_idle(&dsi);
+
 	if (mtk->type == DISP_OVL) {
 		write32p(mtk->ovl_base + DISP_REG_OVL_EN, 0);
 		if (mtk->lanes == 2)
@@ -101,7 +113,9 @@ DisplayOps *new_mtk_display(int (*backlight_update_fn)
 			    uintptr_t ovl_base, int lanes,
 			    uintptr_t blender_base,
 			    uintptr_t ovl_base1,
-			    uintptr_t blender_base1)
+			    uintptr_t blender_base1,
+			    uintptr_t dsi_base,
+			    uintptr_t dsi_base1)
 {
 	MtkDisplay *display = xzalloc(sizeof(MtkDisplay));
 
@@ -113,6 +127,8 @@ DisplayOps *new_mtk_display(int (*backlight_update_fn)
 	display->ovl_base = ovl_base;
 	display->blender_base1 = blender_base1;
 	display->ovl_base1 = ovl_base1;
+	display->dsi_base = dsi_base;
+	display->dsi_base1 = dsi_base1;
 	display->lanes = lanes;
 	if (backlight_update_fn)
 		display->ops.backlight_update = backlight_update_fn;

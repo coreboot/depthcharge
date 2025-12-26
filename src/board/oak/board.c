@@ -168,7 +168,7 @@ static int board_setup(void)
 	/* Set display ops */
 	if (display_init_required())
 		display_set_ops(new_mtk_display(
-				oak_backlight_update, 0x1400c000, 1, 0, 0, 0));
+				oak_backlight_update, 0x1400c000, 1, 0, 0, 0, 0, 0));
 
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11270000);
 

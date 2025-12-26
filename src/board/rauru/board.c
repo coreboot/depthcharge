@@ -254,7 +254,7 @@ static int board_setup(void)
 		}
 		display_set_ops(new_mtk_display(board_backlight_update,
 						0x32850000, 2, 0x328e0000,
-						ovl_base1, blender_base1));
+						ovl_base1, blender_base1, 0, 0));
 
 		list_insert_after(&reserve_framebuffer_fixup.list_node, &device_tree_fixups);
 		/* workaround for b/435289727 */

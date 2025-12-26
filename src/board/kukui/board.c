@@ -169,7 +169,7 @@ static int board_setup(void)
 	/* Set display ops */
 	if (display_init_required())
 		display_set_ops(new_mtk_display(kukui_backlight_update,
-						0x14008000, 2, 0, 0, 0));
+						0x14008000, 2, 0, 0, 0, 0, 0));
 	return 0;
 }
 
