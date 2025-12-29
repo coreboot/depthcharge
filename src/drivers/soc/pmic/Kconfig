@@ -1,0 +1,5 @@
+## SPDX-License-Identifier: GPL-2.0-only OR MIT
+
+config DRIVER_SOC_MTK_PMIF
+	bool "MediaTek PMIF (PMIC Arbiter Interface) driver"
+	default n

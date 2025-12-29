@@ -172,6 +172,7 @@ config DRIVER_SOC_PHOENIX
 	select DRIVER_GPIO_KERN
 
 source "src/drivers/soc/cse/Kconfig"
+source "src/drivers/soc/pmic/Kconfig"
 
 config DRIVER_CMOS_BASE_PORT_BANK_0
 	hex
