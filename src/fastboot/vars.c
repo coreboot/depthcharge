@@ -27,6 +27,7 @@
 #include "fastboot/vars.h"
 #include "base/vpd_util.h"
 #include "vboot/firmware_id.h"
+#include "drivers/ec/cros/ec.h"
 
 #define VAR_ARGS(_name, _sep, _var)                                            \
 	{                                                                      \
@@ -59,6 +60,9 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 	VAR_ARGS("mac", ':', VAR_WIFI_MAC),
 	VAR_NO_ARGS("hw-desc", VAR_HW_DESC),
 	VAR_NO_ARGS("imei", VAR_IMEI),
+	VAR_NO_ARGS("sku", VAR_SKU),
+	VAR_NO_ARGS("oem", VAR_OEM_ID),
+	VAR_NO_ARGS("partner-custom", VAR_PARTNER_CUSTOM),
 	{.name = NULL},
 };
 
@@ -125,6 +129,8 @@ void fastboot_cmd_getvar(struct FastbootOps *fb, char *args)
 			fastboot_fail(fb, "getvar truncated: %s", var_buf);
 		else if (state == STATE_UNKNOWN_VAR)
 			fastboot_fail(fb, "Unknown variable");
+		else if (state == STATE_PROCESSING_ERROR)
+			fastboot_fail(fb, "getvar failed - error: %s", var_buf);
 		else
 			fastboot_fail_with_logs(fb, "getvar failed - internal error");
 		return;
@@ -474,6 +480,47 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 	case VAR_IMEI: {
 		u32 vpd_size;
 		const unsigned char *vpd_data = vpd_find("imei", NULL, NULL,
+							 &vpd_size);
+		if (vpd_data && vpd_size > 0)
+			used_len = snprintf(outbuf, outbuf_len, "%.*s",
+					       (int)vpd_size, vpd_data);
+		else
+			used_len = snprintf(outbuf, outbuf_len, "unknown");
+		break;
+	}
+	case VAR_SKU: {
+		if (CONFIG(DRIVER_EC_CROS)) {
+			uint32_t v = 0;
+			int rv = cros_ec_cbi_get_sku_id(&v);
+			if (rv) {
+				used_len = snprintf(outbuf, outbuf_len, "ec_error_0x%x", rv);
+				return STATE_PROCESSING_ERROR;
+			}
+
+			used_len = snprintf(outbuf, outbuf_len, "0x%x", v);
+		} else {
+			return STATE_UNKNOWN_VAR;
+		}
+		break;
+	}
+	case VAR_OEM_ID: {
+		if (CONFIG(DRIVER_EC_CROS)) {
+			uint32_t v = 0;
+			int rv = cros_ec_cbi_get_oem_id(&v);
+			if (rv) {
+				used_len = snprintf(outbuf, outbuf_len, "ec_error_0x%x", rv);
+				return STATE_PROCESSING_ERROR;
+			}
+
+			used_len = snprintf(outbuf, outbuf_len, "0x%x", v);
+		} else {
+			return STATE_UNKNOWN_VAR;
+		}
+		break;
+	}
+	case VAR_PARTNER_CUSTOM: {
+		u32 vpd_size;
+		const unsigned char *vpd_data = vpd_find("partner_customization", NULL, NULL,
 							 &vpd_size);
 		if (vpd_data && vpd_size > 0)
 			used_len = snprintf(outbuf, outbuf_len, "%.*s",

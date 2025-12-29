@@ -48,6 +48,7 @@ cmd-test-mocks += android_misc_virtual_ab_cancel_update
 
 # vars-test
 $(call copy-test,fastboot-test-common,vars-test)
+vars-test-config += CONFIG_DRIVER_EC_CROS=1
 vars-test-srcs += tests/fastboot/vars-test.c
 vars-test-srcs += src/fastboot/vars.c
 vars-test-mocks += GptGetEntrySizeBytes

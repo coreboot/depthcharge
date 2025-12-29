@@ -839,6 +839,95 @@ static void test_fb_getvar_imei(void **state)
 	WILL_VPD_FIND("imei", 2, NULL);
 	TEST_FASTBOOT_GETVAR_OK(VAR_IMEI, "", "unknown");
 }
+/* Setup for sku id mock */
+#define WILL_GET_SKU_ID(id, ret) do { \
+	will_return(cros_ec_cbi_get_sku_id, id); \
+	will_return(cros_ec_cbi_get_sku_id, ret); \
+} while (0)
+
+int cros_ec_cbi_get_sku_id(uint32_t *id)
+{
+	*id = (uint32_t)mock();
+
+	return mock();
+}
+
+static void test_fb_getvar_sku_success(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char expected[32];
+	uint32_t v = 0xDEAD;
+
+	WILL_GET_SKU_ID(v, 0);
+
+	snprintf(expected, sizeof(expected), "OKAY0x%x", v);
+
+	WILL_SEND_EXACT(fb, expected);
+
+	fastboot_cmd_getvar(fb, "sku");
+}
+
+static void test_fb_getvar_sku_fail(void **state)
+{
+	struct FastbootOps *fb = *state;
+
+	WILL_GET_SKU_ID(0xDEAD, 1);
+
+	WILL_SEND_EXACT(fb, "FAILgetvar failed - error: ec_error_0x1");
+
+	fastboot_cmd_getvar(fb, "sku");
+}
+
+/* Setup for oem id mock */
+#define WILL_GET_OEM_ID(id, ret) do { \
+	will_return(cros_ec_cbi_get_oem_id, id); \
+	will_return(cros_ec_cbi_get_oem_id, ret); \
+} while (0)
+
+int cros_ec_cbi_get_oem_id(uint32_t *id)
+{
+	*id = (uint32_t)mock();
+
+	return mock();
+}
+
+static void test_fb_getvar_oem_success(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char expected[32];
+	uint32_t v = 0xBEEF;
+
+	WILL_GET_OEM_ID(v, 0);
+
+	snprintf(expected, sizeof(expected), "OKAY0x%x", v);
+
+	WILL_SEND_EXACT(fb, expected);
+
+	fastboot_cmd_getvar(fb, "oem");
+}
+
+static void test_fb_getvar_oem_fail(void **state)
+{
+	struct FastbootOps *fb = *state;
+
+	WILL_GET_OEM_ID(0xBEEF, 1);
+
+	WILL_SEND_EXACT(fb, "FAILgetvar failed - error: ec_error_0x1");
+
+	fastboot_cmd_getvar(fb, "oem");
+}
+
+static void test_fb_getvar_partner_custom(void **state)
+{
+	WILL_VPD_FIND("partner_customization", 4, "EFGHIJK");
+	TEST_FASTBOOT_GETVAR_OK(VAR_PARTNER_CUSTOM, "", "EFGH");
+
+	WILL_VPD_FIND("partner_customization", 0, "EFGHIJK");
+	TEST_FASTBOOT_GETVAR_OK(VAR_PARTNER_CUSTOM, "", "unknown");
+
+	WILL_VPD_FIND("partner_customization", 2, NULL);
+	TEST_FASTBOOT_GETVAR_OK(VAR_PARTNER_CUSTOM, "", "unknown");
+}
 
 static void test_fb_getvar_has_slot(void **state)
 {
@@ -1299,6 +1388,13 @@ static void test_fb_cmd_getvar_all(void **state)
 	/* Setup for imei */
 	WILL_VPD_FIND("imei", 4, "1234");
 
+	/* Setup for sku and oem */
+	WILL_GET_SKU_ID(0xDEAD, 0);
+	WILL_GET_OEM_ID(0xBEEF, 0);
+
+	/* Setup for partner_customization */
+	WILL_VPD_FIND("partner_customization", 4, "EFGHIJK");
+
 	/* Setup for Total-block-count */
 	test_disk.block_count = 0x5000;
 
@@ -1347,6 +1443,9 @@ static void test_fb_cmd_getvar_all(void **state)
 	check_fb_cmd_getvar_all_contains("INFOmac:1:de:f0:12:34:56:78");
 	check_fb_cmd_getvar_all_contains("INFOhw-desc:DESC");
 	check_fb_cmd_getvar_all_contains("INFOimei:1234");
+	check_fb_cmd_getvar_all_contains("INFOsku:0xdead");
+	check_fb_cmd_getvar_all_contains("INFOoem:0xbeef");
+	check_fb_cmd_getvar_all_contains("INFOpartner-custom:EFGH");
 
 	assert_true(list_is_empty(&packets_list));
 }
@@ -1427,6 +1526,13 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	/* Setup for imei */
 	WILL_VPD_FIND("imei", 4, "1234");
 
+	/* Setup for sku and oem */
+	WILL_GET_SKU_ID(0xDEAD, 0);
+	WILL_GET_OEM_ID(0xBEEF, 0);
+
+	/* Setup for partner_customization */
+	WILL_VPD_FIND("partner_customization", 4, "EFGHIJK");
+
 	/* Setup for Total-block-count */
 	test_disk.block_count = 0x5000;
 
@@ -1474,6 +1580,9 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	check_fb_cmd_getvar_all_contains("INFOmac:1:de:f0:12:34:56:78");
 	check_fb_cmd_getvar_all_contains("INFOhw-desc:DESC");
 	check_fb_cmd_getvar_all_contains("INFOimei:1234");
+	check_fb_cmd_getvar_all_contains("INFOsku:0xdead");
+	check_fb_cmd_getvar_all_contains("INFOoem:0xbeef");
+	check_fb_cmd_getvar_all_contains("INFOpartner-custom:EFGH");
 
 	assert_true(list_is_empty(&packets_list));
 }
@@ -1539,6 +1648,11 @@ int main(void)
 		TEST(test_fb_getvar_mac),
 		TEST(test_fb_getvar_hardware_descriptor),
 		TEST(test_fb_getvar_imei),
+		TEST(test_fb_getvar_sku_success),
+		TEST(test_fb_getvar_oem_success),
+		TEST(test_fb_getvar_sku_fail),
+		TEST(test_fb_getvar_oem_fail),
+		TEST(test_fb_getvar_partner_custom),
 		TEST(test_fb_getvar_has_slot),
 		TEST(test_fb_getvar_has_no_slot),
 		TEST(test_fb_getvar_has_slot_no_partition),

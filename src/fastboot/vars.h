@@ -45,6 +45,9 @@ typedef enum fastboot_var {
 	VAR_WIFI_MAC,
 	VAR_HW_DESC,
 	VAR_IMEI,
+	VAR_SKU,
+	VAR_OEM_ID,
+	VAR_PARTNER_CUSTOM,
 } fastboot_var_t;
 
 typedef enum fastboot_getvar_result {
@@ -55,6 +58,7 @@ typedef enum fastboot_getvar_result {
 	STATE_DISK_ERROR,
 	STATE_TRY_NEXT,
 	STATE_LAST,
+	STATE_PROCESSING_ERROR,
 } fastboot_getvar_result_t;
 
 typedef struct fastboot_getvar_info {
