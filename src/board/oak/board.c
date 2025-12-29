@@ -166,9 +166,11 @@ static int board_setup(void)
 			  &removable_block_dev_controllers);
 
 	/* Set display ops */
-	if (display_init_required())
-		display_set_ops(new_mtk_display(
-				oak_backlight_update, 0x1400c000, 1, 0, 0, 0, 0, 0));
+	if (display_init_required()) {
+		MtkDisplay *display = new_mtk_display(
+			oak_backlight_update, NULL, 0x1400c000, 1, 0, 0, 0, 0, 0);
+		display_set_ops(&display->ops);
+	}
 
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11270000);
 

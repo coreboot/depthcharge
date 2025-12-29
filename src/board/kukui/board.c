@@ -167,9 +167,12 @@ static int board_setup(void)
 	sound_setup();
 
 	/* Set display ops */
-	if (display_init_required())
-		display_set_ops(new_mtk_display(kukui_backlight_update,
-						0x14008000, 2, 0, 0, 0, 0, 0));
+	if (display_init_required()) {
+		MtkDisplay *display = new_mtk_display(
+			kukui_backlight_update, NULL, 0x14008000, 2, 0, 0, 0, 0, 0);
+		display_set_ops(&display->ops);
+	}
+
 	return 0;
 }
 

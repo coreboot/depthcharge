@@ -195,8 +195,8 @@ static int board_setup(void)
 
 	/* Set display ops */
 	if (display_init_required())
-		display_set_ops(new_mtk_display(board_backlight_update,
-						0x14005000, 1, 0, 0, 0, 0, 0));
+		display_set_ops(&new_mtk_display(board_backlight_update, NULL,
+						 0x14005000, 1, 0, 0, 0, 0, 0)->ops);
 	else
 		printf("[%s] no display_init_required()!\n", __func__);
 

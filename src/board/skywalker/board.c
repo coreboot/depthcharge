@@ -483,11 +483,14 @@ static int board_setup(void)
 		setup_usb_host(USB_PORT0_BASE_ADDRESS);
 
 	/* Set display ops */
-	if (display_init_required())
-		display_set_ops(new_mtk_display(board_backlight_update,
-						0x14002000, 2, 0, 0, 0, 0x14016000, 0));
-	else
+	if (display_init_required()) {
+		MtkDisplay *display = new_mtk_display(
+			board_backlight_update, NULL,
+			0x14002000, 2, 0, 0, 0, 0x14016000, 0);
+		display_set_ops(&display->ops);
+	} else {
 		printf("[%s] no display init required!\n", __func__);
+	}
 
 	return 0;
 }

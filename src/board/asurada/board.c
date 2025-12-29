@@ -156,8 +156,8 @@ static int board_setup(void)
 
 	/* Set display ops */
 	if (display_init_required())
-		display_set_ops(new_mtk_display(board_backlight_update,
-						0x14005000, 2, 0, 0, 0, 0, 0));
+		display_set_ops(&new_mtk_display(board_backlight_update, NULL,
+						 0x14005000, 2, 0, 0, 0, 0, 0)->ops);
 
 	list_insert_after(&mtk_gic_fixup.list_node, &device_tree_fixups);
 

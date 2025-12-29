@@ -15,26 +15,10 @@
  * GNU General Public License for more details.
  */
 #include <libpayload.h>
+#include <stdbool.h>
 
 #include "mtk_ddp.h"
 #include "mtk_dsi.h"
-
-enum ovl_type {
-	DISP_OVL = 0,
-	DISP_EXDMA,
-};
-
-typedef struct {
-	DisplayOps ops;
-	uintptr_t ovl_base;
-	uintptr_t blender_base;
-	uintptr_t ovl_base1;
-	uintptr_t blender_base1;
-	uintptr_t dsi_base;
-	uintptr_t dsi_base1;
-	int lanes;
-	enum ovl_type type;
-} MtkDisplay;
 
 enum {
 	DISP_REG_OVL_STA     = 0x0000,
@@ -88,6 +72,9 @@ static int mtk_display_stop(DisplayOps *me)
 	mtk_dsi_stop(&dsi);
 	mtk_dsi_wait_for_idle(&dsi);
 
+	if (mtk->panel_poweroff)
+		mtk->panel_poweroff(mtk);
+
 	if (mtk->type == DISP_OVL) {
 		write32p(mtk->ovl_base + DISP_REG_OVL_EN, 0);
 		if (mtk->lanes == 2)
@@ -108,16 +95,18 @@ static int mtk_display_stop(DisplayOps *me)
 	return 0;
 }
 
-DisplayOps *new_mtk_display(int (*backlight_update_fn)
-			    (DisplayOps *me, bool enable),
-			    uintptr_t ovl_base, int lanes,
-			    uintptr_t blender_base,
-			    uintptr_t ovl_base1,
-			    uintptr_t blender_base1,
-			    uintptr_t dsi_base,
-			    uintptr_t dsi_base1)
+MtkDisplay *new_mtk_display(
+	int (*backlight_update_fn)(DisplayOps *me, bool enable),
+	int (*panel_poweroff_fn)(MtkDisplay *me),
+	uintptr_t ovl_base,
+	int lanes,
+	uintptr_t blender_base,
+	uintptr_t ovl_base1,
+	uintptr_t blender_base1,
+	uintptr_t dsi_base,
+	uintptr_t dsi_base1)
 {
-	MtkDisplay *display = xzalloc(sizeof(MtkDisplay));
+	MtkDisplay *display = xzalloc(sizeof(*display));
 
 	display->ops.init = mtk_display_init;
 	display->ops.stop = mtk_display_stop;
@@ -132,6 +121,8 @@ DisplayOps *new_mtk_display(int (*backlight_update_fn)
 	display->lanes = lanes;
 	if (backlight_update_fn)
 		display->ops.backlight_update = backlight_update_fn;
+	if (panel_poweroff_fn)
+		display->panel_poweroff = panel_poweroff_fn;
 
-	return &display->ops;
+	return display;
 }
