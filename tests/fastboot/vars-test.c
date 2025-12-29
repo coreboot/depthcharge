@@ -829,6 +829,18 @@ static void test_fb_getvar_serialno(void **state)
 	TEST_FASTBOOT_GETVAR_OK(VAR_SERIALNO, "", "unknown");
 }
 
+static void test_fb_getvar_mfg_sku(void **state)
+{
+	WILL_VPD_FIND("mfg_sku_id", 4, "ABCDEFG");
+	TEST_FASTBOOT_GETVAR_OK(VAR_MFG_SKU_ID, "", "ABCD");
+
+	WILL_VPD_FIND("mfg_sku_id", 0, "ABCDEFG");
+	TEST_FASTBOOT_GETVAR_OK(VAR_MFG_SKU_ID, "", "unknown");
+
+	WILL_VPD_FIND("mfg_sku_id", 2, NULL);
+	TEST_FASTBOOT_GETVAR_OK(VAR_MFG_SKU_ID, "", "unknown");
+}
+
 static void test_fb_getvar_has_slot(void **state)
 {
 	GptEntry *part = (void *)0xcafe;
@@ -1283,6 +1295,9 @@ static void test_fb_cmd_getvar_all(void **state)
 	/* Setup for serialno */
 	WILL_VPD_FIND("serial_number", 4, "123456789");
 
+	/* Setup for mfg_sku_id */
+	WILL_VPD_FIND("mfg_sku_id", 4, "ABCDEFG");
+
 	/* Setup for Total-block-count */
 	test_disk.block_count = 0x5000;
 
@@ -1329,6 +1344,7 @@ static void test_fb_cmd_getvar_all(void **state)
 	check_fb_cmd_getvar_all_contains("INFOversion-bootloader:fwversion");
 	check_fb_cmd_getvar_all_contains("INFOserialno:1234");
 	check_fb_cmd_getvar_all_contains("INFOTotal-block-count:0x5000");
+	check_fb_cmd_getvar_all_contains("INFOmfg-sku:ABCD");
 
 	list_for_each(node, packets_list, list_node) {
 		fail_msg("Unexpected message: \"%s\"", node->msg);
@@ -1398,6 +1414,9 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	/* Setup for serialno */
 	WILL_VPD_FIND("serial_number", 4, "123456789");
 
+	/* Setup for mfg_sku_id */
+	WILL_VPD_FIND("mfg_sku_id", 4, "ABCDEFG");
+
 	/* Setup for Total-block-count */
 	test_disk.block_count = 0x5000;
 
@@ -1443,6 +1462,7 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	check_fb_cmd_getvar_all_contains("INFOversion-bootloader:fwversion");
 	check_fb_cmd_getvar_all_contains("INFOserialno:1234");
 	check_fb_cmd_getvar_all_contains("INFOTotal-block-count:0x5000");
+	check_fb_cmd_getvar_all_contains("INFOmfg-sku:ABCD");
 
 	list_for_each(node, packets_list, list_node) {
 		fail_msg("Unexpected message: \"%s\"", node->msg);
@@ -1509,6 +1529,7 @@ int main(void)
 		TEST(test_fb_getvar_slot_unbootable_at_index_last),
 		TEST(test_fb_getvar_version_bootloader),
 		TEST(test_fb_getvar_serialno),
+		TEST(test_fb_getvar_mfg_sku),
 		TEST(test_fb_getvar_has_slot),
 		TEST(test_fb_getvar_has_no_slot),
 		TEST(test_fb_getvar_has_slot_no_partition),

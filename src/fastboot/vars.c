@@ -54,6 +54,7 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 	VAR_NO_ARGS("logical-block-size", VAR_LOGICAL_BLOCK_SIZE),
 	VAR_NO_ARGS("serialno", VAR_SERIALNO),
 	VAR_ARGS("has-slot", ':', VAR_HAS_SLOT),
+	VAR_NO_ARGS("mfg-sku", VAR_MFG_SKU_ID),
 	{.name = NULL},
 };
 
@@ -407,6 +408,17 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		else
 			used_len += ret;
 		break;
+	case VAR_MFG_SKU_ID: {
+		u32 vpd_size;
+		const unsigned char *vpd_data = vpd_find("mfg_sku_id", NULL, NULL,
+							 &vpd_size);
+		if (vpd_data && vpd_size > 0)
+			used_len = snprintf(outbuf, outbuf_len, "%.*s",
+					       (int)vpd_size, vpd_data);
+		else
+			used_len = snprintf(outbuf, outbuf_len, "unknown");
+		break;
+	}
 	default:
 		return STATE_UNKNOWN_VAR;
 	}
