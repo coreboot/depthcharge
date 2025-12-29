@@ -18,6 +18,7 @@
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/soc/pmic/mt6359p.h"
 #include "drivers/sound/aw88081.h"
 #include "drivers/sound/cs35l53.h"
 #include "drivers/sound/gpio_amp.h"
@@ -409,6 +410,25 @@ static int board_backlight_update(DisplayOps *me, bool enable)
 	return 0;
 }
 
+static int board_panel_poweroff(MtkDisplay *me)
+{
+	static MtkPmif *pmif;
+
+	if (!CONFIG(DRIVER_SOC_MTK_PMIF))
+		return 0;
+
+	if (!pmif) {
+		pmif = new_mtk_pmif_spi(0x1CC04000, 0x880);
+		mt6359p_set_pmif_ops(&pmif->ops);
+		if (mt6359p_check_init())
+			return -1;
+	}
+
+	/* Disable VDDI for MIPI panel. */
+	mt6359p_enable_vcn18(false);
+	return 0;
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
@@ -485,7 +505,7 @@ static int board_setup(void)
 	/* Set display ops */
 	if (display_init_required()) {
 		MtkDisplay *display = new_mtk_display(
-			board_backlight_update, NULL,
+			board_backlight_update, board_panel_poweroff,
 			0x14002000, 2, 0, 0, 0, 0x14016000, 0);
 		display_set_ops(&display->ops);
 	} else {
