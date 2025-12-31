@@ -131,6 +131,7 @@ enum {
 	/* SDC_STS mask */
 	SDC_STS_SDCBUSY		= (0x1  << 0),	/* RW */
 	SDC_STS_CMDBUSY		= (0x1  << 1),	/* RW */
+	SDC_STC_SPMRLS		= (0x1  << 3),	/* W1C */
 	SDC_STS_SWR_COMPL	= (0x1  << 31),	/* RW */
 };
 

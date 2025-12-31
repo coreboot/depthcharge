@@ -703,7 +703,7 @@ static int mtk_mmc_init(BlockDevCtrlrOps *me)
 	return 0;
 }
 
-static int mtk_mmc_update(BlockDevCtrlrOps *me)
+static int mtk_mmc_try_update(BlockDevCtrlrOps *me)
 {
 	MtkMmcHost *host = container_of(me, MtkMmcHost, mmc.ctrlr.ops);
 	if (!host->initialized && mtk_mmc_init(me))
@@ -748,6 +748,17 @@ static int mtk_mmc_update(BlockDevCtrlrOps *me)
 		host->mmc.ctrlr.need_update = 0;
 	}
 	return 0;
+}
+
+static int mtk_mmc_update(BlockDevCtrlrOps *me)
+{
+	int ret = mtk_mmc_try_update(me);
+	if (ret < 0) {
+		mmc_error("Failed to update mmc; releasing spm resource!\n");
+		MtkMmcHost *host = container_of(me, MtkMmcHost, mmc.ctrlr.ops);
+		setbits_le32(&host->reg->sdc_sts, SDC_STC_SPMRLS);
+	}
+	return ret;
 }
 
 MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uintptr_t top_ioaddr,
