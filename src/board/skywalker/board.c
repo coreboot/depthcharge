@@ -424,6 +424,26 @@ static int board_panel_poweroff(MtkDisplay *me)
 			return -1;
 	}
 
+	GpioOps *mipi_iovcc_en = sysinfo_lookup_gpio("mipi_iovcc_en", 1,
+						     new_mtk_gpio_output);
+	GpioOps *panel_resx = sysinfo_lookup_gpio("panel_resx", 1,
+						  new_mtk_gpio_output);
+	GpioOps *mipi_tp_rstn = sysinfo_lookup_gpio("mipi_tp_rstn", 1,
+						    new_mtk_gpio_output);
+
+	/* Follow panel power-off sequence: RESET -> IOVCC -> VDDI */
+	if (panel_resx)
+		gpio_set(panel_resx, 1);
+
+	if (mipi_tp_rstn) {
+		gpio_set(mipi_tp_rstn, 1);
+		mdelay(2);
+	}
+	if (mipi_iovcc_en) {
+		gpio_set(mipi_iovcc_en, 0);
+		mdelay(4);
+	}
+
 	/* Disable VDDI for MIPI panel. */
 	mt6359p_enable_vcn18(false);
 	return 0;
