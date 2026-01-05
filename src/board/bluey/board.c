@@ -16,7 +16,7 @@
 #include <assert.h>
 #include <libpayload.h>
 #include "base/init_funcs.h"
-#include "vboot/util/flag.h"
+#include "boot/commandline.h"
 #include "boot/fit.h"
 #include "drivers/bus/i2c/qcom_qupv3_i2c.h"
 #include "drivers/bus/usb/usb.h"
@@ -35,6 +35,7 @@
 #include <pci.h>
 #include <pci/pci.h>
 #include "variant.h"
+#include "vboot/util/flag.h"
 
 static const VpdDeviceTreeMap vpd_dt_map[] = {
 	{ "bluetooth_mac0", "bluetooth0/local-bd-address" },
@@ -140,6 +141,10 @@ static int board_setup(void)
 	audio_setup();
 
 	display_setup();
+
+	/* FIXME: b/470260846 */
+	commandline_append("reboot=warm");
+	printf("Bluey: adding `reboot=warm` to kernel cmdline\n");
 
 	return 0;
 }
