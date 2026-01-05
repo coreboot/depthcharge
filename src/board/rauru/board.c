@@ -28,6 +28,7 @@
 #include "drivers/video/display.h"
 #include "drivers/video/mtk_ddp.h"
 #include "vboot/util/flag.h"
+#include "vboot/util/memory.h"
 
 static int fix_device_tree(struct device_tree_fixup *fixup, struct device_tree *tree)
 {
@@ -262,8 +263,13 @@ static int board_setup(void)
 		printf("[%s] no display_init_required()!\n", __func__);
 	}
 
-	/* Disable MTE support for ChromeOS. b:375543707 */
-	commandline_append("arm64.nomte");
+	if (!CONFIG(ANDROID_MTE)) {
+		/* Disable MTE support for ChromeOS. b:375543707 */
+		commandline_append("arm64.nomte");
+		/* The tag storage may be reserved in coreboot stage.
+		   Free tag storage when MTE is disabled. */
+		memory_free_tag_storage();
+	}
 
 	return 0;
 }
