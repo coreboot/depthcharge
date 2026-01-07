@@ -550,8 +550,13 @@ static int ufs_scsi_tfr(UfsDevice *ufs_dev, uint8_t *buf, uint32_t lba,
 	if (blocks > 65535)
 		return UFS_EINVAL;
 
-	bounce_buffer_start(&bbstate, buf, blocks * ufs_dev->dev.block_size,
-			    read ? GEN_BB_WRITE : GEN_BB_READ);
+	rc = bounce_buffer_start(&bbstate, buf, blocks * ufs_dev->dev.block_size,
+				 read ? GEN_BB_WRITE : GEN_BB_READ);
+	if (rc) {
+		printf("%s: error: Failed to allocate bounce buffer.\n", __func__);
+		return UFS_ENOMEM;
+	}
+
 	UfsCmdReq req = {
 		.lun = ufs_dev->lun,
 		.expected_len = blocks * ufs_dev->dev.block_size,
