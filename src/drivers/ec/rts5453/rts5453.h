@@ -24,4 +24,10 @@ const VbootAuxfwOps *new_rts545x_from_chip_info(struct ec_response_pd_chip_info_
 void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
 				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r);
 
+/**
+ * @brief Board-provided function used by RTS5453 driver to override the vid and pid
+ *        to allow PDC update from the FW differs from the one being assigned to.
+ */
+void board_rts545x_register(void);
+
 #endif /* __DRIVERS_EC_RTS5453_H__ */
