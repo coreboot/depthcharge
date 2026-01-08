@@ -25,6 +25,11 @@ config DRIVER_BUS_I2S_INTEL_COMMON_MAX98390
 	depends on DRIVER_BUS_I2S_INTEL_COMMON_I2S
 	default n
 
+config DRIVER_BUS_I2S_INTEL_COMMON_TAS2563
+	bool "Common Tas2563 I2S driver"
+	depends on DRIVER_BUS_I2S_INTEL_COMMON_I2S
+	default n
+
 config INTEL_COMMON_I2S_CAVS_1_8
 	bool "Intel cAVS1.8 specification"
 	default n
