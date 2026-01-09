@@ -43,29 +43,16 @@ static int ramoops_fixup(struct device_tree_fixup *fixup,
 {
 	Ramoops *ramoops = container_of(fixup, Ramoops, fixup);
 
-	struct device_tree_node *reserved = dt_init_reserved_memory_node(tree);
-	if (!reserved)
-		return 1;
-
 	// Eliminate any existing ramoops node.
-	struct device_tree_node *node = dt_find_compat(tree->root, "ramoops");
-	if (node)
-		list_remove(&node->list_node);
+	struct device_tree_node *old_node = dt_find_compat(tree->root, "ramoops");
+	if (old_node)
+		list_remove(&old_node->list_node);
 
-	u32 addr_cells = 2, size_cells = 1;
-	dt_read_cell_props(reserved, &addr_cells, &size_cells);
+	struct device_tree_node *node = dt_add_reserved_memory_region(tree, "ramoops",
+					"ramoops", ramoops->start, ramoops->size, false);
 
-	// Create a ramoops node under /reserved-memory/.
-	node = xzalloc(sizeof(*node));
-	node->name = "ramoops";
-	list_insert_after(&node->list_node, &reserved->children);
-
-	// Add a compatible property.
-	dt_add_string_prop(node, "compatible", "ramoops");
-
-	// Add a reg property.
-	dt_add_reg_prop(node, &ramoops->start, &ramoops->size, 1,
-			addr_cells, size_cells);
+	if (!node)
+		return 1;
 
 	// Add size properties.
 	dt_add_u32_prop(node, "record-size", RECORD_SIZE);

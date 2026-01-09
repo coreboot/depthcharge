@@ -59,30 +59,11 @@ void dt_update_chosen(struct device_tree *tree, const char *cmd_line)
 
 static void update_reserve_map(uint64_t start, uint64_t end, void *data)
 {
-	uint32_t addr_cells, size_cells;
-	uint64_t reg_addr = start;
-	uint64_t reg_size = end - start;
-
-	struct device_tree *tree = (struct device_tree *)data;
-	struct device_tree_node *res_node;
-
-	/* Create a unique name for the reserved sub-node (e.g., region@address) */
 	char name[32];
 	snprintf(name, sizeof(name), "region@%" PRIx64 "", start);
 
-	const char *reserved_mem[] = { "reserved-memory", name, NULL };
-
-	/* Get or create /reserved-memory/region@address node */
-	res_node = dt_find_node(tree->root, reserved_mem, &addr_cells, &size_cells,
-			    /* create */ 1);
-	if (res_node == NULL) {
-		printf("Failed to add %s to reserved-memory\n", name);
-		return;
-	}
-
-	/* Add required node properties */
-	dt_add_reg_prop(res_node, &reg_addr, &reg_size, 1, addr_cells, size_cells);
-	dt_add_bin_prop(res_node, "no-map", NULL, 0);
+	dt_add_reserved_memory_region((struct device_tree *)data, name,
+				      NULL, start, end - start, true);
 }
 
 typedef struct EntryParams {
@@ -226,26 +207,9 @@ void dt_update_memory(struct device_tree *tree)
 
 static int add_pkvm_drng_node(struct device_tree *tree, void *seed_addr, size_t seed_size)
 {
-	static const char *const reserved_mem[] = {"reserved-memory", "pkvm-drng-seed", NULL};
-
-	uint32_t addr_cells, size_cells;
-	uint64_t reg_addr = (uintptr_t)seed_addr;
-	uint64_t reg_size = seed_size;
-	struct device_tree_node *node;
-
-	/* Get or create /reserved-memory/drng-seed node */
-	node = dt_find_node(tree->root, reserved_mem, &addr_cells, &size_cells,
-			    /* create */ 1);
-	if (node == NULL) {
-		printf("Failed to add pKVM DRNG seed to reserved-memory\n");
+	if (!dt_add_reserved_memory_region(tree, "pkvm-drng-seed", "google,pkvm-drng",
+				 (uintptr_t)seed_addr, seed_size, true))
 		return -1;
-	}
-
-	/* Add required node properties */
-	dt_add_string_prop(node, "compatible", "google,pkvm-drng");
-	dt_add_reg_prop(node, &reg_addr, &reg_size, 1, addr_cells, size_cells);
-	dt_add_bin_prop(node, "no-map", NULL, 0);
-
 	return 0;
 }
 
