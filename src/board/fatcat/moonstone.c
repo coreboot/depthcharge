@@ -47,6 +47,15 @@ int gsc_irq_status(void)
 void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path,
 				    int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
-	*image_path = "tps6699x_GOOG0700.bin";
-	*hash_path = "tps6699x_GOOG0700.hash";
+	switch (ec_pd_id)
+	{
+		case 1:
+		case 2:
+			*image_path = "tps6699x_GOOG0Q01.bin";
+			*hash_path = "tps6699x_GOOG0Q01.hash";
+			break;
+		default:
+			*image_path = NULL;
+			*hash_path = NULL;
+	}
 }
