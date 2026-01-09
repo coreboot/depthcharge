@@ -59,13 +59,30 @@ void dt_update_chosen(struct device_tree *tree, const char *cmd_line)
 
 static void update_reserve_map(uint64_t start, uint64_t end, void *data)
 {
+	uint32_t addr_cells, size_cells;
+	uint64_t reg_addr = start;
+	uint64_t reg_size = end - start;
+
 	struct device_tree *tree = (struct device_tree *)data;
+	struct device_tree_node *res_node;
 
-	struct device_tree_reserve_map_entry *entry = xzalloc(sizeof(*entry));
-	entry->start = start;
-	entry->size = end - start;
+	/* Create a unique name for the reserved sub-node (e.g., region@address) */
+	char name[32];
+	snprintf(name, sizeof(name), "region@%" PRIx64 "", start);
 
-	list_insert_after(&entry->list_node, &tree->reserve_map);
+	const char *reserved_mem[] = { "reserved-memory", name, NULL };
+
+	/* Get or create /reserved-memory/region@address node */
+	res_node = dt_find_node(tree->root, reserved_mem, &addr_cells, &size_cells,
+			    /* create */ 1);
+	if (res_node == NULL) {
+		printf("Failed to add %s to reserved-memory\n", name);
+		return;
+	}
+
+	/* Add required node properties */
+	dt_add_reg_prop(res_node, &reg_addr, &reg_size, 1, addr_cells, size_cells);
+	dt_add_bin_prop(res_node, "no-map", NULL, 0);
 }
 
 typedef struct EntryParams {
@@ -156,6 +173,10 @@ void dt_update_memory(struct device_tree *tree)
 	list_insert_after(&node->list_node, &tree->root->children);
 	dt_add_string_prop(node, "device_type", "memory");
 
+	struct device_tree_node *res_node = dt_init_reserved_memory_node(tree);
+	if (!res_node)
+		return;
+
 	// Read memory info from coreboot
 	ranges_init(&available);
 	ranges_init(&reserved);
@@ -168,8 +189,11 @@ void dt_update_memory(struct device_tree *tree)
 
 		if (range->type == CB_MEM_RAM)
 			ranges_add(&available, start, end);
-		else
+		else {
 			ranges_add(&reserved, start, end);
+			/* Also add to available list so it appears in the 'reg' of the memory node */
+			ranges_add(&available, start, end);
+		}
 	}
 
 	/*
