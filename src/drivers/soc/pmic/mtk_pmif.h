@@ -34,6 +34,8 @@ struct mtk_chan_regs {
 
 typedef struct MtkPmifOps {
 	int (*check_init_done)(struct MtkPmifOps *me);
+	u8 (*read8)(struct MtkPmifOps *me, u32 slvid, u32 reg);
+	void (*write8)(struct MtkPmifOps *me, u32 slvid, u32 reg, u8 data);
 	u16 (*read16)(struct MtkPmifOps *me, u32 slvid, u32 reg);
 	void (*write16)(struct MtkPmifOps *me, u32 slvid, u32 reg, u16 data);
 	u32 (*read_field)(struct MtkPmifOps *me, u32 slvid, u32 reg,
@@ -49,5 +51,6 @@ typedef struct {
 } MtkPmif;
 
 MtkPmif *new_mtk_pmif_spi(uintptr_t pmif_base, size_t channel_offset);
+MtkPmif *new_mtk_pmif_spmi(uintptr_t pmif_base, size_t channel_offset);
 
 #endif /*__DRIVER_SOC_PMIC_MTK_PMIF_H__*/

@@ -97,6 +97,13 @@ static int pwrap_send_cmd(MtkPmifOps *me, bool write, u32 addr, u16 *rdata,
 	return 0;
 }
 
+static int pmif_send_cmd(MtkPmifOps *me, bool write, u32 opc, u32 slvid,
+			 u32 addr, u32 *rdata, u32 wdata, u32 len)
+{
+	assert(len >= 1);
+	return send_cmd(me, write, opc, slvid, len - 1, addr, rdata, wdata);
+}
+
 static u16 pwrap_spi_read16(MtkPmifOps *me, u32 slvid, u32 reg)
 {
 	u16 data = 0;
@@ -109,14 +116,35 @@ static void pwrap_spi_write16(MtkPmifOps *me, u32 slvid, u32 reg, u16 data)
 	pwrap_send_cmd(me, true, reg, NULL, data);
 }
 
+static u8 pmif_spmi_read8(MtkPmifOps *me, u32 slvid, u32 reg)
+{
+	u32 rdata = 0;
+	pmif_send_cmd(me, false, PMIF_CMD_EXT_REG_LONG, slvid, reg, &rdata, 0, 1);
+	assert(rdata <= UINT8_MAX);
+	return rdata;
+}
+
+static void pmif_spmi_write8(MtkPmifOps *me, u32 slvid, u32 reg, u8 data)
+{
+	pmif_send_cmd(me, true, PMIF_CMD_EXT_REG_LONG, slvid, reg, NULL, data, 1);
+}
+
 static u32 read_field(MtkPmifOps *me, u32 slvid, u32 reg, u32 mask, u32 shift)
 {
-	/* Only support u16 for now. */
-	assert((mask << shift) <= UINT16_MAX);
+	u32 data;
 
-	u32 data = pwrap_spi_read16(me, slvid, reg);
+	mask <<= shift;
+	assert(mask <= UINT16_MAX);
 
-	data &= (mask << shift);
+	if (mask > UINT8_MAX || !me->read8) {
+		assert(me->read16);
+		data = me->read16(me, slvid, reg);
+	} else {
+		assert(me->read8);
+		data = me->read8(me, slvid, reg);
+	}
+
+	data &= mask;
 	data >>= shift;
 	return data;
 }
@@ -126,16 +154,30 @@ static void write_field(MtkPmifOps *me, u32 slvid, u32 reg, u32 val, u32 mask,
 {
 	u32 old, new;
 
-	/* Only support u16 for now. */
-	assert((mask << shift) <= UINT16_MAX);
+	mask <<= shift;
+	assert(mask <= UINT16_MAX);
 
-	old = pwrap_spi_read16(me, slvid, reg);
-	new = old & ~(mask << shift);
+	if (mask > UINT8_MAX || !me->read8) {
+		assert(me->read16);
+		old = me->read16(me, slvid, reg);
+	} else {
+		assert(me->read8);
+		old = me->read8(me, slvid, reg);
+	}
+
+	new = old & ~mask;
 	new |= (val << shift);
-	pwrap_spi_write16(me, slvid, reg, new);
+
+	if (mask > UINT8_MAX || !me->write8) {
+		assert(me->write16);
+		me->write16(me, slvid, reg, new);
+	} else {
+		assert(me->write8);
+		me->write8(me, slvid, reg, new);
+	}
 }
 
-MtkPmif *new_mtk_pmif_spi(uintptr_t pmif_base, size_t channel_offset)
+static MtkPmif *new_mtk_pmif(uintptr_t pmif_base, size_t channel_offset)
 {
 	MtkPmif *pmif = xzalloc(sizeof(*pmif));
 
@@ -144,10 +186,28 @@ MtkPmif *new_mtk_pmif_spi(uintptr_t pmif_base, size_t channel_offset)
 	pmif->chan_regs = (struct mtk_chan_regs *)(pmif_base + channel_offset);
 
 	pmif->ops.check_init_done = check_init_done;
-	pmif->ops.read16 = pwrap_spi_read16;
-	pmif->ops.write16 = pwrap_spi_write16;
 	pmif->ops.read_field = read_field;
 	pmif->ops.write_field = write_field;
+
+	return pmif;
+}
+
+MtkPmif *new_mtk_pmif_spi(uintptr_t pmif_base, size_t channel_offset)
+{
+	MtkPmif *pmif = new_mtk_pmif(pmif_base, channel_offset);
+
+	pmif->ops.read16 = pwrap_spi_read16;
+	pmif->ops.write16 = pwrap_spi_write16;
+
+	return pmif;
+};
+
+MtkPmif *new_mtk_pmif_spmi(uintptr_t pmif_base, size_t channel_offset)
+{
+	MtkPmif *pmif = new_mtk_pmif(pmif_base, channel_offset);
+
+	pmif->ops.read8 = pmif_spmi_read8;
+	pmif->ops.write8 = pmif_spmi_write8;
 
 	return pmif;
 };
