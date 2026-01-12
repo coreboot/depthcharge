@@ -66,6 +66,8 @@ enum {
 void mt6359p_set_pmif_ops(MtkPmifOps *ops);
 
 int mt6359p_check_init(void);
+u16 mt6359p_read16(u32 reg);
+void mt6359p_write16(u32 reg, u16 data);
 u32 mt6359p_read_field(u32 reg, u32 mask, u32 shift);
 void mt6359p_write_field(u32 reg, u32 val, u32 mask, u32 shift);
 void mt6359p_buck_set_voltage(u32 buck_id, u32 buck_uv);

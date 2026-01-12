@@ -5,6 +5,7 @@
 #include <libpayload.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include "drivers/soc/pmic/mt6359p.h"
@@ -20,40 +21,40 @@ void mt6359p_set_pmif_ops(MtkPmifOps *ops)
 
 int mt6359p_check_init(void)
 {
-	if (!pmif_ops)
-		die("pmif_ops not initialized\n");
+	if (!pmif_ops || !pmif_ops->check_init_done)
+		die("pmif_ops->check_init_done not initialized\n");
 
 	return pmif_ops->check_init_done(pmif_ops);
 }
 
-u32 mt6359p_read32(u32 reg)
+u16 mt6359p_read16(u32 reg)
 {
-	if (!pmif_ops)
-		die("pmif_ops not initialized\n");
+	if (!pmif_ops || !pmif_ops->read16)
+		die("pmif_ops->read16 not initialized\n");
 
-	return pmif_ops->read32(pmif_ops, 0, reg);
+	return pmif_ops->read16(pmif_ops, 0, reg);
 }
 
-void mt6359p_write32(u32 reg, u32 data)
+void mt6359p_write16(u32 reg, u16 data)
 {
-	if (!pmif_ops)
+	if (!pmif_ops || !pmif_ops->write16)
 		die("pmif_ops not initialized\n");
 
-	pmif_ops->write32(pmif_ops, 0, reg, data);
+	pmif_ops->write16(pmif_ops, 0, reg, data);
 }
 
 u32 mt6359p_read_field(u32 reg, u32 mask, u32 shift)
 {
-	if (!pmif_ops)
-		die("pmif_ops not initialized\n");
+	if (!pmif_ops || !pmif_ops->read_field)
+		die("pmif_ops->read_field not initialized\n");
 
 	return pmif_ops->read_field(pmif_ops, 0, reg, mask, shift);
 }
 
 void mt6359p_write_field(u32 reg, u32 val, u32 mask, u32 shift)
 {
-	if (!pmif_ops)
-		die("pmif_ops not initialized\n");
+	if (!pmif_ops || !pmif_ops->write_field)
+		die("pmif_ops->write_field not initialized\n");
 
 	pmif_ops->write_field(pmif_ops, 0, reg, val, mask, shift);
 }
@@ -123,9 +124,6 @@ void mt6359p_buck_set_voltage(u32 buck_id, u32 buck_uv)
 	u32 unused;
 	u32 vol;
 
-	if (!pmif_ops)
-		die("pmif_ops not initialized\n");
-
 	get_buck_params(buck_id, &vol_offset, &vol_step, &vol_set_reg,
 			&unused, &unused);
 
@@ -139,9 +137,6 @@ u32 mt6359p_buck_get_voltage(u32 buck_id)
 	u32 unused;
 	u32 vol;
 
-	if (!pmif_ops)
-		die("pmif_ops not initialized\n");
-
 	get_buck_params(buck_id, &vol_offset, &vol_step, &unused,
 			&vol_get_reg, &vol_get_shift);
 
@@ -151,25 +146,21 @@ u32 mt6359p_buck_get_voltage(u32 buck_id)
 
 void mt6359p_set_vm18_voltage(u32 vm18_uv)
 {
-	u32 reg_vol, reg_cali;
-
-	if (!pmif_ops)
-		die("pmif_ops not initialized\n");
+	u32 reg_vol, reg_cali, data;
 
 	assert(vm18_uv >= 1700000);
 	assert(vm18_uv < 2000000);
 
 	reg_vol = (vm18_uv / 1000 - VM18_VOL_OFFSET) / 100;
 	reg_cali = ((vm18_uv / 1000) % 100) / 10;
-	mt6359p_write32(PMIC_VM18_ANA_CON0, (reg_vol << VM18_VOL_REG_SHIFT) | reg_cali);
+	data = (reg_vol << VM18_VOL_REG_SHIFT) | reg_cali;
+	assert(data <= UINT16_MAX);
+	mt6359p_write16(PMIC_VM18_ANA_CON0, data);
 }
 
 u32 mt6359p_get_vm18_voltage(void)
 {
 	u32 reg_vol, reg_cali;
-
-	if (!pmif_ops)
-		die("pmif_ops not initialized\n");
 
 	reg_vol = 100 * mt6359p_read_field(PMIC_VM18_ANA_CON0, 0xF, VM18_VOL_REG_SHIFT);
 	reg_cali = 10 * mt6359p_read_field(PMIC_VM18_ANA_CON0, 0xF, 0);
@@ -179,9 +170,6 @@ u32 mt6359p_get_vm18_voltage(void)
 void mt6359p_set_vsim1_voltage(u32 vsim1_uv)
 {
 	u32 reg_vol, reg_cali, reg_offset;
-
-	if (!pmif_ops)
-		die("pmif_ops not initialized\n");
 
 	if (vsim1_uv >= 1700000 && vsim1_uv <= 1900000)
 		reg_offset = VSIM1_VOL_OFFSET_1;
@@ -194,16 +182,13 @@ void mt6359p_set_vsim1_voltage(u32 vsim1_uv)
 
 	reg_vol = (vsim1_uv / 1000 - reg_offset) / 100;
 	reg_cali = ((vsim1_uv / 1000) % 100) / 10;
-	mt6359p_write32(PMIC_VSIM1_ANA_CON0,
+	mt6359p_write16(PMIC_VSIM1_ANA_CON0,
 			(reg_vol << VSIM1_VOL_REG_SHIFT) | reg_cali);
 }
 
 u32 mt6359p_get_vsim1_voltage(void)
 {
 	u32 reg_vol, reg_cali, reg_offset;
-
-	if (!pmif_ops)
-		die("pmif_ops not initialized\n");
 
 	reg_vol = 100 * mt6359p_read_field(PMIC_VSIM1_ANA_CON0, 0xF,
 					   VSIM1_VOL_REG_SHIFT);
@@ -222,8 +207,6 @@ u32 mt6359p_get_vsim1_voltage(void)
 u32 mt6359p_get_vcn18_voltage(void)
 {
 	u32 reg_vol, reg_cali;
-	if (!pmif_ops)
-		die("pmif_ops not initialized\n");
 
 	reg_vol = 100 * mt6359p_read_field(PMIC_VCN18_ANA_CON0, 0xF, VCN18_VOL_SHIFT);
 	reg_cali = 10 * mt6359p_read_field(PMIC_VCN18_ANA_CON0, 0xF, 0);
@@ -233,15 +216,13 @@ u32 mt6359p_get_vcn18_voltage(void)
 void mt6359p_set_vcn18_voltage(u32 vcn18_uv)
 {
 	u32 reg_vol, reg_cali;
-	if (!pmif_ops)
-		die("pmif_ops not initialized\n");
 
 	if (vcn18_uv < VCN18_VOL_UV_MIN || vcn18_uv > VCN18_VOL_UV_MAX)
 		return;
 
 	reg_vol = (vcn18_uv / 1000 - VCN18_VOL_MV_OFFSET) / 100;
 	reg_cali = (vcn18_uv / 1000) % 100 / 10;
-	mt6359p_write32(PMIC_VCN18_ANA_CON0, (reg_vol << VCN18_VOL_SHIFT) | reg_cali);
+	mt6359p_write16(PMIC_VCN18_ANA_CON0, (reg_vol << VCN18_VOL_SHIFT) | reg_cali);
 }
 
 void mt6359p_enable_vpa(bool enable)

@@ -12,8 +12,7 @@ enum {
 };
 
 enum {
-	PMIF_CMD_REG_0,
-	PMIF_CMD_REG,
+	PMIF_CMD_REG = 1,
 	PMIF_CMD_EXT_REG,
 	PMIF_CMD_EXT_REG_LONG,
 };
@@ -35,8 +34,8 @@ struct mtk_chan_regs {
 
 typedef struct MtkPmifOps {
 	int (*check_init_done)(struct MtkPmifOps *me);
-	u32 (*read32)(struct MtkPmifOps *me, u32 slvid, u32 reg);
-	void (*write32)(struct MtkPmifOps *me, u32 slvid, u32 reg, u32 data);
+	u16 (*read16)(struct MtkPmifOps *me, u32 slvid, u32 reg);
+	void (*write16)(struct MtkPmifOps *me, u32 slvid, u32 reg, u16 data);
 	u32 (*read_field)(struct MtkPmifOps *me, u32 slvid, u32 reg,
 			  u32 mask, u32 shift);
 	void (*write_field)(struct MtkPmifOps *me, u32 slvid, u32 reg, u32 val,
