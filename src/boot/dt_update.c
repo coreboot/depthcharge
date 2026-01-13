@@ -57,10 +57,10 @@ void dt_update_chosen(struct device_tree *tree, const char *cmd_line)
 	dt_add_bin_prop(node, "rng-seed", seed->rng, sizeof(seed->rng));
 }
 
-static void update_reserve_map(uint64_t start, uint64_t end, void *data)
+static void update_reserved_memory(uint64_t start, uint64_t end, void *data)
 {
 	char name[32];
-	snprintf(name, sizeof(name), "region@%" PRIx64 "", start);
+	snprintf(name, sizeof(name), "region@%" PRIx64, start);
 
 	dt_add_reserved_memory_region((struct device_tree *)data, name,
 				      NULL, start, end - start, true);
@@ -154,9 +154,7 @@ void dt_update_memory(struct device_tree *tree)
 	list_insert_after(&node->list_node, &tree->root->children);
 	dt_add_string_prop(node, "device_type", "memory");
 
-	struct device_tree_node *res_node = dt_init_reserved_memory_node(tree);
-	if (!res_node)
-		return;
+	dt_init_reserved_memory_node(tree);
 
 	// Read memory info from coreboot
 	ranges_init(&available);
@@ -168,13 +166,9 @@ void dt_update_memory(struct device_tree *tree)
 		uint64_t start = range->base;
 		uint64_t end = range->base + range->size;
 
-		if (range->type == CB_MEM_RAM)
-			ranges_add(&available, start, end);
-		else {
+		ranges_add(&available, start, end);
+		if (range->type != CB_MEM_RAM)
 			ranges_add(&reserved, start, end);
-			/* Also add to available list so it appears in the 'reg' of the memory node */
-			ranges_add(&available, start, end);
-		}
 	}
 
 	/*
@@ -187,7 +181,7 @@ void dt_update_memory(struct device_tree *tree)
 	ranges_for_each(&available, &align_ram_range, &align_params);
 
 	// CBMEM regions are both carved out and explicitly reserved.
-	ranges_for_each(&reserved, &update_reserve_map, tree);
+	ranges_for_each(&reserved, &update_reserved_memory, tree);
 
 	// Count the amount of 'reg' entries we need (account for size limits).
 	unsigned int count = 0;
