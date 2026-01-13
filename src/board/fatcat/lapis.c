@@ -64,10 +64,3 @@ const CrosEcLpcBusVariant variant_get_ec_lpc_bus(void)
 {
 	return CROS_EC_LPC_BUS_RTK;
 }
-
-void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
-				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
-{
-	*image_path = "rts5453_GOOG0501.bin";
-	*hash_path = "rts5453_GOOG0501.hash";
-}
