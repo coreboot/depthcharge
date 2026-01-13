@@ -12,8 +12,8 @@ void mtk_dsi_stop(struct mtk_dsi *dsi)
 	 * Stopping only the primary dsi0 ensures correct synchronization
 	 * with secondary dsi1 if there is.
 	 */
-	if (dsi->reg_base)
-		write32p(dsi->reg_base + DSI_START, 0);
+	if (dsi->reg_base[0])
+		write32p(dsi->reg_base[0] + DSI_START, 0);
 }
 
 static void mtk_dsi_poll_idle(uintptr_t base, int idx, uint64_t timeout_us)
@@ -31,9 +31,11 @@ void mtk_dsi_wait_for_idle(struct mtk_dsi *dsi)
 {
 	const uint64_t timeout_us = 2 * USECS_PER_SEC;
 
-	if (dsi->reg_base)
-		mtk_dsi_poll_idle(dsi->reg_base, 0, timeout_us);
+	for (int i = 0; i < ARRAY_SIZE(dsi->reg_base); i++) {
+		uintptr_t base = dsi->reg_base[i];
+		if (!base)
+			break;
 
-	if (dsi->reg_base1)
-		mtk_dsi_poll_idle(dsi->reg_base1, 1, timeout_us);
+		mtk_dsi_poll_idle(base, i, timeout_us);
+	}
 }

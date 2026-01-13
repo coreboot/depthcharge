@@ -7,8 +7,7 @@
 
 /* DSI structure */
 struct mtk_dsi {
-	uintptr_t reg_base;
-	uintptr_t reg_base1;
+	uintptr_t reg_base[2];
 };
 
 /* DSI register offsets */

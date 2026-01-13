@@ -66,8 +66,8 @@ static int mtk_display_stop(DisplayOps *me)
 
 	/* Stop DSI if base is set */
 	struct mtk_dsi dsi = {
-		.reg_base = mtk->dsi_base,
-		.reg_base1 = mtk->dsi_base1,
+		.reg_base[0] = mtk->dsi_base,
+		.reg_base[1] = mtk->dsi_base1,
 	};
 	mtk_dsi_stop(&dsi);
 	mtk_dsi_wait_for_idle(&dsi);
