@@ -64,13 +64,13 @@ static int mtk_display_stop(DisplayOps *me)
 {
 	MtkDisplay *mtk = container_of(me, MtkDisplay, ops);
 
-	/* Stop DSI if base is set */
 	struct mtk_dsi dsi = {
 		.reg_base[0] = mtk->dsi_base,
 		.reg_base[1] = mtk->dsi_base1,
 	};
-	mtk_dsi_stop(&dsi);
-	mtk_dsi_wait_for_idle(&dsi);
+
+	if (mtk_dsi_is_enabled(&dsi))
+		mtk_dsi_poweroff(&dsi);
 
 	if (mtk->panel_poweroff)
 		mtk->panel_poweroff(mtk);
