@@ -122,7 +122,8 @@ static void align_ram_range(u64 start, u64 end, void *pdata)
 	uint64_t new_start = ALIGN_UP(start, MEMORY_ALIGNMENT);
 	uint64_t new_end = ALIGN_DOWN(end, MEMORY_ALIGNMENT);
 
-	if (new_start >= new_end) return;
+	if (new_start >= new_end)
+		return;
 
 	if (new_start > start)
 		ranges_add(params->reserved, start, new_start);
@@ -160,7 +161,8 @@ void dt_update_memory(struct device_tree *tree)
 	ranges_init(&available);
 	ranges_init(&reserved);
 
-	// Merge th adjacent regions with the same type.
+	/* Collect all available memranges to form `/memory` nodes, and additionally
+	   collect reserved ranges to form `/reserved-memory` nodes. */
 	for (int i = 0; i < lib_sysinfo.n_memranges; i++) {
 		struct memrange *range = &lib_sysinfo.memrange[i];
 		uint64_t start = range->base;
