@@ -17,7 +17,7 @@ static void test_bootconfig_api(void **state)
 	char *init_params = "k0=v0" BR "k1=v1" BR;
 	char *init_cmdline = "c0=v0 c1=\"v1\"      c2=v2";
 	const char *expected = "k0=v0" BR "k1=v1" BR "c0=v0" BR "c1=\"v1\"" BR
-			       "c2=v2" BR "testkey=testval" BR;
+			       "c2=v2" BR "testkey=\"testval\"" BR;
 
 	/* Verify basic bootconfig API */
 	bootconfig_init(&bc, bootconfig_buf, sizeof(bootconfig_buf));
@@ -37,6 +37,36 @@ static void test_bootconfig_api(void **state)
 	assert_int_equal(reinited_bc.size, bc.size);
 }
 
+/* Verify quoting the value */
+static void test_bootconfig_quoting_logic(void **state)
+{
+	memset(&bc, 0, sizeof(bc));
+	memset(bootconfig_buf, 0, sizeof(bootconfig_buf));
+	bootconfig_init(&bc, bootconfig_buf, sizeof(bootconfig_buf));
+
+	/* Value contains hash '#' */
+	assert_int_equal(bootconfig_append(&bc, "key.hash", "val#ue"), 0);
+	assert_non_null(strstr(bootconfig_buf, "key.hash=\"val#ue\""));
+
+	/* Value contains comma ',' */
+	assert_int_equal(bootconfig_append(&bc, "key.comma", "val,ue"), 0);
+	assert_non_null(strstr(bootconfig_buf, "key.comma=\"val,ue\""));
+
+	/* Value contains curly bracket '}' */
+	assert_int_equal(bootconfig_append(&bc, "key.bracket", "}value"), 0);
+	assert_non_null(strstr(bootconfig_buf, "key.bracket=\"}value\""));
+
+	/* Value contains new line '\n' */
+	assert_int_equal(bootconfig_append(&bc, "key.newline", "va\nlue"), 0);
+	assert_non_null(strstr(bootconfig_buf, "key.newline=\"va\nlue\""));
+
+	/* Value contains semicolon ';' */
+	assert_int_equal(bootconfig_append(&bc, "key.semicolon",
+			 "value; init=test123"), 0);
+	assert_non_null(strstr(bootconfig_buf,
+			 "key.semicolon=\"value; init=test123\""));
+}
+
 static void test_bootconfig_params_validation(void **state)
 {
 	char *init_params = "k0=v0";
@@ -47,17 +77,17 @@ static void test_bootconfig_params_validation(void **state)
 	assert_int_equal(bootconfig_append_cmdline(&bc, "too long"), -1);
 	assert_int_equal(bootconfig_append(&bc, "too", "long"), -1);
 
+	memset(&bc, 0, sizeof(bc));
+	memset(bootconfig_buf, 0, sizeof(bootconfig_buf));
+	bootconfig_init(&bc, bootconfig_buf, sizeof(bootconfig_buf));
+
 	/* Forbidden character found in bootconfig key value */
 	assert_int_equal(bootconfig_append(&bc, "androidboot.test",
 			 "value\""), -1);
 	assert_int_equal(bootconfig_append(&bc, "androidboot.test",
-			 "value; init=test123"), -1);
+			 "val'ue"), -1);
 	assert_int_equal(bootconfig_append(&bc, "androidboot.test",
-			 "val#ue"), -1);
-	assert_int_equal(bootconfig_append(&bc, "androidboot.test",
-			 "}value"), -1);
-	assert_int_equal(bootconfig_append(&bc, "androidboot.test",
-			 "va\nlue"), -1);
+			 "value\\"), -1);
 }
 
 static void test_bootconfig_unmatched_quote(void **state)
@@ -82,6 +112,7 @@ int main(void)
 {
 	const struct CMUnitTest tests[] = {
 		TEST(test_bootconfig_api),
+		TEST(test_bootconfig_quoting_logic),
 		TEST(test_bootconfig_params_validation),
 		TEST(test_bootconfig_unmatched_quote),
 	};

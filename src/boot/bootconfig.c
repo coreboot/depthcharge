@@ -96,7 +96,7 @@ exit:
 
 int bootconfig_append(struct bootconfig *bc, const char *key, const char *value)
 {
-	const char *forbidden_separators = ";#}'\"\n";
+	const char *forbidden_separators = "'\"\\";
 	char *end;
 	int len;
 	size_t space;
@@ -106,8 +106,8 @@ int bootconfig_append(struct bootconfig *bc, const char *key, const char *value)
 	/* Exit early if the value contains any of the forbidden characters */
 	len = strcspn(value, forbidden_separators);
 	if (len != strlen(value)) {
-		printf("Forbidden character \" %c \" found, \
-			skip appending:\nkey=%s value=%s\n",
+		printf("Forbidden character \" %c \" found, "
+			"skip appending:\nkey=%s value=%s\n",
 			value[len], key, value);
 		return -1;
 	}
@@ -115,7 +115,7 @@ int bootconfig_append(struct bootconfig *bc, const char *key, const char *value)
 	/* Add parameters at the end */
 	space = bc->limit - bc->size;
 	end = &bc->start[bc->size];
-	len = snprintf(end, space, "%s=%s%c", key, value, BOOTCONFIG_DELIMITER);
+	len = snprintf(end, space, "%s=\"%s\"%c", key, value, BOOTCONFIG_DELIMITER);
 	if (len >= space || len < 0) {
 		bc->start[bc->size] = '\0';
 		return -1;
