@@ -51,7 +51,7 @@ def archive_generic(archiver, output):
         archiver: path to the archive tool
         output: path to the output directory
     """
-    images = glob.glob(os.path.join(output, '*.bmp'))
+    images = sorted(glob.glob(os.path.join(output, '*.bmp')))
     archive_images(archiver, output, 'vbgfx.bin', images)
 
 
@@ -65,8 +65,8 @@ def archive_localized(archiver, output, pattern):
     """
     locale_images = defaultdict(lambda: [])
 
-    for path in glob.glob(os.path.join(output, '*')):
-        files = glob.glob(os.path.join(path, '*.bmp'))
+    for path in sorted(glob.glob(os.path.join(output, '*'))):
+        files = sorted(glob.glob(os.path.join(path, '*.bmp')))
         locale = os.path.basename(path)
         for file in files:
             locale_images[locale].append(file)
@@ -84,7 +84,7 @@ def archive_glyphs(archiver, output):
         output: path to the output directory
     """
     glyph_dir = os.path.join(output, GLYPH_DIR)
-    images = glob.glob(os.path.join(glyph_dir, '*.bmp'))
+    images = sorted(glob.glob(os.path.join(glyph_dir, '*.bmp')))
     archive_images(archiver, output, 'font.bin', images)
 
 
