@@ -26,6 +26,7 @@ import sys
 LOCALE_DIR = 'locale'
 LOCALE_RO_DIR = os.path.join(LOCALE_DIR, 'ro')
 LOCALE_RW_DIR = os.path.join(LOCALE_DIR, 'rw')
+GLYPH_DIR = 'glyph'
 
 
 def archive_images(archiver, output, name, files):
@@ -43,17 +44,15 @@ def archive_images(archiver, output, name, files):
     subprocess.check_call(command, shell=True)
 
 
-def archive_base(archiver, output):
-    """Archives base (locale-independent) images.
+def archive_generic(archiver, output):
+    """Archives generic (locale-independent) images.
 
     Args:
         archiver: path to the archive tool
         output: path to the output directory
     """
-    base_images = glob.glob(os.path.join(output, '*.bmp'))
-
-    # create archive of base images
-    archive_images(archiver, output, 'vbgfx.bin', base_images)
+    images = glob.glob(os.path.join(output, '*.bmp'))
+    archive_images(archiver, output, 'vbgfx.bin', images)
 
 
 def archive_localized(archiver, output, pattern):
@@ -77,6 +76,18 @@ def archive_localized(archiver, output, pattern):
         archive_images(archiver, output, pattern % locale, images)
 
 
+def archive_glyphs(archiver, output):
+    """Archives glyph images.
+
+    Args:
+        archiver: path to the archive tool
+        output: path to the output directory
+    """
+    glyph_dir = os.path.join(output, GLYPH_DIR)
+    images = glob.glob(os.path.join(glyph_dir, '*.bmp'))
+    archive_images(archiver, output, 'font.bin', images)
+
+
 def main(args):
     """Archives images."""
     opts, args = getopt.getopt(args, 'a:d:')
@@ -94,7 +105,7 @@ def main(args):
         assert False, 'Invalid usage'
 
     print('Archiving vbfgx.bin', file=sys.stderr, flush=True)
-    archive_base(archiver, output)
+    archive_generic(archiver, output)
     print('Archiving locales for RO', file=sys.stderr, flush=True)
     ro_locale_dir = os.path.join(output, LOCALE_RO_DIR)
     rw_locale_dir = os.path.join(output, LOCALE_RW_DIR)
@@ -102,6 +113,8 @@ def main(args):
     if os.path.exists(rw_locale_dir):
         print('Archiving locales for RW', file=sys.stderr, flush=True)
         archive_localized(archiver, rw_locale_dir, 'rw_locale_%s.bin')
+    print('Archiving font.bin', file=sys.stderr, flush=True)
+    archive_glyphs(archiver, output)
 
 
 if __name__ == '__main__':
