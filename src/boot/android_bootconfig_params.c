@@ -28,18 +28,25 @@ static int append_vpd(struct bootconfig *bc, const char *vpd_key,
 	return bootconfig_append(bc, config_key, buffer);
 }
 
-#define HW_DESCR_VPD_KEY "mfg_sku_id"
+#define HW_DESCR_VPD_KEY "hardware_descriptor"
 #define HW_DESCR_CONFIG_KEY "androidboot.product.hardware.id"
 
 static int append_hw_descr(struct bootconfig *bc)
 {
-	char hwid[VB2_GBB_HWID_MAX_SIZE];
-	uint32_t hwid_size = sizeof(hwid);
+	char buffer[MAX_VPD_BUFFER_SIZE];
+	uint32_t buffer_size = sizeof(buffer);
 
-	if (!vb2api_gbb_read_hwid(vboot_get_context(), hwid, &hwid_size))
-		return bootconfig_append(bc, HW_DESCR_CONFIG_KEY, hwid);
+	_Static_assert(sizeof(buffer) >= VB2_GBB_HWID_MAX_SIZE,
+				   "Buffer is too small for HWID");
 
-	return append_vpd(bc, HW_DESCR_VPD_KEY, HW_DESCR_CONFIG_KEY);
+	if (!vpd_gets(HW_DESCR_VPD_KEY, buffer, sizeof(buffer))) {
+		printf(HW_DESCR_VPD_KEY " not found in VPD, fall back to HWID.\n");
+		if (vb2api_gbb_read_hwid(vboot_get_context(), buffer, &buffer_size)) {
+			printf("Failed to read HWID\n");
+			return -1;
+		}
+	}
+	return bootconfig_append(bc, HW_DESCR_CONFIG_KEY, buffer);
 }
 
 #define DISPLAY_ORIENTATION_KEY_STR "androidboot.surface_flinger.primary_display_orientation"
