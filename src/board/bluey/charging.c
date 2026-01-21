@@ -26,9 +26,9 @@
 #define SMB1_CHGR_CHARGING_FCC ((SMB1_SLAVE_ID << 16) | SCHG_CHGR_CHARGING_FCC)
 #define SMB2_CHGR_CHARGING_FCC ((SMB2_SLAVE_ID << 16) | SCHG_CHGR_CHARGING_FCC)
 
-static bool board_boot_in_low_battery_mode(void)
+static bool board_boot_in_low_battery_mode_charger_present(void)
 {
-	return lib_sysinfo.boot_mode == CB_BOOT_MODE_LOW_BATTERY;
+	return lib_sysinfo.boot_mode == CB_BOOT_MODE_LOW_BATTERY_CHARGING;
 }
 
 static bool board_boot_in_offmode_charging_mode(void)
@@ -54,9 +54,15 @@ static int get_battery_icurr_ma(void)
 	return icurr;
 }
 
+static bool do_enable_charging(void)
+{
+	return board_boot_in_low_battery_mode_charger_present() ||
+			 board_boot_in_offmode_charging_mode();
+}
+
 static void disable_battery_charging(void)
 {
-	if (!board_boot_in_low_battery_mode() || !board_boot_in_offmode_charging_mode())
+	if (!do_enable_charging())
 		return;
 
 	QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
@@ -115,8 +121,9 @@ static int detect_ec_manual_poweron_event(void)
 
 static int launch_charger_applet(void)
 {
-	if (!CONFIG(DRIVER_EC_CROS) || !(board_boot_in_low_battery_mode()
-		|| board_boot_in_offmode_charging_mode()))
+	if (!CONFIG(DRIVER_EC_CROS) || !(board_boot_in_low_battery_mode_charger_present()
+			 || board_boot_in_offmode_charging_mode()))
+
 		return 0;
 
 	printf("Inside %s. Initiating charging\n", __func__);
