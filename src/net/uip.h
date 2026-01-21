@@ -1023,10 +1023,8 @@ struct uip_udp_conn *uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport);
  *
  * \hideinitializer
  */
-/*#define uip_ipaddr_isbroadcast(addr, netaddr, netmask)
-  ((uip_ipaddr_t *)(addr)).u16 & ((uip_ipaddr_t *)(addr)).u16*/
-
-
+#define uip_ipaddr_isbroadcast(addr, netaddr, netmask) \
+	((addr)->u32 == ((netaddr)->u32 | ~(netmask)->u32))
 
 /**
  * Mask out the network part of an IP address.

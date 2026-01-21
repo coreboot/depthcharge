@@ -827,6 +827,11 @@ uip_process(uint8_t flag)
     
     /* Check if the packet is destined for our IP address. */
     if(!uip_ipaddr_cmp(&BUF->destipaddr, &uip_hostaddr)) {
+      /* Check if the packet is ICMP broadcast */
+      if (BUF->proto == UIP_PROTO_ICMP &&
+          (uip_ipaddr_cmp(&BUF->destipaddr, &uip_broadcast_addr) ||
+           uip_ipaddr_isbroadcast(&BUF->destipaddr, &uip_hostaddr, &uip_netmask)))
+        goto icmp_input;
       UIP_STAT(++uip_stat.ip.drop);
       goto drop;
     }
