@@ -159,14 +159,14 @@ int android_mte_setup(char *cmdline_buf, size_t size)
 
 	if (!get_cmdline_uint32_value(cmdline_buf, MTE_CMDLINE_CTRL, &cmdline_value)) {
 		printf("%s: cmdline_value %#x\n", __func__, cmdline_value);
-		ctrl.raw = cmdline_value & 0xFFFF;
-		min.raw = (cmdline_value & 0xFFFF0000) >> 16;
 	} else {
 		printf("%s: Cannot get cmdline %s; using 0 to disable MTE\n",
 		       __func__, MTE_CMDLINE_CTRL);
-		ctrl.raw = 0;
-		min.raw = 0;
+		cmdline_value = 0;
 	}
+
+	ctrl.raw = cmdline_value & 0xFFFF;
+	min.raw = (cmdline_value & 0xFFFF0000) >> 16;
 
 	apply_misc_mte_ctrl(&ctrl);
 	apply_min_mte_ctrl(&ctrl, &min);
