@@ -141,14 +141,18 @@ static void update_mem_ranges(struct mte_ctrl *ctrl)
 {
 	bool has_tag_storage = memory_has_tag_storage();
 
-	if (ctrl->mte) {
-		if (!has_tag_storage) {
-			printf("Memory tag storage is not found! Disable MTE.\n");
-			ctrl->mte = 0;
-		}
+	/* Early return when MTE state matches tag storage availability */
+	if (ctrl->mte == has_tag_storage)
+		return;
+
+	/* Handle mismatch between MTE request and tag storage availability */
+	if (has_tag_storage) {
+		/* Storage reserved but MTE disabled: free it to reclaim memory */
+		memory_free_tag_storage();
 	} else {
-		if (has_tag_storage)
-			memory_free_tag_storage();
+		/* MTE requested but storage missing: cannot enable MTE */
+		printf("Memory tag storage is not found! Disable MTE.\n");
+		ctrl->mte = 0;
 	}
 }
 
