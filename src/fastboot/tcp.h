@@ -71,6 +71,8 @@ struct fastboot_tcp_session {
 	struct FastbootOps fb_session;
 	// Current state of this session.
 	enum fastboot_tcp_state state;
+	// Current state of the link layer.
+	enum fastboot_transport_state link_state;
 	// Data specific for the current state
 	union fastboot_tcp_state_data state_data;
 	// Details about the remote end of the connection.

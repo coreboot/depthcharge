@@ -205,6 +205,7 @@ static bool fastboot_exit_on_key(void)
 
 void fastboot(void)
 {
+	enum fastboot_transport_state transport_state = FASTBOOT_TRANSPORT_IDLE;
 	struct FastbootOps *fb_session = NULL;
 	enum fastboot_state final_state;
 	uint64_t timer_start;
@@ -264,10 +265,12 @@ void fastboot(void)
 	printf("fastboot starting.\n");
 	timer_start = timer_us(0);
 	while (!fastboot_is_finished(fb_session)) {
-		fb_session->poll(fb_session);
+		transport_state = fb_session->poll(fb_session);
 
 		/* Don't do too much of other things to ensure fastboot is fast */
-		if (timer_us(timer_start) < FASTBOOT_MIN_POLL_TIME_US)
+		if (transport_state != FASTBOOT_TRANSPORT_IDLE ||
+		    fb_session->state == DOWNLOAD ||
+		    timer_us(timer_start) < FASTBOOT_MIN_POLL_TIME_US)
 			continue;
 		timer_start = timer_us(0);
 		if (fastboot_exit_on_key())

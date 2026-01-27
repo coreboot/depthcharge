@@ -34,6 +34,7 @@ typedef struct UsbFastbootDevice {
 	endpoint_t *bulk_in;
 	endpoint_t *bulk_out;
 	usbdev_t *usb_dev;
+	enum fastboot_transport_state state;
 } UsbFastbootDevice;
 
 static bool is_usb_fastboot_in_use(UsbFastbootDevice *usb_fb_dev)
@@ -80,9 +81,13 @@ static void usb_fastboot_release(struct FastbootOps *fb)
 	}
 }
 
-static void usb_fastboot_poll(struct FastbootOps *fb)
+static enum fastboot_transport_state usb_fastboot_poll(struct FastbootOps *fb)
 {
+	UsbFastbootDevice *usb_fb_dev = container_of(fb, UsbFastbootDevice, fb_session);
+
 	usb_poll();
+
+	return usb_fb_dev->state;
 }
 
 static void usb_fastboot_dev_poll(usbdev_t *dev)
@@ -91,6 +96,8 @@ static void usb_fastboot_dev_poll(usbdev_t *dev)
 	size_t len;
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)dev->data;
 	UsbFastbootDevice *usb_fb_dev = (UsbFastbootDevice *)gen_dev->dev_data;
+
+	usb_fb_dev->state = FASTBOOT_TRANSPORT_IDLE;
 
 	/* Process only Alink in use */
 	if (!is_usb_fastboot_in_use(usb_fb_dev))
@@ -104,6 +111,8 @@ static void usb_fastboot_dev_poll(usbdev_t *dev)
 		return;
 
 	fastboot_handle_packet(&usb_fb_dev->fb_session, packet_buffer, len);
+	/* We received something, assume that it is a good idea to check for more data */
+	usb_fb_dev->state = FASTBOOT_TRANSPORT_RX_IN_PROGRESS;
 }
 
 static int usb_fastboot_init_endpoints(usbdev_t *dev, UsbFastbootDevice *usb_fb_dev)

@@ -57,6 +57,12 @@ enum fastboot_state {
 	REBOOT,
 };
 
+enum fastboot_transport_state {
+	FASTBOOT_TRANSPORT_IDLE = 0,
+	FASTBOOT_TRANSPORT_TX_IN_PROGRESS,
+	FASTBOOT_TRANSPORT_RX_IN_PROGRESS,
+};
+
 enum fastboot_connection_type {
 	FASTBOOT_TCP_CONN,
 	FASTBOOT_USB_CONN,
@@ -83,9 +89,10 @@ struct FastbootOps {
 	uint64_t download_progress;
 	/*
 	 * Poll for new fastboot messages. This function should call
-	 * fastboot_handle_packet(). This function is required.
+	 * fastboot_handle_packet(). It should return the state of transport layer which is
+	 * a hint for scheduling next poll call. This function is required.
 	 */
-	void (*poll)(struct FastbootOps *fb);
+	enum fastboot_transport_state (*poll)(struct FastbootOps *fb);
 	/* Send fastboot response. This function is required. */
 	int (*send_packet)(struct FastbootOps *fb, void *buf, size_t len);
 	/* Called on fastboot_reset_session(). This function is optional. */

@@ -344,26 +344,26 @@ static void fastboot_tcp_recv(struct fastboot_tcp_session *tcp, char *buf,
 /* Forward declaration of a global tcp_session */
 static struct fastboot_tcp_session tcp_session;
 
-// Net callback, called when there's network work to do.
-static void fastboot_tcp_net_callback(void)
+static enum fastboot_transport_state fastboot_tcp_handle_session(
+		struct fastboot_tcp_session *tcp)
 {
-	struct fastboot_tcp_session *tcp = &tcp_session;
-	if (uip_udpconnection()) {
-		// Ignore UDP connections.
-		return;
-	}
+	enum fastboot_transport_state state = FASTBOOT_TRANSPORT_IDLE;
+
+	// Ignore UDP connections.
+	if (uip_udpconnection())
+		return state;
 
 	// Make sure it's not somebody else's connection.
 	if (!fastboot_tcp_is_valid_conn(tcp)) {
 		FB_DEBUG("Invalid connection\n");
 		uip_close();
-		return;
+		return state;
 	}
 
 	// Check for TCP state.
 	if (uip_rexmit()) {
 		uip_send(tcp->last_packet->data, tcp->last_packet->len);
-		return;
+		return state;
 	}
 	// Note that uip_closed() can be true even if there's still data left.
 	// We don't bother processing it and give up, though.
@@ -372,7 +372,7 @@ static void fastboot_tcp_net_callback(void)
 			"connection closed: closed %d aborted %d timedout %d\n",
 			uip_closed(), uip_aborted(), uip_timedout());
 		fastboot_reset_session(&tcp->fb_session);
-		return;
+		return state;
 	}
 
 	if (uip_acked()) {
@@ -381,11 +381,24 @@ static void fastboot_tcp_net_callback(void)
 		tcp->last_packet = NULL;
 	}
 
-	if (uip_newdata())
+	if (uip_newdata()) {
 		fastboot_tcp_recv(tcp, uip_appdata, uip_datalen());
+		// We received something, assume that it is a good idea to check for more data
+		state = FASTBOOT_TRANSPORT_RX_IN_PROGRESS;
+	}
 
 	// Try and send a packet from the queue, if there is one
 	fastboot_tcp_send_packet(tcp);
+
+	return state;
+}
+
+// Net callback, called when there's network work to do.
+static void fastboot_tcp_net_callback(void)
+{
+	struct fastboot_tcp_session *tcp = &tcp_session;
+
+	tcp->link_state = fastboot_tcp_handle_session(tcp);
 }
 
 static void fastboot_tcp_reset(struct FastbootOps *fb)
@@ -396,9 +409,18 @@ static void fastboot_tcp_reset(struct FastbootOps *fb)
 	fastboot_tcp_enter_state(tcp, WAIT_FOR_HANDSHAKE);
 }
 
-static void fastboot_tcp_poll(struct FastbootOps *fb)
+static enum fastboot_transport_state fastboot_tcp_poll(struct FastbootOps *fb)
 {
+	struct fastboot_tcp_session *tcp =
+		container_of(fb, struct fastboot_tcp_session, fb_session);
+
+	tcp->link_state = FASTBOOT_TRANSPORT_IDLE;
 	net_poll();
+
+	if (!list_is_empty(&tcp->txq))
+		tcp->link_state = FASTBOOT_TRANSPORT_TX_IN_PROGRESS;
+
+	return tcp->link_state;
 }
 
 static void fastboot_tcp_release(struct FastbootOps *fb)
