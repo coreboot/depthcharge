@@ -131,6 +131,18 @@ void fastboot_prepare_download(struct FastbootOps *fb, uint32_t bytes);
 void fastboot_reset_session(struct FastbootOps *fb);
 /* Resets the state of the data staging area */
 void fastboot_reset_staging(struct FastbootOps *fb);
+/* Initialize fastboot on the first transport layer that is active */
+struct FastbootOps *fastboot_init(void);
+/*
+ * Release all fastboot related resources. It will call reboot if it was requested by
+ * fastboot command.
+ */
+void fastboot_release(struct FastbootOps *fb_session);
+/*
+ * Wait and handle incoming messages. Timeout is a hint how long to wait for a message, but
+ * the function may block for longer time if there is incoming traffic.
+ */
+void fastboot_poll(struct FastbootOps *fb_session, uint32_t timeout_ms);
 
 /* Responses to the client */
 void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t, int print_msg,

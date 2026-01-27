@@ -193,6 +193,57 @@ void fastboot_reset_staging(struct FastbootOps *fb)
 	fb->memory_buffer_len = 0;
 }
 
+struct FastbootOps *fastboot_init(void)
+{
+	struct FastbootOps *fb_session = NULL;
+
+	if (CONFIG(FASTBOOT_USB_ALINK))
+		fb_session = fastboot_setup_usb();
+
+	if (CONFIG(FASTBOOT_TCP) && fb_session == NULL)
+		fb_session = fastboot_setup_tcp();
+
+	if (fb_session != NULL) {
+		if (CONFIG(DRIVER_EC_CROS))
+			cros_ec_print("Fastboot %s\n", fb_session->serial);
+		fastboot_reset_staging(fb_session);
+		fastboot_reset_session(fb_session);
+		printf("fastboot starting.\n");
+	}
+
+	return fb_session;
+}
+
+void fastboot_release(struct FastbootOps *fb_session)
+{
+	enum fastboot_state final_state;
+
+	printf("fastboot done.\n");
+	final_state = fb_session->state;
+	if (fb_session->release)
+		fb_session->release(fb_session);
+
+	if (final_state == REBOOT)
+		reboot();
+}
+
+void fastboot_poll(struct FastbootOps *fb_session, uint32_t timeout_ms)
+{
+	enum fastboot_transport_state transport_state = FASTBOOT_TRANSPORT_IDLE;
+	uint32_t start_time_ms = vb2ex_mtime();
+
+	do {
+		transport_state = fb_session->poll(fb_session);
+		/*
+		 * Continue to poll if fastboot isn't finished yet, timer hasn't expired and
+		 * we expect more work because of protocol or transport layer state.
+		 */
+	} while (!fastboot_is_finished(fb_session) &&
+		 (transport_state != FASTBOOT_TRANSPORT_IDLE ||
+		  fb_session->state == DOWNLOAD) &&
+		 vb2ex_mtime() - start_time_ms < timeout_ms);
+}
+
 static bool fastboot_exit_on_key(void)
 {
 	uint32_t ch = ui_keyboard_read(NULL);
@@ -205,10 +256,7 @@ static bool fastboot_exit_on_key(void)
 
 void fastboot(void)
 {
-	enum fastboot_transport_state transport_state = FASTBOOT_TRANSPORT_IDLE;
 	struct FastbootOps *fb_session = NULL;
-	enum fastboot_state final_state;
-	uint64_t timer_start;
 
 	/* TODO(b/370988331): Replace this with actual UI */
 	bool video_present = !video_init();
@@ -218,70 +266,33 @@ void fastboot(void)
 		video_console_set_cursor(0, 0);
 		video_printf(1, 0, VIDEO_PRINTF_ALIGN_LEFT, "Fastboot\n");
 		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT,
-			     "(press ENTER or POWER to exit (wait up to 10s after press))");
+			     "(press ENTER or POWER to exit (wait up to 10s after press))\n");
+		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for connection");
 	}
 
 	while (fb_session == NULL) {
 		if (fastboot_exit_on_key())
 			return;
 
-		if (CONFIG(FASTBOOT_USB_ALINK)) {
-			if (video_present) {
-				video_console_set_cursor(0, 2);
-				video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for USB");
-			}
-			fb_session = fastboot_setup_usb();
-		}
-
-		if (CONFIG(FASTBOOT_TCP) && fb_session == NULL) {
-			if (video_present) {
-				video_console_set_cursor(0, 2);
-				video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for network");
-			}
-			fb_session = fastboot_setup_tcp();
-		}
+		fb_session = fastboot_init();
 	}
 
 	if (video_present) {
 		video_console_set_cursor(0, 2);
 		switch (fb_session->type) {
 		case FASTBOOT_TCP_CONN:
-			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Network connected");
+			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Network connected  ");
 			break;
 		case FASTBOOT_USB_CONN:
-			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "USB connected");
+			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "USB connected      ");
 			break;
 		}
 		video_console_set_cursor(0, 3);
 		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, fb_session->serial);
 	}
 
-	if (CONFIG(DRIVER_EC_CROS))
-		cros_ec_print("Fastboot %s\n", fb_session->serial);
+	while (!fastboot_is_finished(fb_session) && !fastboot_exit_on_key())
+		fastboot_poll(fb_session, FASTBOOT_MIN_POLL_TIME_US);
 
-	fastboot_reset_staging(fb_session);
-	fastboot_reset_session(fb_session);
-
-	printf("fastboot starting.\n");
-	timer_start = timer_us(0);
-	while (!fastboot_is_finished(fb_session)) {
-		transport_state = fb_session->poll(fb_session);
-
-		/* Don't do too much of other things to ensure fastboot is fast */
-		if (transport_state != FASTBOOT_TRANSPORT_IDLE ||
-		    fb_session->state == DOWNLOAD ||
-		    timer_us(timer_start) < FASTBOOT_MIN_POLL_TIME_US)
-			continue;
-		timer_start = timer_us(0);
-		if (fastboot_exit_on_key())
-			break;
-	}
-
-	printf("fastboot done.\n");
-	final_state = fb_session->state;
-	if (fb_session->release)
-		fb_session->release(fb_session);
-
-	if (final_state == REBOOT)
-		reboot();
+	fastboot_release(fb_session);
 }
