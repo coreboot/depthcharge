@@ -498,10 +498,8 @@ uip_reass(void)
   /* Check if the incoming fragment matches the one currently present
      in the reasembly buffer. If so, we proceed with copying the
      fragment into the buffer. */
-  if(BUF->srcipaddr.u16[0] == FBUF->srcipaddr.u16[0] &&
-     BUF->srcipaddr.u16[1] == FBUF->srcipaddr.u16[1] &&
-     BUF->destipaddr.u16[0] == FBUF->destipaddr.u16[0] &&
-     BUF->destipaddr.u16[1] == FBUF->destipaddr.u16[1] &&
+  if(BUF->srcipaddr.u32 == FBUF->srcipaddr.u32 &&
+     BUF->destipaddr.u32 == FBUF->destipaddr.u32 &&
      BUF->ipid[0] == FBUF->ipid[0] &&
      BUF->ipid[1] == FBUF->ipid[1]) {
 

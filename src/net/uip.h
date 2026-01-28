@@ -60,9 +60,10 @@
  * Representation of an IP address.
  *
  */
-typedef union uip_ip4addr_t {
+typedef union __packed uip_ip4addr_t {
   uint8_t  u8[4];			/* Initializer, must come first!!! */
   uint16_t u16[2];
+  uint32_t u32;
 } uip_ip4addr_t;
 typedef uip_ip4addr_t uip_ipaddr_t;
 
@@ -980,8 +981,7 @@ struct uip_udp_conn *uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport);
  *
  * \hideinitializer
  */
-#define uip_ipaddr_cmp(addr1, addr2) ((addr1)->u16[0] == (addr2)->u16[0] && \
-				      (addr1)->u16[1] == (addr2)->u16[1])
+#define uip_ipaddr_cmp(addr1, addr2) ((addr1)->u32 == (addr2)->u32)
 
 /**
  * Compare two IP addresses with netmasks
@@ -1007,12 +1007,8 @@ struct uip_udp_conn *uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport);
  *
  * \hideinitializer
  */
-#define uip_ipaddr_maskcmp(addr1, addr2, mask)          \
-  (((((uint16_t *)(addr1))[0] & ((uint16_t *)(mask))[0]) ==       \
-    (((uint16_t *)(addr2))[0] & ((uint16_t *)(mask))[0])) &&      \
-   ((((uint16_t *)(addr1))[1] & ((uint16_t *)(mask))[1]) ==       \
-    (((uint16_t *)(addr2))[1] & ((uint16_t *)(mask))[1])))
-
+#define uip_ipaddr_maskcmp(addr1, addr2, mask) \
+	(((addr1)->u32 & (mask)->u32) == ((addr2)->u32 & (mask)->u32))
 
 /**
  * Check if an address is a broadcast address for a network.
@@ -1056,10 +1052,9 @@ struct uip_udp_conn *uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport);
  *
  * \hideinitializer
  */
-#define uip_ipaddr_mask(dest, src, mask) do {                           \
-    ((uint16_t *)(dest))[0] = ((uint16_t *)(src))[0] & ((uint16_t *)(mask))[0];        \
-    ((uint16_t *)(dest))[1] = ((uint16_t *)(src))[1] & ((uint16_t *)(mask))[1];        \
-  } while(0)
+#define uip_ipaddr_mask(dest, src, mask) do { \
+	(dest)->u32 = (src)->u32 & (mask)->u32; \
+} while (0)
 
 /**
  * Pick the first octet of an IP address.
