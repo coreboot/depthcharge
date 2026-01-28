@@ -148,6 +148,24 @@ struct pvmfw_boot_params_cbor_v0 {
 	uint8_t android_dice_handover[];
 } __attribute__((packed));
 
+/* Allocates a space in pvmfw configuration for the given entry */
+static int alloc_cfg_entry(struct pvmfw_config_v1_3 *cfg, size_t max_cfg_size,
+			   struct pvmfw_config_entry *cfg_entry, size_t size)
+{
+	/* Place new entry on aligned offset */
+	cfg_entry->offset = ALIGN_UP(cfg->total_size, ANDROID_PVMFW_CFG_BLOB_ALIGN);
+	cfg_entry->size = size;
+
+	/* Check if destination buffer is big enough */
+	if (cfg_entry->offset + cfg_entry->size > max_cfg_size)
+		return -10;
+
+	/* Update the end of cfg, to the end of appending to blobs */
+	cfg->total_size = cfg_entry->offset + cfg_entry->size;
+
+	return 0;
+}
+
 static void copy_reserved_mem_v0(struct pvmfw_boot_params_cbor_v0 *v0,
 				 struct pvmfw_cfg_rmem_v0 *reserved)
 {
@@ -220,7 +238,7 @@ static void copy_reserved_mem_v0(struct pvmfw_boot_params_cbor_v0 *v0,
 static int parse_boot_params_v0(const void *blob, size_t size, struct pvmfw_config_v1_3 *cfg,
 				size_t max_cfg_size)
 {
-	size_t offset_blobs;
+	int ret;
 	const char *field;
 	struct pvmfw_boot_params_cbor_v0 *v0 = (void *)blob;
 
@@ -276,43 +294,30 @@ static int parse_boot_params_v0(const void *blob, size_t size, struct pvmfw_conf
 	 * The remaining bytes of BootParams structure are AndroidDiceHandover
 	 * bytes.
 	 *
-	 * Fill the entry 0 and entry 4 location. The remaining entries are
-	 * not used so leave them as zeros.
-	 *
-	 * Place handover right after config header.
+	 * Set the end of configuration to beginning of blobs.
 	 */
-	cfg->dice_handover.offset = offsetof(struct pvmfw_config_v1_3, blobs);
-	cfg->dice_handover.size = size - sizeof(struct pvmfw_boot_params_cbor_v0);
+	cfg->total_size = offsetof(struct pvmfw_config_v1_3, blobs);
 
-	/* Make sure that there is enough space for handover in the buffer */
-	if (cfg->dice_handover.offset + cfg->dice_handover.size > max_cfg_size) {
-		printf("Not enough space in the destination buffer for handover data.\n");
-		return -1;
-	}
+	/* Allocate space for handover */
+	ret = alloc_cfg_entry(cfg, max_cfg_size, &cfg->dice_handover,
+			      size - sizeof(struct pvmfw_boot_params_cbor_v0));
+	if (ret)
+		return ret;
 
 	/* Copy handover data into place. */
 	memcpy(&cfg->blobs[0], v0->android_dice_handover, cfg->dice_handover.size);
 
 	/*
-	 * Align the entry offsets to pvmfw config alignment bytes to make
-	 * sure we won't run into unaligned memory access later.
-	 * The size of the entire entry contains both headers and blobs.
+	 * Allocate space for reserved memory. The size of the entire entry
+	 * contains both headers and blobs.
 	 */
-	offset_blobs = ALIGN_UP(cfg->dice_handover.size, ANDROID_PVMFW_CFG_BLOB_ALIGN);
-	cfg->reserved_mem.offset = offsetof(struct pvmfw_config_v1_3, blobs) + offset_blobs;
-	cfg->reserved_mem.size = sizeof(struct pvmfw_cfg_rmem_v0);
-
-	/* Make sure that there is enough space for reserved memory in the buffer */
-	if (cfg->reserved_mem.offset + cfg->reserved_mem.size > max_cfg_size) {
-		printf("Not enough space in the destination buffer for reserved memory.\n");
-		return -1;
-	}
+	ret = alloc_cfg_entry(cfg, max_cfg_size, &cfg->reserved_mem,
+			      sizeof(struct pvmfw_cfg_rmem_v0));
+	if (ret)
+		return ret;
 
 	/* Copy headers and blobs data into place. */
-	copy_reserved_mem_v0(v0, (struct pvmfw_cfg_rmem_v0 *)&cfg->blobs[offset_blobs]);
-
-	/* Calculate the total size of the config with blobs, using the last used entry */
-	cfg->total_size = cfg->reserved_mem.offset + cfg->reserved_mem.size;
+	copy_reserved_mem_v0(v0, (void *)((uintptr_t *)cfg + cfg->reserved_mem.offset));
 
 	return 0;
 mismatch:
@@ -361,19 +366,11 @@ static ssize_t copy_bstr16_to_entry(const void *cbor, size_t cbor_size, size_t c
 	if (cbor_offset + sizeof(*cbor_entry) + size > cbor_size)
 		return -4;
 
-	/* Update cfg entry offset and size */
-	cfg_entry->offset = ALIGN_UP(cfg->total_size, ANDROID_PVMFW_CFG_BLOB_ALIGN);
-	cfg_entry->size = size;
-
-	/* Check if destination buffer is big enough */
-	if (cfg_entry->offset + cfg_entry->size > max_cfg_size)
+	if (alloc_cfg_entry(cfg, max_cfg_size, cfg_entry, size))
 		return -5;
 
 	/* Copy the actual payload */
 	memcpy(((void *)cfg) + cfg_entry->offset, cbor_entry->data, size);
-
-	/* Update the end of cfg, to the end of appending to blobs */
-	cfg->total_size = cfg_entry->offset + cfg_entry->size;
 
 	/* Return consumed CBOR byte count */
 	return sizeof(*cbor_entry) + size;
