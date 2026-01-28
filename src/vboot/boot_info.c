@@ -164,9 +164,7 @@ static int setup_pvmfw(struct boot_info *bi, struct vb2_kernel_params *kparams)
 		goto fail;
 	}
 
-	ret = setup_android_pvmfw(pvmfw_addr,
-				  kparams->pvmfw_buffer_size,
-				  &pvmfw_size, params, params_size);
+	ret = setup_android_pvmfw(kparams, &pvmfw_size, params, params_size);
 	if (ret != 0) {
 		printf("Failed to setup pvmfw configuration\n");
 		goto fail;

@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <vb2_api.h>
 
 #include "boot/android_pvmfw.h"
 
@@ -448,7 +449,7 @@ static int parse_boot_params(const void *blob, size_t size, struct pvmfw_config_
 	return -1;
 }
 
-int setup_android_pvmfw(void *buffer, size_t buffer_size, size_t *pvmfw_size,
+int setup_android_pvmfw(const struct vb2_kernel_params *kparams, size_t *pvmfw_size,
 			const void *params, size_t params_size)
 {
 	int ret;
@@ -456,11 +457,11 @@ int setup_android_pvmfw(void *buffer, size_t buffer_size, size_t *pvmfw_size,
 	struct pvmfw_config_v1_3 *cfg;
 
 	/* Set the boundaries of the pvmfw buffer */
-	pvmfw_addr = (uintptr_t)buffer;
-	pvmfw_max = pvmfw_addr + buffer_size;
+	pvmfw_addr = (uintptr_t)kparams->pvmfw_buffer;
+	pvmfw_max = pvmfw_addr + kparams->pvmfw_buffer_size;
 
 	/* Align to where pvmfw will search for the config header */
-	cfg_addr = ALIGN_UP(pvmfw_addr + *pvmfw_size, ANDROID_PVMFW_CFG_ALIGN);
+	cfg_addr = ALIGN_UP(pvmfw_addr + kparams->pvmfw_out_size, ANDROID_PVMFW_CFG_ALIGN);
 	cfg = (void *)cfg_addr;
 
 	/* Make sure we have space for config and for some blobs */
