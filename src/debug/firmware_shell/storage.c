@@ -218,38 +218,26 @@ static int storage_part(int argc, char *const argv[])
 
 static int storage_init(int argc, char *const argv[])
 {
-	int i, count;
-	const struct list_node *controllers[] = {
-		&fixed_block_dev_controllers,
-		&removable_block_dev_controllers
+	const blockdev_type_t bdev_types[] = {
+		BLOCKDEV_FIXED,
+		BLOCKDEV_REMOVABLE,
 	};
+	int count = 0;
 
-	const struct list_node *devices[] = {
-		&fixed_block_devices,
-		&removable_block_devices
-	};
+	for (int i = 0; i < ARRAY_SIZE(bdev_types); i++) {
+		struct list_node *bdevs;
+		BlockDev *bd;
 
-	for (i = 0; i < ARRAY_SIZE(controllers); i++)
-		for (const struct list_node *node = controllers[i]->next;
-		     node;
-		     node = node->next) {
-			BlockDevCtrlr *bdc;
-
-			bdc = container_of(node, BlockDevCtrlr, list_node);
-			if (bdc->ops.update && bdc->need_update)
-				bdc->ops.update(&bdc->ops);
-			count++;
-		}
-
-	for (count = i = 0; i < ARRAY_SIZE(devices); i++)
-		for (const struct list_node *node = devices[i]->next;
-		     node;
-		     node = node->next) {
-			BlockDev *bd;
-
-			bd = container_of(node, BlockDev, list_node);
+		get_all_bdevs(bdev_types[i], &bdevs);
+		list_for_each(bd, *bdevs, list_node) {
+			if (count >= ARRAY_SIZE(current_devices.known_devices)) {
+				console_printf("Error: Number of block devices exceeds %zu\n",
+					       ARRAY_SIZE(current_devices.known_devices));
+				return -1;
+			}
 			current_devices.known_devices[count++] = bd;
 		}
+	}
 
 	current_devices.total = count;
 	current_devices.curr_device = 0;

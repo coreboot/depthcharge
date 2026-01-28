@@ -170,7 +170,7 @@ static int do_i2c(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	if (!picked_i2c_bus_controller) {
 		picked_i2c_bus_controller = container_of
-			(i2c_bus_controllers.next,
+			(list_first(&i2c_bus_controllers),
 			 I2cBusController, list_node);
 
 		console_printf("will use bus %s\n",

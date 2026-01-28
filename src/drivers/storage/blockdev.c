@@ -194,7 +194,6 @@ lba_t blockdev_fill_write(BlockDevOps *me, lba_t start, lba_t count, uint32_t fi
 int get_all_bdevs(blockdev_type_t type, struct list_node **bdevs)
 {
 	struct list_node *ctrlrs, *devs;
-	int count = 0;
 
 	if (type == BLOCKDEV_FIXED) {
 		devs = &fixed_block_devices;
@@ -212,11 +211,7 @@ int get_all_bdevs(blockdev_type_t type, struct list_node **bdevs)
 			printf("Updating storage controller failed.\n");
 	}
 
-	/* Count the devices. */
-	for (struct list_node *node = devs->next; node; node = node->next, count++)
-		;
-
 	if (bdevs)
 		*bdevs = devs;
-	return count;
+	return list_length(devs);
 }

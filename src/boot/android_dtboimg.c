@@ -183,7 +183,7 @@ struct device_tree *android_parse_dtbs(const void *dtbo, size_t dtbo_size)
 	struct dt_table_header *hdr = (struct dt_table_header *)dtbo;
 	struct dt_table_entry entry;
 	const void *dt_entry_data;
-	struct list_node overlay_dt_list = { .next = NULL, .prev = NULL };
+	struct list_node overlay_dt_list = {};
 	struct list_node *odt_list_tail = &overlay_dt_list;
 
 	if (!is_dtbo_image_valid(dtbo, dtbo_size))

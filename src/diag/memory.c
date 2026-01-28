@@ -170,7 +170,7 @@ static inline void reset_memory_test(void)
 {
 	state.buf_cur = state.buf;
 
-	state.pattern_cur = container_of(state.patterns->next,
+	state.pattern_cur = container_of(list_first(state.patterns),
 					 typeof(*state.pattern_cur), list_node);
 	fill_opdata();
 
@@ -183,7 +183,8 @@ static inline void reset_memory_test(void)
 
 static inline void go_next_pattern(void)
 {
-	struct list_node *next = state.pattern_cur->list_node.next;
+	struct list_node *next = list_next(&state.pattern_cur->list_node,
+					   state.patterns);
 
 	// If no next pattern, then we are done.
 	if (!next) {
@@ -255,16 +256,11 @@ DiagTestResult memory_test_init(MemoryTestMode mode)
 		DEBUG("Unknown test mode: %d\n", mode);
 		return DIAG_TEST_ERROR;
 	}
-	if (!state.patterns) {
+	if (!state.patterns || list_is_empty(state.patterns)) {
 		DEBUG("Fail to get pattern list for memory test.\n");
 		return DIAG_TEST_ERROR;
 	}
-	const Pattern *pattern;
-	state.num_pattern = 0;
-	list_for_each(pattern, *state.patterns, list_node)
-	{
-		state.num_pattern += 1;
-	}
+	state.num_pattern = list_length(state.patterns);
 
 	// Operations initialization
 	if (!state.single_operation_data) {
@@ -309,6 +305,8 @@ DiagTestResult memory_test_init(MemoryTestMode mode)
 	OUTPUT("Free memory (will be tested): %lld.%03lld GiB\n",
 	       state.num_bytes / GiB, (1000 * state.num_bytes / GiB) % 1000);
 	OUTPUT("Loaded test patterns:");
+
+	const Pattern *pattern;
 	list_for_each(pattern, *state.patterns, list_node)
 	{
 		OUTPUT(" '%s'", pattern->name);

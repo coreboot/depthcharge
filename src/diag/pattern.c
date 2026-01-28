@@ -3,8 +3,9 @@
  * Copyright 2020 Google LLC
  */
 
-#include <stdint.h>
+#include <commonlib/list.h>
 #include <libpayload.h>
+#include <stdint.h>
 
 #include "diag/pattern.h"
 
@@ -88,7 +89,7 @@ const struct list_node *DiagGetSimpleTestPatterns(void)
 {
 	static struct list_node pattern_list;
 
-	if (!pattern_list.next)
+	if (list_is_empty(&pattern_list))
 		ADD_PATTERN_BY_ARRAY(pattern_list, five_a_8);
 
 	return &pattern_list;
@@ -98,7 +99,7 @@ const struct list_node *DiagGetTestPatterns(void)
 {
 	static struct list_node pattern_list;
 
-	if (!pattern_list.next) {
+	if (list_is_empty(&pattern_list)) {
 		ADD_PATTERN_BY_FUNC(pattern_list, walking_ones);
 		ADD_PATTERN_BY_ARRAY(pattern_list, one_zero);
 		ADD_PATTERN_BY_ARRAY(pattern_list, zero);

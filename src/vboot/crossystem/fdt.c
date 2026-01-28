@@ -19,6 +19,7 @@
 #include <endian.h>
 #include <libpayload.h>
 #include <lp_vboot.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <vb2_api.h>
@@ -128,7 +129,8 @@ int crossystem_setup(int firmware_type)
 {
 	// Never run crossystem_setup() twice or you'll get a circle in the
 	// fixup list that leads to an infinite loop when working through them!
-	assert(crossystem_fixup.list_node.next == NULL);
+	static bool added_to_fixup;
+	assert(!added_to_fixup);
 
 	/* TODO(hungte): To do this more gracefully, we should consider adding a
 	 * firmware type field to vdat or a new flag to indicate legacy boot,
@@ -136,5 +138,6 @@ int crossystem_setup(int firmware_type)
 	 */
 	last_firmware_type = firmware_type;
 	list_insert_after(&crossystem_fixup.list_node, &device_tree_fixups);
+	added_to_fixup = true;
 	return 0;
 }
