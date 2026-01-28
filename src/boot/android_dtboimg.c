@@ -239,5 +239,8 @@ struct device_tree *android_parse_dtbs(const void *dtbo, size_t dtbo_size)
 
 const char *android_get_dtbo_indices(void)
 {
+	if (!dtbo_idx_bc_len)
+		return NULL;
+
 	return dtbo_idx_bc_buf;
 }

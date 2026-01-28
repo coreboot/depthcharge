@@ -178,8 +178,6 @@ static int append_dtbo_indices(struct bootconfig *bc)
 
 		if (dtbo_indices)
 			return bootconfig_append(bc, DTBO_IDX_CONFIG_KEY, dtbo_indices);
-
-		return -1;
 	}
 	return 0;
 }
