@@ -12,7 +12,7 @@
 ##
 
 depthcharge-$(CONFIG_DRIVER_AHCI) += ahci.c
-depthcharge-y += blockdev.c
+depthcharge-y += blockdev.c slice.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_MMC) += mmc.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_MMC_DW) += dw_mmc.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_IPQ_806X) += ipq806x_mmc.c ipq806x_clocks.c
