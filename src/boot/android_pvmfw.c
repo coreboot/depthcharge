@@ -181,6 +181,61 @@ static int alloc_cfg_entry(struct pvmfw_config_v1_3 *cfg, size_t max_cfg_size,
 	return 0;
 }
 
+static int create_fw_android_node(struct device_tree *ref_dtb, char *bootconfig)
+{
+	static const char *const dt_entries[][2] = {
+		{"androidboot.vbmeta.digest=", "host.vbmeta.digest"},
+		{"androidboot.verifiedbootstate=", "host.verifiedbootstate"},
+		{"androidboot.vbmeta.device_state=", "host.vbmeta.device_state"},
+		{"androidboot.vbmeta.public_key_digest=", "host.vbmeta.public_key_digest"},
+	};
+	static const char *const fw_android_path[] = {"firmware", "android", NULL};
+	struct device_tree_node *node;
+	char *saveptr;
+	char *pair;
+	size_t len;
+	int i;
+
+	/* Create /firmware/android DT node */
+	node = dt_find_node(ref_dtb->root, fw_android_path, NULL, NULL, 1);
+	if (!node)
+		return -1;
+
+	/* Set node's compatible string */
+	dt_add_string_prop(node, "compatible", "android,firmware");
+
+	/*
+	 * Create a copy of the bootconfig so we can use strtok_r safely,
+	 * without corrupting state.
+	 */
+	bootconfig = strdup(bootconfig);
+	if (!bootconfig)
+		return -2;
+
+	/* Iterate over key=value pairs delimited by spaces. */
+	for (pair = strtok_r(bootconfig, " ", &saveptr); pair != NULL;
+	     pair = strtok_r(NULL, " ", &saveptr)) {
+		/* Find the index of key in the dt_entries */
+		for (i = 0; i < ARRAY_SIZE(dt_entries); i++) {
+			len = strlen(dt_entries[i][0]);
+
+			/* Skip unrelevant pair */
+			if (strncmp(pair, dt_entries[i][0], len) != 0)
+				continue;
+
+			/* Add just the pair's value with translated property name */
+			dt_add_string_prop(node, dt_entries[i][1], pair + len);
+			break;
+		}
+	}
+
+	/* Free the bootconfig copy */
+	free(bootconfig);
+
+	return 0;
+}
+
+
 static struct device_tree *create_avf_vm_ref_dt(const struct vb2_kernel_params *kparams)
 {
 	struct device_tree *ref_dtb;
@@ -188,6 +243,10 @@ static struct device_tree *create_avf_vm_ref_dt(const struct vb2_kernel_params *
 	/* Create new empty device tree for the VM reference DT */
 	ref_dtb = fdt_unflatten(empty_dtb);
 	if (!ref_dtb)
+		return NULL;
+
+	/* Create firmware,android node with data parsed from bootconfig */
+	if (create_fw_android_node(ref_dtb, kparams->bootconfig_cmdline_buffer))
 		return NULL;
 
 	return ref_dtb;
