@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <vb2_api.h>
 
+#include "base/device_tree.h"
 #include "boot/android_pvmfw.h"
 
 #define ANDROID_PVMFW_CFG_MAGIC "pvmf"
@@ -61,6 +62,19 @@ static const char desktop_trusty_name[] = "desktop-trusty";
 static const char entropy_compat_str[] = "google,early-entropy";
 static const char session_compat_str[] = "google,session-key-seed";
 static const char auth_token_compat_str[] = "google,auth-token-key-seed";
+
+/*
+ * Empty raw DTB. Used for creation of DTB for entry 3.
+ * Generated using: `echo "/dts-v1/; /{};" | dtc -I dts -O dtb | xxd  -i`
+ */
+static const uint8_t empty_dtb[] = {
+	0xd0, 0x0d, 0xfe, 0xed, 0x00, 0x00, 0x00, 0x48, 0x00, 0x00, 0x00, 0x38,
+	0x00, 0x00, 0x00, 0x48, 0x00, 0x00, 0x00, 0x28, 0x00, 0x00, 0x00, 0x11,
+	0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x09,
+};
 
 /* pvmfw's entry 4: Reserved memory blobs with headers */
 struct pvmfw_cfg_rmem_v0 {
@@ -167,6 +181,40 @@ static int alloc_cfg_entry(struct pvmfw_config_v1_3 *cfg, size_t max_cfg_size,
 	return 0;
 }
 
+static struct device_tree *create_avf_vm_ref_dt(const struct vb2_kernel_params *kparams)
+{
+	struct device_tree *ref_dtb;
+
+	/* Create new empty device tree for the VM reference DT */
+	ref_dtb = fdt_unflatten(empty_dtb);
+	if (!ref_dtb)
+		return NULL;
+
+	return ref_dtb;
+}
+
+static int add_ref_dtb_entry(struct pvmfw_config_v1_3 *cfg, size_t max_cfg_size,
+			     struct device_tree *vm_ref_dt)
+{
+	int ret;
+
+	/* If VM reference DT return with warning */
+	if (!vm_ref_dt) {
+		printf("WARN: Missing VM reference DT. Ignoring...");
+		return 0;
+	}
+
+	/* Allocate space for the VM ref DTB configuration entry */
+	ret = alloc_cfg_entry(cfg, max_cfg_size, &cfg->ref_dtb, dt_flat_size(vm_ref_dt));
+	if (ret)
+		return ret;
+
+	/* Flatten DT structure as FDT to configuration entry */
+	dt_flatten(vm_ref_dt, ((uint8_t *)cfg) + cfg->ref_dtb.offset);
+
+	return 0;
+}
+
 static void copy_reserved_mem_v0(struct pvmfw_boot_params_cbor_v0 *v0,
 				 struct pvmfw_cfg_rmem_v0 *reserved)
 {
@@ -236,8 +284,8 @@ static void copy_reserved_mem_v0(struct pvmfw_boot_params_cbor_v0 *v0,
  *   3  : bstr .size 32, ; AuthTokenKeySeed
  * }
  */
-static int parse_boot_params_v0(const void *blob, size_t size, struct pvmfw_config_v1_3 *cfg,
-				size_t max_cfg_size)
+static int parse_boot_params_v0(const void *blob, size_t size, struct device_tree *vm_ref_dt,
+				struct pvmfw_config_v1_3 *cfg, size_t max_cfg_size)
 {
 	int ret;
 	const char *field;
@@ -307,6 +355,13 @@ static int parse_boot_params_v0(const void *blob, size_t size, struct pvmfw_conf
 
 	/* Copy handover data into place. */
 	memcpy(&cfg->blobs[0], v0->android_dice_handover, cfg->dice_handover.size);
+
+	/* Add entry 3: VM reference DT entry and content */
+	ret = add_ref_dtb_entry(cfg, max_cfg_size, vm_ref_dt);
+	if (ret) {
+		printf("Failed to add ref dtb entry: %d\n", ret);
+		return -1;
+	}
 
 	/*
 	 * Allocate space for reserved memory. The size of the entire entry
@@ -385,8 +440,10 @@ static ssize_t copy_bstr16_to_entry(const void *cbor, size_t cbor_size, size_t c
  * }
  */
 static int parse_boot_params_v1(const void *cbor, size_t cbor_size,
-				struct pvmfw_config_v1_3 *cfg, size_t max_cfg_size)
+				struct device_tree *vm_ref_dt, struct pvmfw_config_v1_3 *cfg,
+				size_t max_cfg_size)
 {
+	int ret;
 	ssize_t consumed;
 	const char *field;
 	size_t cbor_rmem_offset;
@@ -401,6 +458,14 @@ static int parse_boot_params_v1(const void *cbor, size_t cbor_size,
 					max_cfg_size, &cfg->dice_handover);
 	if (consumed < 0) {
 		field = "android_dice_handover_v1";
+		goto err;
+	}
+
+	/* Add entry 3: VM reference DT entry and content */
+	ret = add_ref_dtb_entry(cfg, max_cfg_size, vm_ref_dt);
+	if (ret) {
+		field = "ref_dtb";
+		consumed = ret;
 		goto err;
 	}
 
@@ -423,8 +488,8 @@ err:
 /**
  * Parse BootParam CBOR object and extract relevant data.
  */
-static int parse_boot_params(const void *blob, size_t size, struct pvmfw_config_v1_3 *cfg,
-			     size_t max_cfg_size)
+static int parse_boot_params(const void *blob, size_t size, struct device_tree *vm_ref_dt,
+			     struct pvmfw_config_v1_3 *cfg, size_t max_cfg_size)
 {
 	/*
 	 * Verify that the blob is at least big enough to compare the
@@ -437,12 +502,12 @@ static int parse_boot_params(const void *blob, size_t size, struct pvmfw_config_
 
 	static const uint8_t cbor_labels_preamble_v1[] = {0xA3, 0x01, 0x01};
 	if (!memcmp(blob, cbor_labels_preamble_v1, sizeof(cbor_labels_preamble_v1)))
-		return parse_boot_params_v1(blob, size, cfg, max_cfg_size);
+		return parse_boot_params_v1(blob, size, vm_ref_dt, cfg, max_cfg_size);
 
 
 	static const uint8_t cbor_labels_preamble_v0[] = {0xA3, 0x01, 0x00};
 	if (!memcmp(blob, cbor_labels_preamble_v0, sizeof(cbor_labels_preamble_v0)))
-		return parse_boot_params_v0(blob, size, cfg, max_cfg_size);
+		return parse_boot_params_v0(blob, size, vm_ref_dt, cfg, max_cfg_size);
 
 	printf("Received BootParams CBOR version not recognized. "
 	       "GSC firmware version is much newer then AP firmware?\n");
@@ -455,6 +520,10 @@ int setup_android_pvmfw(const struct vb2_kernel_params *kparams, size_t *pvmfw_s
 	int ret;
 	uintptr_t pvmfw_addr, pvmfw_max, cfg_addr;
 	struct pvmfw_config_v1_3 *cfg;
+	struct device_tree *vm_ref_dt;
+
+	/* Create the unflatten VM reference DT */
+	vm_ref_dt = create_avf_vm_ref_dt(kparams);
 
 	/* Set the boundaries of the pvmfw buffer */
 	pvmfw_addr = (uintptr_t)kparams->pvmfw_buffer;
@@ -477,7 +546,7 @@ int setup_android_pvmfw(const struct vb2_kernel_params *kparams, size_t *pvmfw_s
 	cfg->version = ANDROID_PVMFW_CFG_V1_3;
 
 	/* Parse and extract data from BootParam CBOR object */
-	ret = parse_boot_params(params, params_size, cfg,
+	ret = parse_boot_params(params, params_size, vm_ref_dt, cfg,
 				(size_t)(pvmfw_max - (uintptr_t)cfg->blobs));
 	if (ret != 0) {
 		printf("Failed to parse pvmfw gsc boot params data\n");
