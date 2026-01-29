@@ -173,12 +173,12 @@ static int alloc_cfg_entry(struct pvmfw_config_v1_3 *cfg, size_t max_cfg_size,
 
 	/* Check if destination buffer is big enough */
 	if (cfg_entry->offset + cfg_entry->size > max_cfg_size)
-		return -10;
+		return PVMFW_ERR_CFG_BUFFER_TOO_SMALL;
 
 	/* Update the end of cfg, to the end of appending to blobs */
 	cfg->total_size = cfg_entry->offset + cfg_entry->size;
 
-	return 0;
+	return PVMFW_SUCCESS;
 }
 
 static int create_fw_android_node(struct device_tree *ref_dtb, char *bootconfig)
@@ -199,7 +199,7 @@ static int create_fw_android_node(struct device_tree *ref_dtb, char *bootconfig)
 	/* Create /firmware/android DT node */
 	node = dt_find_node(ref_dtb->root, fw_android_path, NULL, NULL, 1);
 	if (!node)
-		return -1;
+		return PVMFW_ERR_DT_CREATE_FAIL;
 
 	/* Set node's compatible string */
 	dt_add_string_prop(node, "compatible", "android,firmware");
@@ -210,7 +210,7 @@ static int create_fw_android_node(struct device_tree *ref_dtb, char *bootconfig)
 	 */
 	bootconfig = strdup(bootconfig);
 	if (!bootconfig)
-		return -2;
+		return PVMFW_ERR_NO_MEM;
 
 	/* Iterate over key=value pairs delimited by spaces. */
 	for (pair = strtok_r(bootconfig, " ", &saveptr); pair != NULL;
@@ -232,24 +232,27 @@ static int create_fw_android_node(struct device_tree *ref_dtb, char *bootconfig)
 	/* Free the bootconfig copy */
 	free(bootconfig);
 
-	return 0;
+	return PVMFW_SUCCESS;
 }
 
-
-static struct device_tree *create_avf_vm_ref_dt(const struct vb2_kernel_params *kparams)
+static int create_avf_vm_ref_dt(const struct vb2_kernel_params *kparams,
+				struct device_tree **tree)
 {
 	struct device_tree *ref_dtb;
+	int ret;
 
 	/* Create new empty device tree for the VM reference DT */
 	ref_dtb = fdt_unflatten(empty_dtb);
 	if (!ref_dtb)
-		return NULL;
+		return PVMFW_ERR_DT_CREATE_FAIL;
 
 	/* Create firmware,android node with data parsed from bootconfig */
-	if (create_fw_android_node(ref_dtb, kparams->bootconfig_cmdline_buffer))
-		return NULL;
+	ret = create_fw_android_node(ref_dtb, kparams->bootconfig_cmdline_buffer);
+	if (ret)
+		return ret;
 
-	return ref_dtb;
+	*tree = ref_dtb;
+	return PVMFW_SUCCESS;
 }
 
 static int add_ref_dtb_entry(struct pvmfw_config_v1_3 *cfg, size_t max_cfg_size,
@@ -260,7 +263,7 @@ static int add_ref_dtb_entry(struct pvmfw_config_v1_3 *cfg, size_t max_cfg_size,
 	/* If VM reference DT return with warning */
 	if (!vm_ref_dt) {
 		printf("WARN: Missing VM reference DT. Ignoring...");
-		return 0;
+		return PVMFW_SUCCESS;
 	}
 
 	/* Allocate space for the VM ref DTB configuration entry */
@@ -271,7 +274,7 @@ static int add_ref_dtb_entry(struct pvmfw_config_v1_3 *cfg, size_t max_cfg_size,
 	/* Flatten DT structure as FDT to configuration entry */
 	dt_flatten(vm_ref_dt, ((uint8_t *)cfg) + cfg->ref_dtb.offset);
 
-	return 0;
+	return PVMFW_SUCCESS;
 }
 
 static void copy_reserved_mem_v0(struct pvmfw_boot_params_cbor_v0 *v0,
@@ -356,7 +359,7 @@ static int parse_boot_params_v0(const void *blob, size_t size, struct device_tre
 	 */
 	if (size < sizeof(struct pvmfw_boot_params_cbor_v0)) {
 		printf("Received BootParams CBOR is too short.\n");
-		return -1;
+		return PVMFW_ERR_CBOR_TOO_SMALL;
 	}
 
 	/*
@@ -419,7 +422,7 @@ static int parse_boot_params_v0(const void *blob, size_t size, struct device_tre
 	ret = add_ref_dtb_entry(cfg, max_cfg_size, vm_ref_dt);
 	if (ret) {
 		printf("Failed to add ref dtb entry: %d\n", ret);
-		return -1;
+		return ret;
 	}
 
 	/*
@@ -434,12 +437,12 @@ static int parse_boot_params_v0(const void *blob, size_t size, struct device_tre
 	/* Copy headers and blobs data into place. */
 	copy_reserved_mem_v0(v0, (void *)((uintptr_t *)cfg + cfg->reserved_mem.offset));
 
-	return 0;
+	return PVMFW_SUCCESS;
 mismatch:
 	printf("Failed to parse BootParams CBOR structure. Constant fragment "
 	       "around '%s' mismatches expected structure.\n",
 	       field);
-	return 1;
+	return PVMFW_ERR_CBOR_MISMATCH;
 }
 
 static ssize_t copy_bstr16_to_entry(const void *cbor, size_t cbor_size, size_t cbor_offset,
@@ -456,33 +459,35 @@ static ssize_t copy_bstr16_to_entry(const void *cbor, size_t cbor_size, size_t c
 		uint8_t data[];
 	} *cbor_entry;
 	size_t size;
+	int ret;
 
 	_Static_assert(sizeof(struct cbor_map_entry) == 4, "CBOR entry bstr 16 bytes size");
 
 	/* Check if entry labels are in within range */
 	if (cbor_offset + sizeof(*cbor_entry) > cbor_size)
-		return -1;
+		return PVMFW_ERR_CBOR_TOO_SMALL;
 
 	cbor_entry = cbor + cbor_offset;
 
 	/* Check if entry key is correct */
 	if (cbor_entry->key != cbor_key)
-		return -2;
+		return PVMFW_ERR_CBOR_MISMATCH;
 
 	/* Check if bstr label is correct */
 	static const uint8_t cbor_bstr16_label = 0x59;
 	if (cbor_entry->cbor_bstr_label != cbor_bstr16_label)
-		return -3;
+		return PVMFW_ERR_CBOR_MISMATCH;
 
 	/* bstr 16-bit size stored in big endian */
 	size = be16toh(cbor_entry->size);
 
 	/* Check if bstr contents are within range */
 	if (cbor_offset + sizeof(*cbor_entry) + size > cbor_size)
-		return -4;
+		return PVMFW_ERR_CBOR_TOO_SMALL;
 
-	if (alloc_cfg_entry(cfg, max_cfg_size, cfg_entry, size))
-		return -5;
+	ret = alloc_cfg_entry(cfg, max_cfg_size, cfg_entry, size);
+	if (ret)
+		return ret;
 
 	/* Copy the actual payload */
 	memcpy(((void *)cfg) + cfg_entry->offset, cbor_entry->data, size);
@@ -538,10 +543,10 @@ static int parse_boot_params_v1(const void *cbor, size_t cbor_size,
 		goto err;
 	}
 
-	return 0;
+	return PVMFW_SUCCESS;
 err:
 	printf("Failed to copy '%s' from CBOR. (consumed: %zd)\n", field, consumed);
-	return -1;
+	return consumed;
 }
 
 /**
@@ -556,7 +561,7 @@ static int parse_boot_params(const void *blob, size_t size, struct device_tree *
 	 */
 	if (size < PVMFW_BOOT_PARAMS_PREAMBLE_SIZE) {
 		printf("Received BootParams CBOR is too short.\n");
-		return -1;
+		return PVMFW_ERR_CBOR_TOO_SMALL;
 	}
 
 	static const uint8_t cbor_labels_preamble_v1[] = {0xA3, 0x01, 0x01};
@@ -570,7 +575,7 @@ static int parse_boot_params(const void *blob, size_t size, struct device_tree *
 
 	printf("Received BootParams CBOR version not recognized. "
 	       "GSC firmware version is much newer then AP firmware?\n");
-	return -1;
+	return PVMFW_ERR_CBOR_MISMATCH;
 }
 
 int setup_android_pvmfw(const struct vb2_kernel_params *kparams, size_t *pvmfw_size,
@@ -582,7 +587,11 @@ int setup_android_pvmfw(const struct vb2_kernel_params *kparams, size_t *pvmfw_s
 	struct device_tree *vm_ref_dt;
 
 	/* Create the unflatten VM reference DT */
-	vm_ref_dt = create_avf_vm_ref_dt(kparams);
+	ret = create_avf_vm_ref_dt(kparams, &vm_ref_dt);
+	if (ret) {
+		printf("Failed to create VM ref DT (error: %d). Ignoring...\n", ret);
+		vm_ref_dt = NULL;
+	}
 
 	/* Set the boundaries of the pvmfw buffer */
 	pvmfw_addr = (uintptr_t)kparams->pvmfw_buffer;
@@ -595,7 +604,7 @@ int setup_android_pvmfw(const struct vb2_kernel_params *kparams, size_t *pvmfw_s
 	/* Make sure we have space for config and for some blobs */
 	if ((uintptr_t)cfg->blobs >= pvmfw_max) {
 		printf("No space in the buffer for pvmfw config\n");
-		ret = -1;
+		ret = PVMFW_ERR_CFG_BUFFER_TOO_SMALL;
 		goto fail;
 	}
 
@@ -619,7 +628,7 @@ int setup_android_pvmfw(const struct vb2_kernel_params *kparams, size_t *pvmfw_s
 	*pvmfw_size =
 		ALIGN_UP(cfg_addr - pvmfw_addr + cfg->total_size, ANDROID_PVMFW_CFG_ALIGN);
 
-	return 0;
+	return PVMFW_SUCCESS;
 fail:
 	*pvmfw_size = 0;
 	return ret;
