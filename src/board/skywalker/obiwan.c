@@ -4,7 +4,8 @@
 
 int override_pdc_chip(struct pdc_chip *pdc)
 {
-	if (pdc->retimer == PDC_RETIMER_PS8747)
+	if (pdc->chip == PDC_RTS5452P &&
+	    pdc->retimer == PDC_RETIMER_PS8747)
 		pdc->config.variant = '2'; /* 0B02 */
 	return 0;
 }
