@@ -49,15 +49,8 @@ static vb2_error_t vboot_load_kernel_impl(struct vb2_context *ctx,
 			continue;
 		}
 
-		struct vb2_disk_info disk_info = {
-			.name = bdev->name,
-			.handle = (vb2ex_disk_handle_t)bdev,
-			.bytes_per_lba = bdev->block_size,
-			.lba_count = bdev->block_count,
-			.streaming_lba_count = bdev->stream_block_count,
-			.flags = bdev->external_gpt ? VB2_DISK_FLAG_EXTERNAL_GPT
-						    : 0,
-		};
+		struct vb2_disk_info disk_info;
+		vboot_create_disk_info(&disk_info, bdev);
 
 		if (minios) {
 			new_rv = vb2api_load_minios_kernel(
@@ -98,6 +91,17 @@ static vb2_error_t vboot_load_kernel_impl(struct vb2_context *ctx,
 	/* If we didn't find any good kernels, don't return a disk handle. */
 	kparams->disk_handle = NULL;
 	return rv;
+}
+
+void vboot_create_disk_info(struct vb2_disk_info *di, BlockDev *bdev)
+{
+	memset(di, 0, sizeof(*di));
+	di->name = bdev->name;
+	di->handle = (vb2ex_disk_handle_t)bdev;
+	di->bytes_per_lba = bdev->block_size;
+	di->lba_count = bdev->block_count;
+	di->streaming_lba_count = bdev->stream_block_count;
+	di->flags = bdev->external_gpt ? VB2_DISK_FLAG_EXTERNAL_GPT : 0;
 }
 
 vb2_error_t vboot_load_kernel(struct vb2_context *ctx, blockdev_type_t type,

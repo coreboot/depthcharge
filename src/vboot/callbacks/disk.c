@@ -22,7 +22,9 @@
 
 #include "base/timestamp.h"
 #include "drivers/storage/blockdev.h"
+#include "drivers/storage/slice.h"
 #include "drivers/storage/stream.h"
+#include "vboot/load_kernel.h"
 
 vb2_error_t VbExDiskRead(vb2ex_disk_handle_t handle, uint64_t lba_start,
 			 uint64_t lba_count, void *buffer)
@@ -97,4 +99,31 @@ void VbExStreamClose(VbExStream_t stream)
 {
 	StreamOps *dev = (StreamOps *)stream;
 	dev->close(dev);
+}
+
+vb2_error_t vb2ex_slice_disk(vb2ex_disk_handle_t parent, uint64_t offset, uint64_t size,
+			     struct vb2_disk_info **child_out)
+{
+	if (child_out == NULL)
+		return VB2_ERROR_UNKNOWN;
+
+	*child_out = NULL;
+
+	struct vb2_disk_info *disk_info = malloc(sizeof(*disk_info));
+	if (disk_info == NULL) {
+		printf("%s: failed to alloc new disk info\n", __func__);
+		return VB2_ERROR_UNKNOWN;
+	}
+
+	BlockDev *bdev_partition = new_blockdev_slice(parent, offset, size);
+	if (bdev_partition == NULL) {
+		printf("%s: failed to create blockdev slice\n", __func__);
+		free(disk_info);
+		return VB2_ERROR_UNKNOWN;
+	}
+
+	vboot_create_disk_info(disk_info, bdev_partition);
+	*child_out = disk_info;
+
+	return VB2_SUCCESS;
 }

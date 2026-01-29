@@ -7,6 +7,14 @@
 
 #include "drivers/storage/blockdev.h"
 
+/**
+ * Initialize a vboot disk information structure from a block device.
+ *
+ * @param di		Vboot disk information structure to initialize.
+ * @param bdev		Block device to use for initialization.
+ */
+void vboot_create_disk_info(struct vb2_disk_info *di, BlockDev *bdev);
+
 /*
  * Load a kernel from the specified type(s) of disks.
  *
