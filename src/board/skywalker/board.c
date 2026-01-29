@@ -49,6 +49,7 @@ const static struct pdc_chip_map {
 	{ "0E", PDC_RTS5453P, PDC_RETIMER_IT5205_2 },
 	{ "0N", PDC_RTS5452P_VB, PDC_RETIMER_NONE },
 	{ "0U", PDC_RTS5452P_VB, PDC_RETIMER_PS8747 },
+	{ "0W", PDC_RTS5452P_VB, PDC_RETIMER_IT5205 },
 };
 
 static struct pdc_chip *parse_pdc(const char *name)
