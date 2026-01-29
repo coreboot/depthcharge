@@ -261,8 +261,8 @@ enum ui_screen {
 enum ui_error {
 	/* No error */
 	UI_ERROR_NONE = 0,
-	/* MiniOS boot failed */
-	UI_ERROR_MINIOS_BOOT_FAILED,
+	/* NBR boot failed */
+	UI_ERROR_NBR_BOOT_FAILED,
 	/* Dev mode already enabled */
 	UI_ERROR_DEV_MODE_ALREADY_ENABLED,
 	/* Untrusted confirmation */
@@ -1110,7 +1110,7 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 const struct ui_screen_info *ui_get_screen_info(enum ui_screen screen_id);
 
 /* Expose these boot action functions for recovery_action. */
-vb2_error_t ui_recovery_mode_boot_minios_action(struct ui_context *ui);
+vb2_error_t ui_recovery_mode_boot_nbr_action(struct ui_context *ui);
 
 /* Expose these boot action functions for developer_action. */
 vb2_error_t ui_developer_mode_boot_internal_action(struct ui_context *ui);

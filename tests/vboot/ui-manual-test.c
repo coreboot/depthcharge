@@ -152,8 +152,8 @@ static void test_manual_ui_internet_recovery_shortcut(void **state)
 	WILL_PRESS_KEY(UI_KEY_INTERNET_RECOVERY, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_LOAD_EXTERNAL_MAYBE(VB2_ERROR_LK_NO_DISK_FOUND);
-	expect_value(vboot_load_minios_kernel, minios_flags, 0);
-	will_return(vboot_load_minios_kernel, VB2_SUCCESS);
+	expect_value(vboot_load_nbr_kernel, nbr_flags, 0);
+	will_return(vboot_load_nbr_kernel, VB2_SUCCESS);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
 	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
@@ -166,14 +166,14 @@ static void test_manual_ui_internet_recovery_menu(void **state)
 	setup_will_return_common();
 	WILL_CLOSE_LID_IN(10);
 
-	/* Fail to boot from MiniOS */
+	/* Fail to boot from NBR */
 	WILL_PRESS_KEY(0, 0);			/* #1: External disk recovery */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #2: Internet recovery */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_LOAD_EXTERNAL_MAYBE(VB2_ERROR_LK_NO_DISK_FOUND);
-	expect_value(vboot_load_minios_kernel, minios_flags, 0);
-	will_return(vboot_load_minios_kernel, VB2_ERROR_MOCK);
+	expect_value(vboot_load_nbr_kernel, nbr_flags, 0);
+	will_return(vboot_load_nbr_kernel, VB2_ERROR_MOCK);
 	EXPECT_BEEP(250, 400);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
@@ -199,9 +199,9 @@ static void test_manual_ui_internet_recovery_menu_old(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_LOAD_EXTERNAL_MAYBE(VB2_ERROR_LK_NO_DISK_FOUND);
-	expect_value(vboot_load_minios_kernel, minios_flags,
-		     VB2_MINIOS_FLAG_NON_ACTIVE);
-	will_return(vboot_load_minios_kernel, VB2_SUCCESS);
+	expect_value(vboot_load_nbr_kernel, nbr_flags,
+		     VB2_NBR_FLAG_NON_ACTIVE);
+	will_return(vboot_load_nbr_kernel, VB2_SUCCESS);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
 	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));

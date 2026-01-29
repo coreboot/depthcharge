@@ -36,7 +36,7 @@ struct ui_error_message {
 #define DEV_URL "google.com/chromeos/devmode"
 
 static const struct ui_error_message errors[] = {
-	[UI_ERROR_MINIOS_BOOT_FAILED] = {
+	[UI_ERROR_NBR_BOOT_FAILED] = {
 		.file = "error_internet_recovery.bmp",
 		.mesg = "Internet recovery partition corrupted or missing.\n"
 			"Please recover using external storage instead.",

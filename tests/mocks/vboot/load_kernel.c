@@ -23,11 +23,11 @@ vb2_error_t vboot_load_kernel(struct vb2_context *ctx, blockdev_type_t type,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t vboot_load_minios_kernel(struct vb2_context *ctx,
-				     uint32_t minios_flags,
+vb2_error_t vboot_load_nbr_kernel(struct vb2_context *ctx,
+				     uint32_t nbr_flags,
 				     struct vb2_kernel_params *kparams)
 {
 	assert_non_null(kparams);
-	check_expected(minios_flags);
+	check_expected(nbr_flags);
 	return mock_type(vb2_error_t);
 }

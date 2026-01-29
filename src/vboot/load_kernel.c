@@ -18,8 +18,8 @@ static inline int is_valid_disk(BlockDev *bdev, blockdev_type_t type)
 }
 
 static vb2_error_t vboot_load_kernel_impl(struct vb2_context *ctx,
-					  blockdev_type_t type, int minios,
-					  uint32_t minios_flags,
+					  blockdev_type_t type, bool nbr,
+					  uint32_t nbr_flags,
 					  struct vb2_kernel_params *kparams)
 {
 	vb2_error_t rv = VB2_ERROR_LK_NO_DISK_FOUND;
@@ -52,10 +52,11 @@ static vb2_error_t vboot_load_kernel_impl(struct vb2_context *ctx,
 		struct vb2_disk_info disk_info;
 		vboot_create_disk_info(&disk_info, bdev);
 
-		if (minios) {
-			new_rv = vb2api_load_minios_kernel(
-				ctx, kparams, &disk_info, minios_flags);
-			printf("vb2api_load_minios_kernel() = %#x\n", new_rv);
+		if (nbr) {
+			new_rv = vb2api_load_nbr_kernel(ctx, kparams,
+							&disk_info,
+							nbr_flags);
+			printf("NBR kernel load = %#x\n", new_rv);
 		} else {
 			new_rv = vb2api_load_kernel(ctx, kparams, &disk_info);
 			printf("vb2api_load_kernel() = %#x\n", new_rv);
@@ -108,15 +109,15 @@ vb2_error_t vboot_load_kernel(struct vb2_context *ctx, blockdev_type_t type,
 			      struct vb2_kernel_params *kparams)
 {
 	ctx->flags &= ~VB2_CONTEXT_DISABLE_TPM;
-	return vboot_load_kernel_impl(ctx, type, 0, 0, kparams);
+	return vboot_load_kernel_impl(ctx, type, false, 0, kparams);
 }
 
-vb2_error_t vboot_load_minios_kernel(struct vb2_context *ctx,
-				     uint32_t minios_flags,
-				     struct vb2_kernel_params *kparams)
+vb2_error_t vboot_load_nbr_kernel(struct vb2_context *ctx,
+				  uint32_t nbr_flags,
+				  struct vb2_kernel_params *kparams)
 {
-	VB2_TRY(vboot_load_kernel_impl(ctx, BLOCKDEV_FIXED, 1,
-				       minios_flags, kparams));
+	VB2_TRY(vboot_load_kernel_impl(ctx, BLOCKDEV_FIXED, true,
+				       nbr_flags, kparams));
 	ctx->flags |= VB2_CONTEXT_DISABLE_TPM;
 	return VB2_SUCCESS;
 }

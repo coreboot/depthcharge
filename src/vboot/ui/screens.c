@@ -625,7 +625,7 @@ static const struct ui_screen_info broken_screen = {
 #define ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY 4
 #define ADVANCED_OPTIONS_ITEM_FIRMWARE_SHELL 5
 
-static vb2_error_t boot_minios_impl(struct ui_context *ui, int non_active_only)
+static vb2_error_t boot_nbr_impl(struct ui_context *ui, int non_active_only)
 {
 	/* Validity check, should never happen. */
 	if (ui->ctx->boot_mode != VB2_BOOT_MODE_MANUAL_RECOVERY) {
@@ -633,18 +633,18 @@ static vb2_error_t boot_minios_impl(struct ui_context *ui, int non_active_only)
 		return VB2_REQUEST_UI_CONTINUE;
 	}
 
-	vb2_error_t rv = vboot_load_minios_kernel(ui->ctx, !!non_active_only,
+	vb2_error_t rv = vboot_load_nbr_kernel(ui->ctx, !!non_active_only,
 						  ui->kparams);
 	if (rv) {
-		UI_ERROR("ERROR: Failed to boot from MiniOS: %#x\n", rv);
-		return set_ui_error(ui, UI_ERROR_MINIOS_BOOT_FAILED);
+		UI_ERROR("ERROR: Failed to boot from NBR: %#x\n", rv);
+		return set_ui_error(ui, UI_ERROR_NBR_BOOT_FAILED);
 	}
 	return VB2_REQUEST_UI_EXIT;
 }
 
-static vb2_error_t boot_old_minios_action(struct ui_context *ui)
+static vb2_error_t boot_old_nbr_action(struct ui_context *ui)
 {
-	return boot_minios_impl(ui, 1);
+	return boot_nbr_impl(ui, 1);
 }
 
 vb2_error_t advanced_options_init(struct ui_context *ui)
@@ -714,7 +714,7 @@ static const struct ui_menu_item advanced_options_items[] = {
 	[ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY] = {
 		.name = "Internet recovery (older version)",
 		.file = "btn_rec_by_internet_old.bmp",
-		.action = boot_old_minios_action,
+		.action = boot_old_nbr_action,
 	},
 	[ADVANCED_OPTIONS_ITEM_FIRMWARE_SHELL] = {
 		.name = "Firmware shell",
@@ -1065,9 +1065,9 @@ static vb2_error_t launch_diagnostics_action(struct ui_context *ui)
 	return VB2_REQUEST_REBOOT;
 }
 
-vb2_error_t ui_recovery_mode_boot_minios_action(struct ui_context *ui)
+vb2_error_t ui_recovery_mode_boot_nbr_action(struct ui_context *ui)
 {
-	return boot_minios_impl(ui, 0);
+	return boot_nbr_impl(ui, 0);
 }
 
 vb2_error_t recovery_select_init(struct ui_context *ui)
@@ -1096,7 +1096,7 @@ static const struct ui_menu_item recovery_select_items[] = {
 	[RECOVERY_SELECT_ITEM_INTERNET] = {
 		.name = "Recovery using internet connection",
 		.file = "btn_rec_by_internet.bmp",
-		.action = ui_recovery_mode_boot_minios_action,
+		.action = ui_recovery_mode_boot_nbr_action,
 	},
 	[RECOVERY_SELECT_ITEM_DIAGNOSTICS] = {
 		.name = "Launch diagnostics",

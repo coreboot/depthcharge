@@ -91,10 +91,10 @@ vb2_error_t vb2api_load_kernel(struct vb2_context *c,
 	return rv;
 }
 
-vb2_error_t vb2api_load_minios_kernel(struct vb2_context *c,
-				      struct vb2_kernel_params *params,
-				      struct vb2_disk_info *disk_info,
-				      uint32_t minios_flags)
+vb2_error_t vb2api_load_nbr_kernel(struct vb2_context *c,
+				   struct vb2_kernel_params *params,
+				   struct vb2_disk_info *disk_info,
+				   uint32_t nbr_flags)
 {
 	vb2_error_t rv = mock_type(vb2_error_t);
 	check_disk_handle(disk_info->handle);
@@ -117,9 +117,9 @@ vb2_error_t vb2api_load_minios_kernel(struct vb2_context *c,
 	expect_value_count(check_disk_handle, preserve_handle, handle, count); \
 } while (0)
 
-/* Macros for mocking vb2api_load_minios_kernel(). */
-#define WILL_LOAD_MINIOS_KERNEL(rv, expected_flag, handle) do { \
-	will_return(vb2api_load_minios_kernel, rv); \
+/* Macros for mocking vb2api_load_nbr_kernel(). */
+#define WILL_LOAD_NBR_KERNEL(rv, expected_flag, handle) do { \
+	will_return(vb2api_load_nbr_kernel, rv); \
 	expect_value(check_external_flag, flag, expected_flag); \
 	expect_value(check_disk_handle, preserve_handle, handle); \
 } while (0)
@@ -127,6 +127,12 @@ vb2_error_t vb2api_load_minios_kernel(struct vb2_context *c,
 void vb2api_fail(struct vb2_context *ctx, uint8_t reason, uint8_t subcode)
 {
 	check_expected(reason);
+}
+
+vb2_error_t vb2ex_slice_disk(vb2ex_disk_handle_t parent, uint64_t offset, uint64_t size,
+			     struct vb2_disk_info **child_out)
+{
+	return VB2_SUCCESS;
 }
 
 /* Test functions */
@@ -403,9 +409,9 @@ static void test_lmk_pick_first_fixed_disk(void **state)
 		BDEV(512, 100),
 	};
 	WILL_GET_DISKS(disks, BLOCKDEV_FIXED);
-	WILL_LOAD_MINIOS_KERNEL(VB2_SUCCESS, 0, &disks[0]);
+	WILL_LOAD_NBR_KERNEL(VB2_SUCCESS, 0, &disks[0]);
 
-	ASSERT_VB2_SUCCESS(vboot_load_minios_kernel(ui->ctx, 0, ui->kparams));
+	ASSERT_VB2_SUCCESS(vboot_load_nbr_kernel(ui->ctx, 0, ui->kparams));
 }
 
 static void test_lmk_skip_failed_fixed_disk(void **state)
@@ -416,11 +422,10 @@ static void test_lmk_skip_failed_fixed_disk(void **state)
 		BDEV(512, 100),
 	};
 	WILL_GET_DISKS(disks, BLOCKDEV_FIXED);
-	WILL_LOAD_MINIOS_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0,
-				&disks[0]);
-	WILL_LOAD_MINIOS_KERNEL(VB2_SUCCESS, 0, &disks[1]);
+	WILL_LOAD_NBR_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0, &disks[0]);
+	WILL_LOAD_NBR_KERNEL(VB2_SUCCESS, 0, &disks[1]);
 
-	ASSERT_VB2_SUCCESS(vboot_load_minios_kernel(ui->ctx, 0, ui->kparams));
+	ASSERT_VB2_SUCCESS(vboot_load_nbr_kernel(ui->ctx, 0, ui->kparams));
 }
 
 #define TEST(test_function_name) \
