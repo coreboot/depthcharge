@@ -203,7 +203,7 @@ static int run_task_sync(Tps6699x *me, enum tps6699x_4cc_tasks task, union reg_d
 	if (cmd_data_check.data[0] != 0) {
 		printf("%s: Command '%s' failed. Chip says %02x\n", me->chip_name, task_str,
 		       cmd_data_check.data[0]);
-		return rv;
+		return -1;
 	}
 
 	printf("%s: Command '%s' succeeded\n", me->chip_name, task_str);
@@ -495,14 +495,10 @@ int tps6699x_perform_fw_update(Tps6699x *me)
 	memcpy(cmd_data.data, &tfuc, sizeof(tfuc));
 	ret = run_task_sync(me, COMMAND_TASK_TFUC, &cmd_data, rbuf);
 
-	if (ret < 0 || rbuf[0] != 0) {
-		printf("%s: Failed 4cc task with result %d, rbuf[0] = %d\n", me->chip_name, ret,
-		       rbuf[0]);
+	if (ret) {
+		printf("%s: Failed 4cc task with result %d\n", me->chip_name, ret);
 		goto cleanup;
 	}
-
-	printf("%s: TFUq bytes [Success: 0x%02x, State: 0x%02x, Complete: 0x%02x]\n",
-	       me->chip_name, rbuf[1], rbuf[2], rbuf[3]);
 
 	/* Wait for reset to complete. */
 	mdelay(TPS_TFUC_REBOOT_DELAY_MS);
