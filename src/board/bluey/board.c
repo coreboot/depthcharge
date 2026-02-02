@@ -32,12 +32,18 @@
 #include "drivers/soc/qcom_spmi.h"
 #include "drivers/soc/qcom_spmi_defs.h"
 #include "drivers/soc/x1p42100.h"
+#include "drivers/sound/gpio_amp.h"
+#include "drivers/sound/route.h"
+#include "drivers/sound/wsa8845_sndw.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/tpm/google/i2c.h"
 #include <pci.h>
 #include <pci/pci.h>
 #include "variant.h"
 #include "vboot/util/flag.h"
+
+#define BEEP_DURATION_MS		120
+#define WSA8845_DEVICE_INDEX	1
 
 static const VpdDeviceTreeMap vpd_dt_map[] = {
 	{ "bluetooth_mac0", "bluetooth0/local-bd-address" },
@@ -161,7 +167,19 @@ static void tpm_setup(void)
 
 static void audio_setup(void)
 {
-	/* placeholder */
+	if (!CONFIG(DRIVER_BUS_SOUNDWIRE_QCOM) || !CONFIG(DRIVER_SOUND_WSA8845_SNDW)
+		|| !CONFIG(DRIVER_SOUND_ROUTE) || !CONFIG(DRIVER_SOUND_GPIO_AMP))
+		return;
+
+	Soundwire *swrm0 = new_soundwire(0, (void*)(uintptr_t)SWRM0_BASE_ADDRESS);
+	SoundOps *wsa8845_ops = &new_wsa8845_sndw(&swrm0->ops, WSA8845_DEVICE_INDEX, BEEP_DURATION_MS)->ops;
+	SoundRoute *sound_route = new_sound_route(wsa8845_ops);
+	GpioOps *amp0_enable = sysinfo_lookup_gpio("Speaker 0 enable", 1,
+				new_gpio_output_from_coreboot);
+	GpioAmpCodec *speaker_amp0 = new_gpio_amp_codec(amp0_enable);
+	list_insert_after(&speaker_amp0->component.list_node,
+			&sound_route->components);
+	sound_set_ops(&sound_route->ops);
 }
 
 static void display_setup(void)
