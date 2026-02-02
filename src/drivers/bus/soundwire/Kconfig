@@ -1,10 +1,14 @@
 # SPDX-License-Identifier: GPL-2.0
 # Copyright (c) 2020, Intel Corporation.
-# Copyright 2020 Google LLC.
+# Copyright 2020-2026 Google LLC.
 
 config DRIVER_BUS_SOUNDWIRE
-	bool "Soundwire driver for Intel platforms"
+	bool "Soundwire driver"
 	default n
+
+config DRIVER_BUS_SOUNDWIRE_INTEL
+	bool "Soundwire driver for Intel platforms"
+	default y if DRIVER_BUS_SOUNDWIRE
 
 config INTEL_COMMON_SNDW_CAVS_2_5
 	bool "Intel cavs 2.5 specification"

@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (c) 2020, Intel Corporation.
- * Copyright 2020 Google LLC.
+ * Copyright 2020-2026 Google LLC.
  */
 
 #ifndef __DRIVERS_BUS_SOUNDWIRE_MIPI_SNDWREGS_H__
 #define __DRIVERS_BUS_SOUNDWIRE_MIPI_SNDWREGS_H__
 
+#if CONFIG(DRIVER_BUS_SOUNDWIRE_INTEL)
 #if CONFIG(INTEL_COMMON_SOUNDWIRE_ACE_3_x)
 #define SNDW_MEM_BASE_OFFSET 0x4100
 #define SNDW_MEM_CTRL_BASE_OFFSET 0x100
@@ -65,6 +66,8 @@
 
 #define SNDW_MAX_ENDPOINT_NUMBER		12
 #define CLK_DIVIDER				0x3
+#endif  /* DRIVER_BUS_SOUNDWIRE_INTEL */
+
 #define SNDW_DEV_ID_NUM				6
 
 #define SNDW_TXCMD_REGDATA_SHIFT		0
