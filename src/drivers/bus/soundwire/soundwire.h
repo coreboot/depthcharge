@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (c) 2020, Intel Corporation.
- * Copyright 2020 Google LLC.
+ * Copyright 2020-2026 Google LLC.
  */
 
 #ifndef __DRIVERS_BUS_SOUNDWIRE_SOUNDWIRE_H__
@@ -41,9 +41,10 @@ typedef struct {
 
 /*
  * new_soundwire - Allocate new Soundwire data structures.
- * @Sndwlinkindex: Sndw Link Number
+ * @sndwlinkindex: Sndw Link Number
+ * @sndwlinkaddr: Sndw Link Address
  */
-Soundwire *new_soundwire(int sndwlinkindex);
+Soundwire *new_soundwire(int sndwlinkindex, void *sndwlinkaddr);
 
 /* Initializes SoundWire bus and probes/enables a codec. */
 int sndw_probe_and_enable_codec(Soundwire *sndwbus, sndw_codec_info *codecinfo);

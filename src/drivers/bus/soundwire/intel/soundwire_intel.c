@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (c) 2020, Intel Corporation.
- * Copyright 2020 Google LLC.
+ * Copyright 2020-2026 Google LLC.
  */
 
 #include <arch/io.h>
@@ -723,7 +723,7 @@ static int sndw_disable(SndwOps *me)
  * new_sndw_structure - Allocate new Soundwire data structures.
  * Allocate new Soundwire data structures.
  */
-Soundwire *new_soundwire(int sndwlinkindex)
+Soundwire *new_soundwire(int sndwlinkindex, void *sndwlinkaddr)
 {
 	Soundwire *bus = xzalloc(sizeof(*bus));
 	pcidev_t lpe_pcidev = PCI_DEV(0, AUDIO_DEV, AUDIO_FUNC);

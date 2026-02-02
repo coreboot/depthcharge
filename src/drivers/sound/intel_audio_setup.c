@@ -246,7 +246,7 @@ static Soundwire *setup_sndw(unsigned int link)
 	if (!CONFIG(DRIVER_BUS_SOUNDWIRE))
 		return NULL;
 
-	return new_soundwire(link);
+	return new_soundwire(link, NULL);
 }
 
 static SoundOps *setup_gpio_pwm(unsigned int pad)
@@ -471,7 +471,7 @@ bool audio_compare_codec_id(const sndw_codec_info *info, const sndw_codec_id *re
  */
 enum audio_codec_type audio_get_type(unsigned int link)
 {
-	Soundwire *bus = new_soundwire(link);
+	Soundwire *bus = new_soundwire(link, NULL);
 	sndw_codec_info info;
 
 	if (sndw_probe_and_enable_codec(bus, &info)) {
