@@ -60,7 +60,7 @@ static bool do_enable_charging(void)
 			 board_boot_in_offmode_charging_mode();
 }
 
-static void disable_battery_charging(void)
+static void disable_slow_battery_charging(void)
 {
 	if (!do_enable_charging())
 		return;
@@ -74,12 +74,12 @@ static void disable_battery_charging(void)
 	pmic_spmi->write8(pmic_spmi, SMB2_CHGR_CHRG_EN_CMD, CHRG_DISABLE);
 
 	free(pmic_spmi);
-	printf("Disabled battery charging!\n");
+	printf("Disabled slow battery charging!\n");
 }
 
 static int board_cleanup(struct CleanupFunc *cleanup, CleanupType type)
 {
-	disable_battery_charging();
+	disable_slow_battery_charging();
 	return 0;
 }
 
