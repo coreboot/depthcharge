@@ -435,7 +435,7 @@ static int parse_boot_params_v0(const void *blob, size_t size, struct device_tre
 		return ret;
 
 	/* Copy headers and blobs data into place. */
-	copy_reserved_mem_v0(v0, (void *)((uintptr_t *)cfg + cfg->reserved_mem.offset));
+	copy_reserved_mem_v0(v0, (void *)((uintptr_t)cfg + cfg->reserved_mem.offset));
 
 	return PVMFW_SUCCESS;
 mismatch:
