@@ -12,6 +12,7 @@
 typedef struct {
 	SoundOps ops;
 	SndwOps *sndw;
+	uint32_t device_index;
 	uint32_t beep_duration;
 } SoundDevice_sndw;
 
