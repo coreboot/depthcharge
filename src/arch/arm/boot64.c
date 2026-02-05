@@ -100,7 +100,7 @@ int boot_arm_linux(struct boot_info *bi, void *fdt, FitImageNode *kernel)
 	}
 
 	if (scratch.header.magic != KERNEL_HEADER_MAGIC) {
-		printf("ERROR: Invalid kernel magic: %#.8x\n != %#.8x\n",
+		printf("ERROR: Invalid kernel magic: %#.8x != %#.8x\n",
 		       scratch.header.magic, KERNEL_HEADER_MAGIC);
 		return 1;
 	}
