@@ -87,11 +87,15 @@ int boot_arm_linux(struct boot_info *bi, void *fdt, FitImageNode *kernel)
 		};
 	#define SCRATCH_CANARY_VALUE 0xdeadbeef
 		u32 canary;
-	} scratch;
+	} scratch = {0};
 
 	// Partially decompress to get text_offset. Can't check for errors.
 	scratch.canary = SCRATCH_CANARY_VALUE;
-	fit_decompress(kernel, scratch.raw, sizeof(scratch.raw));
+	size_t size = fit_decompress(kernel, scratch.raw, sizeof(scratch.raw));
+	if (!size) {
+		printf("ERROR: Failed to decompress kernel\n");
+		return 1;
+	}
 
 	// Should never happen, but if it does we'll want to know.
 	if (scratch.canary != SCRATCH_CANARY_VALUE) {
@@ -100,7 +104,7 @@ int boot_arm_linux(struct boot_info *bi, void *fdt, FitImageNode *kernel)
 	}
 
 	if (scratch.header.magic != KERNEL_HEADER_MAGIC) {
-		printf("ERROR: Invalid kernel magic: %#.8x\n != %#.8x\n",
+		printf("ERROR: Invalid kernel magic: %#.8x != %#.8x\n",
 		       scratch.header.magic, KERNEL_HEADER_MAGIC);
 		return 1;
 	}
