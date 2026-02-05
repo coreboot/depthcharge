@@ -147,5 +147,3 @@ config DRIVER_STOTRAGE_UFS_BROKEN_HS_MODE
 	default n
 	help
 	  Set this is flag to skip switching to HS power mode
-
-source "src/drivers/storage/mtd/Kconfig"
