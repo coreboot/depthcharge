@@ -440,6 +440,7 @@ int dhcp_request(uip_ipaddr_t *next_ip, uip_ipaddr_t *server_ip,
 	uint8_t requested[] = { DhcpTagSubnetMask, DhcpTagDefaultRouter };
 	assert(DhcpMaxPacketSize >= DhcpMinPacketSize);
 	uint16_t max_size = htonw(DhcpMaxPacketSize);
+	uip_ipaddr_t addr;
 
 	if (!mac_addr_set) {
 		// Plug in the MAC address.
@@ -453,13 +454,16 @@ int dhcp_request(uip_ipaddr_t *next_ip, uip_ipaddr_t *server_ip,
 		mac_addr_set = 1;
 	}
 
+	/* Make sure that our IP isn't set */
+	uip_ipaddr(&addr, 0, 0, 0, 0);
+	uip_sethostaddr(&addr);
+
 	// client id memcpy should be done after setethaddr
 	uint8_t client_id[1 + sizeof(uip_ethaddr)];
 	client_id[0] = DhcpEthernet;
 	memcpy(client_id + 1, &uip_ethaddr, sizeof(uip_ethaddr));
 
 	// Set up the UDP connection.
-	uip_ipaddr_t addr;
 	uip_ipaddr(&addr, 255,255,255,255);
 	struct uip_udp_conn *conn = uip_udp_new(&addr, htonw(DhcpServerPort));
 	if (!conn) {
