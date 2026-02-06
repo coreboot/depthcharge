@@ -388,18 +388,10 @@ static void fastboot_tcp_net_callback(void)
 		tcp->last_packet = NULL;
 	}
 
-	// Try and send a packet from the queue, if there is one (and the last
-	// packet has been ACKed).
-	fastboot_tcp_send_packet(tcp);
-	if (!uip_newdata()) {
-		// Give up if there's not any new data.
-		return;
-	}
+	if (uip_newdata())
+		fastboot_tcp_recv(tcp, uip_appdata, uip_datalen());
 
-	fastboot_tcp_recv(tcp, uip_appdata, uip_datalen());
-
-	// Try again to send a packet, in case there wasn't one before
-	// but we just enqueued one.
+	// Try and send a packet from the queue, if there is one
 	fastboot_tcp_send_packet(tcp);
 }
 
