@@ -66,6 +66,11 @@ static int get_battery_icurr_ma(void)
 
 static bool do_enable_charging(void)
 {
+	/* Always enable if in developer or recovery mode */
+	if (vboot_in_developer() || vboot_in_recovery() ||
+			vboot_in_manual_recovery())
+		return true;
+
 	return board_boot_in_low_battery_mode_charger_present() ||
 			 board_boot_in_offmode_charging_mode();
 }
