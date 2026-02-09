@@ -109,11 +109,11 @@ void board_rts5453_get_image_paths(const char **image_path, const char **hash_pa
 				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
 	if (!strcmp(r->fw_name_str, PDC_RTS5452_PROJ_NAME)) {
-		*image_path = "rts5452_retimer_jhl9040.bin";
-		*hash_path = "rts5452_retimer_jhl9040.hash";
+		*image_path = "rts5453_GOOG0800.bin";
+		*hash_path = "rts5453_GOOG0800.hash";
 	} else if (!strcmp(r->fw_name_str, PDC_RTS5453_PROJ_NAME)) {
-		*image_path = "rts5453_retimer_jhl9040.bin";
-		*hash_path = "rts5453_retimer_jhl9040.hash";
+		*image_path = "rts5453_GOOG0400.bin";
+		*hash_path = "rts5453_GOOG0400.hash";
 	} else {
 		*image_path = NULL;
 		*hash_path = NULL;
