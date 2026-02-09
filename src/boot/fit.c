@@ -259,7 +259,7 @@ static int fit_rank_compat(FitConfigNode *config)
 		}
 
 		// FDT overlays are not supported in legacy FIT images.
-		if (list_is_empty(&config->overlays)) {
+		if (!list_is_empty(&config->overlays)) {
 			printf("ERROR: config %s has overlay but no compat!\n",
 			       config->name);
 			return -1;
