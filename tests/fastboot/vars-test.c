@@ -1206,8 +1206,7 @@ static int fb_mock_send_packet_getvar_all(struct FastbootOps *fb_ptr, void *buf,
 	if (packet->msg == NULL)
 		fail_msg("Failed to copy packet");
 
-	/* Put packets in reverse order */
-	list_insert_after(&packet->list_node, &packets_list);
+	list_append(&packet->list_node, &packets_list);
 
 	return 0;
 }
@@ -1230,7 +1229,6 @@ static void check_fb_cmd_getvar_all_contains(const char *msg)
 
 static void test_fb_cmd_getvar_all(void **state)
 {
-	struct fb_test_packet *node;
 	struct FastbootOps *fb = *state;
 	char expected_max_download_size[64];
 	GptEntry *part;
@@ -1303,14 +1301,11 @@ static void test_fb_cmd_getvar_all(void **state)
 
 	fastboot_cmd_getvar(fb, "all");
 
-	if (packets_list.next == NULL)
-		fail_msg("\"OKAY\" isn't last message");
-
-	list_for_each(node, packets_list, list_node) {
-		if (!strcmp(node->msg, "OKAY"))
-			break;
-		fail_msg("\"OKAY\" isn't last message");
-	}
+	const struct list_node *last_node = list_last(&packets_list);
+	assert_non_null(last_node);
+	struct fb_test_packet *last_packet = container_of(
+		last_node, struct fb_test_packet, list_node);
+	assert_string_equal(last_packet->msg, "OKAY");
 
 	/* Call this to remove last message from the list */
 	check_fb_cmd_getvar_all_contains("OKAY");
@@ -1346,15 +1341,12 @@ static void test_fb_cmd_getvar_all(void **state)
 	check_fb_cmd_getvar_all_contains("INFOTotal-block-count:0x5000");
 	check_fb_cmd_getvar_all_contains("INFOmfg-sku:ABCD");
 
-	list_for_each(node, packets_list, list_node) {
-		fail_msg("Unexpected message: \"%s\"", node->msg);
-	}
+	assert_true(list_is_empty(&packets_list));
 }
 
 /* Failure to get any var shouldn't prevent printing rest of them */
 static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 {
-	struct fb_test_packet *node;
 	struct FastbootOps *fb = *state;
 	char expected_max_download_size[64];
 
@@ -1422,14 +1414,11 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 
 	fastboot_cmd_getvar(fb, "all");
 
-	if (packets_list.next == NULL)
-		fail_msg("\"OKAY\" isn't last message");
-
-	list_for_each(node, packets_list, list_node) {
-		if (!strcmp(node->msg, "OKAY"))
-			break;
-		fail_msg("\"OKAY\" isn't last message");
-	}
+	const struct list_node *last_node = list_last(&packets_list);
+	assert_non_null(last_node);
+	struct fb_test_packet *last_packet = container_of(
+		last_node, struct fb_test_packet, list_node);
+	assert_string_equal(last_packet->msg, "OKAY");
 
 	/* Call this to remove last message from the list */
 	check_fb_cmd_getvar_all_contains("OKAY");
@@ -1464,9 +1453,7 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	check_fb_cmd_getvar_all_contains("INFOTotal-block-count:0x5000");
 	check_fb_cmd_getvar_all_contains("INFOmfg-sku:ABCD");
 
-	list_for_each(node, packets_list, list_node) {
-		fail_msg("Unexpected message: \"%s\"", node->msg);
-	}
+	assert_true(list_is_empty(&packets_list));
 }
 #define TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup)

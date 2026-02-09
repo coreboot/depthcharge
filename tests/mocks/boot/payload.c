@@ -22,10 +22,6 @@ struct list_node *payload_get_altfw_list(void)
 	const uint32_t count = payload_get_altfw_count();
 	struct altfw_info *info;
 	const struct altfw_info altfw_info = {
-		.list_node = {
-			.next = NULL,
-			.prev = NULL,
-		},
 		.filename = "altfw_file",
 		.name = "altfw_name",
 		.desc = "altfw_desc",
@@ -34,8 +30,7 @@ struct list_node *payload_get_altfw_list(void)
 	if (payload_altfw_head_initialized)
 		return &payload_altfw_head;
 
-	payload_altfw_head.next = NULL;
-	payload_altfw_head.prev = NULL;
+	memset(&payload_altfw_head, 0, sizeof(payload_altfw_head));
 	for (seqnum = count; seqnum >= 1; seqnum--) {
 		info = malloc(sizeof(*info));
 		if (!info)
