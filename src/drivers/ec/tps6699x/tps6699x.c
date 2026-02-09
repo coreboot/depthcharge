@@ -207,7 +207,6 @@ static vb2_error_t tps6699x_update_image(const VbootAuxfwOps *vbaux, const uint8
 	Tps6699x *me = container_of(vbaux, Tps6699x, fw_ops);
 	vb2_error_t status = VB2_ERROR_UNKNOWN;
 	int protected;
-	uint64_t start;
 	int ret;
 
 	debug("Updating TPS6699x image...\n");
@@ -215,11 +214,11 @@ static vb2_error_t tps6699x_update_image(const VbootAuxfwOps *vbaux, const uint8
 	/* If the I2C tunnel is not known, probe EC for that */
 	if (!me->bus && tps6699x_construct_i2c_tunnel(me)) {
 		printf("%s: Error constructing i2c tunnel\n", me->chip_name);
-		goto pd_restart;
+		goto exit;
 	}
 
 	if (tps6699x_ec_tunnel_status(vbaux, &protected) != 0)
-		goto pd_restart;
+		goto exit;
 
 	/* force reboot to RO */
 	if (protected)
@@ -227,7 +226,7 @@ static vb2_error_t tps6699x_update_image(const VbootAuxfwOps *vbaux, const uint8
 
 	if (image == NULL || image_size == 0) {
 		status = VB2_ERROR_INVALID_PARAMETER;
-		goto pd_restart;
+		goto exit;
 	}
 
 	me->fw_image.image = image;
@@ -244,9 +243,16 @@ static vb2_error_t tps6699x_update_image(const VbootAuxfwOps *vbaux, const uint8
 
 	me->has_updated = true;
 
+exit:
 	tps6699x_restore_i2c_speed(me);
+	return status;
+}
 
-pd_restart:
+static vb2_error_t tps6699x_post_update(const VbootAuxfwOps *vbaux)
+{
+	Tps6699x *me = container_of(vbaux, Tps6699x, fw_ops);
+	uint64_t start;
+	int ret;
 	/* Re-enable the EC PD stack */
 	ret = cros_ec_pd_control(me->ec_pd_id, PD_RESUME);
 	if (ret) {
@@ -264,7 +270,7 @@ pd_restart:
 		printf("%s: Polling for chip...\n", me->chip_name);
 		if (tps6699x_query_chip_host_cmd(me)) {
 			printf("%s: Chip is up. All done.\n", me->chip_name);
-			return status;
+			return VB2_SUCCESS;
 		}
 	} while (timer_us(start) < TPS6699X_RESTART_DELAY_US);
 
@@ -289,6 +295,7 @@ Tps6699x *new_tps6699x(int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 	VbootAuxfwOps fw_ops = {
 		.check_hash = tps6699x_check_hash,
 		.update_image = tps6699x_update_image,
+		.post_update = tps6699x_post_update,
 	};
 
 	board_tps6699x_get_image_paths(&fw_ops.fw_image_name, &fw_ops.fw_hash_name, ec_pd_id,
