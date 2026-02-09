@@ -59,10 +59,7 @@ typedef struct BlockDev {
 
 	const char *name;
 	int removable;
-	int external_gpt;
 	unsigned block_size;
-	/* If external_gpt = 0, then stream_block_count may be 0, indicating
-	 * that the block_count value applies for both read/write and streams */
 	lba_t block_count;		/* size addressable by read/write */
 	lba_t stream_block_count;	/* size addressible by new_stream */
 

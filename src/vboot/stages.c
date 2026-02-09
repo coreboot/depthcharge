@@ -304,11 +304,8 @@ void vboot_boot_kernel(struct vb2_kernel_params *kparams)
 
 	bi.kparams = kparams;
 
-	BlockDev *bdev = (BlockDev *)kparams->disk_handle;
-
 	struct commandline_info info = {
 		.guid = &kparams->partition_guid,
-		.external_gpt = bdev->external_gpt,
 	};
 
 	if (commandline_subst(bi.cmd_line, cmd_line_buf, sizeof(cmd_line_buf), &info))

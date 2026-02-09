@@ -74,18 +74,12 @@ static void check_disk_handle(const char *preserve_handle)
 	check_expected_ptr(preserve_handle);
 }
 
-static void check_external_flag(int flag)
-{
-	check_expected(flag);
-}
-
 vb2_error_t vb2api_load_kernel(struct vb2_context *c,
 			       struct vb2_kernel_params *params,
 			       struct vb2_disk_info *disk_info)
 {
 	vb2_error_t rv = mock_type(vb2_error_t);
 	check_disk_handle(disk_info->handle);
-	check_external_flag(!!(disk_info->flags & VB2_DISK_FLAG_EXTERNAL_GPT));
 	if (rv == VB2_SUCCESS)
 		params->disk_handle = disk_info->handle;
 	return rv;
@@ -98,29 +92,20 @@ vb2_error_t vb2api_load_nbr_kernel(struct vb2_context *c,
 {
 	vb2_error_t rv = mock_type(vb2_error_t);
 	check_disk_handle(disk_info->handle);
-	check_external_flag(!!(disk_info->flags & VB2_DISK_FLAG_EXTERNAL_GPT));
 	if (rv == VB2_SUCCESS)
 		params->disk_handle = disk_info->handle;
 	return rv;
 }
 
 /* Macros for mocking vb2api_load_kernel(). */
-#define WILL_LOAD_KERNEL(rv, expected_flag, handle) do { \
+#define WILL_LOAD_KERNEL(rv, handle) do { \
 	will_return(vb2api_load_kernel, rv); \
-	expect_value(check_external_flag, flag, expected_flag); \
 	expect_value(check_disk_handle, preserve_handle, handle); \
 } while (0)
 
-#define WILL_LOAD_KERNEL_COUNT(rv, expected_flag, handle, count) do { \
-	will_return_count(vb2api_load_kernel, rv, count); \
-	expect_value_count(check_external_flag, flag, expected_flag, count); \
-	expect_value_count(check_disk_handle, preserve_handle, handle, count); \
-} while (0)
-
 /* Macros for mocking vb2api_load_nbr_kernel(). */
-#define WILL_LOAD_NBR_KERNEL(rv, expected_flag, handle) do { \
+#define WILL_LOAD_NBR_KERNEL(rv, handle) do { \
 	will_return(vb2api_load_nbr_kernel, rv); \
-	expect_value(check_external_flag, flag, expected_flag); \
 	expect_value(check_disk_handle, preserve_handle, handle); \
 } while (0)
 
@@ -137,14 +122,11 @@ vb2_error_t vb2ex_slice_disk(vb2ex_disk_handle_t parent, uint64_t offset, uint64
 
 /* Test functions */
 
-#define _BDEV(_block_size, _block_count, _external_gpt, ...) { \
+#define BDEV(_block_size, _block_count) { \
 	.block_size = _block_size, \
 	.block_count = _block_count, \
 	.stream_block_count = _block_count, \
-	.external_gpt = _external_gpt, \
 }
-# define BDEV(block_size, block_count, ...) \
-	_BDEV(block_size, block_count, ##__VA_ARGS__, 0)
 
 static void test_lk_first_disk_removable(void **state)
 {
@@ -155,7 +137,7 @@ static void test_lk_first_disk_removable(void **state)
 		BDEV(4096, 100),
 	};
 	WILL_GET_DISKS(disks, type);
-	WILL_LOAD_KERNEL(VB2_SUCCESS, 0, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_SUCCESS, &disks[0]);
 
 	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, type, ui->kparams));
 }
@@ -169,7 +151,7 @@ static void test_lk_first_disk_fixed(void **state)
 		BDEV(4096, 100),
 	};
 	WILL_GET_DISKS(disks, type);
-	WILL_LOAD_KERNEL(VB2_SUCCESS, 0, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_SUCCESS, &disks[0]);
 
 	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, type, ui->kparams));
 }
@@ -190,7 +172,7 @@ static void test_lk_skip_invalid_removable_disks(void **state)
 		BDEV(4096, 100),
 	};
 	WILL_GET_DISKS(disks, type);
-	WILL_LOAD_KERNEL(VB2_SUCCESS, 0, &disks[3]);
+	WILL_LOAD_KERNEL(VB2_SUCCESS, &disks[3]);
 
 	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, type, ui->kparams));
 }
@@ -211,21 +193,7 @@ static void test_lk_skip_invalid_fixed_disks(void **state)
 		BDEV(4096, 100),
 	};
 	WILL_GET_DISKS(disks, type);
-	WILL_LOAD_KERNEL(VB2_SUCCESS, 0, &disks[3]);
-
-	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, type, ui->kparams));
-}
-
-static void test_lk_allow_externel_gpt(void **state)
-{
-	struct ui_context *ui = *state;
-	blockdev_type_t type = BLOCKDEV_REMOVABLE;
-	BlockDev disks[] = {
-		BDEV(512, 100, 1),
-		BDEV(512, 100),
-	};
-	WILL_GET_DISKS(disks, type);
-	WILL_LOAD_KERNEL(VB2_SUCCESS, 1, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_SUCCESS, &disks[3]);
 
 	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, type, ui->kparams));
 }
@@ -239,8 +207,8 @@ static void test_lk_skip_invalid_kernel(void **state)
 		BDEV(512, 100),
 	};
 	WILL_GET_DISKS(disks, type);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0, &disks[0]);
-	WILL_LOAD_KERNEL(VB2_SUCCESS, 0, &disks[1]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_SUCCESS, &disks[1]);
 
 	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, type, ui->kparams));
 }
@@ -267,8 +235,8 @@ static void test_lk_invalid_kernel_before_no_kernel(void **state)
 		BDEV(512, 100),
 	};
 	WILL_GET_DISKS(disks, type);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0, &disks[0]);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[1]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, &disks[1]);
 	expect_value(vb2api_fail, reason, VB2_RECOVERY_RW_INVALID_OS);
 
 	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
@@ -285,8 +253,8 @@ static void test_lk_invalid_kernel_after_no_kernel(void **state)
 		BDEV(512, 100),
 	};
 	WILL_GET_DISKS(disks, type);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[0]);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0, &disks[1]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, &disks[1]);
 	expect_value(vb2api_fail, reason, VB2_RECOVERY_RW_INVALID_OS);
 
 	/* INVALID_KERNEL_FOUND overwrites NO_KERNEL_FOUND */
@@ -304,8 +272,8 @@ static void test_lk_invalid_kernel_removable(void **state)
 		BDEV(512, 100),
 	};
 	WILL_GET_DISKS(disks, type);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0, &disks[0]);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[1]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, &disks[1]);
 	expect_value(vb2api_fail, reason, VB2_RECOVERY_RW_INVALID_OS);
 
 	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
@@ -323,8 +291,8 @@ static void test_lk_invalid_kernel_removable_rec_mode(void **state)
 		BDEV(512, 100),
 	};
 	WILL_GET_DISKS(disks, type);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0, &disks[0]);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[1]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, &disks[1]);
 
 	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
 			 VB2_ERROR_LK_INVALID_KERNEL_FOUND);
@@ -341,8 +309,8 @@ static void test_lk_invalid_kernel_removable_dev_mode(void **state)
 		BDEV(512, 100),
 	};
 	WILL_GET_DISKS(disks, type);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0, &disks[0]);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[1]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, &disks[1]);
 
 	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
 			 VB2_ERROR_LK_INVALID_KERNEL_FOUND);
@@ -358,8 +326,8 @@ static void test_lk_no_kernel_fixed(void **state)
 		BDEV(512, 100),
 	};
 	WILL_GET_DISKS(disks, type);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[0]);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[1]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, &disks[1]);
 	expect_value(vb2api_fail, reason, VB2_RECOVERY_RW_NO_KERNEL);
 
 	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
@@ -376,8 +344,8 @@ static void test_lk_no_kernel_removable(void **state)
 		BDEV(512, 100),
 	};
 	WILL_GET_DISKS(disks, type);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[0]);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[1]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, &disks[1]);
 	expect_value(vb2api_fail, reason, VB2_RECOVERY_RW_NO_KERNEL);
 
 	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
@@ -394,7 +362,7 @@ static void test_lk_no_kernel_removable_rec_mode(void **state)
 		BDEV(512, 100),
 	};
 	WILL_GET_DISKS(disks, type);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, &disks[0]);
 
 	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
 			 VB2_ERROR_LK_NO_KERNEL_FOUND);
@@ -409,7 +377,7 @@ static void test_lmk_pick_first_fixed_disk(void **state)
 		BDEV(512, 100),
 	};
 	WILL_GET_DISKS(disks, BLOCKDEV_FIXED);
-	WILL_LOAD_NBR_KERNEL(VB2_SUCCESS, 0, &disks[0]);
+	WILL_LOAD_NBR_KERNEL(VB2_SUCCESS, &disks[0]);
 
 	ASSERT_VB2_SUCCESS(vboot_load_nbr_kernel(ui->ctx, 0, ui->kparams));
 }
@@ -422,8 +390,8 @@ static void test_lmk_skip_failed_fixed_disk(void **state)
 		BDEV(512, 100),
 	};
 	WILL_GET_DISKS(disks, BLOCKDEV_FIXED);
-	WILL_LOAD_NBR_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0, &disks[0]);
-	WILL_LOAD_NBR_KERNEL(VB2_SUCCESS, 0, &disks[1]);
+	WILL_LOAD_NBR_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, &disks[0]);
+	WILL_LOAD_NBR_KERNEL(VB2_SUCCESS, &disks[1]);
 
 	ASSERT_VB2_SUCCESS(vboot_load_nbr_kernel(ui->ctx, 0, ui->kparams));
 }
@@ -438,7 +406,6 @@ int main(void)
 		TEST(test_lk_first_disk_fixed),
 		TEST(test_lk_skip_invalid_removable_disks),
 		TEST(test_lk_skip_invalid_fixed_disks),
-		TEST(test_lk_allow_externel_gpt),
 		TEST(test_lk_skip_invalid_kernel),
 		TEST(test_lk_no_disks_at_all),
 		TEST(test_lk_invalid_kernel_before_no_kernel),

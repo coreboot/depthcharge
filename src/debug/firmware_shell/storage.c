@@ -174,7 +174,7 @@ static int storage_part(int argc, char *const argv[])
 				      ? bdev->stream_block_count
 				      : bdev->block_count;
 	gpt.gpt_drive_sectors = bdev->block_count;
-	gpt.flags = bdev->external_gpt ? GPT_FLAG_EXTERNAL : 0;
+	gpt.flags = 0;
 
 	if (AllocAndReadGptData(bdev, &gpt)) {
 		console_printf("Unable to read GPT data\n");

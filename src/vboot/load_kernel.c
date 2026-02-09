@@ -42,10 +42,9 @@ static vb2_error_t vboot_load_kernel_impl(struct vb2_context *ctx,
 
 		if (!is_valid_disk(bdev, type)) {
 			printf("  skipping: block_size=%u"
-			       " block_count=%" PRIu64 " removable=%d"
-			       " external_gpt=%d\n",
+			       " block_count=%" PRIu64 " removable=%d\n",
 			       bdev->block_size, bdev->block_count,
-			       bdev->removable, bdev->external_gpt);
+			       bdev->removable);
 			continue;
 		}
 
@@ -105,7 +104,6 @@ void vboot_create_disk_info(struct vb2_disk_info *di, BlockDev *bdev)
 	di->bytes_per_lba = bdev->block_size;
 	di->lba_count = bdev->block_count;
 	di->streaming_lba_count = bdev->stream_block_count;
-	di->flags = bdev->external_gpt ? VB2_DISK_FLAG_EXTERNAL_GPT : 0;
 }
 
 vb2_error_t vboot_load_kernel(struct vb2_context *ctx, blockdev_type_t type,

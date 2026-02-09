@@ -26,7 +26,6 @@
 
 struct commandline_info {
 	Guid *guid;
-	int external_gpt;
 };
 
 int commandline_subst(const char *src, char *dest, size_t dest_size,
