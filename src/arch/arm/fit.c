@@ -15,7 +15,9 @@
  * GNU General Public License for more details.
  */
 
+#include <assert.h>
 #include <libpayload.h>
+#include <lz4.h>
 
 #include "arch/arm/boot.h"
 #include "base/cleanup_funcs.h"
@@ -39,7 +41,16 @@ static FitImageNode *construct_kernel_fit_image_node(void *kernel, size_t kernel
 	image->name = KERNEL_IMG_NAME;
 	image->data = kernel;
 	image->size = kernel_size;
-	image->compression = CompressionLegacyLz4;
+	switch (le32dec(kernel)) {
+	case LZ4_LEGACY_MAGICNUMBER:
+		image->compression = CompressionLegacyLz4;
+		break;
+	case LZ4F_MAGICNUMBER:
+		image->compression = CompressionLz4;
+		break;
+	default:
+		image->compression = CompressionNone;
+	}
 	return image;
 }
 
