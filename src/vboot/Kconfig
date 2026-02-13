@@ -125,3 +125,8 @@ config WIDEVINE_PROVISION_OPTEE
 config WIDEVINE_PROVISION_QTEE
 	bool "Enable the widevine provision for Qualcomm QTEE"
 	default n
+
+config WIDEVINE_PROVISION_LEGACY
+	bool "Enable the widevine provision for Legacy platforms (CrOS)"
+	depends on WIDEVINE_PROVISION_OPTEE
+	default n

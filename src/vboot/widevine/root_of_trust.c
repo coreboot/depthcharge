@@ -14,15 +14,28 @@
 /* Widevine unique device key index. */
 #define WIDEVINE_NV_ROT_SEED_INDEX 0x3fff05
 
-#define WIDEVINE_NV_ROT_SEED_LEN 32
-
-#define WIDEVINE_HUK_LEN 32
-#define WIDEVINE_ROT_LEN 32
-
 #define CROS_OEM_SMC_DRM_SET_HARDWARE_UNIQUE_KEY_FUNC_ID 0xC300C051
 #define CROS_OEM_SMC_DRM_SET_ROOT_OF_TRUST_FUNC_ID 0xC300C052
 
+#define CROS_OEM_QTEE_SMC_GSC_SET_ROOT_OF_TRUST_FUNC_ID 0x72000801
 #define CROS_OEM_QTEE_SMC_DRM_SET_ROOT_OF_TRUST_FUNC_ID 0x72000802
+
+#define WIDEVINE_SEED_LEN 32
+/*
+ * GSC NV storage layout for Widevine seeds.
+ * Each seed is 32 bytes. The sequence is:
+ *  1. RoT Seed     (offset 0)
+ *  2. Reserved     (offset 32)
+ *  3. Counter Key  (offset 64)
+ */
+struct widevine_nv_block {
+	uint8_t rot_seed[WIDEVINE_SEED_LEN];
+	uint8_t reserved[WIDEVINE_SEED_LEN];
+	uint8_t counter_key[WIDEVINE_SEED_LEN];
+};
+
+static struct widevine_nv_block widevine_block_cache;
+static bool widevine_cache_valid = false;
 
 // Widevine RoT
 static const uint8_t widevine_rot_context[] = {'W', 'i', 'd', 'e', 'v', 'i',
@@ -36,77 +49,118 @@ _Static_assert(CONFIG(WIDEVINE_PROVISION_OPTEE) !=
 	           CONFIG(WIDEVINE_PROVISION_QTEE),
 	           "Exactly one of WIDEVINE_PROVISION_OPTEE or WIDEVINE_PROVISION_QTEE must be set");
 
-static uint32_t read_rot_seed(uint8_t *rot_seed)
+static uint32_t fill_widevine_cache(void)
 {
-	uint32_t ret;
-	uint8_t test_byte = 0;
-	uint8_t test_byte_ff = 0xff;
-	int i;
+	if (widevine_cache_valid)
+		return TPM_SUCCESS;
 
-	ret = TlclRead(WIDEVINE_NV_ROT_SEED_INDEX, rot_seed,
-		       WIDEVINE_NV_ROT_SEED_LEN);
+	uint32_t ret = TlclRead(WIDEVINE_NV_ROT_SEED_INDEX, &widevine_block_cache,
+			 sizeof(widevine_block_cache));
 
-	if (ret != TPM_SUCCESS) {
-		printf("read RoT seed failed: %#x\n", ret);
-		return ret;
+	if (ret == TPM_SUCCESS)
+		widevine_cache_valid = true;
+	else
+		printf("GSC seed read failed: %#x\n", ret);
+
+	return ret;
+}
+
+/**
+ * Checks if a retrieved seed is valid.
+ * Returns TPM_SUCCESS if valid, TPM_E_READ_EMPTY if all 00s or all FFs.
+ */
+static uint32_t validate_seed(const uint8_t *seed, size_t len, const char *name)
+{
+	uint8_t test_00 = 0;
+	uint8_t test_ff = 0xff;
+
+	for (size_t i = 0; i < len; i++) {
+		test_00 |= seed[i];
+		test_ff &= seed[i];
 	}
 
-	/* The RoT seed should not be all 0xff or 0x0. */
-	for (i = 0; i < WIDEVINE_NV_ROT_SEED_LEN; i++) {
-		test_byte |= rot_seed[i];
-		test_byte_ff &= rot_seed[i];
-	}
-
-	if (test_byte == 0 || test_byte_ff == 0xff) {
-		printf("Empty RoT seed\n");
+	if (test_00 == 0 || test_ff == 0xff) {
+		printf("Widevine %s seed is invalid (all %s)\n", name, test_ff ? "0xff" : "zeros");
 		return TPM_E_READ_EMPTY;
 	}
 
 	return TPM_SUCCESS;
 }
 
-static void register_widevine_optee_huk(uint8_t huk[WIDEVINE_HUK_LEN])
+static uint32_t read_rot_seed(uint8_t *dest)
+{
+	uint32_t ret = fill_widevine_cache();
+	if (ret != TPM_SUCCESS)
+		return ret;
+
+	memcpy(dest, widevine_block_cache.rot_seed, WIDEVINE_SEED_LEN);
+	return validate_seed(dest, WIDEVINE_SEED_LEN, "RoT");
+}
+
+static uint32_t read_counter_key(uint8_t *dest)
+{
+	uint32_t ret = fill_widevine_cache();
+	if (ret != TPM_SUCCESS)
+		return ret;
+
+	memcpy(dest, widevine_block_cache.counter_key, WIDEVINE_SEED_LEN);
+	return validate_seed(dest, WIDEVINE_SEED_LEN, "Counter");
+}
+
+static void register_widevine_optee_huk(uint8_t huk[WIDEVINE_SEED_LEN])
 {
 	int ret;
 
 	ret = widevine_write_smc_data(
 		CROS_OEM_SMC_DRM_SET_HARDWARE_UNIQUE_KEY_FUNC_ID, huk,
-		WIDEVINE_HUK_LEN);
+		WIDEVINE_SEED_LEN);
 
 	if (ret)
 		printf("write TF-A widevine OPTEE HUK failed: %#x\n", ret);
 }
 
-static void register_widevine_optee_rot(uint8_t rot[WIDEVINE_ROT_LEN])
+static void register_widevine_optee_rot(uint8_t rot[WIDEVINE_SEED_LEN])
 {
 	int ret;
 
 	ret = widevine_write_smc_data(
 		CROS_OEM_SMC_DRM_SET_ROOT_OF_TRUST_FUNC_ID, rot,
-		WIDEVINE_ROT_LEN);
+		WIDEVINE_SEED_LEN);
 
 	if (ret)
 		printf("write TF-A widevine OPTEE ROT failed: %#x\n", ret);
 }
 
-static void register_widevine_qtee_rot(uint8_t rot[WIDEVINE_ROT_LEN])
+static void register_widevine_qtee_seed(uint8_t seed[WIDEVINE_SEED_LEN], uint32_t func_id,
+	 const char *name)
 {
-	size_t elements = WIDEVINE_ROT_LEN / sizeof(uint64_t);
+	size_t elements = WIDEVINE_SEED_LEN / sizeof(uint64_t);
 	uint64_t qword_keys[elements];
 
 	for (size_t index = 0; index < ARRAY_SIZE(qword_keys); index++)
-		qword_keys[index] = le64dec(rot + index * 8);
+		qword_keys[index] = le64dec(seed + index * 8);
 
-	int ret = smc(CROS_OEM_QTEE_SMC_DRM_SET_ROOT_OF_TRUST_FUNC_ID, elements,
+	int ret = smc(func_id, elements,
 		      qword_keys[0], qword_keys[1], qword_keys[2], qword_keys[3], 0);
 
 	if (ret)
-		printf("write TF-A widevine QTEE ROT failed: %#x\n", ret);
+		printf("write TF-A widevine QTEE %s failed: %#x\n", name, ret);
+}
+
+static void register_widevine_qtee_rot(uint8_t rot[WIDEVINE_SEED_LEN])
+{
+	register_widevine_qtee_seed(rot, CROS_OEM_QTEE_SMC_DRM_SET_ROOT_OF_TRUST_FUNC_ID, "ROT");
+}
+
+static void register_widevine_qtee_counter(uint8_t counter[WIDEVINE_SEED_LEN])
+{
+	register_widevine_qtee_seed(counter, CROS_OEM_QTEE_SMC_GSC_SET_ROOT_OF_TRUST_FUNC_ID,
+			 "Counter");
 }
 
 uint32_t prepare_widevine_root_of_trust(struct vb2_context *ctx)
 {
-	uint8_t rot_seed[WIDEVINE_NV_ROT_SEED_LEN];
+	uint8_t rot_seed[WIDEVINE_SEED_LEN];
 	struct vb2_hash rot;
 	struct vb2_hash huk;
 	uint32_t ret;
@@ -115,7 +169,7 @@ uint32_t prepare_widevine_root_of_trust(struct vb2_context *ctx)
 	if (ret != TPM_SUCCESS) {
 		printf("read_rot_seed() failed: %#x\n", ret);
 		/* Continue the the zero UDS for the development process. */
-		memset(rot_seed, 0, WIDEVINE_NV_ROT_SEED_LEN);
+		memset(rot_seed, 0, WIDEVINE_SEED_LEN);
 	}
 
 	if (vb2_hmac_calculate(vb2api_hwcrypto_allowed(ctx), VB2_HASH_SHA256,
@@ -137,6 +191,22 @@ uint32_t prepare_widevine_root_of_trust(struct vb2_context *ctx)
 	} else {
 		register_widevine_qtee_rot(rot.sha256);
 	}
+
+	/* Need special handing for non-CrOS devices */
+	if (CONFIG(WIDEVINE_PROVISION_LEGACY))
+		return TPM_SUCCESS;
+
+	uint8_t counter_key[WIDEVINE_SEED_LEN];
+
+	ret = read_counter_key(counter_key);
+	if (ret != TPM_SUCCESS) {
+		printf("read_counter_key() failed: %#x\n", ret);
+		/* Continue the the zero UDS for the development process. */
+		memset(counter_key, 0, WIDEVINE_SEED_LEN);
+	}
+
+	if (CONFIG(WIDEVINE_PROVISION_QTEE))
+		register_widevine_qtee_counter(counter_key);
 
 	return TPM_SUCCESS;
 }
