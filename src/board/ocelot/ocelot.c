@@ -11,9 +11,6 @@
 #include "drivers/storage/storage_common.h"
 #include "drivers/sound/intel_audio_setup.h"
 
-#define PDC_RTS5452_PROJ_NAME	"GOOG0800"
-#define PDC_RTS5453_PROJ_NAME	"GOOG0400"
-
 #define SDMODE_PIN GPP_A15
 
 const struct audio_config *variant_probe_audio_config(void)
@@ -113,14 +110,6 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
 				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
-	if (!strcmp(r->fw_name_str, PDC_RTS5452_PROJ_NAME)) {
-		*image_path = "rts5452_retimer_jhl9040.bin";
-		*hash_path = "rts5452_retimer_jhl9040.hash";
-	} else if (!strcmp(r->fw_name_str, PDC_RTS5453_PROJ_NAME)) {
-		*image_path = "rts5453_retimer_jhl9040.bin";
-		*hash_path = "rts5453_retimer_jhl9040.hash";
-	} else {
-		*image_path = NULL;
-		*hash_path = NULL;
-	}
+	*image_path = "rts5453_GOOG0H00.bin";
+	*hash_path = "rts5453_GOOG0H00.hash";
 }

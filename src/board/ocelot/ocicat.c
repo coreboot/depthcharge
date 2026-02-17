@@ -64,8 +64,8 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
 				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
-		*image_path = NULL;
-		*hash_path = NULL;
+		*image_path = "rts5453vb_GOOG0L02.bin";
+		*hash_path = "rts5453vb_GOOG0L02.hash";
 }
 
 int gsc_irq_status(void)

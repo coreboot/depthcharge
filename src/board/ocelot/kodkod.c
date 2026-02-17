@@ -9,16 +9,12 @@
 #include "drivers/storage/storage_common.h"
 #include "drivers/sound/intel_audio_setup.h"
 
-#define PDC_RTS5452_PROJ_NAME	"GOOG0800"
-#define PDC_RTS5453_PROJ_NAME	"GOOG0400"
-
 /* Override of func in src/drivers/ec/rts5453/rts5453.c */
 void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
 				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
-	/* TODO update logic for retimerless firmware update */
-	*image_path = NULL;
-	*hash_path = NULL;
+	*image_path = "rts5453vb_GOOG0T00.bin";
+	*hash_path = "rts5453vb_GOOG0T00.hash";
 }
 
 const struct audio_config *variant_probe_audio_config(void)
