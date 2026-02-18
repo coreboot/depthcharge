@@ -44,12 +44,11 @@ static void fastboot_tcp_packet_destroy(struct fastboot_tcp_packet *p)
 static struct fastboot_tcp_packet *
 fastboot_tcp_txq_pop(struct fastboot_tcp_session *tcp)
 {
-	struct list_node *first = list_first(&tcp->txq_head);
+	struct list_node *first = list_first(&tcp->txq);
 	struct fastboot_tcp_packet *top =
 		container_of(first, struct fastboot_tcp_packet, node);
 	list_remove(first);
-	if (list_is_empty(&tcp->txq_head))
-		tcp->txq_last = NULL;
+
 	return top;
 }
 
@@ -57,10 +56,7 @@ fastboot_tcp_txq_pop(struct fastboot_tcp_session *tcp)
 static void fastboot_tcp_txq_append(struct fastboot_tcp_session *tcp,
 				    struct fastboot_tcp_packet *p)
 {
-	if (!tcp->txq_last)
-		tcp->txq_last = &tcp->txq_head;
-	list_insert_after(&p->node, tcp->txq_last);
-	tcp->txq_last = &p->node;
+	list_append(&p->node, &tcp->txq);
 }
 
 // Send a single packet from the packet queue if we can.
@@ -68,7 +64,7 @@ static void fastboot_tcp_send_packet(struct fastboot_tcp_session *tcp)
 {
 	// If we already sent a packet, there's no packets left to send, or
 	// we're not connected to anyone, return.
-	if (tcp->last_packet || list_is_empty(&tcp->txq_head) ||
+	if (tcp->last_packet || list_is_empty(&tcp->txq) ||
 	    tcp->state == WAIT_FOR_HANDSHAKE)
 		return;
 
@@ -136,7 +132,7 @@ static void fastboot_tcp_enter_state(struct fastboot_tcp_session *tcp,
 			tcp->last_packet = NULL;
 		}
 		/* Drain packet queue */
-		while (!list_is_empty(&tcp->txq_head)) {
+		while (!list_is_empty(&tcp->txq)) {
 			struct fastboot_tcp_packet *top = fastboot_tcp_txq_pop(tcp);
 			fastboot_tcp_packet_destroy(top);
 		}

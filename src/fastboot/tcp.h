@@ -84,8 +84,7 @@ struct fastboot_tcp_session {
 
 	// The queue of packets that are waiting to be sent.
 	// This is necessary because uIP only sends a packet once per callback.
-	struct list_node txq_head;
-	struct list_node *txq_last;
+	struct list_node txq;
 };
 
 // These are entries in the packet queue.
