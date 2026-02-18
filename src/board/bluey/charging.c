@@ -6,6 +6,7 @@
 #include "drivers/ec/cros/ec.h"
 #include "drivers/power/power.h"
 #include "drivers/soc/qcom_spmi.h"
+#include "drivers/soc/qcom_tsens.h"
 #include "vboot/stages.h"
 
 #define PMIC_CORE_REGISTERS_ADDR 0x0C500000
@@ -164,6 +165,7 @@ static int detect_ec_manual_poweron_event(void)
 
 static int launch_charger_applet(void)
 {
+	bool has_crossed_threshold = false;
 	if (!CONFIG(DRIVER_EC_CROS) || !(board_boot_in_low_battery_mode_charger_present()
 			 || board_boot_in_offmode_charging_mode()))
 
@@ -200,6 +202,14 @@ static int launch_charger_applet(void)
 			 */
 			// reboot();
 			cros_ec_reboot(EC_REBOOT_FLAG_IMMEDIATE);
+		}
+
+		/* Issue a shutdown in the event of temperature trip */
+		qcom_tsens_monitor_all(&has_crossed_threshold);
+		if (has_crossed_threshold) {
+			printf("Issuing power-off due to temperature trip.\n");
+			cros_ec_enable_offmode_heartbeat();
+			power_off();
 		}
 
 		/* Add static delay before reading the charging applet pre-requisites */
