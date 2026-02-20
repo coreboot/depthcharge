@@ -170,9 +170,7 @@ static int storage_part(int argc, char *const argv[])
 	}
 
 	gpt.sector_bytes = bdev->block_size;
-	gpt.streaming_drive_sectors = bdev->stream_block_count
-				      ? bdev->stream_block_count
-				      : bdev->block_count;
+	gpt.streaming_drive_sectors = bdev->block_count;
 	gpt.gpt_drive_sectors = bdev->block_count;
 	gpt.flags = 0;
 

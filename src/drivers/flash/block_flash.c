@@ -91,7 +91,6 @@ FlashBlockDev *block_flash_register_nor(FlashOps *ops)
 
 	flash->dev.block_size = ops->sector_size;
 	flash->dev.block_count = ops->sector_count;
-	flash->dev.stream_block_count = 0;
 	flash->dev.ops.read = block_flash_read;
 	flash->dev.ops.write = block_flash_write;
 	flash->dev.ops.erase = block_flash_erase;

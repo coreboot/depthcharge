@@ -1267,7 +1267,6 @@ static int ufs_add_device(UfsCtlr *ufs, uint32_t lun)
 	ufs_dev->dev.removable = 0;
 	ufs_dev->dev.block_size = 1 << ufs_ud(ufs_dev)->bLogicalBlockSize;
 	ufs_dev->dev.block_count = be64toh(ufs_ud(ufs_dev)->qLogicalBlockCount);
-	ufs_dev->dev.stream_block_count = ufs_dev->dev.block_count;
 	ufs_dev->dev.ops.read = &block_ufs_read;
 	ufs_dev->dev.ops.write = &block_ufs_write;
 	ufs_dev->dev.ops.new_stream = &new_simple_stream;

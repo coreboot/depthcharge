@@ -125,7 +125,6 @@ vb2_error_t vb2ex_slice_disk(vb2ex_disk_handle_t parent, uint64_t offset, uint64
 #define BDEV(_block_size, _block_count) { \
 	.block_size = _block_size, \
 	.block_count = _block_count, \
-	.stream_block_count = _block_count, \
 }
 
 static void test_lk_first_disk_removable(void **state)

@@ -61,8 +61,6 @@ typedef struct BlockDev {
 	int removable;
 	unsigned block_size;
 	lba_t block_count;		/* size addressable by read/write */
-	lba_t stream_block_count;	/* size addressible by new_stream */
-
 	struct list_node list_node;
 } BlockDev;
 

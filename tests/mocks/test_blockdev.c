@@ -61,7 +61,6 @@ BlockDev *new_test_blockdev(char *storage, unsigned int storage_size, unsigned i
 	tbdev->storage = storage;
 	tbdev->bdev.block_size = block_size;
 	tbdev->bdev.block_count = storage_size / block_size;
-	tbdev->bdev.stream_block_count = storage_size / block_size;
 	tbdev->bdev.ops.read = &test_read;
 	tbdev->bdev.ops.write = &test_write;
 	tbdev->bdev.ops.erase = &test_erase;

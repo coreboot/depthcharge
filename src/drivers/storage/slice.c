@@ -83,7 +83,6 @@ BlockDev *new_blockdev_slice(BlockDev *parent, lba_t offset, lba_t size)
 	slice->dev.removable = parent->removable;
 	slice->dev.block_size = parent->block_size;
 	slice->dev.block_count = size;
-	slice->dev.stream_block_count = 0;
 	slice->parent_dev = parent;
 	slice->offset = offset;
 

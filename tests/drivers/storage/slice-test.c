@@ -33,7 +33,6 @@ static int setup(void **state)
 	test_parent_dev.name = "parent";
 	test_parent_dev.block_size = TEST_STORAGE_BLOCK_SIZE;
 	test_parent_dev.block_count = TEST_STORAGE_SIZE / TEST_STORAGE_BLOCK_SIZE;
-	test_parent_dev.stream_block_count = TEST_STORAGE_SIZE / TEST_STORAGE_BLOCK_SIZE;
 	test_parent_dev.ops.read = &test_read;
 	test_parent_dev.removable = 1;
 

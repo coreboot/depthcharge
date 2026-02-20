@@ -30,7 +30,6 @@ static int setup(void **state)
 {
 	test_block_dev.block_size = TEST_STORAGE_BLOCK_SIZE;
 	test_block_dev.block_count = TEST_STORAGE_SIZE / TEST_STORAGE_BLOCK_SIZE;
-	test_block_dev.stream_block_count = TEST_STORAGE_SIZE / TEST_STORAGE_BLOCK_SIZE;
 	test_block_dev.ops.read = &test_read;
 	test_block_dev.ops.new_stream = &new_simple_stream;
 
