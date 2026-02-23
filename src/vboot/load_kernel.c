@@ -103,7 +103,6 @@ void vboot_create_disk_info(struct vb2_disk_info *di, BlockDev *bdev)
 	di->handle = (vb2ex_disk_handle_t)bdev;
 	di->bytes_per_lba = bdev->block_size;
 	di->lba_count = bdev->block_count;
-	di->streaming_lba_count = bdev->stream_block_count;
 }
 
 vb2_error_t vboot_load_kernel(struct vb2_context *ctx, blockdev_type_t type,

@@ -32,8 +32,7 @@ GptData *alloc_gpt(BlockDev *bdev)
 	GptData *gpt = xzalloc(sizeof(*gpt));
 
 	gpt->sector_bytes = bdev->block_size;
-	gpt->streaming_drive_sectors = bdev->block_count;
-	gpt->gpt_drive_sectors = bdev->block_count;
+	gpt->drive_sectors = bdev->block_count;
 
 	if (AllocAndReadGptData(bdev, gpt) != 0) {
 		free(gpt);
