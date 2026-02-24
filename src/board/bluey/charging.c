@@ -183,7 +183,7 @@ static int launch_charger_applet(void)
 		if (!get_battery_icurr_ma()) {
 			printf("Issuing power-off due to change in charging state.\n");
 			cros_ec_enable_offmode_heartbeat();
-			power_off();
+			cros_ec_ap_poweroff();
 		}
 
 		/*
@@ -209,7 +209,7 @@ static int launch_charger_applet(void)
 		if (has_crossed_threshold) {
 			printf("Issuing power-off due to temperature trip.\n");
 			cros_ec_enable_offmode_heartbeat();
-			power_off();
+			cros_ec_ap_poweroff();
 		}
 
 		/* Add static delay before reading the charging applet pre-requisites */
