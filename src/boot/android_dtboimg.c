@@ -140,15 +140,14 @@ struct overlay_dt {
 static char dtbo_idx_bc_buf[MAX_DTBO_IDX_BC_LEN];
 static size_t dtbo_idx_bc_len = 0;
 
-static struct list_node *stash_overlay_dt(struct device_tree *tree, uint32_t entry_id,
-					  struct list_node *overlay_dt_list)
+static void stash_overlay_dt(struct device_tree *tree, uint32_t entry_id,
+			     struct list_node *overlay_dt_list)
 {
 	struct overlay_dt *overlay = xzalloc(sizeof(*overlay));
 
 	overlay->tree = tree;
 	overlay->entry_id = entry_id;
-	list_insert_after(&overlay->node, overlay_dt_list);
-	return &overlay->node;
+	list_append(&overlay->node, overlay_dt_list);
 }
 
 static int apply_stashed_overlay_dt(struct device_tree *base_dt,
@@ -184,7 +183,6 @@ struct device_tree *android_parse_dtbs(const void *dtbo, size_t dtbo_size)
 	struct dt_table_entry entry;
 	const void *dt_entry_data;
 	struct list_node overlay_dt_list = {};
-	struct list_node *odt_list_tail = &overlay_dt_list;
 
 	if (!is_dtbo_image_valid(dtbo, dtbo_size))
 		return NULL;
@@ -211,7 +209,7 @@ struct device_tree *android_parse_dtbs(const void *dtbo, size_t dtbo_size)
 		}
 
 		if (dt_is_overlay(tree)) {
-			odt_list_tail = stash_overlay_dt(tree, i, odt_list_tail);
+			stash_overlay_dt(tree, i, &overlay_dt_list);
 		} else if (!base_dt) {
 			base_dt = tree;
 			int ret = snprintf(dtbo_idx_bc_buf, sizeof(dtbo_idx_bc_buf), "%d", i);
