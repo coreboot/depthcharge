@@ -90,72 +90,10 @@ int fastboot_save_gpt(struct FastbootOps *fb)
 	return ret;
 }
 
-void fastboot_write_raw(struct FastbootOps *fb, const uint64_t start_block, void *data,
-			size_t data_len)
+static void fastboot_handle_gpt_io_ret(enum gpt_io_ret ret, struct FastbootOps *fb,
+				       const char *partition_name, const uint64_t offset)
 {
-	/*
-	 * Raw write may modify GPT, just in case save GPT to the disk, so the next command
-	 * will reload GPT if necessary
-	 */
-	if (fb->gpt && fastboot_save_gpt(fb)) {
-		fastboot_fail(fb, "Failed to save GPT before write");
-		return;
-	}
-
-	if (fastboot_disk_init(fb))
-		return;
-
-	if (start_block >= fb->disk->block_count) {
-		fastboot_fail(fb, "Start block %llu needs to be within %llu disk blocks\n",
-			      start_block, fb->disk->block_count);
-		return;
-	}
-
-	const uint64_t block_count = fb->disk->block_count - start_block;
-	if (is_sparse_image(data)) {
-		printf("Writing sparse image to LBA %llu to %llu\n",
-		       start_block, fb->disk->block_count);
-		if (write_sparse_image(fb->disk, start_block, block_count, data, data_len) !=
-		    GPT_IO_SUCCESS)
-			fastboot_fail(fb, "Failed to write sparse image");
-		else
-			fastboot_succeed(fb);
-		return;
-	}
-
-	if (data_len % fb->disk->block_size) {
-		fastboot_fail(fb, "Buffer size %zu not block size aligned %u\n", data_len,
-			      fb->disk->block_size);
-		return;
-	}
-
-	const uint64_t data_blocks = data_len / fb->disk->block_size;
-	if (data_blocks > block_count) {
-		fastboot_fail(fb, "Image is too big");
-		return;
-	}
-
-	FB_DEBUG("Writing LBA %llu to %llu, num blocks = %llu, data "
-		 "len = %zu, block size = %u\n",
-		 start_block, start_block + data_blocks,
-		 data_blocks, data_len, fb->disk->block_size);
-	if (fb->disk->ops.write(&fb->disk->ops, start_block, data_blocks, data) !=
-	    data_blocks) {
-		fastboot_fail(fb, "Failed to write");
-		return;
-	}
-
-	fastboot_succeed(fb);
-}
-
-void fastboot_write(struct FastbootOps *fb, const char *partition_name,
-		    const uint64_t offset, void *data, size_t data_len)
-{
-	if (fastboot_disk_gpt_init(fb))
-		return;
-
-	switch (gpt_write_partition(fb->disk, fb->gpt, partition_name, offset,
-				    data, data_len)) {
+	switch (ret) {
 	case GPT_IO_SUCCESS:
 		fastboot_succeed(fb);
 		break;
@@ -191,6 +129,73 @@ void fastboot_write(struct FastbootOps *fb, const char *partition_name,
 	default:
 		fastboot_fail(fb, "Unknown error while writing");
 	}
+}
+
+void fastboot_write_raw(struct FastbootOps *fb, const uint64_t start_block, void *data,
+			size_t data_len)
+{
+	/*
+	 * Raw write may modify GPT, just in case save GPT to the disk, so the next command
+	 * will reload GPT if necessary
+	 */
+	if (fb->gpt && fastboot_save_gpt(fb)) {
+		fastboot_fail(fb, "Failed to save GPT before write");
+		return;
+	}
+
+	if (fastboot_disk_init(fb))
+		return;
+
+	if (start_block >= fb->disk->block_count) {
+		fastboot_fail(fb, "Start block %llu needs to be within %llu disk blocks\n",
+			      start_block, fb->disk->block_count);
+		return;
+	}
+
+	const uint64_t block_count = fb->disk->block_count - start_block;
+	if (is_sparse_image(data)) {
+		printf("Writing sparse image to LBA %llu to %llu\n",
+		       start_block, fb->disk->block_count);
+		fastboot_handle_gpt_io_ret(
+			write_sparse_image(fb->disk, start_block, block_count, data, data_len),
+			fb, NULL, 0);
+		return;
+	}
+
+	if (data_len % fb->disk->block_size) {
+		fastboot_fail(fb, "Buffer size %zu not block size aligned %u\n", data_len,
+			      fb->disk->block_size);
+		return;
+	}
+
+	const uint64_t data_blocks = data_len / fb->disk->block_size;
+	if (data_blocks > block_count) {
+		fastboot_fail(fb, "Image is too big");
+		return;
+	}
+
+	FB_DEBUG("Writing LBA %llu to %llu, num blocks = %llu, data "
+		 "len = %zu, block size = %u\n",
+		 start_block, start_block + data_blocks,
+		 data_blocks, data_len, fb->disk->block_size);
+	if (fb->disk->ops.write(&fb->disk->ops, start_block, data_blocks, data) !=
+	    data_blocks) {
+		fastboot_fail(fb, "Failed to write");
+		return;
+	}
+
+	fastboot_succeed(fb);
+}
+
+void fastboot_write(struct FastbootOps *fb, const char *partition_name,
+		    const uint64_t offset, void *data, size_t data_len)
+{
+	if (fastboot_disk_gpt_init(fb))
+		return;
+
+	fastboot_handle_gpt_io_ret(
+		gpt_write_partition(fb->disk, fb->gpt, partition_name, offset, data, data_len),
+		fb, partition_name, offset);
 }
 
 void fastboot_erase(struct FastbootOps *fb, const char *partition_name)
