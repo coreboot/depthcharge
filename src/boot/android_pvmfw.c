@@ -9,6 +9,7 @@
 
 #include "base/device_tree.h"
 #include "boot/android_pvmfw.h"
+#include "boot/android_dtboimg.h"
 
 #define ANDROID_PVMFW_CFG_MAGIC "pvmf"
 #define ANDROID_PVMFW_CFG_V1_3 ((1 << 16) | (3 & 0xffff))
@@ -31,7 +32,7 @@ struct pvmfw_config_v1_3 {
 	/* Entry 1: Debug Policy DTBO */
 	struct pvmfw_config_entry dp_dtbo;
 	/* Entry 2: VM Device assignment DTBO */
-	struct pvmfw_config_entry da_dtbo;
+	struct pvmfw_config_entry pvm_dtbo;
 	/* Entry 3: VM reference DTB */
 	struct pvmfw_config_entry ref_dtb;
 	/* Entry 4: VM reserved memory blobs */
@@ -177,6 +178,35 @@ static int alloc_cfg_entry(struct pvmfw_config_v1_3 *cfg, size_t max_cfg_size,
 
 	/* Update the end of cfg, to the end of appending to blobs */
 	cfg->total_size = cfg_entry->offset + cfg_entry->size;
+
+	return PVMFW_SUCCESS;
+}
+
+static int add_pvm_dtbo_entry(struct pvmfw_config_v1_3 *cfg, size_t max_cfg_size)
+{
+	const void *dtbo = android_get_pvm_dtbo_data();
+	const struct fdt_header *fdt_hdr = dtbo;
+	size_t dtbo_size;
+	int ret;
+
+	/* If there's no pVM DTBO, just ignore it */
+	if (!dtbo)
+		return 0;
+
+	if (!fdt_is_valid(dtbo))
+		return PVMFW_ERR_PVM_DTBO_INVALID_PAYLOAD;
+
+	dtbo_size = be32toh(fdt_hdr->totalsize);
+	if (!dtbo_size)
+		return PVMFW_ERR_PVM_DTBO_INVALID_PAYLOAD;
+
+	/* Allocate space for the VM DA DTBO configuration entry */
+	ret = alloc_cfg_entry(cfg, max_cfg_size, &cfg->pvm_dtbo, dtbo_size);
+	if (ret)
+		return ret;
+
+	/* Copy the VM DA DTBO that was read from disk to pvmfw configuration */
+	memcpy(((uint8_t *)cfg) + cfg->pvm_dtbo.offset, dtbo, dtbo_size);
 
 	return PVMFW_SUCCESS;
 }
@@ -415,6 +445,13 @@ static int parse_boot_params_v0(const void *blob, size_t size, struct device_tre
 	/* Copy handover data into place. */
 	memcpy(&cfg->blobs[0], v0->android_dice_handover, cfg->dice_handover.size);
 
+	/* Add entry 2: VM device assignment DTBO entry and content */
+	ret = add_pvm_dtbo_entry(cfg, max_cfg_size);
+	if (ret) {
+		printf("Failed to add VM DTBO entry: %d\n", ret);
+		return ret;
+	}
+
 	/* Add entry 3: VM reference DT entry and content */
 	ret = add_ref_dtb_entry(cfg, max_cfg_size, vm_ref_dt);
 	if (ret) {
@@ -519,6 +556,14 @@ static int parse_boot_params_v1(const void *cbor, size_t cbor_size,
 					max_cfg_size, &cfg->dice_handover);
 	if (consumed < 0) {
 		field = "android_dice_handover_v1";
+		goto err;
+	}
+
+	/* Add entry 2: VM device assignment DTBO entry and content */
+	ret = add_pvm_dtbo_entry(cfg, max_cfg_size);
+	if (ret) {
+		field = "pvm_dtbo";
+		consumed = ret;
 		goto err;
 	}
 

@@ -29,6 +29,9 @@ enum pvmfw_status {
 
 	/* Failed to parse boot params, invalid payload known values */
 	PVMFW_ERR_CBOR_MISMATCH = -5,
+
+	/* Failed to parse pVM DTBO, invalid payload */
+	PVMFW_ERR_PVM_DTBO_INVALID_PAYLOAD = -6,
 };
 
 /**
