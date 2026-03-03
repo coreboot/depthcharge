@@ -19,6 +19,8 @@
 #include <libpayload.h>
 #include <lp_vboot.h>
 
+#include "base/vpd_util.h"
+#include "boot/android_vpd.h"
 #include "vboot/ui.h"
 
 vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
@@ -126,11 +128,38 @@ static vb2_error_t ui_draw_step_icons(const struct ui_state *state,
 	return VB2_SUCCESS;
 }
 
+static const char *get_model_from_vpd(void)
+{
+	static char product[ANDROID_VPD_MAX_BUFFER_SIZE];
+
+	if (!vpd_gets(ANDROID_VPD_KEY_PRODUCT, product, sizeof(product))) {
+		printf("%s: VPD key %s not found\n", __func__,
+		       ANDROID_VPD_KEY_PRODUCT);
+		return NULL;
+	}
+
+	return product;
+}
+
+static const char *get_model_from_hwid(void)
+{
+	static char hwid[VB2_GBB_HWID_MAX_SIZE] = {0};
+	uint32_t hwid_size = sizeof(hwid);
+
+	if (vb2api_gbb_read_hwid(vboot_get_context(), hwid, &hwid_size)) {
+		printf("%s: Failed to read HWID\n", __func__);
+		return NULL;
+	}
+
+	/* Truncate everything after the first whitespace. */
+	char *p = strchr(hwid, ' ');
+	if (p)
+		*p = '\0';
+	return hwid;
+}
+
 static vb2_error_t draw_footer(const struct ui_state *state)
 {
-	char hwid[VB2_GBB_HWID_MAX_SIZE];
-	uint32_t size = sizeof(hwid);
-	char *p;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
 	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
@@ -142,15 +171,14 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	const int32_t footer_height = UI_FOOTER_HEIGHT;
 	struct ui_bitmap bitmap;
 
-	/* hwid */
-	if (vb2api_gbb_read_hwid(vboot_get_context(), hwid, &size) ==
-	    VB2_SUCCESS) {
-		/* Truncate everything after the first whitespace. */
-		p = strchr(hwid, ' ');
-		if (p)
-			*p = '\0';
-	} else {
-		strcpy(hwid, "NOT FOUND");
+	/* Get model name. */
+	static const char *model;
+	if (!model) {
+		model = get_model_from_vpd();
+		if (!model)
+			model = get_model_from_hwid();
+		if (!model)
+			model = "NOT FOUND";
 	}
 
 	/* Column 1 */
@@ -168,7 +196,7 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	VB2_TRY(ui_get_bitmap("model.bmp", locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
 	y += text_height + UI_FOOTER_COL2_LINE_SPACING;
-	VB2_TRY(ui_draw_text(hwid, x, y, text_height,
+	VB2_TRY(ui_draw_text(model, x, y, text_height,
 			     &ui_color_bg, &ui_color_footer_fg,
 			     flags, reverse));
 	y += text_height + vspacing;

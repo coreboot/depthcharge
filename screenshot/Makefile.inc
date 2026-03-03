@@ -50,6 +50,7 @@ screenshot-srcs += screenshot/stubs/elog.c
 screenshot-srcs += screenshot/stubs/firmware_id.c
 screenshot-srcs += screenshot/stubs/input.c
 screenshot-srcs += screenshot/stubs/load_kernel.c
+screenshot-srcs += screenshot/stubs/vpd_util.c
 screenshot-srcs += src/debug/stubs.c
 screenshot-srcs += src/fastboot/fastboot_stubs.c
 screenshot-srcs += src/vboot/ui/bitmap.c
