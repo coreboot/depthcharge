@@ -28,8 +28,8 @@
 #endif
 
 int is_sparse_image(void *image_addr);
-enum gpt_io_ret write_sparse_image(BlockDev *disk, uint64_t part_start_lba,
-				   uint64_t part_size_lba, void *image_addr,
+enum gpt_io_ret write_sparse_image(BlockDev *disk, uint64_t part_start,
+				   uint64_t part_size, void *image_addr,
 				   uint64_t image_size);
 
 #endif // __BASE_SPARSE_H__

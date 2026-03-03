@@ -108,10 +108,18 @@ typedef enum {
 int get_all_bdevs(blockdev_type_t type, struct list_node **bdevs);
 
 /*
- * Fill 'count' blocks from 'start' with repeated 'fill_pattern'.
+ * Fill 'count' bytes from 'start' with repeated 'fill_pattern'.
  * It creates up to 4MiB buffer with 'fill_pattern' and then calls
  * write function in the loop.
  */
-lba_t blockdev_fill_write(BlockDevOps *me, lba_t start, lba_t count, uint32_t fill_pattern);
+uint64_t blockdev_fill_write_bytes(BlockDevOps *me, uint64_t start, uint64_t count,
+				   uint32_t fill_pattern);
+
+/*
+ * Write 'data' starting at byte 'addr'. Writes unaligned to block size are handled by reading
+ * unaligned block, copying data to be written at offset and writing whole block back to
+ * the block device.
+ */
+uint64_t blockdev_write_bytes(BlockDevOps *me, uint64_t addr, void *data, size_t data_len);
 
 #endif /* __DRIVERS_STORAGE_BLOCKDEV_H__ */

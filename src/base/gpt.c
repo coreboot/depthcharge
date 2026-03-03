@@ -199,89 +199,26 @@ enum gpt_io_ret gpt_read_partition(BlockDev *disk, GptData *gpt, const char *par
 	return ret;
 }
 
-static int gpt_write_unaligned(BlockDev *disk, const uint64_t lba, const uint64_t offset,
-			       void *data, size_t data_len)
-{
-	void *block = xmalloc(disk->block_size);
-	int to_write = MIN(disk->block_size - offset, data_len);
-
-	printf("Writing unaligned block to LBA %llu, offset = %llu, data len = %zu, "
-	       "will write = %d, block size = %u\n",
-	       lba, offset, data_len, to_write, disk->block_size);
-	if (disk->ops.read(&disk->ops, lba, 1, block) != 1) {
-		free(block);
-		return -1;
-	}
-
-	memcpy(block + offset, data, to_write);
-
-	if (disk->ops.write(&disk->ops, lba, 1, block) != 1)
-		to_write = -1;
-
-	free(block);
-	return to_write;
-}
-
 enum gpt_io_ret gpt_write_partition(BlockDev *disk, GptData *gpt, const char *partition_name,
 				    uint64_t offset, void *data, size_t data_len)
 {
-	int written;
 	GptEntry *e = gpt_find_partition(gpt, partition_name);
 	if (!e)
 		return GPT_IO_NO_PARTITION;
 
-	const uint64_t blocks_offset = offset / disk->block_size;
-	offset %= disk->block_size;
-	uint64_t space = GptGetEntrySizeLba(e);
-	uint64_t start_block = e->starting_lba + blocks_offset;
-	if (space < blocks_offset)
-		return GPT_IO_OUT_OF_RANGE;
-	space -= blocks_offset;
-
-	if (is_sparse_image(data)) {
-		if (offset)
-			return GPT_IO_SPARSE_OFFSET_NOT_ALIGNED;
-
-		printf("Writing sparse image to LBA %llu to %llu\n",
-		       start_block, start_block + space);
-		return write_sparse_image(disk, start_block, space, data, data_len);
-	}
-
-	if (space < DIV_ROUND_UP(data_len + offset, disk->block_size))
+	const uint64_t addr = e->starting_lba * disk->block_size + offset;
+	uint64_t space = GptGetEntrySizeBytes(gpt, e);
+	/* Check if (space < offset + data_len), but avoids overflow */
+	if (space < offset || space - offset < data_len)
 		return GPT_IO_OUT_OF_RANGE;
 
-	if (offset) {
-		written = gpt_write_unaligned(disk, start_block, offset, data, data_len);
-		if (written <= 0)
-			return GPT_IO_TRANSFER_ERROR;
-		data += written;
-		data_len -= written;
-		if (data_len == 0)
-			return GPT_IO_SUCCESS;
-		start_block++;
-	}
+	space -= offset;
 
-	const uint64_t data_blocks = data_len / disk->block_size;
+	if (is_sparse_image(data))
+		return write_sparse_image(disk, addr, space, data, data_len);
 
-	if (data_blocks) {
-		printf("Writing LBA %llu to %llu, num blocks = %llu, data "
-			 "len = %zu, block size = %u\n",
-			 start_block, start_block + data_blocks,
-			 data_blocks, data_len, disk->block_size);
-		const lba_t blocks_written = disk->ops.write(&disk->ops, start_block,
-							     data_blocks, data);
-		if (blocks_written != data_blocks)
-			return GPT_IO_TRANSFER_ERROR;
-	}
-
-	data_len %= disk->block_size;
-	if (data_len) {
-		data += data_blocks * disk->block_size;
-		written = gpt_write_unaligned(disk, start_block + data_blocks, 0, data,
-					      data_len);
-		if (data_len - written != 0)
-			return GPT_IO_TRANSFER_ERROR;
-	}
+	if (blockdev_write_bytes(&disk->ops, addr, data, data_len) != data_len)
+		return GPT_IO_TRANSFER_ERROR;
 
 	return GPT_IO_SUCCESS;
 }
@@ -302,9 +239,9 @@ enum gpt_io_ret gpt_erase_partition(BlockDev *disk, GptData *gpt,
 		 * should be evaluated once proper erase method is implemented for common block
 		 * device drivers.
 		 */
-		space = MIN(space, (256 * MiB / disk->block_size));
-		if (blockdev_fill_write(&disk->ops, e->starting_lba, space,
-					0xffffffff) != space)
+		space = MIN(space * disk->block_size, 256 * MiB);
+		if (blockdev_fill_write_bytes(&disk->ops, e->starting_lba * disk->block_size,
+					      space, 0xffffffff) != space)
 			return GPT_IO_TRANSFER_ERROR;
 	}
 

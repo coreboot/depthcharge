@@ -137,14 +137,49 @@ StreamOps *new_simple_stream(BlockDevOps *me, lba_t start, lba_t count)
 	return &stream->stream;
 }
 
-lba_t blockdev_fill_write(BlockDevOps *me, lba_t start, lba_t count, uint32_t fill_pattern)
+static int blockdev_write_unaligned(BlockDevOps *me, const lba_t lba, const uint64_t offset,
+				    void *data, size_t data_len)
 {
 	BlockDev *blockdev = (BlockDev *)me;
+	uint8_t *block = xmalloc(blockdev->block_size);
+	int to_write = MIN(blockdev->block_size - offset, data_len);
+
+	if (me->read(me, lba, 1, block) != 1) {
+		free(block);
+		return 0;
+	}
+
+	memcpy(block + offset, data, to_write);
+
+	if (me->write(me, lba, 1, block) != 1)
+		to_write = 0;
+
+	free(block);
+	return to_write;
+}
+
+uint64_t blockdev_fill_write_bytes(BlockDevOps *me, uint64_t start, uint64_t count,
+				   uint32_t fill_pattern)
+{
+	const BlockDev *blockdev = (BlockDev *)me;
 	const uint32_t block_size = blockdev->block_size;
+	const uint64_t offset = start % block_size;
+	lba_t start_block = start / block_size;
+	uint64_t written = 0;
 
 	if (count <= 0)
 		/* Nothing to fill */
 		return 0;
+
+	if (start % sizeof(fill_pattern)) {
+		/*
+		 * Handling this case is cumbersome and it is unlikely that we ever use this
+		 * function on address not aligned to 4
+		 */
+		printf("%s: start address (%#llx) isn't aligned to fill pattern size\n",
+		       __func__, start);
+		return 0;
+	}
 
 	/*
 	 * We allocate max 4 MiB buffer on heap and set it to fill_pattern and
@@ -157,12 +192,13 @@ lba_t blockdev_fill_write(BlockDevOps *me, lba_t start, lba_t count, uint32_t fi
 	 * even 128 Mib resulted in similar write times. With 2MiB, the
 	 * fill_write time increased by several seconds. So, 4MiB was chosen as
 	 * the default max buffer size.
+	 *
+	 * If allocating less than 4 MiB always align to uint32 size, so loop
+	 * over buffer_words will fill the pattern up to the 'count' bytes even
+	 * if 'count' is not aligned to uint32 size.
 	 */
-	const lba_t heap_blocks = (4 * MiB) / block_size;
-	const lba_t buffer_blocks = MIN(heap_blocks, count);
-	lba_t todo = count;
-
-	const uint64_t buffer_bytes = buffer_blocks * block_size;
+	const uint64_t buffer_bytes = MIN(4 * MiB, ALIGN_UP(count, sizeof(uint32_t)));
+	const lba_t buffer_blocks = buffer_bytes / block_size;
 	uint64_t buffer_words = buffer_bytes / sizeof(uint32_t);
 	uint32_t *buffer = xmemalign(ARCH_DMA_MINALIGN, buffer_bytes);
 	uint32_t *ptr = buffer;
@@ -175,20 +211,77 @@ lba_t blockdev_fill_write(BlockDevOps *me, lba_t start, lba_t count, uint32_t fi
 	while (buffer_words--)
 		*ptr++ = fill_pattern;
 
-	lba_t blocks_to_write;
-	lba_t done;
+	if (offset) {
+		written = blockdev_write_unaligned(me, start_block, offset, buffer, count);
+		count -= written;
+		if (written <= 0 || count == 0) {
+			free(buffer);
+			return written;
+		}
+		start_block++;
+	}
 
-	do {
-		blocks_to_write = MIN(buffer_blocks, todo);
-		done = me->write(me, start, blocks_to_write, buffer);
-
+	lba_t todo = count / block_size;
+	/*
+	 * Assume success, so we don't need to update this in loop. Just calculate what was
+	 * actually done in case of failure.
+	 */
+	written += todo * block_size;
+	while (todo) {
+		const lba_t blocks_to_write = MIN(buffer_blocks, todo);
+		const lba_t done = me->write(me, start_block, blocks_to_write, buffer);
 		todo -= done;
-		start += done;
-	} while (todo > 0 && done == blocks_to_write);
+		start_block += done;
+		if (done != blocks_to_write) {
+			free(buffer);
+			return written - todo * block_size;
+		}
+	}
+
+	count %= block_size;
+	if (count)
+		written += blockdev_write_unaligned(me, start_block, 0, buffer, count);
 
 	free(buffer);
 
-	return count - todo;
+	return written;
+}
+
+uint64_t blockdev_write_bytes(BlockDevOps *me, uint64_t addr, void *data, size_t data_len)
+{
+	const BlockDev *blockdev = (BlockDev *)me;
+	const uint32_t block_size = blockdev->block_size;
+	uint64_t written = 0;
+
+	uint64_t start_block = addr / block_size;
+	const uint64_t offset = addr % block_size;
+
+	if (offset) {
+		written = blockdev_write_unaligned(me, start_block, offset, data, data_len);
+		data += written;
+		data_len -= written;
+		if (written <= 0 || data_len == 0)
+			return written;
+		start_block++;
+	}
+
+	const uint64_t data_blocks = data_len / block_size;
+
+	if (data_blocks) {
+		const lba_t blocks_written = me->write(me, start_block, data_blocks, data);
+		written += blocks_written * block_size;
+		if (blocks_written != data_blocks)
+			return written;
+	}
+
+	data_len %= block_size;
+	if (data_len) {
+		data += data_blocks * block_size;
+		written += blockdev_write_unaligned(me, start_block + data_blocks, 0, data,
+						    data_len);
+	}
+
+	return written;
 }
 
 int get_all_bdevs(blockdev_type_t type, struct list_node **bdevs)

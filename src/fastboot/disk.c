@@ -116,10 +116,6 @@ static void fastboot_handle_gpt_io_ret(enum gpt_io_ret ret, struct FastbootOps *
 	case GPT_IO_SPARSE_WRONG_HEADER_SIZE:
 		fastboot_fail(fb, "Wrong size of sparse header/chunk header");
 		break;
-	case GPT_IO_SPARSE_BLOCK_SIZE_NOT_ALIGNED:
-		fastboot_fail(fb, "Sparse block size not aligned to block size of %u",
-			      fb->disk->block_size);
-		break;
 	case GPT_IO_SPARSE_WRONG_CHUNK_SIZE:
 		fastboot_fail(fb, "Sparse chunk size is wrong");
 		break;
@@ -152,34 +148,23 @@ void fastboot_write_raw(struct FastbootOps *fb, const uint64_t start_block, void
 		return;
 	}
 
-	const uint64_t block_count = fb->disk->block_count - start_block;
+	const uint64_t start_addr = start_block * fb->disk->block_size;
+	const uint64_t remaining_disk_size =
+		(fb->disk->block_count - start_block) * fb->disk->block_size;
 	if (is_sparse_image(data)) {
-		printf("Writing sparse image to LBA %llu to %llu\n",
-		       start_block, fb->disk->block_count);
 		fastboot_handle_gpt_io_ret(
-			write_sparse_image(fb->disk, start_block, block_count, data, data_len),
+			write_sparse_image(fb->disk, start_addr, remaining_disk_size, data,
+					   data_len),
 			fb, NULL, 0);
 		return;
 	}
 
-	if (data_len % fb->disk->block_size) {
-		fastboot_fail(fb, "Buffer size %zu not block size aligned %u\n", data_len,
-			      fb->disk->block_size);
-		return;
-	}
-
-	const uint64_t data_blocks = data_len / fb->disk->block_size;
-	if (data_blocks > block_count) {
+	if (data_len > remaining_disk_size) {
 		fastboot_fail(fb, "Image is too big");
 		return;
 	}
 
-	FB_DEBUG("Writing LBA %llu to %llu, num blocks = %llu, data "
-		 "len = %zu, block size = %u\n",
-		 start_block, start_block + data_blocks,
-		 data_blocks, data_len, fb->disk->block_size);
-	if (fb->disk->ops.write(&fb->disk->ops, start_block, data_blocks, data) !=
-	    data_blocks) {
+	if (blockdev_write_bytes(&fb->disk->ops, start_addr, data, data_len) != data_len) {
 		fastboot_fail(fb, "Failed to write");
 		return;
 	}

@@ -111,14 +111,13 @@ static void *img_buff_advance(struct img_buff *buff, uint64_t size)
 }
 
 /* Write sparse image to the disk */
-enum gpt_io_ret write_sparse_image(BlockDev *disk, uint64_t part_start_lba,
-				   uint64_t part_size_lba, void *image_addr,
+enum gpt_io_ret write_sparse_image(BlockDev *disk, uint64_t part_start,
+				   uint64_t part_size, void *image_addr,
 				   uint64_t image_size)
 {
 	struct img_buff buff;
 	struct sparse_image_hdr *img_hdr;
 	struct sparse_chunk_hdr *chunk_hdr;
-	uint64_t bdev_block_size = disk->block_size;
 
 	if (img_buff_init(&buff, image_addr, image_size))
 		return GPT_IO_SPARSE_TOO_SMALL;
@@ -142,10 +141,6 @@ enum gpt_io_ret write_sparse_image(BlockDev *disk, uint64_t part_start_lba,
 	if (img_hdr->file_hdr_size != sizeof(*img_hdr))
 		return GPT_IO_SPARSE_WRONG_HEADER_SIZE;
 
-	/* Is image block size multiple of bdev block size? */
-	if (img_hdr->blk_size % bdev_block_size)
-		return GPT_IO_SPARSE_BLOCK_SIZE_NOT_ALIGNED;
-
 	/* Is chunk header size as expected? */
 	if (img_hdr->chunk_hdr_size != sizeof(*chunk_hdr))
 		return GPT_IO_SPARSE_WRONG_HEADER_SIZE;
@@ -165,19 +160,16 @@ enum gpt_io_ret write_sparse_image(BlockDev *disk, uint64_t part_start_lba,
 		TRACE_SPARSE("Type         : %x\n", chunk_hdr->type);
 		TRACE_SPARSE("Size in blks : %x\n", chunk_hdr->size_in_blks);
 		TRACE_SPARSE("Total size   : %x\n", chunk_hdr->total_size_bytes);
-		TRACE_SPARSE("Part addr    : %llx\n", part_start_lba);
+		TRACE_SPARSE("Part addr    : %llx\n", part_start);
 
-		/* Size in bytes and lba of the area occupied by chunk range */
-		uint64_t chunk_size_bytes, chunk_size_lba;
-
-		chunk_size_bytes =
+		/* Size in bytes of the area occupied by chunk range */
+		const uint64_t chunk_size =
 			(uint64_t)chunk_hdr->size_in_blks * img_hdr->blk_size;
-		chunk_size_lba = chunk_size_bytes / bdev_block_size;
 
 		/* Should not write past partition size */
-		if (part_size_lba < chunk_size_lba) {
-			TRACE_SPARSE("part_size_lba:%llx\n", part_size_lba);
-			TRACE_SPARSE("chunk_size_lba:%llx\n", chunk_size_lba);
+		if (part_size < chunk_size) {
+			TRACE_SPARSE("part_size:%llx\n", part_size);
+			TRACE_SPARSE("chunk_size:%llx\n", chunk_size);
 			return GPT_IO_OUT_OF_RANGE;
 		}
 
@@ -188,23 +180,22 @@ enum gpt_io_ret write_sparse_image(BlockDev *disk, uint64_t part_start_lba,
 
 			/*
 			 * For Raw chunk type:
-			 * chunk_size_bytes + chunk_hdr_size = chunk_total_size
+			 * chunk_size + chunk_hdr_size = chunk_total_size
 			 */
-			if ((chunk_size_bytes + sizeof(*chunk_hdr)) !=
-			    chunk_hdr->total_size_bytes) {
+			if ((chunk_size + sizeof(*chunk_hdr)) != chunk_hdr->total_size_bytes) {
 				TRACE_SPARSE("chunk_size_bytes:%llx\n",
-					     chunk_size_bytes + sizeof(*chunk_hdr));
+					     chunk_size + sizeof(*chunk_hdr));
 				TRACE_SPARSE("total_size_bytes:%x\n",
 					     chunk_hdr->total_size_bytes);
 				return GPT_IO_SPARSE_WRONG_CHUNK_SIZE;
 			}
 
-			data_ptr = img_buff_advance(&buff, chunk_size_bytes);
+			data_ptr = img_buff_advance(&buff, chunk_size);
 			if (data_ptr == NULL)
 				return GPT_IO_SPARSE_TOO_SMALL;
 
-			if (ops->write(ops, part_start_lba, chunk_size_lba,
-				       data_ptr) != chunk_size_lba)
+			if (blockdev_write_bytes(ops, part_start, data_ptr, chunk_size) !=
+			    chunk_size)
 				return GPT_IO_TRANSFER_ERROR;
 
 			break;
@@ -231,8 +222,8 @@ enum gpt_io_ret write_sparse_image(BlockDev *disk, uint64_t part_start_lba,
 				return GPT_IO_SPARSE_TOO_SMALL;
 
 			/* Perform fill_write operation */
-			if (blockdev_fill_write(ops, part_start_lba, chunk_size_lba,
-						*data_fill) != chunk_size_lba)
+			if (blockdev_fill_write_bytes(ops, part_start, chunk_size,
+						*data_fill) != chunk_size)
 				return GPT_IO_TRANSFER_ERROR;
 
 			break;
@@ -277,8 +268,8 @@ enum gpt_io_ret write_sparse_image(BlockDev *disk, uint64_t part_start_lba,
 		}
 		}
 		/* Update partition address and size accordingly */
-		part_start_lba += chunk_size_lba;
-		part_size_lba -= chunk_size_lba;
+		part_start += chunk_size;
+		part_size -= chunk_size;
 	}
 
 	return 0;

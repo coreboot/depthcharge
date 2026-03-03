@@ -95,12 +95,16 @@ static void test_sparse_not_aligned_block_size(void **state)
 {
 	struct sparse_test_state *sts = *state;
 	char storage[1024];
+	char expected[1024];
 	sts->test_bdev = new_test_blockdev(storage, sizeof(storage), 32);
 
-	enum gpt_io_ret ret = write_sparse_image(sts->test_bdev, 2, 10, sparse_image,
+	prepare_storage_and_expected(storage, expected, sizeof(storage), 64);
+
+	enum gpt_io_ret ret = write_sparse_image(sts->test_bdev, 64, 192, sparse_image,
 						 sizeof(sparse_image));
 
-	assert_int_equal(ret, GPT_IO_SPARSE_BLOCK_SIZE_NOT_ALIGNED);
+	assert_int_equal(ret, 0);
+	assert_memory_equal(storage, expected, sizeof(expected));
 }
 
 static void test_sparse_block_size_smaller(void **state)
@@ -110,9 +114,9 @@ static void test_sparse_block_size_smaller(void **state)
 	char expected[1024];
 	sts->test_bdev = new_test_blockdev(storage, sizeof(storage), 8);
 
-	prepare_storage_and_expected(storage, expected, sizeof(storage), 8 * 4);
+	prepare_storage_and_expected(storage, expected, sizeof(storage), 32);
 
-	enum gpt_io_ret ret = write_sparse_image(sts->test_bdev, 4, 24, sparse_image,
+	enum gpt_io_ret ret = write_sparse_image(sts->test_bdev, 32, 192, sparse_image,
 						 sizeof(sparse_image));
 
 	assert_int_equal(ret, 0);
@@ -126,9 +130,25 @@ static void test_sparse_block_size_equal(void **state)
 	char expected[1024];
 	sts->test_bdev = new_test_blockdev(storage, sizeof(storage), 16);
 
-	prepare_storage_and_expected(storage, expected, sizeof(storage), 16 * 3);
+	prepare_storage_and_expected(storage, expected, sizeof(storage), 48);
 
-	enum gpt_io_ret ret = write_sparse_image(sts->test_bdev, 3, 12, sparse_image,
+	enum gpt_io_ret ret = write_sparse_image(sts->test_bdev, 48, 192, sparse_image,
+						 sizeof(sparse_image));
+
+	assert_int_equal(ret, 0);
+	assert_memory_equal(storage, expected, sizeof(expected));
+}
+
+static void test_sparse_unaligned_address(void **state)
+{
+	struct sparse_test_state *sts = *state;
+	char storage[1024];
+	char expected[1024];
+	sts->test_bdev = new_test_blockdev(storage, sizeof(storage), 16);
+
+	prepare_storage_and_expected(storage, expected, sizeof(storage), 40);
+
+	enum gpt_io_ret ret = write_sparse_image(sts->test_bdev, 40, 192, sparse_image,
 						 sizeof(sparse_image));
 
 	assert_int_equal(ret, 0);
@@ -144,6 +164,7 @@ int main(void)
 		TEST(test_sparse_not_aligned_block_size),
 		TEST(test_sparse_block_size_smaller),
 		TEST(test_sparse_block_size_equal),
+		TEST(test_sparse_unaligned_address),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }
