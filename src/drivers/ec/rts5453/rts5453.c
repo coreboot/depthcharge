@@ -419,7 +419,6 @@ static bool is_rts545x_device_present(Rts545x *me, int live)
 		printf("%s: VID/PID mismatch Expected(%04x:%04x) != Live(%04x:%04x)\n",
 		       me->chip_name, me->chip_info.vid, me->chip_info.pid, r.vendor_id,
 		       r.product_id);
-		return false;
 	}
 
 	me->fw_info.major_ver = (r.fw_version_number >> FW_MAJOR_VERSION_SHIFT) & 0xff;
