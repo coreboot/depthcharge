@@ -113,3 +113,10 @@ void board_rts5453_get_image_paths(const char **image_path, const char **hash_pa
 	*image_path = "rts5453_GOOG0H00.bin";
 	*hash_path = "rts5453_GOOG0H00.hash";
 }
+
+void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path,
+				    int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
+{
+	*image_path = "tps6699x_GOOG0J00.bin";
+	*hash_path = "tps6699x_GOOG0J00.hash";
+}
