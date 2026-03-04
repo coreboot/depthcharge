@@ -115,6 +115,8 @@ static void apply_misc_mte_ctrl(struct mte_ctrl *ctrl)
 
 	ctrl->mte = misc_ctrl.mte || misc_ctrl.mte_once;
 	ctrl->kasan = misc_ctrl.kasan || misc_ctrl.kasan_once;
+	if (misc_ctrl.mte_off)
+		ctrl->mte = 0;
 
 	if (misc_ctrl.kasan_mode != KASAN_MODE_NOT_SET)
 		ctrl->kasan_mode = misc_ctrl.kasan_mode;
