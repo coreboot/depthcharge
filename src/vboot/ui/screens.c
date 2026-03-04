@@ -23,6 +23,8 @@
 #include <vb2_api.h>
 
 #include "base/elog.h"
+#include "base/vpd_util.h"
+#include "boot/android_vpd.h"
 #include "boot/payload.h"
 #include "debug/firmware_shell/common.h"
 #include "diag/common.h"
@@ -742,12 +744,20 @@ static const struct ui_screen_info advanced_options_screen = {
 #define DEBUG_INFO_ITEM_PAGE_DOWN 2
 #define DEBUG_INFO_ITEM_BACK 3
 
-#define DEBUG_INFO_EXTRA_LENGTH 256
+#define DEBUG_INFO_EXTRA_LENGTH 512
+
+#define DEBUG_INFO_UNSUPPORTED "(unsupported)"
+
 static const char *debug_info_get_string(struct ui_context *ui)
 {
 	char *buf;
 	size_t buf_size;
 	char *vboot_buf;
+	char product[ANDROID_VPD_MAX_BUFFER_SIZE];
+	char hw_descr[ANDROID_VPD_MAX_BUFFER_SIZE];
+	char hwid[VB2_GBB_HWID_MAX_SIZE];
+	char mfg_sku_id[ANDROID_VPD_MAX_BUFFER_SIZE];
+	uint32_t hwid_size = sizeof(hwid);
 	char *tpm_str = NULL;
 	char batt_pct_str[16];
 
@@ -766,6 +776,18 @@ static const char *debug_info_get_string(struct ui_context *ui)
 		return NULL;
 	}
 
+	if (!vpd_gets(ANDROID_VPD_KEY_PRODUCT, product, sizeof(product)))
+		strcpy(product, DEBUG_INFO_UNSUPPORTED);
+
+	if (!vpd_gets(ANDROID_VPD_KEY_HW_DESCR, hw_descr, sizeof(hw_descr)))
+		strcpy(hw_descr, DEBUG_INFO_UNSUPPORTED);
+
+	if (vb2api_gbb_read_hwid(ui->ctx, hwid, &hwid_size))
+		strcpy(hwid, DEBUG_INFO_UNSUPPORTED);
+
+	if (!vpd_gets(ANDROID_VPD_KEY_MFG_SKU_ID, mfg_sku_id, sizeof(hw_descr)))
+		strcpy(mfg_sku_id, DEBUG_INFO_UNSUPPORTED);
+
 	/* States owned by firmware. */
 	if (CONFIG(MOCK_TPM))
 		tpm_str = "MOCK TPM";
@@ -773,10 +795,10 @@ static const char *debug_info_get_string(struct ui_context *ui)
 		tpm_str = tpm_report_state();
 
 	if (!tpm_str)
-		tpm_str = "(unsupported)";
+		tpm_str = DEBUG_INFO_UNSUPPORTED;
 
 	if (!CONFIG(DRIVER_EC_CROS)) {
-		strncpy(batt_pct_str, "(unsupported)", sizeof(batt_pct_str));
+		strncpy(batt_pct_str, DEBUG_INFO_UNSUPPORTED, sizeof(batt_pct_str));
 	} else {
 		uint32_t batt_pct;
 		if (cros_ec_read_batt_state_of_charge(&batt_pct))
@@ -786,20 +808,26 @@ static const char *debug_info_get_string(struct ui_context *ui)
 			snprintf(batt_pct_str, sizeof(batt_pct_str),
 				 "%u%%", batt_pct);
 	}
+
 	snprintf(buf, buf_size,
-		 "%s\n"  /* vboot output does not include newline. */
+		 "product: %s\n"
+		 "hardware descriptor: %s\n"
+		 "HWID: %s\n"
+		 "MFG SKU ID: %s\n"
 		 "read-only firmware id: %s\n"
 		 "active firmware id: %s\n"
 		 "battery level: %s\n"
-		 "TPM state: %s",
-		 vboot_buf,
+		 "TPM state: %s\n"
+		 "%s",
+		 product, hw_descr, hwid, mfg_sku_id,
 		 get_ro_fw_id(), get_active_fw_id(),
-		 batt_pct_str, tpm_str);
+		 batt_pct_str, tpm_str,
+		 vboot_buf);
 
 	free(vboot_buf);
 
 	buf[buf_size - 1] = '\0';
-	UI_INFO("debug info: %s\n", buf);
+	UI_INFO("debug info:\n%s\n", buf);
 	ui->debug_info_str = buf;
 	return buf;
 }
