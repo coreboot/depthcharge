@@ -1,5 +1,5 @@
 ##
-## Copyright 2013 Google LLC
+## Copyright 2013-2026 Google LLC
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -196,3 +196,7 @@ config DRIVER_SOUND_MAX98396
 
 config DRIVER_INTEL_GENERIC_AUDIO
 	bool "Audio setup for Intel platform"
+
+config DRIVER_SOUND_WSA8845_SNDW
+	bool "WSA8845 SNDW codec driver"
+	default n

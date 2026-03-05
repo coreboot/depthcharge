@@ -1,5 +1,5 @@
 ##
-## Copyright 2012 Google LLC
+## Copyright 2012-2026 Google LLC
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -53,4 +53,5 @@ depthcharge-$(CONFIG_DRIVER_SOUND_RT722_SNDW) += rt7xx_sndw.c
 depthcharge-$(CONFIG_DRIVER_SOUND_SSM4567) += ssm4567.c
 depthcharge-$(CONFIG_DRIVER_SOUND_TAS2563) += tas2563.c
 depthcharge-$(CONFIG_DRIVER_SOUND_TEGRA_AUDIO_HUB) += tegra_ahub.c
+depthcharge-$(CONFIG_DRIVER_SOUND_WSA8845_SNDW) += wsa8845_sndw.c
 depthcharge-y += dummy.c sound.c
