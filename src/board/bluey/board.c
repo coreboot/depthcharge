@@ -43,6 +43,35 @@ static const VpdDeviceTreeMap vpd_dt_map[] = {
 	{}
 };
 
+static int fix_device_tree(struct device_tree_fixup *fixup,
+			   struct device_tree *tree)
+{
+	struct cb_framebuffer *fb = &lib_sysinfo.framebuffer;
+	struct device_tree_node *old_node, *node;
+	uint32_t addr_cells = 2, size_cells = 2;
+
+	const char *old_path[] = { "reserved-memory", "splash_region", NULL };
+	old_node = dt_find_node(tree->root, old_path, &addr_cells, &size_cells, 0);
+	if (old_node)
+		list_remove(&old_node->list_node);
+
+	if (!fb || !fb->physical_address)
+		return 0;
+
+	char name[32];
+	snprintf(name, sizeof(name), "region@%" PRIx64, lib_sysinfo.framebuffer.physical_address);
+	const char *path[] = { "reserved-memory", name, NULL };
+	node = dt_find_node(tree->root, path, &addr_cells, &size_cells, 0);
+	if (node)
+		dt_add_string_prop(node, "label", "cont_splash_region");
+
+	return 0;
+}
+
+static struct device_tree_fixup qc_splash_fixup = {
+	.fixup = fix_device_tree
+};
+
 static void usb_setup(void)
 {
 	/* Support USB3.0 XHCI controller in firmware. */
@@ -105,7 +134,7 @@ static void audio_setup(void)
 
 static void display_setup(void)
 {
-	/* placeholder */
+	list_insert_after(&qc_splash_fixup.list_node, &device_tree_fixups);
 }
 
 static int board_setup(void)
