@@ -57,14 +57,7 @@ static void stringify_state(struct tpm_vendor_state *s,
 
 	text_size += snprintf(state_str + text_size,
 			      state_size - text_size,
-			      "v=%d", version);
-	if (text_size >= state_size)
-		return;
-
-	if (version > TPM_STATE_VERSION)
-		text_size += snprintf(state_str + text_size,
-				      state_size - text_size,
-				      " not fully supported\n");
+			      "version=%d", version);
 	if (text_size >= state_size)
 		return;
 
@@ -73,7 +66,14 @@ static void stringify_state(struct tpm_vendor_state *s,
 
 	text_size += snprintf(state_str + text_size,
 			      state_size - text_size,
-			      " failed tries=%d max_tries=%d\n",
+			      " fully_supported=%d",
+			      version <= TPM_STATE_VERSION);
+	if (text_size >= state_size)
+		return;
+
+	text_size += snprintf(state_str + text_size,
+			      state_size - text_size,
+			      " failed_tries=%d max_tries=%d",
 			      unmarshal_u32(&s->failed_tries),
 			      unmarshal_u32(&s->max_tries));
 	if (text_size >= state_size)
@@ -88,7 +88,7 @@ static void stringify_state(struct tpm_vendor_state *s,
 
 		text_size += snprintf(state_str + text_size,
 				      state_size - text_size,
-				      "tpm failed: f %s line %d code %d\n",
+				      " failed_func=%s failed_line=%d failed_code=%d",
 				      func_name,
 				      unmarshal_u32(&s->fail_line),
 				      unmarshal_u32(&s->fail_code));
@@ -96,7 +96,7 @@ static void stringify_state(struct tpm_vendor_state *s,
 }
 
 /* Maximum size of the text describing internal TPM state. */
-#define STATE_TEXT_SIZE 120
+#define STATE_TEXT_SIZE 256
 
 char *tpm_google_get_tpm_state(struct TpmOps *me)
 {
