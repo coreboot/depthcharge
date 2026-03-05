@@ -20,8 +20,6 @@
 #include "drivers/net/usb_eth.h"
 #include "net/net.h"
 
-static R8152Dev r8152_dev;
-
 /*
  * The lower-level utilities
  */
@@ -256,54 +254,58 @@ static int ocp_byte_clearbits(usbdev_t *dev, uint16_t type, uint16_t index,
 	return ocp_byte_clrsetbits(dev, type, index, clr_mask, 0);
 }
 
-static int ocp_reg_read(usbdev_t *dev, uint16_t addr, uint16_t *val)
+static int ocp_reg_read(R8152Dev *r8152_dev, uint16_t addr, uint16_t *val)
 {
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)r8152_dev->net_dev.dev_data;
+	usbdev_t *dev = gen_dev->dev;
 	uint16_t ocp_base, ocp_index;
 
 	ocp_base = addr & 0xf000;
-	if (ocp_base != r8152_dev.ocp_base) {
+	if (ocp_base != r8152_dev->ocp_base) {
 		if (ocp_write_word(dev, McuTypePla, PlaOcpGphyBase, ocp_base))
 			return 1;
-		r8152_dev.ocp_base = ocp_base;
+		r8152_dev->ocp_base = ocp_base;
 	}
 
 	ocp_index = (addr & 0x0fff) | 0xb000;
 	return ocp_read_word(dev, McuTypePla, ocp_index, val);
 }
 
-static int ocp_reg_write(usbdev_t *dev, uint16_t addr, uint16_t val)
+static int ocp_reg_write(R8152Dev *r8152_dev, uint16_t addr, uint16_t val)
 {
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)r8152_dev->net_dev.dev_data;
+	usbdev_t *dev = gen_dev->dev;
 	uint16_t ocp_base, ocp_index;
 
 	ocp_base = addr & 0xf000;
-	if (ocp_base != r8152_dev.ocp_base) {
+	if (ocp_base != r8152_dev->ocp_base) {
 		if (ocp_write_word(dev, McuTypePla, PlaOcpGphyBase, ocp_base))
 			return 1;
-		r8152_dev.ocp_base = ocp_base;
+		r8152_dev->ocp_base = ocp_base;
 	}
 
 	ocp_index = (addr & 0x0fff) | 0xb000;
 	return ocp_write_word(dev, McuTypePla, ocp_index, val);
 }
 
-static int ocp_reg_clrsetbits(usbdev_t *dev, uint16_t addr, uint16_t clr_mask,
+static int ocp_reg_clrsetbits(R8152Dev *r8152_dev, uint16_t addr, uint16_t clr_mask,
 			      uint16_t set_mask)
 {
 	uint16_t data;
-	if (ocp_reg_read(dev, addr, &data))
+	if (ocp_reg_read(r8152_dev, addr, &data))
 		return 1;
 	data = (data & ~clr_mask) | set_mask;
-	return ocp_reg_write(dev, addr, data);
+	return ocp_reg_write(r8152_dev, addr, data);
 }
 
-static int ocp_reg_setbits(usbdev_t *dev, uint16_t addr, uint16_t set_mask)
+static int ocp_reg_setbits(R8152Dev *r8152_dev, uint16_t addr, uint16_t set_mask)
 {
-	return ocp_reg_clrsetbits(dev, addr, 0, set_mask);
+	return ocp_reg_clrsetbits(r8152_dev, addr, 0, set_mask);
 }
 
-static int ocp_reg_clearbits(usbdev_t *dev, uint16_t addr, uint16_t clr_mask)
+static int ocp_reg_clearbits(R8152Dev *r8152_dev, uint16_t addr, uint16_t clr_mask)
 {
-	return ocp_reg_clrsetbits(dev, addr, clr_mask, 0);
+	return ocp_reg_clrsetbits(r8152_dev, addr, clr_mask, 0);
 }
 
 static int get_version(usbdev_t *dev, uint8_t *version)
@@ -357,21 +359,21 @@ static int get_version(usbdev_t *dev, uint8_t *version)
 	return 0;
 }
 
-static int r8152_mdio_read(usbdev_t *dev, uint8_t loc, uint16_t *val)
+static int r8152_mdio_read_priv(R8152Dev *r8152_dev, uint8_t loc, uint16_t *val)
 {
-	return ocp_reg_read(dev, OcpBaseMii + loc * 2, val);
+	return ocp_reg_read(r8152_dev, OcpBaseMii + loc * 2, val);
 }
 
-static int r8152_mdio_write(usbdev_t *dev, uint8_t loc, uint16_t val)
+static int r8152_mdio_write_priv(R8152Dev *r8152_dev, uint8_t loc, uint16_t val)
 {
-	return ocp_reg_write(dev, OcpBaseMii + loc * 2, val);
+	return ocp_reg_write(r8152_dev, OcpBaseMii + loc * 2, val);
 }
 
-static int sram_write(usbdev_t *dev, uint16_t addr, uint16_t data)
+static int sram_write(R8152Dev *r8152_dev, uint16_t addr, uint16_t data)
 {
-	if (ocp_reg_write(dev, OcpSramAddr, addr))
+	if (ocp_reg_write(r8152_dev, OcpSramAddr, addr))
 		return 1;
-	if (ocp_reg_write(dev, OcpSramData, data))
+	if (ocp_reg_write(r8152_dev, OcpSramData, data))
 		return 1;
 	return 0;
 }
@@ -392,13 +394,13 @@ static int r8153_wait_autoload_done(usbdev_t *dev)
 	return 1;
 }
 
-static int r8153_wait_for_phy_status(usbdev_t *dev, uint8_t desired)
+static int r8153_wait_for_phy_status(R8152Dev *r8152_dev, uint8_t desired)
 {
 	int i;
 	uint16_t val;
 
 	for (i = 0; i < 500; i++) {
-		if (ocp_reg_read(dev, OcpPhyStatus, &val))
+		if (ocp_reg_read(r8152_dev, OcpPhyStatus, &val))
 			return 1;
 		val &= 0x07;
 		if (desired) {
@@ -430,51 +432,55 @@ static int rtl_tally_reset(usbdev_t *dev)
 	return ocp_word_setbits(dev, McuTypePla, PlaRsttally, TallyReset);
 }
 
-static int r8153_eee_disable(usbdev_t *dev)
+static int r8153_eee_disable(R8152Dev *r8152_dev)
 {
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)r8152_dev->net_dev.dev_data;
+	usbdev_t *dev = gen_dev->dev;
 	if (ocp_word_clearbits(dev, McuTypePla, PlaEeeCr, EeeRxEn | EeeTxEn))
 		return 1;
 
-	if (ocp_reg_clearbits(dev, OcpEeeCfg, Eee10En))
+	if (ocp_reg_clearbits(r8152_dev, OcpEeeCfg, Eee10En))
 		return 1;
 
 	return 0;
 }
 
-static int r8153_hw_phy_cfg(usbdev_t *dev)
+static int r8153_hw_phy_cfg(R8152Dev *r8152_dev)
 {
-	if (r8153_eee_disable(dev))
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)r8152_dev->net_dev.dev_data;
+	usbdev_t *dev = gen_dev->dev;
+	if (r8153_eee_disable(r8152_dev))
 		return 1;
 
-	if (ocp_reg_write(dev, OcpEeeAdv, 0))
+	if (ocp_reg_write(r8152_dev, OcpEeeAdv, 0))
 		return 1;
 
-	if (r8152_dev.version == RtlVersion03) {
-		if (ocp_reg_clearbits(dev, OcpEeeCfg, CtapShortEn))
+	if (r8152_dev->version == RtlVersion03) {
+		if (ocp_reg_clearbits(r8152_dev, OcpEeeCfg, CtapShortEn))
 			return 1;
 	}
 
-	if (ocp_reg_setbits(dev, OcpPowerCfg, EeeClkdivEn))
+	if (ocp_reg_setbits(r8152_dev, OcpPowerCfg, EeeClkdivEn))
 		return 1;
 
-	if (ocp_reg_setbits(dev, OcpDownSpeed, En10mBgoff))
+	if (ocp_reg_setbits(r8152_dev, OcpDownSpeed, En10mBgoff))
 		return 1;
 
-	if (ocp_reg_setbits(dev, OcpPowerCfg, En10mPlloff))
+	if (ocp_reg_setbits(r8152_dev, OcpPowerCfg, En10mPlloff))
 		return 1;
 
-	if (sram_write(dev, SramImpedance, 0x0b13))
+	if (sram_write(r8152_dev, SramImpedance, 0x0b13))
 		return 1;
 
 	if (ocp_word_setbits(dev, McuTypePla, PlaPhyPwr, PfmPwmSwitch))
 		return 1;
 
-	if (sram_write(dev, SramLpfCfg, 0xf70f))
+	if (sram_write(r8152_dev, SramLpfCfg, 0xf70f))
 		return 1;
 
-	if (sram_write(dev, Sram10mAmp1, 0x00af))
+	if (sram_write(r8152_dev, Sram10mAmp1, 0x00af))
 		return 1;
-	if (sram_write(dev, Sram10mAmp2, 0x0208))
+	if (sram_write(r8152_dev, Sram10mAmp2, 0x0208))
 		return 1;
 
 	return 0;
@@ -544,9 +550,11 @@ static int rtl_reset_bmu(usbdev_t *dev)
 	return 0;
 }
 
-static int r8153_set_rx_early_timeout(usbdev_t *dev)
+static int r8153_set_rx_early_timeout(R8152Dev *r8152_dev)
 {
-	switch (r8152_dev.version) {
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)r8152_dev->net_dev.dev_data;
+	usbdev_t *dev = gen_dev->dev;
+	switch (r8152_dev->version) {
 	case RtlVersion01:
 	case RtlVersion02:
 		return 0;
@@ -573,14 +581,16 @@ static int r8153_set_rx_early_timeout(usbdev_t *dev)
 	return 0;
 }
 
-static int r8153_set_rx_early_size(usbdev_t *dev)
+static int r8153_set_rx_early_size(R8152Dev *r8152_dev)
 {
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)r8152_dev->net_dev.dev_data;
+	usbdev_t *dev = gen_dev->dev;
 	uint32_t data;
 
 	/* Buffer size - packet size - rx desc size - align */
 	data = ETHERNET_MAX_FRAME_SIZE - RX_PKT_SIZE - 32;
 
-	switch (r8152_dev.version) {
+	switch (r8152_dev->version) {
 	case RtlVersion01:
 	case RtlVersion02:
 		return 0;
@@ -607,15 +617,17 @@ static int rxdy_gated_disable(usbdev_t *dev)
 	return ocp_word_clearbits(dev, McuTypePla, PlaMisc1, RxdyGatedEn);
 }
 
-static int rtl_enable(usbdev_t *dev)
+static int rtl_enable(R8152Dev *r8152_dev)
 {
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)r8152_dev->net_dev.dev_data;
+	usbdev_t *dev = gen_dev->dev;
 	if (r8152b_reset_packet_filter(dev))
 		return 1;
 
 	if (ocp_byte_setbits(dev, McuTypePla, PlaCr, CrRe | CrTe))
 		return 1;
 
-	switch (r8152_dev.version) {
+	switch (r8152_dev->version) {
 	case RtlVersion01 ... RtlVersion07:
 		break;
 	default:
@@ -645,39 +657,41 @@ static int r8153_mac_clk_speed_disable(usbdev_t *dev)
 	return 0;
 }
 
-static int r8153_init(usbdev_t *dev)
+static int r8153_init_priv(R8152Dev *r8152_dev)
 {
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)r8152_dev->net_dev.dev_data;
+	usbdev_t *dev = gen_dev->dev;
 	uint16_t data;
 
 	if (r8153_wait_autoload_done(dev))
 		return 1;
 
-	if (r8153_wait_for_phy_status(dev, 0))
+	if (r8153_wait_for_phy_status(r8152_dev, 0))
 		return 1;
 
-	if (r8152_dev.version == RtlVersion03
-	    || r8152_dev.version == RtlVersion04
-	    || r8152_dev.version == RtlVersion05) {
-		if (ocp_reg_write(dev, OcpAdcCfg,
+	if (r8152_dev->version == RtlVersion03
+	    || r8152_dev->version == RtlVersion04
+	    || r8152_dev->version == RtlVersion05) {
+		if (ocp_reg_write(r8152_dev, OcpAdcCfg,
 				  AdcCfgCkadselL | AdcCfgAdcEn | AdcCfgEnEmiL))
 			return 1;
 	}
 
-	if (r8152_mdio_read(dev, MiiBmcr, &data))
+	if (r8152_mdio_read_priv(r8152_dev, MiiBmcr, &data))
 		return 1;
 	data &= ~BmcrPowerDown;
-	if (r8152_mdio_write(dev, MiiBmcr, data))
+	if (r8152_mdio_write_priv(r8152_dev, MiiBmcr, data))
 		return 1;
 
-	if (r8153_wait_for_phy_status(dev, PhyStatLanOn))
+	if (r8153_wait_for_phy_status(r8152_dev, PhyStatLanOn))
 		return 1;
 
-	if (r8152_dev.version == RtlVersion05) {
+	if (r8152_dev->version == RtlVersion05) {
 		if (ocp_byte_clearbits(dev, McuTypePla, PlaDmyReg0, EcmAldps))
 			return 1;
 	}
-	if (r8152_dev.version == RtlVersion05
-	    || r8152_dev.version == RtlVersion06) {
+	if (r8152_dev->version == RtlVersion05
+	    || r8152_dev->version == RtlVersion06) {
 		if (ocp_read_word(dev, McuTypeUsb, UsbBurstSize, &data))
 			return 1;
 		if ((data ? ocp_byte_setbits : ocp_byte_clearbits)(
@@ -743,16 +757,16 @@ static int r8153_init(usbdev_t *dev)
 	if (ocp_write_word(dev, McuTypePla, PlaRms, RX_PKT_SIZE))
 		return 1;
 
-	if (r8153_set_rx_early_timeout(dev))
+	if (r8153_set_rx_early_timeout(r8152_dev))
 		return 1;
 
-	if (r8153_set_rx_early_size(dev))
+	if (r8153_set_rx_early_size(r8152_dev))
 		return 1;
 
-	if (r8153_hw_phy_cfg(dev))
+	if (r8153_hw_phy_cfg(r8152_dev))
 		return 1;
 
-	if (rtl_enable(dev))
+	if (rtl_enable(r8152_dev))
 		return 1;
 
 	return 0;
@@ -809,9 +823,11 @@ static int rtl_runtime_suspend_disable(usbdev_t *dev)
 	return 0;
 }
 
-static int r8153b_eee_disable(usbdev_t *dev)
+static int r8153b_eee_disable(R8152Dev *r8152_dev)
 {
-	if (r8153_eee_disable(dev))
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)r8152_dev->net_dev.dev_data;
+	usbdev_t *dev = gen_dev->dev;
+	if (r8153_eee_disable(r8152_dev))
 		return 1;
 
 	if (ocp_dword_clearbits(dev, McuTypeUsb, UsbUpsFlags, UpsFlagsEnEee))
@@ -820,15 +836,17 @@ static int r8153b_eee_disable(usbdev_t *dev)
 	return 0;
 }
 
-static int r8153b_hw_phy_cfg(usbdev_t *dev)
+static int r8153b_hw_phy_cfg(R8152Dev *r8152_dev)
 {
-	if (r8153b_eee_disable(dev))
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)r8152_dev->net_dev.dev_data;
+	usbdev_t *dev = gen_dev->dev;
+	if (r8153b_eee_disable(r8152_dev))
 		return 1;
 
-	if (ocp_reg_write(dev, OcpEeeAdv, 0))
+	if (ocp_reg_write(r8152_dev, OcpEeeAdv, 0))
 		return 1;
 
-	if (ocp_reg_setbits(dev, OcpNctlCfg, PgaReturnEn))
+	if (ocp_reg_setbits(r8152_dev, OcpNctlCfg, PgaReturnEn))
 		return 1;
 
 	if (ocp_word_setbits(dev, McuTypePla, PlaPhyPwr, PfmPwmSwitch))
@@ -837,23 +855,25 @@ static int r8153b_hw_phy_cfg(usbdev_t *dev)
 	return 0;
 }
 
-static int r8153b_init(usbdev_t *dev)
+static int r8153b_init_priv(R8152Dev *r8152_dev)
 {
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)r8152_dev->net_dev.dev_data;
+	usbdev_t *dev = gen_dev->dev;
 	uint16_t data;
 
 	if (r8153_wait_autoload_done(dev))
 		return 1;
 
-	if (r8153_wait_for_phy_status(dev, 0))
+	if (r8153_wait_for_phy_status(r8152_dev, 0))
 		return 1;
 
-	if (r8152_mdio_read(dev, MiiBmcr, &data))
+	if (r8152_mdio_read_priv(r8152_dev, MiiBmcr, &data))
 		return 1;
 	data &= ~BmcrPowerDown;
-	if (r8152_mdio_write(dev, MiiBmcr, data))
+	if (r8152_mdio_write_priv(r8152_dev, MiiBmcr, data))
 		return 1;
 
-	if (r8153_wait_for_phy_status(dev, PhyStatLanOn))
+	if (r8153_wait_for_phy_status(r8152_dev, PhyStatLanOn))
 		return 1;
 
 	if (ocp_write_word(dev, McuTypeUsb, UsbMscTimer, 0x0fff))
@@ -900,20 +920,20 @@ static int r8153b_init(usbdev_t *dev)
 	if (ocp_write_word(dev, McuTypePla, PlaRms, RX_PKT_SIZE))
 		return 1;
 
-	if (r8153_set_rx_early_timeout(dev))
+	if (r8153_set_rx_early_timeout(r8152_dev))
 		return 1;
 
-	if (r8153_set_rx_early_size(dev))
+	if (r8153_set_rx_early_size(r8152_dev))
 		return 1;
 
-	if (ocp_reg_clearbits(dev, OcpBaseMii + MiiAnar * 2,
+	if (ocp_reg_clearbits(r8152_dev, OcpBaseMii + MiiAnar * 2,
 			      AdvertisePauseCap | AdvertisePauseAsym))
 		return 1;
 
-	if (r8153b_hw_phy_cfg(dev))
+	if (r8153b_hw_phy_cfg(r8152_dev))
 		return 1;
 
-	if (rtl_enable(dev))
+	if (rtl_enable(r8152_dev))
 		return 1;
 
 	return 0;
@@ -925,40 +945,41 @@ static int r8153b_init(usbdev_t *dev)
 
 static int rtl8152_init(NetDevice *net_dev)
 {
+	R8152Dev *r8152_dev = container_of(net_dev, R8152Dev, net_dev);
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
 
 	printf("R8152: Initializing\n");
 
-	if (usb_eth_init_endpoints(usb_dev, &r8152_dev.bulk_in, 1,
-				   &r8152_dev.bulk_out, 2)) {
+	if (usb_eth_init_endpoints(usb_dev, &r8152_dev->bulk_in, 1,
+				   &r8152_dev->bulk_out, 2)) {
 		printf("R8152: Problem with the endpoints.\n");
 		return 1;
 	}
 
-	if (get_version(usb_dev, &r8152_dev.version)) {
+	if (get_version(usb_dev, &r8152_dev->version)) {
 		printf("R8152: Problem when getting version.\n");
 		return 1;
 	}
 
 	// TODO(pihsun): Support RTL8152 and RTL8153b.
-	switch (r8152_dev.version) {
+	switch (r8152_dev->version) {
 	case RtlVersion01:
 	case RtlVersion02:
 	case RtlVersion07:
-		printf("RTL8152 is not supported yet.");
+		printf("RTL8152 is not supported yet.\n");
 		return 1;
 	case RtlVersion03:
 	case RtlVersion04:
 	case RtlVersion05:
 	case RtlVersion06:
-		if (r8153_init(usb_dev))
+		if (r8153_init_priv(r8152_dev))
 			return 1;
 		break;
 	case RtlVersion08:
 	case RtlVersion09:
 	case RtlVersion14:
-		if (r8153b_init(usb_dev))
+		if (r8153b_init_priv(r8152_dev))
 			return 1;
 		break;
 	}
@@ -967,26 +988,25 @@ static int rtl8152_init(NetDevice *net_dev)
 	return 0;
 }
 
-static int rtl8152_mdio_read(NetDevice *dev, uint8_t loc, uint16_t *val)
+static int rtl8152_mdio_read(NetDevice *net_dev, uint8_t loc, uint16_t *val)
 {
-	GenericUsbDevice *gen_dev = (GenericUsbDevice *)dev->dev_data;
-	usbdev_t *usb_dev = gen_dev->dev;
+	R8152Dev *r8152_dev = container_of(net_dev, R8152Dev, net_dev);
 
-	return r8152_mdio_read(usb_dev, loc, val);
+	return r8152_mdio_read_priv(r8152_dev, loc, val);
 }
 
-static int rtl8152_mdio_write(NetDevice *dev, uint8_t loc, uint16_t val)
+static int rtl8152_mdio_write(NetDevice *net_dev, uint8_t loc, uint16_t val)
 {
-	GenericUsbDevice *gen_dev = (GenericUsbDevice *)dev->dev_data;
-	usbdev_t *usb_dev = gen_dev->dev;
+	R8152Dev *r8152_dev = container_of(net_dev, R8152Dev, net_dev);
 
-	return r8152_mdio_write(usb_dev, loc, val);
+	return r8152_mdio_write_priv(r8152_dev, loc, val);
 }
 
 enum { TxFs = 1u << 31, TxLs = 1u << 30 };
 
 static int rtl8152_send(NetDevice *net_dev, void *buf, uint16_t len)
 {
+	R8152Dev *r8152_dev = container_of(net_dev, R8152Dev, net_dev);
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
 	uint32_t tx_desc[2];
@@ -1002,7 +1022,7 @@ static int rtl8152_send(NetDevice *net_dev, void *buf, uint16_t len)
 	memcpy(msg, tx_desc, sizeof(tx_desc));
 	memcpy(msg + sizeof(tx_desc), buf, len);
 
-	return (usb_dev->controller->bulk(r8152_dev.bulk_out,
+	return (usb_dev->controller->bulk(r8152_dev->bulk_out,
 					  len + sizeof(tx_desc), msg, 0)
 		< 0);
 }
@@ -1010,6 +1030,7 @@ static int rtl8152_send(NetDevice *net_dev, void *buf, uint16_t len)
 static int rtl8152_recv(NetDevice *net_dev, void *buf, uint16_t *len,
 			int maxlen)
 {
+	R8152Dev *r8152_dev = container_of(net_dev, R8152Dev, net_dev);
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
 
@@ -1026,7 +1047,7 @@ static int rtl8152_recv(NetDevice *net_dev, void *buf, uint16_t *len,
 
 	if (partial || offset >= buf_size) {
 		offset = 0;
-		buf_size = usb_dev->controller->bulk_timeout(r8152_dev.bulk_in,
+		buf_size = usb_dev->controller->bulk_timeout(r8152_dev->bulk_in,
 				sizeof(msg) - partial, msg + partial,
 				USB_ETH_BULK_POLL_TIMEOUT_US);
 		if (buf_size == USB_TIMEOUT) {
@@ -1071,6 +1092,7 @@ static int rtl8152_recv(NetDevice *net_dev, void *buf, uint16_t *len,
 
 static const uip_eth_addr *rtl8152_get_mac(NetDevice *net_dev)
 {
+	R8152Dev *r8152_dev = container_of(net_dev, R8152Dev, net_dev);
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
 
@@ -1079,8 +1101,8 @@ static const uip_eth_addr *rtl8152_get_mac(NetDevice *net_dev)
 	if (ocp_read(usb_dev, PlaIdr, sizeof(data), data, McuTypePla))
 		return NULL;
 
-	memcpy(&r8152_dev.mac_addr, data, sizeof(uip_eth_addr));
-	return &r8152_dev.mac_addr;
+	memcpy(&r8152_dev->mac_addr, data, sizeof(uip_eth_addr));
+	return &r8152_dev->mac_addr;
 }
 
 
@@ -1119,26 +1141,43 @@ static const UsbEthId r8152_supported_ids[] = {
 	{ 0x2357, 0x0601 },
 };
 
-static R8152Dev r8152_dev = {
-	.usb_eth_dev = {
-		.net_dev = {
-			.init = &rtl8152_init,
-			.ready = &mii_ready,
-			.recv = &rtl8152_recv,
-			.send = &rtl8152_send,
-			.get_mac = &rtl8152_get_mac,
-			.mdio_read = &rtl8152_mdio_read,
-			.mdio_write = &rtl8152_mdio_write,
-			.recv_window = R8152_RECV_WINDOW,
-		},
-		.supported_ids = r8152_supported_ids,
-		.num_supported_ids = ARRAY_SIZE(r8152_supported_ids),
+static NetDevice *r8152_alloc(struct GenericUsbDevice *usb_dev)
+{
+	R8152Dev *r8152_dev = xmalloc(sizeof(R8152Dev));
+	if (!r8152_dev)
+		return NULL;
+
+	memset(r8152_dev, 0, sizeof(R8152Dev));
+	r8152_dev->net_dev.dev_data = usb_dev;
+	r8152_dev->net_dev.recv_window = R8152_RECV_WINDOW;
+	return &r8152_dev->net_dev;
+}
+
+static void r8152_free(NetDevice *net_dev)
+{
+	R8152Dev *r8152_dev = container_of(net_dev, R8152Dev, net_dev);
+	free(r8152_dev);
+}
+
+static UsbEthDriver r8152_usb_driver = {
+	.supported_ids = r8152_supported_ids,
+	.num_supported_ids = ARRAY_SIZE(r8152_supported_ids),
+	.alloc = &r8152_alloc,
+	.free = &r8152_free,
+	.ops = {
+		.init = &rtl8152_init,
+		.ready = &mii_ready,
+		.recv = &rtl8152_recv,
+		.send = &rtl8152_send,
+		.get_mac = &rtl8152_get_mac,
+		.mdio_read = &rtl8152_mdio_read,
+		.mdio_write = &rtl8152_mdio_write,
 	},
 };
 
 static int r8152_driver_register(void)
 {
-	list_insert_after(&r8152_dev.usb_eth_dev.list_node, &usb_eth_drivers);
+	list_insert_after(&r8152_usb_driver.list_node, &usb_eth_drivers);
 	return 0;
 }
 

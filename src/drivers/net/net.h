@@ -30,20 +30,26 @@ typedef enum NetDeviceInitStatus {
 	NetDeviceFailed,
 } NetDeviceInitStatus;
 
-typedef struct NetDevice {
-	struct list_node list_node;
-	int (*ready)(struct NetDevice *dev, int *ready);
-	int (*recv)(struct NetDevice *dev, void *buf, uint16_t *len,
+typedef struct NetDevice NetDevice;
+
+typedef struct NetDeviceOps {
+	int (*ready)(NetDevice *dev, int *ready);
+	int (*recv)(NetDevice *dev, void *buf, uint16_t *len,
 		int maxlen);
-	int (*send)(struct NetDevice *dev, void *buf, uint16_t len);
-	int (*mdio_read)(struct NetDevice *dev, uint8_t loc, uint16_t *val);
-	int (*mdio_write)(struct NetDevice *dev, uint8_t loc, uint16_t val);
-	const uip_eth_addr *(*get_mac)(struct NetDevice *dev);
-	int (*init)(struct NetDevice *dev);
+	int (*send)(NetDevice *dev, void *buf, uint16_t len);
+	int (*mdio_read)(NetDevice *dev, uint8_t loc, uint16_t *val);
+	int (*mdio_write)(NetDevice *dev, uint8_t loc, uint16_t val);
+	const uip_eth_addr *(*get_mac)(NetDevice *dev);
+	int (*init)(NetDevice *dev);
+} NetDeviceOps;
+
+struct NetDevice {
+	struct list_node list_node;
+	const NetDeviceOps *ops;
 	void *dev_data;
 	NetDeviceInitStatus init_status;
 	uint16_t recv_window;
-} NetDevice;
+};
 
 typedef struct NetPoller {
 	struct list_node list_node;

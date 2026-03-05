@@ -22,13 +22,18 @@ typedef struct UsbEthId {
 	uint16_t product;
 } UsbEthId;
 
-typedef struct UsbEthDevice {
-	NetDevice net_dev;
+typedef struct UsbEthDriver {
 	const UsbEthId *supported_ids;
 	int num_supported_ids;
+	const struct NetDeviceOps ops;
+
+	/* Called to allocate a new device instance */
+	NetDevice *(*alloc)(struct GenericUsbDevice *dev);
+	/* Called to free a device instance */
+	void (*free)(NetDevice *net_dev);
 
 	struct list_node list_node;
-} UsbEthDevice;
+} UsbEthDriver;
 
 extern struct list_node usb_eth_drivers;
 

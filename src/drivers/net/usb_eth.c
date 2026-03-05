@@ -76,21 +76,25 @@ int usb_eth_init_endpoints(usbdev_t *dev, endpoint_t **in, int in_idx,
 
 struct list_node usb_eth_drivers;
 
-static NetDevice *usb_eth_net_device;
-
 static int usb_eth_probe(GenericUsbDevice *dev)
 {
 	int i;
-	UsbEthDevice *eth_dev;
+	UsbEthDriver *eth_driver;
 
 	device_descriptor_t *dd = (device_descriptor_t *)dev->dev->descriptor;
-	list_for_each(eth_dev, usb_eth_drivers, list_node) {
-		for (i = 0; i < eth_dev->num_supported_ids; i++) {
-			if (dd->idVendor == eth_dev->supported_ids[i].vendor &&
-			   dd->idProduct == eth_dev->supported_ids[i].product) {
-				usb_eth_net_device = &eth_dev->net_dev;
-				usb_eth_net_device->dev_data = dev;
-				net_add_device(usb_eth_net_device);
+	list_for_each(eth_driver, usb_eth_drivers, list_node) {
+		for (i = 0; i < eth_driver->num_supported_ids; i++) {
+			if (dd->idVendor == eth_driver->supported_ids[i].vendor &&
+			    dd->idProduct == eth_driver->supported_ids[i].product) {
+				NetDevice *net_dev = eth_driver->alloc(dev);
+				if (!net_dev) {
+					printf("USB ETH: Failed to allocate device instance\n");
+					return 0;
+				}
+
+				net_dev->ops = &eth_driver->ops;
+				dev->dev_data = net_dev;
+				net_add_device(net_dev);
 				return 1;
 			}
 		}
@@ -100,7 +104,15 @@ static int usb_eth_probe(GenericUsbDevice *dev)
 
 static void usb_eth_remove(GenericUsbDevice *dev)
 {
-	net_remove_device(usb_eth_net_device);
+	NetDevice *net_dev = (NetDevice *)dev->dev_data;
+	if (net_dev == NULL)
+		return;
+
+	net_remove_device(net_dev);
+
+	UsbEthDriver *eth_driver = container_of(net_dev->ops, UsbEthDriver, ops);
+	eth_driver->free(net_dev);
+	dev->dev_data = NULL;
 }
 
 static void usb_net_poller(struct NetPoller *poller)

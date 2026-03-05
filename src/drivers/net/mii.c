@@ -21,24 +21,24 @@
 static int mii_restart_autoneg(NetDevice *dev)
 {
 	uint16_t bmsr;
-	if (dev->mdio_read(dev, MiiBmsr, &bmsr))
+	if (dev->ops->mdio_read(dev, MiiBmsr, &bmsr))
 		return 1;
 
 	if (!(bmsr & BmsrAnegCapable)) {
 		printf("No AutoNeg, falling back to 100baseTX\n");
-		return dev->mdio_write(dev, MiiBmcr,
+		return dev->ops->mdio_write(dev, MiiBmcr,
 			BmcrSpeedSel | BmcrDuplexMode);
 	} else {
-		return dev->mdio_write(dev, MiiBmcr,
+		return dev->ops->mdio_write(dev, MiiBmcr,
 			BmcrAutoNegEnable | BmcrRestartAutoNeg);
 	}
 }
 
 int mii_phy_initialize(NetDevice *dev)
 {
-	if (dev->mdio_write(dev, MiiBmcr, BmcrReset))
+	if (dev->ops->mdio_write(dev, MiiBmcr, BmcrReset))
 		return 1;
-	if (dev->mdio_write(dev, MiiAnar, AdvertiseAll | AdvertiseCsma))
+	if (dev->ops->mdio_write(dev, MiiAnar, AdvertiseAll | AdvertiseCsma))
 		return 1;
 
 	if (mii_restart_autoneg(dev))
@@ -49,7 +49,7 @@ int mii_phy_initialize(NetDevice *dev)
 int mii_ready(NetDevice *dev, int *ready)
 {
 	uint16_t link_status = 0;
-	if (dev->mdio_read(dev, MiiBmsr, &link_status)) {
+	if (dev->ops->mdio_read(dev, MiiBmsr, &link_status)) {
 		printf("Failed to read BMSR.\n");
 		return 1;
 	}

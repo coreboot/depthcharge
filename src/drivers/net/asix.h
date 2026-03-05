@@ -110,7 +110,7 @@ enum {
 };
 
 typedef struct AsixDev {
-	UsbEthDevice usb_eth_dev;
+	NetDevice net_dev;
 	endpoint_t *bulk_in;
 	endpoint_t *bulk_out;
 	uip_eth_addr mac_addr;

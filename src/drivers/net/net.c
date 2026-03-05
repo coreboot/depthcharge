@@ -40,10 +40,11 @@ void net_add_device(NetDevice *dev)
 		}
 
 	if (dev) {
-		assert(dev->ready);
-		assert(dev->recv);
-		assert(dev->send);
-		assert(dev->get_mac);
+		assert(dev->ops);
+		assert(dev->ops->ready);
+		assert(dev->ops->recv);
+		assert(dev->ops->send);
+		assert(dev->ops->get_mac);
 	}
 
 	printf("Adding net device\n");
@@ -69,11 +70,11 @@ static int net_init_device(NetDevice *new_device)
 {
 	int err;
 
-	if (!new_device->init)
+	if (!new_device->ops->init)
 		return 0;
 
 	if (new_device->init_status == NetDeviceNotInitted) {
-		err = new_device->init(new_device);
+		err = new_device->ops->init(new_device);
 		new_device->init_status = err ?
 			NetDeviceFailed : NetDeviceInitted;
 	}
@@ -105,7 +106,7 @@ int net_wait_for_link(bool loop)
 				continue;
 
 			/* the first link up wins */
-			new_device->ready(new_device, &ready);
+			new_device->ops->ready(new_device, &ready);
 			if (ready) {
 				net_device = new_device;
 				/* Set TCP receive window supported by the device */
@@ -148,7 +149,7 @@ int net_poll(void)
 	}
 
 	struct uip_eth_hdr *hdr = (struct uip_eth_hdr *)uip_buf;
-	ret = net_device->recv(net_device, uip_buf, &uip_len, CONFIG_UIP_BUFSIZE);
+	ret = net_device->ops->recv(net_device, uip_buf, &uip_len, CONFIG_UIP_BUFSIZE);
 	if (ret)
 		printf("Receive failed. (%d)\n", ret);
 	if (!ret && uip_len) {
@@ -157,12 +158,12 @@ int net_poll(void)
 			uip_input();
 			if (uip_len > 0) {
 				uip_arp_out();
-				net_device->send(net_device, uip_buf, uip_len);
+				net_device->ops->send(net_device, uip_buf, uip_len);
 			}
 		} else if (hdr->type == htonw(UIP_ETHTYPE_ARP)) {
 			uip_arp_arpin();
 			if (uip_len > 0)
-				net_device->send(net_device, uip_buf, uip_len);
+				net_device->ops->send(net_device, uip_buf, uip_len);
 		}
 	} else if (timer_us(periodic_timer_us) > UIP_PERIODIC_INTERVAL_US) {
 		periodic_timer_us = timer_us(0);
@@ -170,7 +171,7 @@ int net_poll(void)
 			uip_periodic(i);
 			if (uip_len > 0) {
 				uip_arp_out();
-				net_device->send(net_device, uip_buf, uip_len);
+				net_device->ops->send(net_device, uip_buf, uip_len);
 			}
 		}
 		if (timer_us(arp_timer_us) > UIP_ARP_INTERVAL_US) {
@@ -188,7 +189,7 @@ int net_send(void *buf, uint16_t len)
 		printf("No network device.\n");
 		return 1;
 	}
-	return net_device->send(net_device, buf, len);
+	return net_device->ops->send(net_device, buf, len);
 }
 
 const uip_eth_addr *net_get_mac(void)
@@ -197,5 +198,5 @@ const uip_eth_addr *net_get_mac(void)
 		printf("No network device.\n");
 		return NULL;
 	}
-	return net_device->get_mac(net_device);
+	return net_device->ops->get_mac(net_device);
 }

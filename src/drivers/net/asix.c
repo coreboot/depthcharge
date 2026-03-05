@@ -28,8 +28,6 @@
 #include "drivers/net/net.h"
 #include "drivers/net/usb_eth.h"
 
-static AsixDev asix_dev;
-
 /*
  * Utility functions.
  */
@@ -90,46 +88,48 @@ static int asix_set_hw_mii(usbdev_t *dev)
 	return 0;
 }
 
-static int asix_mdio_read(NetDevice *dev, uint8_t loc, uint16_t *val)
+static int asix_mdio_read(NetDevice *net_dev, uint8_t loc, uint16_t *val)
 {
-	GenericUsbDevice *gen_dev = (GenericUsbDevice *)dev->dev_data;
+	AsixDev *asix_dev = container_of(net_dev, AsixDev, net_dev);
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
 
 	if (asix_set_sw_mii(usb_dev) ||
-	    usb_eth_read_reg(usb_dev, PhyRegRead, asix_dev.phy_id,
+	    usb_eth_read_reg(usb_dev, PhyRegRead, asix_dev->phy_id,
 			     loc, sizeof(*val), val) ||
 	    asix_set_hw_mii(usb_dev)) {
 		printf("ASIX: MDIO read failed (phy ID %#x, loc %#x).\n",
-		       asix_dev.phy_id, loc);
+		       asix_dev->phy_id, loc);
 		return 1;
 	}
 	return 0;
 }
 
-static int asix_mdio_write(NetDevice *dev, uint8_t loc, uint16_t val)
+static int asix_mdio_write(NetDevice *net_dev, uint8_t loc, uint16_t val)
 {
-	GenericUsbDevice *gen_dev = (GenericUsbDevice *)dev->dev_data;
+	AsixDev *asix_dev = container_of(net_dev, AsixDev, net_dev);
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
 
 	val = htolew(val);
 	if (asix_set_sw_mii(usb_dev) ||
-	    usb_eth_write_reg(usb_dev, PhyRegWrite, asix_dev.phy_id,
+	    usb_eth_write_reg(usb_dev, PhyRegWrite, asix_dev->phy_id,
 			      loc, sizeof(val), &val) ||
 	    asix_set_hw_mii(usb_dev)) {
 		printf("ASIX: MDIO write failed (phy ID %#x, loc %#x.\n",
-		       asix_dev.phy_id, loc);
+		       asix_dev->phy_id, loc);
 		return 1;
 	}
 	return 0;
 }
 
-static int asix_wait_for_phy(NetDevice *dev)
+static int asix_wait_for_phy(NetDevice *net_dev)
 {
 	int i;
 	uint16_t bmsr;
 
 	for (i = 0; i < 100; i++) {
-		if (asix_mdio_read(dev, MiiBmsr, &bmsr))
+		if (asix_mdio_read(net_dev, MiiBmsr, &bmsr))
 			return 1;
 		if (bmsr)
 			return 0;
@@ -156,11 +156,12 @@ static int asix_write_medium_mode(usbdev_t *dev, uint16_t mode)
 
 static int asix_init(NetDevice *net_dev)
 {
+	AsixDev *asix_dev = container_of(net_dev, AsixDev, net_dev);
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
 
-	if (usb_eth_init_endpoints(usb_dev, &asix_dev.bulk_in, 2,
-				   &asix_dev.bulk_out, 3)) {
+	if (usb_eth_init_endpoints(usb_dev, &asix_dev->bulk_in, 2,
+				   &asix_dev->bulk_out, 3)) {
 		printf("ASIX: Problem with the endpoints.\n");
 		return 1;
 	}
@@ -168,10 +169,10 @@ static int asix_init(NetDevice *net_dev)
 	if (asix_write_gpio(usb_dev, GpioGpo2En | GpioGpo2 | GpioRse))
 		return 1;
 
-	asix_dev.phy_id = asix_phy_addr(usb_dev);
-	if (asix_dev.phy_id < 0)
+	asix_dev->phy_id = asix_phy_addr(usb_dev);
+	if (asix_dev->phy_id < 0)
 		return 1;
-	int embed_phy = (asix_dev.phy_id & 0x1f) == 0x10 ? 1 : 0;
+	int embed_phy = (asix_dev->phy_id & 0x1f) == 0x10 ? 1 : 0;
 	if (usb_eth_write_reg(usb_dev, SoftPhySelRegWrite, embed_phy, 0, 0,
 			NULL)) {
 		printf("ASIX: Failed to select PHY.\n");
@@ -187,10 +188,10 @@ static int asix_init(NetDevice *net_dev)
 	if (asix_write_rx_ctl(usb_dev, 0))
 		return 1;
 
-	if (asix_wait_for_phy(&asix_dev.usb_eth_dev.net_dev))
+	if (asix_wait_for_phy(net_dev))
 		return 1;
 
-	if (mii_phy_initialize(&asix_dev.usb_eth_dev.net_dev))
+	if (mii_phy_initialize(net_dev))
 		return 1;
 
 	if (asix_write_medium_mode(usb_dev, MediumDefault))
@@ -210,6 +211,7 @@ static int asix_init(NetDevice *net_dev)
 
 static int asix_send(NetDevice *net_dev, void *buf, uint16_t len)
 {
+	AsixDev *asix_dev = container_of(net_dev, AsixDev, net_dev);
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
 
@@ -228,7 +230,7 @@ static int asix_send(NetDevice *net_dev, void *buf, uint16_t len)
 	if (len & 1)
 		len++;
 
-	if (usb_dev->controller->bulk(asix_dev.bulk_out,
+	if (usb_dev->controller->bulk(asix_dev->bulk_out,
 			len + sizeof(packet_len), msg, 0) < 0) {
 		printf("ASIX: Failed to send packet.\n");
 		return 1;
@@ -239,6 +241,7 @@ static int asix_send(NetDevice *net_dev, void *buf, uint16_t len)
 
 static int asix_recv(NetDevice *net_dev, void *buf, uint16_t *len, int maxlen)
 {
+	AsixDev *asix_dev = container_of(net_dev, AsixDev, net_dev);
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
 
@@ -249,7 +252,7 @@ static int asix_recv(NetDevice *net_dev, void *buf, uint16_t *len, int maxlen)
 
 	if (offset >= buf_size) {
 		offset = 0;
-		buf_size = usb_dev->controller->bulk(asix_dev.bulk_in,
+		buf_size = usb_dev->controller->bulk(asix_dev->bulk_in,
 				RxUrbSize, msg, 0);
 		if (buf_size < 0)
 			return 1;
@@ -287,16 +290,17 @@ static int asix_recv(NetDevice *net_dev, void *buf, uint16_t *len, int maxlen)
 
 static const uip_eth_addr *asix_get_mac(NetDevice *net_dev)
 {
+	AsixDev *asix_dev = container_of(net_dev, AsixDev, net_dev);
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
 
 	if (usb_eth_read_reg(usb_dev, NodeIdRead, 0, 0, sizeof(uip_eth_addr),
-			&asix_dev.mac_addr)) {
+			&asix_dev->mac_addr)) {
 		printf("ASIX: Failed to retrieve MAC address.\n");
 		return NULL;
-	} else {
-		return &asix_dev.mac_addr;
 	}
+
+	return &asix_dev->mac_addr;
 }
 
 
@@ -316,25 +320,42 @@ static const UsbEthId asix_supported_ids[] = {
 	{ 0x0b95, 0x7e2b },
 };
 
-static AsixDev asix_dev = {
-	.usb_eth_dev = {
-		.net_dev = {
-			.init = &asix_init,
-			.ready = &mii_ready,
-			.recv = &asix_recv,
-			.send = &asix_send,
-			.get_mac = &asix_get_mac,
-			.mdio_read = &asix_mdio_read,
-			.mdio_write = &asix_mdio_write,
-		},
-		.supported_ids = asix_supported_ids,
-		.num_supported_ids = ARRAY_SIZE(asix_supported_ids),
+static NetDevice *asix_alloc(struct GenericUsbDevice *usb_dev)
+{
+	AsixDev *asix_dev = xmalloc(sizeof(AsixDev));
+	if (!asix_dev)
+		return NULL;
+
+	memset(asix_dev, 0, sizeof(AsixDev));
+	asix_dev->net_dev.dev_data = usb_dev;
+	return &asix_dev->net_dev;
+}
+
+static void asix_free(NetDevice *net_dev)
+{
+	AsixDev *asix_dev = container_of(net_dev, AsixDev, net_dev);
+	free(asix_dev);
+}
+
+static UsbEthDriver asix_usb_driver = {
+	.supported_ids = asix_supported_ids,
+	.num_supported_ids = ARRAY_SIZE(asix_supported_ids),
+	.alloc = &asix_alloc,
+	.free = &asix_free,
+	.ops = {
+		.init = &asix_init,
+		.ready = &mii_ready,
+		.recv = &asix_recv,
+		.send = &asix_send,
+		.get_mac = &asix_get_mac,
+		.mdio_read = &asix_mdio_read,
+		.mdio_write = &asix_mdio_write,
 	},
 };
 
 static int asix_driver_register(void)
 {
-	list_insert_after(&asix_dev.usb_eth_dev.list_node, &usb_eth_drivers);
+	list_insert_after(&asix_usb_driver.list_node, &usb_eth_drivers);
 	return 0;
 }
 

@@ -868,6 +868,13 @@ const gpio_func_data_t gmac0_gpio[] = {
 	}
 };
 
+static const struct NetDeviceOps ipq_net_ops = {
+	.ready = &ipq_phy_check_link,
+	.recv = &ipq_eth_recv,
+	.send = &ipq_eth_send,
+	.get_mac = &ipq_get_mac,
+};
+
 static int ipq_eth_init(void)
 {
 	NetDevice *ipq_network_device;
@@ -883,10 +890,7 @@ static int ipq_eth_init(void)
 	if (!ipq_network_device)
 		return -1;
 
-	ipq_network_device->ready = ipq_phy_check_link;
-	ipq_network_device->recv = ipq_eth_recv;
-	ipq_network_device->send = ipq_eth_send;
-	ipq_network_device->get_mac = ipq_get_mac;
+	ipq_network_device->ops = &ipq_net_ops;
 
 	net_add_device(ipq_network_device);
 

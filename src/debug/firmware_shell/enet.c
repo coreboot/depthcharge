@@ -19,7 +19,7 @@ static NetDevice *get_net_device(void)
 	int ready = 0;
 
 	if (ndev)
-		ndev->ready(ndev, &ready);
+		ndev->ops->ready(ndev, &ready);
 
 	if (!ready) {
 		net_wait_for_link(true);
@@ -55,7 +55,7 @@ static int do_enet(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		addr = strtoul(argv[2], 0, 16);
 		length = strtoul(argv[1], 0, 0);
 
-		ndev->send(ndev, (void *) addr, length);
+		ndev->ops->send(ndev, (void *) addr, length);
 		return CMD_RET_SUCCESS;
 	}
 
