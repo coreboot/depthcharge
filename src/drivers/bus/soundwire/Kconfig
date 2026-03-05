@@ -8,7 +8,7 @@ config DRIVER_BUS_SOUNDWIRE
 
 config DRIVER_BUS_SOUNDWIRE_INTEL
 	bool "Soundwire driver for Intel platforms"
-	default y if DRIVER_BUS_SOUNDWIRE
+	default y if DRIVER_BUS_SOUNDWIRE && !DRIVER_BUS_SOUNDWIRE_QCOM
 
 config INTEL_COMMON_SNDW_CAVS_2_5
 	bool "Intel cavs 2.5 specification"
@@ -21,3 +21,8 @@ config INTEL_COMMON_SOUNDWIRE_ACE_1_x
 config INTEL_COMMON_SOUNDWIRE_ACE_3_x
 	bool "Intel ACE 3.x specification"
 	default n
+
+config DRIVER_BUS_SOUNDWIRE_QCOM
+	bool "Soundwire driver for Qualcomm platforms"
+	default n
+	select DRIVER_BUS_SOUNDWIRE

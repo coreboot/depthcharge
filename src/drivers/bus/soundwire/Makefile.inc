@@ -3,3 +3,4 @@
 # Copyright 2020-2026 Google LLC.
 
 depthcharge-$(CONFIG_DRIVER_BUS_SOUNDWIRE_INTEL) += intel/soundwire_intel.c
+depthcharge-$(CONFIG_DRIVER_BUS_SOUNDWIRE_QCOM) += qcom/soundwire_qcom.c
