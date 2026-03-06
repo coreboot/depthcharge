@@ -43,6 +43,9 @@ depthcharge-$(CONFIG_DRIVER_SOC_METEORLAKE) += intel_gpio.c
 depthcharge-$(CONFIG_DRIVER_SOC_PANTHERLAKE) += pantherlake.c
 depthcharge-$(CONFIG_DRIVER_SOC_PANTHERLAKE) += intel_common.c
 depthcharge-$(CONFIG_DRIVER_SOC_PANTHERLAKE) += intel_gpio.c
+depthcharge-$(CONFIG_DRIVER_SOC_NOVALAKE) += novalake.c
+depthcharge-$(CONFIG_DRIVER_SOC_NOVALAKE) += intel_common.c
+depthcharge-$(CONFIG_DRIVER_SOC_NOVALAKE) += intel_gpio.c
 
 subdirs-y += cse
 subdirs-y += pmic
