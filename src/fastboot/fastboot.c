@@ -116,7 +116,7 @@ void fastboot_prepare_download(struct FastbootOps *fb, uint32_t bytes) {
 
 bool fastboot_is_finished(struct FastbootOps *fb)
 {
-	return fb->state == FINISHED || fb->state == REBOOT;
+	return fb->state == FINISHED || fb->state == REBOOT || fb->state == DISCONNECTED;
 }
 
 void *fastboot_get_memory_buffer(struct FastbootOps *fb, uint64_t *len)
@@ -212,6 +212,7 @@ void fastboot_handle_packet(struct FastbootOps *fb, void *data, uint64_t len)
 		break;
 	case FINISHED:
 	case REBOOT:
+	case DISCONNECTED:
 		break;
 	default:
 		die("Unknown state %d\n", fb->state);
@@ -256,7 +257,7 @@ struct FastbootOps *fastboot_init(void)
 	return fb_session;
 }
 
-void fastboot_release(struct FastbootOps *fb_session)
+enum fastboot_state fastboot_release(struct FastbootOps *fb_session)
 {
 	enum fastboot_state final_state;
 
@@ -267,6 +268,8 @@ void fastboot_release(struct FastbootOps *fb_session)
 
 	if (final_state == REBOOT)
 		reboot();
+
+	return final_state;
 }
 
 void fastboot_poll(struct FastbootOps *fb_session, uint32_t timeout_ms)
@@ -298,43 +301,47 @@ static bool fastboot_exit_on_key(void)
 
 void fastboot(void)
 {
-	struct FastbootOps *fb_session = NULL;
+	struct FastbootOps *fb_session;
 
 	/* TODO(b/370988331): Replace this with actual UI */
 	bool video_present = !video_init();
-	if (video_present) {
-		video_console_clear();
-		/* Print red "Fastboot" on the top */
-		video_console_set_cursor(0, 0);
-		video_printf(1, 0, VIDEO_PRINTF_ALIGN_LEFT, "Fastboot\n");
-		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT,
-			     "(press ENTER or POWER to exit (wait up to 10s after press))\n");
-		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for connection");
-	}
+	do {
+		fb_session = NULL;
 
-	while (fb_session == NULL) {
-		if (fastboot_exit_on_key())
-			return;
-
-		fb_session = fastboot_init();
-	}
-
-	if (video_present) {
-		video_console_set_cursor(0, 2);
-		switch (fb_session->type) {
-		case FASTBOOT_TCP_CONN:
-			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Network connected  ");
-			break;
-		case FASTBOOT_USB_CONN:
-			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "USB connected      ");
-			break;
+		if (video_present) {
+			video_console_clear();
+			/* Print red "Fastboot" on the top */
+			video_console_set_cursor(0, 0);
+			video_printf(1, 0, VIDEO_PRINTF_ALIGN_LEFT, "Fastboot\n");
+			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT,
+				     "(press ENTER or POWER to exit (wait up to 10s after press))\n");
+			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, "Wait for connection");
 		}
-		video_console_set_cursor(0, 3);
-		video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, fb_session->serial);
-	}
 
-	while (!fastboot_is_finished(fb_session) && !fastboot_exit_on_key())
-		fastboot_poll(fb_session, FASTBOOT_MIN_POLL_TIME_US);
+		while (fb_session == NULL) {
+			if (fastboot_exit_on_key())
+				return;
 
-	fastboot_release(fb_session);
+			fb_session = fastboot_init();
+		}
+
+		if (video_present) {
+			video_console_set_cursor(0, 2);
+			switch (fb_session->type) {
+			case FASTBOOT_TCP_CONN:
+				video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT,
+					     "Network connected  ");
+				break;
+			case FASTBOOT_USB_CONN:
+				video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT,
+					     "USB connected      ");
+				break;
+			}
+			video_console_set_cursor(0, 3);
+			video_printf(0, 0, VIDEO_PRINTF_ALIGN_LEFT, fb_session->serial);
+		}
+
+		while (!fastboot_is_finished(fb_session) && !fastboot_exit_on_key())
+			fastboot_poll(fb_session, FASTBOOT_MIN_POLL_TIME_US);
+	} while (fastboot_release(fb_session) == DISCONNECTED);
 }

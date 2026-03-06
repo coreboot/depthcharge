@@ -415,7 +415,9 @@ static enum fastboot_transport_state fastboot_tcp_poll(struct FastbootOps *fb)
 		container_of(fb, struct fastboot_tcp_session, fb_session);
 
 	tcp->link_state = FASTBOOT_TRANSPORT_IDLE;
-	net_poll();
+
+	if (net_poll() == -1)
+		fb->state = DISCONNECTED;
 
 	if (!list_is_empty(&tcp->txq))
 		tcp->link_state = FASTBOOT_TRANSPORT_TX_IN_PROGRESS;

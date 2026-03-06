@@ -15,7 +15,7 @@ __weak void fastboot(void) { /* do nothing */ }
 
 __weak struct FastbootOps *fastboot_init(void) { return NULL; }
 __weak bool fastboot_is_finished(struct FastbootOps *fb) { return true; }
-__weak void fastboot_release(struct FastbootOps *fb_session) { /* do nothing */ }
+__weak enum fastboot_state fastboot_release(struct FastbootOps *fb_session) { return FINISHED; }
 
 __weak void fastboot_poll(struct FastbootOps *fb_session, uint32_t timeout_ms)
 {

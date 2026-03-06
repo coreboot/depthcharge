@@ -198,7 +198,7 @@ static void usb_fastboot_remove(GenericUsbDevice *dev)
 
 	if (is_usb_fastboot_in_use(usb_fb_dev)) {
 		/* Disconnect fastboot and wait for FastbootOps.release */
-		usb_fb_dev->fb_session.state = FINISHED;
+		usb_fb_dev->fb_session.state = DISCONNECTED;
 		usb_fb_dev->fb_session.serial = NULL;
 		usb_fb_dev->bulk_in = NULL;
 		usb_fb_dev->bulk_out = NULL;

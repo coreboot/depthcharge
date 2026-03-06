@@ -55,6 +55,8 @@ enum fastboot_state {
 	FINISHED,
 	/* Session finished, reboot */
 	REBOOT,
+	/* Session finished, link layer disconnected */
+	DISCONNECTED,
 };
 
 enum fastboot_transport_state {
@@ -135,9 +137,9 @@ void fastboot_reset_staging(struct FastbootOps *fb);
 struct FastbootOps *fastboot_init(void);
 /*
  * Release all fastboot related resources. It will call reboot if it was requested by
- * fastboot command.
+ * fastboot command. Returns last state of fb_session.
  */
-void fastboot_release(struct FastbootOps *fb_session);
+enum fastboot_state fastboot_release(struct FastbootOps *fb_session);
 /*
  * Wait and handle incoming messages. Timeout is a hint how long to wait for a message, but
  * the function may block for longer time if there is incoming traffic.
