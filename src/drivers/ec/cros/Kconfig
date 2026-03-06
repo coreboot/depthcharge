@@ -54,6 +54,15 @@ config CROS_EC_ENABLE_RTK
 	default n
 	depends on DRIVER_EC_CROS_LPC
 
+config CROS_EC_RTK_SHARED_MEM_BASE
+	hex "RTK EC shared memory MMIO base address"
+	default 0xfe400000 if DRIVER_SOC_NOVALAKE
+	default 0xfe0b0000
+	help
+	  MMIO base address of the Realtek EC shared memory window mapped
+	  into the host physical address space. This differs between SoC
+	  generations (e.g. 0xfe0b0000 for PTL/Brox, 0xfe400000 for NVL).
+
 config CROS_EC_BATTERY_SOC_DYNAMIC
 	bool "Calculate battery SoC from raw data"
 	default n
