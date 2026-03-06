@@ -131,6 +131,11 @@ config DRIVER_GPIO_PANTHERLAKE
 	bool "Intel Pantherlake GPIO driver"
 	default n
 
+config DRIVER_GPIO_NOVALAKE
+	bool "Intel Novalake GPIO driver"
+	default y if DRIVER_SOC_NOVALAKE
+	default n
+
 config DRIVER_GPIO_WILDCATLAKE
 	bool "Intel Wildcatlake GPIO driver"
 	default n

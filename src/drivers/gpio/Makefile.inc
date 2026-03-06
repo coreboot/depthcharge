@@ -35,6 +35,7 @@ depthcharge-$(CONFIG_DRIVER_GPIO_MT8195) += mtk_gpio.c mtk_eint_v1.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8196) += mtk_gpio.c mtk_eint_v2.c mt8196_eint.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MVMAP2315) += mvmap2315.c
 depthcharge-$(CONFIG_DRIVER_GPIO_PANTHERLAKE) += pantherlake.c
+depthcharge-$(CONFIG_DRIVER_GPIO_NOVALAKE) += novalake.c
 depthcharge-$(CONFIG_DRIVER_GPIO_PANTHERPOINT) += pantherpoint.c
 depthcharge-$(CONFIG_DRIVER_GPIO_PCH) += pch.c
 depthcharge-$(CONFIG_DRIVER_GPIO_ROCKCHIP) += rockchip.c
