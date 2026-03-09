@@ -432,7 +432,6 @@ static void print_mac_addr(const uip_eth_addr *mac)
 int dhcp_request(uip_ipaddr_t *next_ip, uip_ipaddr_t *server_ip,
 		 const char **bootfile)
 {
-	static int mac_addr_set = 0;
 	DhcpPacket out, in;
 	uint8_t byte;
 	uint8_t *options;
@@ -442,17 +441,14 @@ int dhcp_request(uip_ipaddr_t *next_ip, uip_ipaddr_t *server_ip,
 	uint16_t max_size = htonw(DhcpMaxPacketSize);
 	uip_ipaddr_t addr;
 
-	if (!mac_addr_set) {
-		// Plug in the MAC address.
-		const uip_eth_addr *mac_addr = net_get_mac();
-		if (!mac_addr)
-			halt();
-		printf("MAC: ");
-		print_mac_addr(mac_addr);
-		printf("\n");
-		uip_setethaddr(*mac_addr);
-		mac_addr_set = 1;
-	}
+	// Plug in the MAC address.
+	const uip_eth_addr *mac_addr = net_get_mac();
+	if (!mac_addr)
+		halt();
+	printf("MAC: ");
+	print_mac_addr(mac_addr);
+	printf("\n");
+	uip_setethaddr(*mac_addr);
 
 	/* Make sure that our IP isn't set */
 	uip_ipaddr(&addr, 0, 0, 0, 0);
