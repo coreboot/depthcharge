@@ -136,7 +136,7 @@ int net_wait_for_link(bool loop)
 /* According to uip_arp_timer it should be called once every 10 seconds */
 #define UIP_ARP_INTERVAL_US (10 * USECS_PER_SEC)
 
-void net_poll(void)
+int net_poll(void)
 {
 	int ret;
 	static uint32_t periodic_timer_us = 0;
@@ -144,7 +144,7 @@ void net_poll(void)
 
 	if (!net_device) {
 		printf("No network device.\n");
-		return;
+		return -1;
 	}
 
 	struct uip_eth_hdr *hdr = (struct uip_eth_hdr *)uip_buf;
@@ -178,6 +178,8 @@ void net_poll(void)
 			uip_arp_timer();
 		}
 	}
+
+	return ret;
 }
 
 int net_send(void *buf, uint16_t len)

@@ -53,7 +53,11 @@ typedef struct NetPoller {
 void net_add_device(NetDevice *dev);
 void net_remove_device(NetDevice *dev);
 NetDevice *net_get_device(void);
-void net_poll(void);
+/*
+ * Returns 0 on success, -1 when there is no net_device, error code from net_device recv
+ * callback otherwise.
+ */
+int net_poll(void);
 int net_send(void *buf, uint16_t len);
 int net_wait_for_link(bool loop);
 const uip_eth_addr *net_get_mac(void);
