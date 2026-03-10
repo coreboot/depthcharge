@@ -828,6 +828,18 @@ static void test_fb_getvar_hardware_descriptor(void **state)
 	TEST_FASTBOOT_GETVAR_OK(VAR_HW_DESC, "", "unknown");
 }
 
+static void test_fb_getvar_imei(void **state)
+{
+	WILL_VPD_FIND("imei", 4, "123456");
+	TEST_FASTBOOT_GETVAR_OK(VAR_IMEI, "", "1234");
+
+	WILL_VPD_FIND("imei", 0, "123456");
+	TEST_FASTBOOT_GETVAR_OK(VAR_IMEI, "", "unknown");
+
+	WILL_VPD_FIND("imei", 2, NULL);
+	TEST_FASTBOOT_GETVAR_OK(VAR_IMEI, "", "unknown");
+}
+
 static void test_fb_getvar_has_slot(void **state)
 {
 	GptEntry *part = (void *)0xcafe;
@@ -1284,6 +1296,9 @@ static void test_fb_cmd_getvar_all(void **state)
 	/* Setup for hardware_descriptor */
 	WILL_VPD_FIND("hardware_descriptor", 4, "DESC");
 
+	/* Setup for imei */
+	WILL_VPD_FIND("imei", 4, "1234");
+
 	/* Setup for Total-block-count */
 	test_disk.block_count = 0x5000;
 
@@ -1331,6 +1346,7 @@ static void test_fb_cmd_getvar_all(void **state)
 	check_fb_cmd_getvar_all_contains("INFOmac:0:12:34:56:78:9a:bc");
 	check_fb_cmd_getvar_all_contains("INFOmac:1:de:f0:12:34:56:78");
 	check_fb_cmd_getvar_all_contains("INFOhw-desc:DESC");
+	check_fb_cmd_getvar_all_contains("INFOimei:1234");
 
 	assert_true(list_is_empty(&packets_list));
 }
@@ -1408,6 +1424,9 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	/* Setup for hardware_descriptor */
 	WILL_VPD_FIND("hardware_descriptor", 4, "DESC");
 
+	/* Setup for imei */
+	WILL_VPD_FIND("imei", 4, "1234");
+
 	/* Setup for Total-block-count */
 	test_disk.block_count = 0x5000;
 
@@ -1454,6 +1473,7 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	check_fb_cmd_getvar_all_contains("INFOmac:0:12:34:56:78:9a:bc");
 	check_fb_cmd_getvar_all_contains("INFOmac:1:de:f0:12:34:56:78");
 	check_fb_cmd_getvar_all_contains("INFOhw-desc:DESC");
+	check_fb_cmd_getvar_all_contains("INFOimei:1234");
 
 	assert_true(list_is_empty(&packets_list));
 }
@@ -1518,6 +1538,7 @@ int main(void)
 		TEST(test_fb_getvar_mfg_sku),
 		TEST(test_fb_getvar_mac),
 		TEST(test_fb_getvar_hardware_descriptor),
+		TEST(test_fb_getvar_imei),
 		TEST(test_fb_getvar_has_slot),
 		TEST(test_fb_getvar_has_no_slot),
 		TEST(test_fb_getvar_has_slot_no_partition),
