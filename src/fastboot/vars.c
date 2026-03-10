@@ -57,6 +57,7 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 	VAR_ARGS("has-slot", ':', VAR_HAS_SLOT),
 	VAR_NO_ARGS("mfg-sku", VAR_MFG_SKU_ID),
 	VAR_ARGS("mac", ':', VAR_WIFI_MAC),
+	VAR_NO_ARGS("hw-desc", VAR_HW_DESC),
 	{.name = NULL},
 };
 
@@ -456,6 +457,17 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 			return STATE_LAST;
 		}
 
+		break;
+	}
+	case VAR_HW_DESC: {
+		u32 vpd_size;
+		const unsigned char *vpd_data = vpd_find("hardware_descriptor", NULL, NULL,
+							 &vpd_size);
+		if (vpd_data && vpd_size > 0)
+			used_len = snprintf(outbuf, outbuf_len, "%.*s",
+					       (int)vpd_size, vpd_data);
+		else
+			used_len = snprintf(outbuf, outbuf_len, "unknown");
 		break;
 	}
 	default:

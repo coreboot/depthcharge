@@ -816,6 +816,18 @@ static void test_fb_getvar_mac(void **state)
 	TEST_FASTBOOT_GETVAR_ERR(VAR_WIFI_MAC, "0", STATE_LAST);
 }
 
+static void test_fb_getvar_hardware_descriptor(void **state)
+{
+	WILL_VPD_FIND("hardware_descriptor", 4, "DESCRIPTION");
+	TEST_FASTBOOT_GETVAR_OK(VAR_HW_DESC, "", "DESC");
+
+	WILL_VPD_FIND("hardware_descriptor", 0, "DESCRIPTION");
+	TEST_FASTBOOT_GETVAR_OK(VAR_HW_DESC, "", "unknown");
+
+	WILL_VPD_FIND("hardware_descriptor", 2, NULL);
+	TEST_FASTBOOT_GETVAR_OK(VAR_HW_DESC, "", "unknown");
+}
+
 static void test_fb_getvar_has_slot(void **state)
 {
 	GptEntry *part = (void *)0xcafe;
@@ -1269,6 +1281,9 @@ static void test_fb_cmd_getvar_all(void **state)
 	WILL_VPD_FIND("wifi_mac1", 17, "de:f0:12:34:56:78");
 	WILL_VPD_FIND("wifi_mac2", 0, NULL);
 
+	/* Setup for hardware_descriptor */
+	WILL_VPD_FIND("hardware_descriptor", 4, "DESC");
+
 	/* Setup for Total-block-count */
 	test_disk.block_count = 0x5000;
 
@@ -1315,6 +1330,7 @@ static void test_fb_cmd_getvar_all(void **state)
 	check_fb_cmd_getvar_all_contains("INFOmfg-sku:ABCD");
 	check_fb_cmd_getvar_all_contains("INFOmac:0:12:34:56:78:9a:bc");
 	check_fb_cmd_getvar_all_contains("INFOmac:1:de:f0:12:34:56:78");
+	check_fb_cmd_getvar_all_contains("INFOhw-desc:DESC");
 
 	assert_true(list_is_empty(&packets_list));
 }
@@ -1389,6 +1405,9 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	WILL_VPD_FIND("wifi_mac1", 17, "de:f0:12:34:56:78");
 	WILL_VPD_FIND("wifi_mac2", 0, NULL);
 
+	/* Setup for hardware_descriptor */
+	WILL_VPD_FIND("hardware_descriptor", 4, "DESC");
+
 	/* Setup for Total-block-count */
 	test_disk.block_count = 0x5000;
 
@@ -1434,6 +1453,7 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	check_fb_cmd_getvar_all_contains("INFOmfg-sku:ABCD");
 	check_fb_cmd_getvar_all_contains("INFOmac:0:12:34:56:78:9a:bc");
 	check_fb_cmd_getvar_all_contains("INFOmac:1:de:f0:12:34:56:78");
+	check_fb_cmd_getvar_all_contains("INFOhw-desc:DESC");
 
 	assert_true(list_is_empty(&packets_list));
 }
@@ -1497,6 +1517,7 @@ int main(void)
 		TEST(test_fb_getvar_serialno),
 		TEST(test_fb_getvar_mfg_sku),
 		TEST(test_fb_getvar_mac),
+		TEST(test_fb_getvar_hardware_descriptor),
 		TEST(test_fb_getvar_has_slot),
 		TEST(test_fb_getvar_has_no_slot),
 		TEST(test_fb_getvar_has_slot_no_partition),
