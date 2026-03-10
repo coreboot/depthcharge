@@ -42,6 +42,7 @@ typedef enum fastboot_var {
 	VAR_SERIALNO,
 	VAR_HAS_SLOT,
 	VAR_MFG_SKU_ID,
+	VAR_WIFI_MAC,
 } fastboot_var_t;
 
 typedef enum fastboot_getvar_result {

@@ -56,6 +56,7 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 	VAR_NO_ARGS("serialno", VAR_SERIALNO),
 	VAR_ARGS("has-slot", ':', VAR_HAS_SLOT),
 	VAR_NO_ARGS("mfg-sku", VAR_MFG_SKU_ID),
+	VAR_ARGS("mac", ':', VAR_WIFI_MAC),
 	{.name = NULL},
 };
 
@@ -214,6 +215,18 @@ static int get_partition_var(fastboot_var_t var, GptData *gpt, GptEntry *e,
 	default:
 		die("Incorrect %s() argument: %u\n", __func__, var);
 	}
+}
+
+static bool fastboot_get_mac_id(const char *arg, int *result) {
+	char *endptr = NULL;
+	const int value = strtol(arg, &endptr, 10);
+
+	/* No valid number detected */
+	if (endptr == arg)
+		return false;
+
+	*result = value;
+	return true;
 }
 
 fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t var,
@@ -410,6 +423,39 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 					       (int)vpd_size, vpd_data);
 		else
 			used_len = snprintf(outbuf, outbuf_len, "unknown");
+		break;
+	}
+	case VAR_WIFI_MAC: {
+		u32 vpd_size;
+		int value = -1;
+
+		if (arg != NULL) {
+			if (!fastboot_get_mac_id(arg, &value)) {
+				used_len = snprintf(outbuf, outbuf_len, "Bad Number");
+				return STATE_PARSING_ERROR;
+			}
+		} else {
+			value = index;
+			used_len = snprintf(outbuf, outbuf_len, "%d:", value);
+			if (used_len < 0 || used_len > outbuf_len)
+				break;
+			outbuf += used_len;
+		}
+
+		const int b_size = 64;
+		char buf[b_size];
+		snprintf(buf, b_size, "wifi_mac%d", value);
+
+		const unsigned char *vpd_data = vpd_find(buf, NULL, NULL, &vpd_size);
+
+		if (vpd_data && vpd_size > 0) {
+			used_len = snprintf(outbuf, outbuf_len - used_len, "%.*s",
+					    (int)vpd_size, vpd_data);
+		} else {
+			used_len = snprintf(outbuf, outbuf_len, "unknown");
+			return STATE_LAST;
+		}
+
 		break;
 	}
 	default:

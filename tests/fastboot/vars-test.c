@@ -800,6 +800,22 @@ static void test_fb_getvar_mfg_sku(void **state)
 	TEST_FASTBOOT_GETVAR_OK(VAR_MFG_SKU_ID, "", "unknown");
 }
 
+static void test_fb_getvar_mac(void **state)
+{
+	WILL_VPD_FIND("wifi_mac0", 17, "12:34:56:78:9a:bc");
+	TEST_FASTBOOT_GETVAR_OK(VAR_WIFI_MAC, "0", "12:34:56:78:9a:bc");
+
+	// Bad Input
+	TEST_FASTBOOT_GETVAR_ERR(VAR_WIFI_MAC, "bad", STATE_PARSING_ERROR);
+
+	// Bad VPD request
+	WILL_VPD_FIND("wifi_mac0", 0, "12:34:56:78:9a:bc");
+	TEST_FASTBOOT_GETVAR_ERR(VAR_WIFI_MAC, "0", STATE_LAST);
+
+	WILL_VPD_FIND("wifi_mac0", 2, NULL);
+	TEST_FASTBOOT_GETVAR_ERR(VAR_WIFI_MAC, "0", STATE_LAST);
+}
+
 static void test_fb_getvar_has_slot(void **state)
 {
 	GptEntry *part = (void *)0xcafe;
@@ -1248,6 +1264,11 @@ static void test_fb_cmd_getvar_all(void **state)
 	/* Setup for mfg_sku_id */
 	WILL_VPD_FIND("mfg_sku_id", 4, "ABCDEFG");
 
+	/* Setup for mac */
+	WILL_VPD_FIND("wifi_mac0", 17, "12:34:56:78:9a:bc");
+	WILL_VPD_FIND("wifi_mac1", 17, "de:f0:12:34:56:78");
+	WILL_VPD_FIND("wifi_mac2", 0, NULL);
+
 	/* Setup for Total-block-count */
 	test_disk.block_count = 0x5000;
 
@@ -1292,6 +1313,8 @@ static void test_fb_cmd_getvar_all(void **state)
 	check_fb_cmd_getvar_all_contains("INFOserialno:1234");
 	check_fb_cmd_getvar_all_contains("INFOTotal-block-count:0x5000");
 	check_fb_cmd_getvar_all_contains("INFOmfg-sku:ABCD");
+	check_fb_cmd_getvar_all_contains("INFOmac:0:12:34:56:78:9a:bc");
+	check_fb_cmd_getvar_all_contains("INFOmac:1:de:f0:12:34:56:78");
 
 	assert_true(list_is_empty(&packets_list));
 }
@@ -1361,6 +1384,11 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	/* Setup for mfg_sku_id */
 	WILL_VPD_FIND("mfg_sku_id", 4, "ABCDEFG");
 
+	/* Setup for mac */
+	WILL_VPD_FIND("wifi_mac0", 17, "12:34:56:78:9a:bc");
+	WILL_VPD_FIND("wifi_mac1", 17, "de:f0:12:34:56:78");
+	WILL_VPD_FIND("wifi_mac2", 0, NULL);
+
 	/* Setup for Total-block-count */
 	test_disk.block_count = 0x5000;
 
@@ -1404,6 +1432,8 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	check_fb_cmd_getvar_all_contains("INFOserialno:1234");
 	check_fb_cmd_getvar_all_contains("INFOTotal-block-count:0x5000");
 	check_fb_cmd_getvar_all_contains("INFOmfg-sku:ABCD");
+	check_fb_cmd_getvar_all_contains("INFOmac:0:12:34:56:78:9a:bc");
+	check_fb_cmd_getvar_all_contains("INFOmac:1:de:f0:12:34:56:78");
 
 	assert_true(list_is_empty(&packets_list));
 }
@@ -1466,6 +1496,7 @@ int main(void)
 		TEST(test_fb_getvar_version_bootloader),
 		TEST(test_fb_getvar_serialno),
 		TEST(test_fb_getvar_mfg_sku),
+		TEST(test_fb_getvar_mac),
 		TEST(test_fb_getvar_has_slot),
 		TEST(test_fb_getvar_has_no_slot),
 		TEST(test_fb_getvar_has_slot_no_partition),
