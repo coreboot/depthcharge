@@ -57,13 +57,24 @@ void dt_update_chosen(struct device_tree *tree, const char *cmd_line)
 	dt_add_bin_prop(node, "rng-seed", seed->rng, sizeof(seed->rng));
 }
 
+typedef struct ReservedMemoryParams {
+	struct device_tree *tree;
+	bool no_map;
+} ReservedMemoryParams;
+
 static void update_reserved_memory(uint64_t start, uint64_t end, void *data)
 {
+	ReservedMemoryParams *params = (ReservedMemoryParams *)data;
 	char name[32];
 	snprintf(name, sizeof(name), "region@%" PRIx64, start);
 
-	dt_add_reserved_memory_region((struct device_tree *)data, name,
-				      NULL, start, end - start, true);
+	dt_add_reserved_memory_region(params->tree, name, NULL, start,
+				      end - start, params->no_map);
+}
+
+static void sub_from_ranges(uint64_t start, uint64_t end, void *data)
+{
+	ranges_sub((Ranges *)data, start, end);
 }
 
 typedef struct EntryParams {
@@ -139,6 +150,7 @@ void dt_update_memory(struct device_tree *tree)
 {
 	Ranges mem;
 	Ranges reserved;
+	Ranges cbmem;
 	Ranges available;
 	struct device_tree_node *node;
 	u32 addr_cells = 2, size_cells = 1;
@@ -160,9 +172,11 @@ void dt_update_memory(struct device_tree *tree)
 	// Read memory info from coreboot
 	ranges_init(&available);
 	ranges_init(&reserved);
+	ranges_init(&cbmem);
 
-	/* Collect all available memranges to form `/memory` nodes, and additionally
-	   collect reserved ranges to form `/reserved-memory` nodes. */
+	/* Collect all available memranges to form `/memory` nodes,
+	   collect non-RAM regions in `reserved`, and specifically
+	   track regions with `CB_MEM_TABLE` tag in `cbmem`. */
 	for (int i = 0; i < lib_sysinfo.n_memranges; i++) {
 		struct memrange *range = &lib_sysinfo.memrange[i];
 		uint64_t start = range->base;
@@ -171,6 +185,8 @@ void dt_update_memory(struct device_tree *tree)
 		ranges_add(&available, start, end);
 		if (range->type != CB_MEM_RAM)
 			ranges_add(&reserved, start, end);
+		if (range->type == CB_MEM_TABLE)
+			ranges_add(&cbmem, start, end);
 	}
 
 	/*
@@ -182,8 +198,21 @@ void dt_update_memory(struct device_tree *tree)
 	AlignParams align_params = { .mem = &mem, .reserved = &reserved };
 	ranges_for_each(&available, &align_ram_range, &align_params);
 
-	// CBMEM regions are both carved out and explicitly reserved.
-	ranges_for_each(&reserved, &update_reserved_memory, tree);
+	// Subtract `cbmem` from `reserved`.
+	ranges_for_each(&cbmem, &sub_from_ranges, &reserved);
+
+	// pvmfw is managed separately, remove it from `cbmem`.
+	if (lib_sysinfo.pvmfw_size)
+		ranges_sub(&cbmem, (uint64_t)lib_sysinfo.pvmfw,
+			   (uint64_t)lib_sysinfo.pvmfw + lib_sysinfo.pvmfw_size);
+
+	/* Update the device tree with both `no-map` and mapped reserved regions.
+	   CBMEM regions are both carved out and explicitly reserved. */
+	ReservedMemoryParams reserved_params = { .tree = tree, .no_map = true };
+	ranges_for_each(&reserved, &update_reserved_memory, &reserved_params);
+
+	ReservedMemoryParams cbmem_params = { .tree = tree, .no_map = false };
+	ranges_for_each(&cbmem, &update_reserved_memory, &cbmem_params);
 
 	// Count the amount of 'reg' entries we need (account for size limits).
 	unsigned int count = 0;
