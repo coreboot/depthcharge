@@ -11,15 +11,14 @@
 #include "base/vpd_util.h"
 #include "boot/android_bootconfig_params.h"
 #include "boot/android_dtboimg.h"
+#include "boot/android_vpd.h"
 #include "boot/bootconfig.h"
 #include "drivers/storage/blockdev.h"
 #include "vboot/firmware_id.h"
 
-#define MAX_VPD_BUFFER_SIZE 1024U
-
 static int append_vpd(struct bootconfig *bc, const char *vpd_key,
 		      const char *config_key) {
-	char buffer[MAX_VPD_BUFFER_SIZE];
+	char buffer[ANDROID_VPD_MAX_BUFFER_SIZE];
 
 	if (!vpd_gets(vpd_key, buffer, sizeof(buffer))) {
 		printf("%s not found in VPD\n", vpd_key);
@@ -28,19 +27,19 @@ static int append_vpd(struct bootconfig *bc, const char *vpd_key,
 	return bootconfig_append(bc, config_key, buffer);
 }
 
-#define HW_DESCR_VPD_KEY "hardware_descriptor"
 #define HW_DESCR_CONFIG_KEY "androidboot.product.hardware.id"
 
 static int append_hw_descr(struct bootconfig *bc)
 {
-	char buffer[MAX_VPD_BUFFER_SIZE];
+	char buffer[ANDROID_VPD_MAX_BUFFER_SIZE];
 	uint32_t buffer_size = sizeof(buffer);
 
 	_Static_assert(sizeof(buffer) >= VB2_GBB_HWID_MAX_SIZE,
 				   "Buffer is too small for HWID");
 
-	if (!vpd_gets(HW_DESCR_VPD_KEY, buffer, sizeof(buffer))) {
-		printf(HW_DESCR_VPD_KEY " not found in VPD, fall back to HWID.\n");
+	if (!vpd_gets(ANDROID_VPD_KEY_HW_DESCR, buffer, sizeof(buffer))) {
+		printf("%s not found in VPD, fall back to HWID.\n",
+		       ANDROID_VPD_KEY_HW_DESCR);
 		if (vb2api_gbb_read_hwid(vboot_get_context(), buffer, &buffer_size)) {
 			printf("Failed to read HWID\n");
 			return -1;
@@ -170,13 +169,9 @@ static int append_ddr_size(struct bootconfig *bc)
 	return bootconfig_append(bc, DDR_SIZE_KEY_STR, ddr_size_str);
 }
 
-#define MFG_SKU_ID_VPD_KEY "mfg_sku_id"
-#define MFG_SKU_ID_CONFIG_KEY "androidboot.product.hardware.sku"
-
-#define SERIAL_NUM_VPD_KEY "serial_number"
-#define SERIAL_NUM_CONFIG_KEY "androidboot.serialno"
-
-#define DTBO_IDX_CONFIG_KEY "androidboot.dtbo_idx"
+#define MFG_SKU_ID_CONFIG_KEY	"androidboot.product.hardware.sku"
+#define SERIAL_NUM_CONFIG_KEY	"androidboot.serialno"
+#define DTBO_IDX_CONFIG_KEY	"androidboot.dtbo_idx"
 
 static int append_dtbo_indices(struct bootconfig *bc)
 {
@@ -193,8 +188,8 @@ int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_pa
 {
 	return append_boot_part_uuid(bc, kp) |
 	       append_hw_descr(bc) |
-	       append_vpd(bc, MFG_SKU_ID_VPD_KEY, MFG_SKU_ID_CONFIG_KEY) |
-	       append_vpd(bc, SERIAL_NUM_VPD_KEY, SERIAL_NUM_CONFIG_KEY) |
+	       append_vpd(bc, ANDROID_VPD_KEY_MFG_SKU_ID, MFG_SKU_ID_CONFIG_KEY) |
+	       append_vpd(bc, ANDROID_VPD_KEY_SERIAL_NUM, SERIAL_NUM_CONFIG_KEY) |
 	       append_display_orientation(bc, kp) |
 	       append_skuid(bc) |
 	       append_boot_source(bc, kp) |
