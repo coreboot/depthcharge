@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">存储空间自测（简短）</translation>
 <translation id="3747500110898960596">备用的引导加载程序处于停用状态。如需了解详情，请访问：</translation>
 <translation id="385051799172605136">返回</translation>
+<translation id="3931222419141306012">恢复映像已过时</translation>
 <translation id="3964506597604121312">在此过程中，系统会擦除您的用户数据。</translation>
 <translation id="4002335453596341558">向下翻页</translation>
 <translation id="4152977630022273265">请确保您的外部磁盘包含有效的 Chrome 操作系统映像，并在准备就绪后重新插入该磁盘。</translation>
@@ -75,6 +76,7 @@
 <translation id="7567414219298075193">若要尝试解决此问题，请启动恢复流程。请移除所有已连接的设备，然后先按住“恢复”按钮，再按下“电源”按钮 ( ⏻ ) 并松开，最后松开“恢复”按钮。</translation>
 <translation id="7638747526774710781">1. 在另一部设备上，访问 google.com/chromeos/recovery，并安装所需的 Chrome 扩展程序</translation>
 <translation id="7658239707568436148">取消</translation>
+<translation id="7666722144169757891">此恢复映像版本过旧，不适用于您的设备。请下载新的恢复映像，然后重试。</translation>
 <translation id="7939062555109487992">高级选项</translation>
 <translation id="8011335065515332253">超时后，此设备会自动通过下方所选方式启动。</translation>
 <translation id="8027199195649765326">在您的 Chromebox 上按下“恢复”按钮可启用开发者模式，选择“取消”可保持受保护状态。</translation>

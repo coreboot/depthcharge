@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Autonomní test úložiště (krátký)</translation>
 <translation id="3747500110898960596">Alternativní bootloadery jsou zakázány. Další informace:</translation>
 <translation id="385051799172605136">Zpět</translation>
+<translation id="3931222419141306012">Zastaralý obraz pro obnovení systému</translation>
 <translation id="3964506597604121312">Během procesu se vymažou vaše uživatelská data.</translation>
 <translation id="4002335453596341558">O stránku dolů</translation>
 <translation id="4152977630022273265">Zkontrolujte, zda na externím disku máte platný obraz pro obnovení systému Chrome OS, a až budete připraveni, znovu ho vložte.</translation>
@@ -75,6 +76,7 @@
 <translation id="7567414219298075193">Pokud problém chcete zkusit odstranit, spusťte proces obnovení. Odstraňte všechna připojená zařízení a potom podržte tlačítko Obnovit, stiskněte vypínač ( ⏻ ) a uvolněte tlačítko Obnovit.</translation>
 <translation id="7638747526774710781">1. Na jiném zařízení přejděte na stránku google.com/chromeos/recovery a nainstalujte rozšíření pro Chrome</translation>
 <translation id="7658239707568436148">Zrušit</translation>
+<translation id="7666722144169757891">Tento obraz pro obnovení systému je pro vaše zařízení příliš starý. Stáhněte si nový obraz pro obnovení a zkuste to znovu.</translation>
 <translation id="7939062555109487992">Upřesnit možnosti</translation>
 <translation id="8011335065515332253">Po časovém limitu se zařízení automaticky spustí pomocí níže vybraného zdroje.</translation>
 <translation id="8027199195649765326">Pokud chcete zapnout režim pro vývojáře, stiskněte na ChromeBoxu tlačítko Obnovit. Jestliže chcete zůstat chráněni, vyberete Zrušit.</translation>

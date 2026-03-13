@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">ストレージのセルフテスト（簡易）</translation>
 <translation id="3747500110898960596">別のブートローダーは無効です。詳しくは次をご覧ください。</translation>
 <translation id="385051799172605136">戻る</translation>
+<translation id="3931222419141306012">古いリカバリ イメージ</translation>
 <translation id="3964506597604121312">このプロセスではユーザーデータがすべて消去されます。</translation>
 <translation id="4002335453596341558">次のページ</translation>
 <translation id="4152977630022273265">外部ディスクに有効な Chrome OS イメージがあることを確認し、準備ができたらディスクをもう一度接続してください。</translation>
@@ -75,6 +76,7 @@
 <translation id="7567414219298075193">デバイスを修復するには、接続されているすべてのデバイスを取り外した後、リカバリボタンを押したまま電源ボタン（ ⏻ ）を押して放し、さらにリカバリボタンを放します。</translation>
 <translation id="7638747526774710781">1. 別のデバイスで google.com/chromeos/recovery にアクセスして、Chrome OS リカバリ アプリをインストールします</translation>
 <translation id="7658239707568436148">キャンセル</translation>
+<translation id="7666722144169757891">このリカバリ イメージは、お使いのデバイスには古すぎます。新しいリカバリ イメージをダウンロードして、もう一度お試しください。</translation>
 <translation id="7939062555109487992">詳細オプション</translation>
 <translation id="8011335065515332253">注意：一定時間経過後、デバイスは下で選択したモードで自動的に起動します。</translation>
 <translation id="8027199195649765326">デベロッパー モードを有効にする場合は Chromebox のリカバリボタンを押し、保護された状態を維持する場合は [キャンセル] を選択します。</translation>

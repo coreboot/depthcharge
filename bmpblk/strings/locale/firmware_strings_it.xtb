@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Diagnostica automatica (breve) dello spazio di archiviazione</translation>
 <translation id="3747500110898960596">Bootloader alternativi disattivati. Per ulteriori informazioni, visita la pagina:</translation>
 <translation id="385051799172605136">Indietro</translation>
+<translation id="3931222419141306012">Immagine di ripristino non aggiornata</translation>
 <translation id="3964506597604121312">I tuoi dati utente verranno cancellati.</translation>
 <translation id="4002335453596341558">Pagina giù</translation>
 <translation id="4152977630022273265">Assicurati che sul disco esterno sia presente un'immagine di Chrome OS valida, dopodiché inserisci di nuovo il disco.</translation>
@@ -76,6 +77,7 @@ Non spegnere il dispositivo.</translation>
 <translation id="7567414219298075193">Per provare a risolvere il problema, avvia la procedura di ripristino. Rimuovi tutti i dispositivi collegati, quindi tieni premuto il tasto di ripristino, premi e rilascia il tasto di accensione ( ⏻ ), quindi rilascia il tasto di ripristino.</translation>
 <translation id="7638747526774710781">1. Visita la pagina google.com/chromeos/recovery sull'altro dispositivo e installa l'estensione di Chrome</translation>
 <translation id="7658239707568436148">Annulla</translation>
+<translation id="7666722144169757891">Questa immagine di ripristino è troppo vecchia per il tuo dispositivo. Scarica una nuova immagine di ripristino e riprova.</translation>
 <translation id="7939062555109487992">Opzioni avanzate</translation>
 <translation id="8011335065515332253">Dopo il timeout, il dispositivo verrà avviato automaticamente dalla selezione di seguito.</translation>
 <translation id="8027199195649765326">Premi il pulsante di ripristino sul Chromebox per attivare la modalità sviluppatore oppure seleziona "Annulla" per mantenere attiva la protezione.</translation>

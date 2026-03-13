@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Samotestiranje pohrane (skraćeno)</translation>
 <translation id="3747500110898960596">Alternativni programi za učitavanje operativnog sistema su onemogućeni. Da saznate više informacija, posjetite:</translation>
 <translation id="385051799172605136">Nazad</translation>
+<translation id="3931222419141306012">Zastarjela slika za oporavak</translation>
 <translation id="3964506597604121312">Korisnički podaci će se uništiti tokom ovog postupka.</translation>
 <translation id="4002335453596341558">Stranica prema dolje</translation>
 <translation id="4152977630022273265">Provjerite nalazi li se na vašem vanjskom disku važeća slika Chrome OS-a i ponovo umetnite disk kada budete spremni.</translation>
@@ -76,6 +77,7 @@ Nemojte isključiti uređaj.</translation>
 <translation id="7567414219298075193">Da pokušate riješiti problem, započnite proces oporavka. Uklonite sve povezane uređaje, zatim držite pritisnutim dugme za oporavak, pritisnite i pustite dugme za uključivanje ( ⏻ ) te pustite dugme za oporavak.</translation>
 <translation id="7638747526774710781">1. Idite na google.com/chromeos/recovery na drugom uređaju i instalirajte ekstenziju za Chrome</translation>
 <translation id="7658239707568436148">Otkaži</translation>
+<translation id="7666722144169757891">Ova je slika za oporavak prestara za vaš uređaj. Preuzmite novu sliku za oporavak i pokušajte ponovno.</translation>
 <translation id="7939062555109487992">Napredne opcije</translation>
 <translation id="8011335065515332253">Nakon isteka vremena uređaj će se automatski pokrenuti sa stavke odabrane ispod.</translation>
 <translation id="8027199195649765326">Pritisnite dugme za oporavak na Chromeboxu da omogućite način rada za programere ili odaberite Otkaži da ostanete zaštićeni.</translation>

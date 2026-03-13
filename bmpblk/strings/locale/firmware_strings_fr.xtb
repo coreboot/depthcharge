@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Auto-test de l'espace de stockage (court)</translation>
 <translation id="3747500110898960596">Les autres bootloaders sont désactivés. Pour en savoir plus, rendez-vous sur :</translation>
 <translation id="385051799172605136">Retour</translation>
+<translation id="3931222419141306012">Image de restauration obsolète</translation>
 <translation id="3964506597604121312">Vos données utilisateur seront effacées pendant le processus.</translation>
 <translation id="4002335453596341558">Page suivante</translation>
 <translation id="4152977630022273265">Vérifiez que votre disque externe contient une image de récupération Chrome OS valide, et réinsérez-le quand vous êtes prêt.</translation>
@@ -76,6 +77,7 @@ Veuillez ne pas éteindre votre appareil.</translation>
 <translation id="7567414219298075193">Pour tenter de résoudre le problème, lancez le processus de récupération. Retirez tous les périphériques connectés. Ensuite, maintenez le bouton de récupération enfoncé, appuyez sur le bouton Marche/Arrêt ( ⏻ ) et relâchez-le, puis relâchez le bouton de récupération.</translation>
 <translation id="7638747526774710781">1. Accédez à google.com/chromeos/recovery sur l'autre appareil et installez l'extension Chrome</translation>
 <translation id="7658239707568436148">Annuler</translation>
+<translation id="7666722144169757891">Cette image de restauration est trop ancienne pour votre appareil. Téléchargez-en une nouvelle et réessayez.</translation>
 <translation id="7939062555109487992">Options avancées</translation>
 <translation id="8011335065515332253">Après le délai d'inactivité, l'appareil démarrera automatiquement à partir de la source sélectionnée ci-dessous.</translation>
 <translation id="8027199195649765326">Appuyez sur le bouton de récupération de votre Chromebox pour activer le mode développeur, ou sélectionnez "Annuler" pour maintenir la protection.</translation>

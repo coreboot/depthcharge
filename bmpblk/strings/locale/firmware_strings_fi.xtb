@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Tallennustilan testaus (lyhyt)</translation>
 <translation id="3747500110898960596">Vaihtoehtoiset käynnistysohjelmat on poistettu käytöstä. Lisätietoa:</translation>
 <translation id="385051799172605136">Takaisin</translation>
+<translation id="3931222419141306012">Vanhentunut palautusnäköistiedosto</translation>
 <translation id="3964506597604121312">Käyttäjädatasi pyyhitään prosessin aikana.</translation>
 <translation id="4002335453596341558">Sivu alas</translation>
 <translation id="4152977630022273265">Varmista, että ulkoinen levy sisältää Chrome-käyttöjärjestelmän näköistiedoston, ja liitä levy uudelleen, kun olet valmis.</translation>
@@ -76,6 +77,7 @@
 <translation id="7567414219298075193">Aloita palautusprosessi ongelman korjaamiseksi. Irrota kaikki yhdistetyt laitteet ja paina palautuspainiketta pitkään. Paina sitten virtapainiketta ( ⏻ ) ja vapauta palautuspainike.</translation>
 <translation id="7638747526774710781">1. Siirry toisella laitteella osoitteeseen google.com/chromeos/recovery ja asenna Chrome-laajennus</translation>
 <translation id="7658239707568436148">Peruuta</translation>
+<translation id="7666722144169757891">Palautusnäköistiedosto on liian vanha laitteelle. Lataa uusi palautusnäköistiedosto ja yritä uudelleen.</translation>
 <translation id="7939062555109487992">Lisäasetukset</translation>
 <translation id="8011335065515332253">Aikakatkaisun jälkeen laite käynnistyy automaattisesti alla olevan valinnan mukaan.</translation>
 <translation id="8027199195649765326">Paina Chromeboxin palautuspainiketta siirtyäksesi kehittäjätilaan tai valitse "Peruuta", jos haluat pysyä jatkossakin suojattuna.</translation>

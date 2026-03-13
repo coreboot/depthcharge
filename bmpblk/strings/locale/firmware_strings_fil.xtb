@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Self-test ng storage (maikli)</translation>
 <translation id="3747500110898960596">Naka-disable ang mga alternatibong bootloader. Para sa higit pang impormasyon, bisitahin ang:</translation>
 <translation id="385051799172605136">Bumalik</translation>
+<translation id="3931222419141306012">Lumang imahe sa pag-recover</translation>
 <translation id="3964506597604121312">Mawa-wipe ang iyong data ng user habang isinasagawa ang proseso.</translation>
 <translation id="4002335453596341558">Pahina pababa</translation>
 <translation id="4152977630022273265">Tiyaking may valid na Chrome OS image ang iyong external na disk, at isaksak ulit ang disk kapag handa na.</translation>
@@ -76,6 +77,7 @@ Huwag i-off ang iyong device.</translation>
 <translation id="7567414219298075193">Para subukang ayusin ang isyu, simulan ang proseso ng pag-recover. Alisin ang lahat ng nakakonektang device, pagkatapos ay pindutin nang matagal ang button na Recovery, pindutin nang isang beses ang Power button ( ⏻ ), bitawan ang button na Recovery.</translation>
 <translation id="7638747526774710781">1. Pumunta sa google.com/chromeos/recovery sa kabilang device at i-install ang extension ng Chrome</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
+<translation id="7666722144169757891">Masyado nang luma ang imahe sa pag-recover na ito para sa iyong device. Mag-download ng bagong imahe sa pag-recover at subukan ulit.</translation>
 <translation id="7939062555109487992">Mga advanced na pagpipilian</translation>
 <translation id="8011335065515332253">Kapag nag-timeout na, awtomatikong magbu-boot ang device mula sa napili sa ibaba.</translation>
 <translation id="8027199195649765326">Pindutin ang button na Recovery sa iyong Chromebox para i-enable ang developer mode, o piliin ang Kanselahin para manatiling protektado.</translation>

@@ -241,6 +241,12 @@ No valid image detected
       <message name="rec_invalid_desc" desc="Description for invalid disk plugged inserted.">
 Make sure your external disk has a valid recovery image, and re-insert the disk when ready.
       </message>
+      <message name="rec_rollback_error_title" desc="Title for recovery rollback error.">
+Outdated recovery image
+      </message>
+      <message name="rec_rollback_error_desc" desc="Description for recovery rollback_error.">
+This recovery image is too old for your device. Download a new recovery image and try again.
+      </message>
       <message name="rec_to_dev_title" desc="Title for transition to dev mode.">
 You are attempting to enable developer mode
       </message>

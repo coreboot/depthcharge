@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Samostalno testiranje memorijskog prostora (kratko)</translation>
 <translation id="3747500110898960596">Alternativni pokretački programi su onemogućeni. Više informacija potražite na:</translation>
 <translation id="385051799172605136">Nazad</translation>
+<translation id="3931222419141306012">Zastarela slika rezervne kopije sistema</translation>
 <translation id="3964506597604121312">Podaci korisnika će se izbrisati tokom procesa.</translation>
 <translation id="4002335453596341558">Stranica nadole</translation>
 <translation id="4152977630022273265">Uverite se da spoljni disk sadrži važeću sliku Chrome operativnog sistema i ponovo priključite disk kada budete spremni.</translation>
@@ -75,6 +76,7 @@
 <translation id="7567414219298075193">Pokrenite proces oporavka da biste probali da rešite problem. Uklonite sve povezane uređaje, pa zadržite dugme za oporavak, pritisnite i otpustite dugme za napajanje ( ⏻ ) i otpustite dugme za oporavak.</translation>
 <translation id="7638747526774710781">1. Idite na google.com/chromeos/recovery na drugom uređaju i instalirajte dodatak za Chrome</translation>
 <translation id="7658239707568436148">Otkaži</translation>
+<translation id="7666722144169757891">Ova slika rezervne kopije sistema je prestara za uređaj. Preuzmite novu sliku rezervne kopije sistema i probajte ponovo.</translation>
 <translation id="7939062555109487992">Napredne opcije</translation>
 <translation id="8011335065515332253">Posle vremenskog ograničenja uređaj će se automatski uključiti na osnovu stavke izabrane u nastavku.</translation>
 <translation id="8027199195649765326">Pritisnite dugme za oporavak na Chromebox-u da biste omogućili režim programera ili izaberite Otkaži da biste ostali u bezbednom režimu.</translation>

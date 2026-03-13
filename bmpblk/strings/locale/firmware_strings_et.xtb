@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Salvestusruumi enesetest (lühike)</translation>
 <translation id="3747500110898960596">Alternatiivsed käivituslaadurid on keelatud. Lisateavet vaadake siit:</translation>
 <translation id="385051799172605136">Tagasi</translation>
+<translation id="3931222419141306012">Aegunud taastekujutis</translation>
 <translation id="3964506597604121312">Teie kasutajaandmed kustutatakse selle protsessi käigus.</translation>
 <translation id="4002335453596341558">Lehe võrra alla</translation>
 <translation id="4152977630022273265">Veenduge, et teie välisel kettal oleks sobilik Chrome OS-i kujutis, seejärel sisestage ketas uuesti.</translation>
@@ -76,6 +77,7 @@
 <translation id="7567414219298075193">Probleemi lahendamiseks alustage taastamist. Eemaldage kõik ühendatud seadmed, seejärel hoidke all taastamisnuppu, vajutage toitenuppu ( ⏻ ) ja vabastage see ning vabastage taastamisnupp.</translation>
 <translation id="7638747526774710781">1. Minge teises seadmes saidile google.com/chromeos/recovery ja installige Chrome'i laiendus.</translation>
 <translation id="7658239707568436148">Tühista</translation>
+<translation id="7666722144169757891">See taastekujutis on teie seadme jaoks liiga vana. Laadige alla uus taastekujutis ja proovige uuesti.</translation>
 <translation id="7939062555109487992">Täpsemad valikud</translation>
 <translation id="8011335065515332253">Pärast ajalõppu käivitub seade automaatselt alloleva valiku alusel.</translation>
 <translation id="8027199195649765326">Arendaja režiimi lubamiseks vajutage Chromeboxi taastamisnuppu või tehke valik Tühista, et kaitse säilitada.</translation>

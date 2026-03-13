@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Egenkontroll av lagring (kort)</translation>
 <translation id="3747500110898960596">Alternative oppstartsinnlastere er deaktivert. For å få mer informasjon, gå hit:</translation>
 <translation id="385051799172605136">Tilbake</translation>
+<translation id="3931222419141306012">Utdatert gjenopprettingsavbildning</translation>
 <translation id="3964506597604121312">Brukerdataene dine blir visket ut som en del av denne prosessen.</translation>
 <translation id="4002335453596341558">Ned en side</translation>
 <translation id="4152977630022273265">Kontrollér at den eksterne disken inneholder en gyldig Chrome OS-avbildning. Sett inn disken på nytt når du er klar.</translation>
@@ -76,6 +77,7 @@ Ikke slå av enheten.</translation>
 <translation id="7567414219298075193">For å prøve å løse problemet, start gjenopprettingsprosessen. Koble fra alle tilkoblede enheter, hold inne gjenopprettingsknappen, trykk på og slipp av/på-knappen ( ⏻ ), og slipp gjenopprettingsknappen.</translation>
 <translation id="7638747526774710781">1. Gå til google.com/chromeos/recovery på den andre enheten, og installer Chrome-utvidelsen</translation>
 <translation id="7658239707568436148">Avbryt</translation>
+<translation id="7666722144169757891">Denne gjenopprettingsavbildningen er for gammel for enheten din. Last ned en ny gjenopprettingsavbildning, og prøv igjen.</translation>
 <translation id="7939062555109487992">Avanserte alternativer</translation>
 <translation id="8011335065515332253">Ved tidsavbrudd starter enheten automatisk opp fra disken som er valgt under.</translation>
 <translation id="8027199195649765326">Trykk på gjenopprettingsknappen på Chromebox for å slå på utviklermodus, eller velg Avbryt for å forbli beskyttet.</translation>

@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Prova automàtica d'emmagatzematge (curta)</translation>
 <translation id="3747500110898960596">Els bootloaders alternatius estan desactivats. Per obtenir més informació, visita:</translation>
 <translation id="385051799172605136">Enrere</translation>
+<translation id="3931222419141306012">Imatge de recuperació obsoleta</translation>
 <translation id="3964506597604121312">Les teves dades d'usuari s'eliminaran durant el procés.</translation>
 <translation id="4002335453596341558">Av Pàg</translation>
 <translation id="4152977630022273265">Comprova que el disc extern tingui una imatge de Chrome OS vàlida i torna a inserir el disc quan estigui a punt.</translation>
@@ -76,6 +77,7 @@ No apaguis el dispositiu.</translation>
 <translation id="7567414219298075193">Per provar de corregir aquest problema, inicia el procés de recuperació. Desconnecta tots els dispositius connectats i mantén premut el botó de recuperació, prem i deixa anar el botó d'engegada ( ⏻ ) i, tot seguit, deixa anar el botó de recuperació.</translation>
 <translation id="7638747526774710781">1. Ves a google.com/chromeos/recovery a l'altre dispositiu i instal·la l'extensió de Chrome</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
+<translation id="7666722144169757891">Aquesta imatge de recuperació és massa antiga per al teu dispositiu. Baixa una imatge de recuperació nova i torna-ho a provar.</translation>
 <translation id="7939062555109487992">Opcions avançades</translation>
 <translation id="8011335065515332253">Després del temps d'espera, el dispositiu s'iniciarà automàticament des de la selecció següent.</translation>
 <translation id="8027199195649765326">Prem el botó d'engegada al Chromebook per activar el mode de desenvolupador o selecciona Cancel·la per mantenir la protecció.</translation>

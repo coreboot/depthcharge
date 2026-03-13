@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Autonómny test ukladacieho priestoru (krátky)</translation>
 <translation id="3747500110898960596">Alternatívne zavádzacie programy systému sú deaktivované. Viac sa dozviete tu:</translation>
 <translation id="385051799172605136">Späť</translation>
+<translation id="3931222419141306012">Zastaraný obraz na obnovu</translation>
 <translation id="3964506597604121312">V rámci procesu sa údaje používateľa trvale vymažú.</translation>
 <translation id="4002335453596341558">Posunúť o stranu nižšie</translation>
 <translation id="4152977630022273265">Skontrolujte, či máte na externom disku platný obraz operačného systému Chrome OS, a keď budete chcieť začať, znova disk vložte.</translation>
@@ -75,6 +76,7 @@
 <translation id="7567414219298075193">Ak chcete skúsiť problém odstrániť, začnite proces obnovenia. Odstráňte všetky pripojené zariadenia. Potom pridržte tlačidlo obnovy, stlačte a uvoľnite vypínač ( ⏻ ) a nakoniec uvoľnite tlačidlo obnovy.</translation>
 <translation id="7638747526774710781">1. Prejdite v inom zariadení na google.com/chromeos/recovery a nainštalujte si toto rozšírenie pre Chrome</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
+<translation id="7666722144169757891">Tento obraz na obnovu je pre vaše zariadenie príliš starý. Stiahnite si nový a skúste to znova.</translation>
 <translation id="7939062555109487992">Rozšírené možnosti</translation>
 <translation id="8011335065515332253">Po časovom limite sa zariadenie automaticky zapne z vybraného zdroja nižšie.</translation>
 <translation id="8027199195649765326">Stlačením tlačidla obnovy v Chromeboxe zapnite režim vývojára alebo vyberte Zrušiť, čím zachováte ochranu.</translation>

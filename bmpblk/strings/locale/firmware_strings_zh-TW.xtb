@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">儲存空間自我測試 (簡短)</translation>
 <translation id="3747500110898960596">已停用替代的系統啟動載入程式。詳情請前往：</translation>
 <translation id="385051799172605136">返回</translation>
+<translation id="3931222419141306012">復原映像檔過時</translation>
 <translation id="3964506597604121312">你的使用者資料將在這項程序中遭到清除。</translation>
 <translation id="4002335453596341558">下一頁</translation>
 <translation id="4152977630022273265">請確認你的外部磁碟包含有效的 Chrome 作業系統映像檔，並且在準備就緒時重新插入磁碟。</translation>
@@ -75,6 +76,7 @@
 <translation id="7567414219298075193">如要嘗試修正問題，請啟動還原程序。請移除所有外接裝置，然後按住還原按鈕、按下並放開電源按鈕 ( ⏻ )，再放開還原按鈕。</translation>
 <translation id="7638747526774710781">1. 在另外一部裝置上前往 google.com/chromeos/recovery，並安裝 Chrome 擴充功能</translation>
 <translation id="7658239707568436148">取消</translation>
+<translation id="7666722144169757891">這個復原映像檔過舊，不適用於你的裝置。請下載新的復原映像檔，然後再試一次。</translation>
 <translation id="7939062555109487992">進階選項</translation>
 <translation id="8011335065515332253">如果逾時，裝置會自動從下列選項啟動。</translation>
 <translation id="8027199195649765326">按下 Chromebox 上的還原按鈕會啟用開發人員模式，或選擇 [取消] 以維持受保護的狀態。</translation>

@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Autotest pentru stocare (rapid)</translation>
 <translation id="3747500110898960596">Bootloaderele alternative sunt dezactivate. Pentru mai multe informații, accesează:</translation>
 <translation id="385051799172605136">Înapoi</translation>
+<translation id="3931222419141306012">Imaginea de recuperare este învechită</translation>
 <translation id="3964506597604121312">Datele utilizatorului se vor șterge în acest proces.</translation>
 <translation id="4002335453596341558">O pagină mai jos</translation>
 <translation id="4152977630022273265">Verifică dacă discul extern are o imagine validă a sistemului de operare Chrome și reintrodu discul când ești gata.</translation>
@@ -76,6 +77,7 @@ Nu inchideti dispozitivul.</translation>
 <translation id="7567414219298075193">Pentru a încerca să remediezi problema, inițiază procesul de recuperare. Elimină toate dispozitivele conectate, ține apăsat butonul de recuperare, apasă și eliberează butonul de pornire ( ⏻ ), apoi eliberează butonul de recuperare.</translation>
 <translation id="7638747526774710781">1. Accesează google.com/chromeos/recovery pe celălalt dispozitiv și instalează extensia Chrome.</translation>
 <translation id="7658239707568436148">Anulează</translation>
+<translation id="7666722144169757891">Această imagine de recuperare este prea veche pentru dispozitiv. Descărcați o nouă imagine de recuperare și încercați din nou.</translation>
 <translation id="7939062555109487992">Opțiuni avansate</translation>
 <translation id="8011335065515332253">După expirare, dispozitivul va porni automat folosind opțiunea selectată de mai jos.</translation>
 <translation id="8027199195649765326">Apasă butonul de recuperare de pe Chromebox ca să activezi modul pentru dezvoltatori sau selectează „Anulează” ca să rămâi protejat(ă).</translation>

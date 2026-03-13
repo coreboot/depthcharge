@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Tárhely önellenőrzése (gyors)</translation>
 <translation id="3747500110898960596">Az alternatív rendszerindítók le vannak tiltva. További információ:</translation>
 <translation id="385051799172605136">Vissza</translation>
+<translation id="3931222419141306012">Elavult helyreállító képfájl</translation>
 <translation id="3964506597604121312">Felhasználói adatai törlődnek a folyamat során.</translation>
 <translation id="4002335453596341558">Lapozás lefelé</translation>
 <translation id="4152977630022273265">Győződjön meg arról, hogy a külső lemezen érvényes Chrome OS-rendszerkép található, és helyezze be újra a lemezt, amikor készen áll.</translation>
@@ -76,6 +77,7 @@ Kérjük, ne kapcsolja ki eszközét.</translation>
 <translation id="7567414219298075193">A probléma megoldásának megkísérléséhez indítsa el a helyreállítási folyamatot. Távolítsa el az összes csatlakoztatott eszközt, majd tartsa lenyomva a Helyreállítás gombot, nyomja meg a Bekapcsológombot ( ⏻ ), végül engedje fel a Helyreállítás gombot.</translation>
 <translation id="7638747526774710781">1. Lépjen a google.com/chromeos/recovery oldalra egy másik eszközön, és telepítse a Chrome-bővítményt</translation>
 <translation id="7658239707568436148">Mégse</translation>
+<translation id="7666722144169757891">Ez a helyreállító képfájl túl régi az eszközéhez. Töltsön le egy új helyreállító képfájlt, és próbálkozzon újra.</translation>
 <translation id="7939062555109487992">Haladó beállítások</translation>
 <translation id="8011335065515332253">Az időkorlát után az eszköz automatikusan elindul a lenti kiválasztás szerint.</translation>
 <translation id="8027199195649765326">A fejlesztői mód engedélyezéséhez nyomja meg a Helyreállítás gombot a Chromeboxán, vagy válassza a Mégse lehetőséget a védelem fenntartásához.</translation>

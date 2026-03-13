@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Saugyklos savarankiškas testavimas (trumpas)</translation>
 <translation id="3747500110898960596">Alternatyvios paleidyklės išjungtos. Jei reikia daugiau informacijos, apsilankykite nurodytu adresu:</translation>
 <translation id="385051799172605136">Atgal</translation>
+<translation id="3931222419141306012">Pasenęs atkūrimo vaizdas</translation>
 <translation id="3964506597604121312">Vykdant procesą duomenys bus išvalyti.</translation>
 <translation id="4002335453596341558">Puslapiu žemyn</translation>
 <translation id="4152977630022273265">Įsitikinkite, kad ant išorinio disko yra „Chrome“ OS vaizdas ir, kai būsite pasiruošę, įdėkite diską iš naujo.</translation>
@@ -75,6 +76,7 @@
 <translation id="7567414219298075193">Jei norite išbandyti ir išspręsti problemą, pradėkite atkūrimo procesą. Atjunkite visus prijungtus įrenginius, tada palaikykite paspaudę atkūrimo mygtuką, paspauskite ir atleiskite maitinimo mygtuką ( ⏻ ), tada atleiskite atkūrimo mygtuką.</translation>
 <translation id="7638747526774710781">1. Eikite adresu google.com/chromeos/recovery naudodami kitą įrenginį ir įdiekite „Chrome“ plėtinį</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
+<translation id="7666722144169757891">Šis atkūrimo vaizdas per senas jūsų įrenginiui. Atsisiųskite naują atkūrimo vaizdą ir bandykite dar kartą.</translation>
 <translation id="7939062555109487992">Išplėstinės parinktys</translation>
 <translation id="8011335065515332253">Pasibaigus skirtajam laikui įrenginys bus automatiškai paleistas iš toliau pasirinktos vietos.</translation>
 <translation id="8027199195649765326">„Chromebox“ paspauskite atkūrimo mygtuką, kad įgalintumėte kūrėjo režimą, arba pasirinkite „Atšaukti“, kad toliau būtų taikoma apsauga.</translation>

@@ -65,6 +65,9 @@ localized_files:
   # recovery - error
   rec_invalid_title: title
   rec_invalid_desc: desc
+  # recovery - rollback error
+  rec_rollback_error_title: title
+  rec_rollback_error_desc: desc
   # to-dev screen
   rec_to_dev_title: title
   rec_to_dev_desc0: desc

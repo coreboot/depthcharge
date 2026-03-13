@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Self Test (kort) af lagerplads</translation>
 <translation id="3747500110898960596">Alternative bootloadere er deaktiveret. Du kan få flere oplysninger ved at gå til:</translation>
 <translation id="385051799172605136">Tilbage</translation>
+<translation id="3931222419141306012">Forældet systembillede til gendannelse</translation>
 <translation id="3964506597604121312">Dine brugerdata ryddes under processen.</translation>
 <translation id="4002335453596341558">Side ned</translation>
 <translation id="4152977630022273265">Sørg for, at din eksterne disk har en gyldig afbildning af Chrome OS, og indsæt disken igen, når du er klar.</translation>
@@ -76,6 +77,7 @@ Undlad at slukke din enhed.</translation>
 <translation id="7567414219298075193">Start gendannelsesprocessen for at prøve at løse problemet. Fjern alle tilsluttede enheder. Hold derefter gendannelsesknappen inde, mens du trykker på afbryderknappen ( ⏻ ) og slipper den igen. Slip derefter gendannelsesknappen.</translation>
 <translation id="7638747526774710781">1. Gå til google.com/chromeos/recovery på den anden enhed, og installer Chrome-udvidelsen</translation>
 <translation id="7658239707568436148">Annuller</translation>
+<translation id="7666722144169757891">Dette systembillede til gendannelse er for gammelt til din enhed. Download et nyt systembillede til gendannelse, og prøv igen.</translation>
 <translation id="7939062555109487992">Avancerede valgmuligheder</translation>
 <translation id="8011335065515332253">Efter en timeout genstarter enheden automatisk via valget nedenfor.</translation>
 <translation id="8027199195649765326">Tryk på knappen til gendannelse på din Chromebox for at aktivere udviklertilstand, eller vælg Annuller for at forblive beskyttet.</translation>

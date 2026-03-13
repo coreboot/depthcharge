@@ -32,6 +32,7 @@
 <translation id="3697087251845525042">Uji mandiri penyimpanan (singkat)</translation>
 <translation id="3747500110898960596">Bootloader alternatif dinonaktifkan. Untuk mengetahui informasi selengkapnya, buka:</translation>
 <translation id="385051799172605136">Kembali</translation>
+<translation id="3931222419141306012">Image pemulihan sudah tidak berlaku</translation>
 <translation id="3964506597604121312">Data pengguna Anda akan dihapus total saat proses berlangsung.</translation>
 <translation id="4002335453596341558">Halaman selanjutnya</translation>
 <translation id="4152977630022273265">Pastikan disk eksternal Anda memiliki image Chrome OS yang valid, dan pasang disk kembali jika sudah siap.</translation>
@@ -76,6 +77,7 @@ Jangan mematikan perangkat Anda.</translation>
 <translation id="7567414219298075193">Untuk mencoba memperbaiki masalah tersebut, mulai proses pemulihan. Cabut semua perangkat yang terhubung, lalu tekan dan tahan tombol pemulihan, tekan dan lepaskan tombol daya ( ⏻ ), lalu lepaskan tombol pemulihan.</translation>
 <translation id="7638747526774710781">1. Buka google.com/chromeos/recovery di perangkat lain dan instal ekstensi Chrome</translation>
 <translation id="7658239707568436148">Batal</translation>
+<translation id="7666722144169757891">Image pemulihan ini terlalu lama untuk perangkat Anda. Download image pemulihan baru dan coba lagi.</translation>
 <translation id="7939062555109487992">Opsi lanjutan</translation>
 <translation id="8011335065515332253">Setelah waktu tunggu habis, perangkat akan otomatis booting dari pilihan di bawah ini.</translation>
 <translation id="8027199195649765326">Tekan tombol pemulihan di Chromebox untuk mengaktifkan mode pengembang, atau pilih Batal untuk tetap terlindungi.</translation>
