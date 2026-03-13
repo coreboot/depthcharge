@@ -1428,6 +1428,32 @@ static const struct ui_screen_info recovery_invalid_screen = {
 };
 
 /******************************************************************************/
+/* UI_SCREEN_RECOVERY_ROLLBACK_ERROR */
+
+static const char *const recovery_rollback_error_desc[] = {
+	"rec_rollback_error_desc.bmp",
+};
+
+static const struct ui_menu_item recovery_rollback_error_items[] = {
+	LANGUAGE_SELECT_ITEM,
+	POWER_OFF_ITEM,
+};
+
+static const struct ui_screen_info recovery_rollback_error_screen = {
+	.id = UI_SCREEN_RECOVERY_ROLLBACK_ERROR,
+	.name = "Recovery rollback error",
+	.icon = UI_ICON_TYPE_STEP,
+	.step = -3,
+	.num_steps = 3,
+	.title = "rec_rollback_error_title.bmp",
+	.desc = UI_DESC(recovery_rollback_error_desc),
+	.menu = UI_MENU(recovery_rollback_error_items),
+	.mesg = "Outdated recovery image.\n"
+		"Your recovery image is too old to be installed on this device.\n"
+		"Download a new recovery image and try again.",
+};
+
+/******************************************************************************/
 /* UI_SCREEN_DEVELOPER_MODE */
 
 #define DEVELOPER_MODE_ITEM_RETURN_TO_SECURE 1
@@ -2528,6 +2554,7 @@ static const struct ui_screen_info *const screens[] = {
 	&recovery_disk_step2_screen,
 	&recovery_disk_step3_screen,
 	&recovery_invalid_screen,
+	&recovery_rollback_error_screen,
 	&developer_mode_screen,
 	&developer_to_norm_screen,
 	&developer_boot_external_screen,

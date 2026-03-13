@@ -235,6 +235,8 @@ enum ui_screen {
 	UI_SCREEN_RECOVERY_INVALID			= 0x201,
 	/* Confirm transition to developer mode */
 	UI_SCREEN_RECOVERY_TO_DEV			= 0x202,
+	/* Too old recovery image used */
+	UI_SCREEN_RECOVERY_ROLLBACK_ERROR		= 0x203,
 	/* Recovery using phone; deprecated in b/297805271 */
 	UI_SCREEN_DEPRECATED_RECOVERY_PHONE_STEP1	= 0x210,
 	UI_SCREEN_DEPRECATED_RECOVERY_PHONE_STEP2	= 0x211,

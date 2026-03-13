@@ -83,6 +83,9 @@ static vb2_error_t vboot_load_kernel_impl(struct vb2_context *ctx,
 		case VB2_ERROR_LK_NO_DISK_FOUND:
 			vb2api_fail(ctx, VB2_RECOVERY_RW_NO_DISK, rv);
 			break;
+		case VB2_ERROR_LK_ROLLBACK:
+			vb2api_fail(ctx, VB2_RECOVERY_KERNEL_ROLLBACK, rv);
+			break;
 		default:
 			vb2api_fail(ctx, VB2_RECOVERY_LK_UNSPECIFIED, rv);
 			break;

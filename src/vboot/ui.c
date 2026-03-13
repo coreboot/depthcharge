@@ -29,13 +29,23 @@ static vb2_error_t ui_manual_recovery_action(struct ui_context *ui)
 
 	/* If disk validity state changed, switch to appropriate screen. */
 	if (ui->recovery_rv != rv) {
+		enum ui_screen id;
 		UI_INFO("Recovery vboot_load_kernel %#x --> %#x\n",
 			ui->recovery_rv, rv);
 		ui->recovery_rv = rv;
-		return ui_screen_change(ui,
-					rv == VB2_ERROR_LK_NO_DISK_FOUND
-						? UI_SCREEN_RECOVERY_SELECT
-						: UI_SCREEN_RECOVERY_INVALID);
+		switch (rv) {
+		case VB2_ERROR_LK_NO_DISK_FOUND:
+			id = UI_SCREEN_RECOVERY_SELECT;
+			break;
+		case VB2_ERROR_LK_ROLLBACK:
+			id = UI_SCREEN_RECOVERY_ROLLBACK_ERROR;
+			break;
+		default:
+			id = UI_SCREEN_RECOVERY_INVALID;
+			break;
+		}
+
+		return ui_screen_change(ui, id);
 	}
 
 	/* Manual recovery keyboard shortcuts */
