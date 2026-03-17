@@ -105,7 +105,9 @@ static vb2_error_t developer_action(struct ui_context *ui)
 		handler = ui_developer_mode_boot_altfw_action;
 	else if (ui->key == UI_KEY_DEV_ENTER_FWSHELL)
 		handler = ui_developer_mode_enter_fwshell_action;
-	else if (ui->key == UI_KEY_DEV_FASTBOOT)
+	else if (ui->key == UI_KEY_DEV_FASTBOOT &&
+		 (vb2api_gbb_get_flags(ui->ctx) & VB2_GBB_FLAG_FORCE_UNLOCK_FASTBOOT ||
+		  !vb2api_is_oem_lock_enabled(ui->ctx)))
 		handler = ui_developer_mode_enter_fastboot_action;
 
 	if (handler) {

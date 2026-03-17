@@ -101,8 +101,13 @@ int vboot_check_enable_usb(void)
 
 static vb2_error_t start_fastboot_if_requested(struct vb2_context *ctx)
 {
-	/* Early enter fastboot only in developer mode */
-	if (ctx->boot_mode != VB2_BOOT_MODE_DEVELOPER)
+	/*
+	 * Early enter fastboot only in developer mode and oem lock isn't set or fastboot GBB
+	 * flag is set
+	 */
+	if (ctx->boot_mode != VB2_BOOT_MODE_DEVELOPER ||
+	    (!(vb2api_gbb_get_flags(ctx) & VB2_GBB_FLAG_FORCE_UNLOCK_FASTBOOT) &&
+	     vb2api_is_oem_lock_enabled(ctx)))
 		return VB2_SUCCESS;
 
 	enum android_misc_bcb_command cmd;
