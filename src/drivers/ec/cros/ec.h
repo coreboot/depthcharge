@@ -568,4 +568,11 @@ int cros_ec_set_ap_fw_state(uint32_t state);
  */
 int cros_ec_print(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 
+/**
+ * Check if battery is present
+ *
+ * @return true if present, false if not prsent
+ */
+bool cros_ec_is_battery_present(void);
+
 #endif /* __DRIVERS_EC_CROS_EC_H__ */

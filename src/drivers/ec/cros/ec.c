@@ -1188,3 +1188,19 @@ int cros_ec_print(const char *fmt, ...)
 
 	return ret;
 }
+
+bool cros_ec_is_battery_present(void)
+{
+	struct ec_params_battery_dynamic_info params = {
+		.index = 0,
+	};
+	struct ec_response_battery_dynamic_info resp;
+
+	if (ec_cmd_battery_get_dynamic(cros_ec_get(), &params, &resp) == 0) {
+		/* Check if battery is present */
+		if (resp.flags & EC_BATT_FLAG_BATT_PRESENT)
+			return true;
+	}
+
+	return false;
+}
