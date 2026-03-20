@@ -156,6 +156,7 @@ static void flush_chain(QcomQspi *qspi_bus)
 				dcache_invalidate_by_mva(data_addr,
 							desc->length);
 			else {
+				dsb();
 				src = (void *)(uintptr_t)desc->bounce_src;
 				dst = (void *)(uintptr_t)desc->bounce_dst;
 				memcpy(dst, src, desc->bounce_length);
