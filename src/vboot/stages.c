@@ -102,7 +102,8 @@ int vboot_check_enable_usb(void)
 static vb2_error_t start_fastboot_if_requested(struct vb2_context *ctx)
 {
 	/* Early enter fastboot only in developer mode */
-	if (ctx->boot_mode != VB2_BOOT_MODE_DEVELOPER)
+	if (ctx->boot_mode != VB2_BOOT_MODE_DEVELOPER ||
+	    !(ctx->flags & VB2_CONTEXT_FASTBOOT_ALLOWED))
 		return VB2_SUCCESS;
 
 	enum android_misc_bcb_command cmd;

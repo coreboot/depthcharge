@@ -16,6 +16,7 @@
  */
 
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <stdlib.h>
 #include <vboot/ui.h>
 
@@ -301,7 +302,13 @@ static bool fastboot_exit_on_key(void)
 
 void fastboot(void)
 {
+	struct vb2_context *ctx = vboot_get_context();
 	struct FastbootOps *fb_session;
+
+	if (!(ctx->flags & VB2_CONTEXT_FASTBOOT_ALLOWED)) {
+		printf("ERROR: %s(): Fastboot is not allowed by vboot.\n", __func__);
+		return;
+	}
 
 	/* TODO(b/370988331): Replace this with actual UI */
 	bool video_present = !video_init();

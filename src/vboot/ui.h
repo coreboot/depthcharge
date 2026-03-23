@@ -32,6 +32,7 @@
 #define __VBOOT_UI_H__
 
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <vb2_api.h>
 #include <vboot_api.h>
 
