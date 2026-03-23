@@ -62,6 +62,7 @@ int bootconfig_append_cmdline(struct bootconfig *bc, char *cmdline_string)
 	char *in, *out;
 	int ret = -1;
 
+	printf("%s: %s\n", __func__, cmdline_string);
 	for (in = cmdline_string, out = bc->start + bc->size; ; in++, out++) {
 		if (out >= bc->start + bc->limit)
 			goto exit;
@@ -103,6 +104,7 @@ int bootconfig_append(struct bootconfig *bc, const char *key, const char *value)
 
 	assert(bc != NULL && key != NULL && value != NULL);
 
+	printf("%s: %s=%s\n", __func__, key, value);
 	/* Exit early if the value contains any of the forbidden characters */
 	len = strcspn(value, forbidden_separators);
 	if (len != strlen(value)) {
