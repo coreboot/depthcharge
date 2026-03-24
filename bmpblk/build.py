@@ -48,6 +48,7 @@ KEY_BGCOLOR = 'bgcolor'
 KEY_FGCOLOR = 'fgcolor'
 KEY_HEIGHT = 'height'
 KEY_MAX_WIDTH = 'max_width'
+KEY_MAX_NUM_LINES = 'max_num_lines'
 KEY_FONTS = 'fonts'
 KEY_RW_ONLY = 'rw_only'
 
@@ -511,6 +512,7 @@ class Converter:
         bgcolor='#000000',
         fgcolor='#ffffff',
         use_svg=False,
+        max_num_lines=None,
     ):
         """Converts text file `input_file` into image file.
 
@@ -535,6 +537,7 @@ class Converter:
             fgcolor: Foreground color (#rrggbb).
             use_svg: If set to True, generate SVG file. Otherwise, generate PNG
                 file.
+            max_num_lines: Maximum number of text lines that image can have.
 
         Returns:
             The width in points passed to pango-view, or `None` when not
@@ -636,6 +639,12 @@ class Converter:
             width_pt = None
             png_file = png_file_one_line
             num_lines = 1
+        if max_num_lines and num_lines > max_num_lines:
+            raise BuildImageError(
+                f'Sprite image {input_file!r} uses more than {max_num_lines}'
+                f' lines ({num_lines} > {max_num_lines})'
+            )
+
         self.convert_png_to_bmp(
             png_file, output_file, max_colors, num_lines=num_lines
         )
@@ -756,6 +765,7 @@ class Converter:
             style = get_config_with_defaults(styles, category)
             height = style[KEY_HEIGHT]
             max_width = style[KEY_MAX_WIDTH]
+            max_num_lines = style[KEY_MAX_NUM_LINES]
             width_pt_counter = (
                 width_pt_counters[(height, max_width)] if max_width else None
             )
@@ -780,6 +790,7 @@ class Converter:
                 dpi=dpi,
                 bgcolor=style[KEY_BGCOLOR],
                 fgcolor=style[KEY_FGCOLOR],
+                max_num_lines=max_num_lines,
             )
             if width_pt:
                 width_pt_counter[width_pt] += 1

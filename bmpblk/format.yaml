@@ -194,6 +194,7 @@ styles:
     # Maximum width of the bitmap for wrapping lines. Unit is the same as the
     # "height" option.
     max_width: null
+    max_num_lines: null
   _GLYPH_:
     height: 20
   language:
@@ -211,6 +212,11 @@ styles:
     fgcolor: *grey_200
     # UI_SCALE - UI_MARGIN_H * 2
     max_width: 900
+  one_line_desc:
+    bgcolor: *grey_900
+    fgcolor: *grey_200
+    max_width: 900
+    max_num_lines: 1
   primary_button:
     height: 20
   secondary_button:
