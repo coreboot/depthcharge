@@ -1,1 +1,1 @@
-google.com/chromeos/devmode
+goo.gle/android_laptop_developer
