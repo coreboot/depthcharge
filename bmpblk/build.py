@@ -287,15 +287,8 @@ class Converter:
             )
 
         # Physical presence confirmation
-        if physical_presence == 'recovery':
-            rename_map['rec_to_dev_desc1_phyrec'] = 'rec_to_dev_desc1'
-            rename_map['rec_to_dev_desc1_power'] = None
-        elif physical_presence == 'power':
+        if physical_presence != 'recovery':
             rename_map['rec_to_dev_desc1_phyrec'] = None
-            rename_map['rec_to_dev_desc1_power'] = 'rec_to_dev_desc1'
-        else:
-            rename_map['rec_to_dev_desc1_phyrec'] = None
-            rename_map['rec_to_dev_desc1_power'] = None
             if physical_presence != 'keyboard':
                 raise BuildImageError(
                     f'Invalid physical presence setting {physical_presence} '
@@ -304,29 +297,38 @@ class Converter:
 
         # Broken screen
         if physical_presence == 'recovery':
-            rename_map['broken_desc_phyrec'] = 'broken_desc'
-            rename_map['broken_desc_detach'] = None
+            rename_map['broken_desc2_phyrec'] = 'broken_desc2'
+            rename_map['broken_desc2_detach'] = None
         elif is_detachable:
-            rename_map['broken_desc_phyrec'] = None
-            rename_map['broken_desc_detach'] = 'broken_desc'
+            rename_map['broken_desc2_phyrec'] = None
+            rename_map['broken_desc2_detach'] = 'broken_desc2'
         else:
-            rename_map['broken_desc_phyrec'] = None
-            rename_map['broken_desc_detach'] = None
+            rename_map['broken_desc2_phyrec'] = None
+            rename_map['broken_desc2_detach'] = None
+
+        # Error when untrusted key is used to unlock bootloader
+        if is_detachable:
+            rename_map['error_untrusted_confirm_detach'] = (
+                'error_untrusted_confirm'
+            )
+        else:
+            rename_map['error_untrusted_confirm_detach'] = None
 
         # SD card
         if not self.config[KEY_SDCARD]:
             rename_map.update(
                 {
-                    'rec_sel_desc1': None,
-                    'rec_sel_desc1_no_sd': 'rec_sel_desc1',
-                    'rec_disk_step1_desc0_no_sd': 'rec_disk_step1_desc0',
+                    'btn_rec_by_disk_no_sd': 'btn_rec_by_disk',
+                    'rec_disk_step1_desc1_no_sd': 'rec_disk_step1_desc1',
+                    'error_internet_recovery_no_sd': 'error_internet_recovery',
                 }
             )
         else:
             rename_map.update(
                 {
-                    'rec_sel_desc1_no_sd': None,
-                    'rec_disk_step1_desc0_no_sd': None,
+                    'btn_rec_by_disk_no_sd': None,
+                    'rec_disk_step1_desc1_no_sd': None,
+                    'error_internet_recovery_no_sd': None,
                 }
             )
 

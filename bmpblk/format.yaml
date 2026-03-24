@@ -10,6 +10,7 @@
 # string.
 generic_files:
   rec_url: footer         # see strings/rec_url.txt
+  rec_url_desc: desc_url  # see strings/rec_url_desc.txt
   dev_mode_url: error_url # see strings/dev_mode_url.txt
 
 # Localized strings
@@ -27,9 +28,11 @@ localized_files:
   fastboot_usb_conn_desc: one_line_desc
   # broken screen
   broken_title: title
-  broken_desc: desc
-  broken_desc_phyrec: desc
-  broken_desc_detach: desc
+  broken_desc0: desc
+  broken_desc1: desc
+  broken_desc2: desc
+  broken_desc2_phyrec: desc
+  broken_desc2_detach: desc
   # advanced options
   adv_options_title: title
   btn_dev_mode: primary_button
@@ -44,24 +47,23 @@ localized_files:
   # recovery screen
   rec_sel_title: title
   rec_sel_desc0: desc
-  rec_sel_desc1: desc
-  rec_sel_desc1_no_sd: desc
   btn_rec_by_disk: primary_button
+  btn_rec_by_disk_no_sd: primary_button
   btn_rec_by_internet: primary_button
   # recovery - common
-  rec_step1_title: title
-  rec_step1_desc2: desc
-  rec_step1_desc2_low_bat: desc
+  rec_learn_more_at_desc: desc
   # recovery - disk
+  rec_disk_step1_title: title
   rec_disk_step1_desc0: desc
-  rec_disk_step1_desc0_no_sd: desc
   rec_disk_step1_desc1: desc
+  rec_disk_step1_desc1_no_sd: desc
+  rec_disk_step1_desc2: desc
+  rec_disk_step1_desc3: desc
+  rec_disk_step1_desc3_low_bat: desc
   rec_disk_step2_title: title
   rec_disk_step2_desc0: desc
   rec_disk_step2_desc1: desc
   rec_disk_step2_desc2: desc
-  rec_disk_step3_title: title
-  rec_disk_step3_desc0: desc
   # recovery - error
   rec_invalid_title: title
   rec_invalid_desc: desc
@@ -71,9 +73,8 @@ localized_files:
   # to-dev screen
   rec_to_dev_title: title
   rec_to_dev_desc0: desc
-  rec_to_dev_desc1: desc
   rec_to_dev_desc1_phyrec: desc
-  rec_to_dev_desc1_power: desc
+  btn_rec_to_dev: primary_button
   # developer screen
   dev_title: title
   dev_desc0: desc
@@ -86,6 +87,7 @@ localized_files:
   dev_to_norm_title: title
   dev_to_norm_desc0: desc
   dev_to_norm_desc1: desc
+  btn_lock: primary_button
   # developer: boot from external disk
   dev_boot_ext_title: title
   dev_boot_ext_desc0: desc
@@ -115,6 +117,7 @@ localized_files:
   # errors
   error_dev_mode_enabled: error
   error_untrusted_confirm: error
+  error_untrusted_confirm_detach: error
   error_to_norm_not_allowed: error
   error_dev_boot_not_allowed: error
   error_int_boot_failed: error
@@ -126,6 +129,7 @@ localized_files:
   error_firmware_log: error
   error_diagnostics: error
   error_internet_recovery: error
+  error_internet_recovery_no_sd: error
   error_dev_mode_oem_lock: error
   # diagnostic tools - menu
   btn_launch_diag: secondary_button
@@ -157,8 +161,6 @@ sprite_files:
   ic_1-done: icon_step
   ic_2: icon_step
   ic_2-done: icon_step
-  ic_3: icon_step
-  ic_3-done: icon_step
   ic_done: icon_step
   # button icons
   ic_search: button_icon
@@ -227,6 +229,9 @@ styles:
     fgcolor: *grey_200
     max_width: 900
     max_num_lines: 1
+  desc_url:
+    bgcolor: *grey_900
+    fgcolor: *grey_200
   primary_button:
     height: 20
   secondary_button:

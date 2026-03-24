@@ -112,29 +112,35 @@
   </translations>
   <release seq="1">
     <messages fallback_to_english="true">
-      <message name="firmware_sync_title" desc="Title of screen shown when chromebook is updating the firmware on the embedded chip.">
-Please do not power off your device
+      <message name="firmware_sync_title" desc="Title of screen shown when device is updating the firmware on the embedded chip.">
+Updating your device
       </message>
-      <message name="firmware_sync_desc" desc="Description of screen shown when chromebook is updating the firmware on the embedded chip.">
-Your system is applying a critical update.
+      <message name="firmware_sync_desc" desc="Description of screen shown when device is updating the firmware on the embedded chip.">
+Keep your device turned on. This may take a moment.
       </message>
-      <message name="broken_title" desc="Title of screen shown when chromebook is in broken screen.">
+      <message name="broken_title" desc="Title of screen shown when device is in broken screen.">
 Something went wrong
       </message>
-      <message name="broken_desc" desc="Description of screen shown when chromebook is in broken screen. Adding icons.  Please keep old translations and just place the icons appropriately.">
-To try and fix the issue, start the recovery process. Remove all connected devices, then hold down Esc, Refresh ( ⟳ ), and Power ( ⏻ ).
+      <message name="broken_desc0" desc="Description string0 for screen shown when device is in broken screen.">
+To fix this issue, start the recovery process.
       </message>
-      <message name="broken_desc_phyrec" desc="Description of screen shown when chromebox/chromebit is in broken screen. Adding icons.  Please keep old translations and just place the icons appropriately.">
-To try and fix the issue, start the recovery process. Remove all connected devices, then hold down the Recovery button, press and release the Power button ( ⏻ ), release the Recovery button.
+      <message name="broken_desc1" desc="Description string1 for screen shown when device is in broken screen.">
+1. Remove all connected devices.
       </message>
-      <message name="broken_desc_detach" desc="Description of screen shown when chromeos tablet is in broken screen. Adding icons.  Please keep old translations and just place the icons appropriately.">
-To try and fix the issue, start the recovery process. Remove all connected devices, then hold down Volume Up, Volume Down, and the Power button ( ⏻ ) for at least 10 seconds.
+      <message name="broken_desc2" desc="Description string2 for screen shown when device is in broken screen.">
+2. Hold Esc + Refresh ( ⟳ ) + Power ( ⏻ ).
+      </message>
+      <message name="broken_desc2_phyrec" desc="Description string2 for screen shown when device with physical recovery button is in broken screen.">
+2. While holding the Recovery button, press and release the Power button ( ⏻ ), then release the Recovery button.
+      </message>
+      <message name="broken_desc2_detach" desc="Description string2 for screen shown when detachable is in broken screen.">
+2. Hold down Volume Up + Volume Down + Power button ( ⏻ ) for at least 10 seconds.
       </message>
       <message name="adv_options_title" desc="Title for the advanced options screen.">
 Advanced options
       </message>
       <message name="btn_dev_mode" desc="String for button to initiate the transition of the device into developer mode">
-Enable developer mode
+Unlock bootloader
       </message>
       <message name="btn_debug_info" desc="String for button to view the logs of debug info.">
 Debug info
@@ -145,7 +151,7 @@ Bootloader fastboot
       <message name="btn_firmware_log" desc="String for button to view the firmware log.">
 Firmware log
       </message>
-       <message name="btn_firmware_shell" desc="String for button to view the firmware shell">
+      <message name="btn_firmware_shell" desc="String for button to view the firmware shell">
 Firmware shell
       </message>
       <message name="debug_info_title" desc="Title for the debug info screen.">
@@ -179,67 +185,64 @@ You have reached the top
 You have reached the end
       </message>
       <message name="rec_sel_title" desc="Title for the recovery screen (after user presses three finger salute, ie: ctrl + refresh + power).">
-Let’s step you through the recovery process
+Start the recovery process
       </message>
       <message name="rec_sel_desc0" desc="Description string0 for the recovery screen (after user presses three finger salute, ie: ctrl + refresh + power).">
-Select how you’d like to recover.
-      </message>
-      <message name="rec_sel_desc1" desc="Description string1 for the recovery screen (after user presses three finger salue, ie: ctrl + refresh + power).">
-You can recover using external storage such as a USB drive or an SD card.
-      </message>
-      <message name="rec_sel_desc1_no_sd" desc="Description string1 for the recovery screen (after user presses three finger salue, ie: ctrl + refresh + power) when no SD card available on the device.">
-You can recover using external storage such as a USB drive.
+Choose a recovery method to get started.
       </message>
       <message name="btn_rec_by_disk" desc="Button to select recovery through external disk.">
-Recovery using external storage
+Use USB drive or SD card
+      </message>
+      <message name="btn_rec_by_disk_no_sd" desc="Button to select recovery through external disk when no SD card available on the device.">
+Use USB drive
       </message>
       <message name="btn_rec_by_internet" desc="Button to select internet connection recovery.">
-Recovery using internet connection
+Use internet connection
       </message>
       <message name="btn_rec_by_internet_old" desc="Button to select internet connection recovery.">
 Internet recovery (older version)
       </message>
-      <message name="rec_step1_title" desc="Title for Step1 in the recovery process.">
-Get ready to recover your device. You'll need:
-      </message>
-      <message name="rec_step1_desc2" desc="String1 for Step1 in the recovery process.">
-Connecting your device to a power source is recommended.
-      </message>
-      <message name="rec_step1_desc2_low_bat" desc="String2 for Step1 in the recovery process.  This is shown when the device has low battery">
-3. A power source for this device
+      <message name="rec_disk_step1_title" desc="Title for Step1 in the recovery process.">
+Get ready to recover your device
       </message>
       <message name="rec_disk_step1_desc0" desc="Description string0 for step1 in the recovery process.">
-1. An external storage device such as a USB drive or an SD card
-      </message>
-      <message name="rec_disk_step1_desc0_no_sd" desc="Description string0 for step1 in the recovery process when no SD card is present on the device.">
-1. An external storage device such as a USB drive
+To create a recovery drive, you'll need:
       </message>
       <message name="rec_disk_step1_desc1" desc="Description string1 for step1 in the recovery process.">
-2. Another device with internet access
+1. A USB drive or SD card
+      </message>
+      <message name="rec_disk_step1_desc1_no_sd" desc="Description string1 for step1 in the recovery process when no SD card is present on the device.">
+1. A USB drive
+      </message>
+      <message name="rec_disk_step1_desc2" desc="Description string2 for step1 in the recovery process.">
+2. Another device with internet connection
+      </message>
+      <message name="rec_disk_step1_desc3" desc="String3 for Step1 in the recovery process.">
+Connecting your device to a power source is recommended.
+      </message>
+      <message name="rec_disk_step1_desc3_low_bat" desc="String3 for Step1 in the recovery process.  This is shown when the device has low battery">
+Your device battery is low. Connect to a power source to continue.
       </message>
       <message name="rec_disk_step2_title" desc="Title for step2 in the recovery process.">
-Set up your external storage
+Set up your recovery drive
       </message>
       <message name="rec_disk_step2_desc0" desc="Description string0 for step2 in the recovery process.">
-1. Go to google.com/chromeos/recovery on the other device and install the Chrome extension
+1. Go to goo.gle/android_laptop_recovery on your other device
       </message>
       <message name="rec_disk_step2_desc1" desc="Description string1 for step2 in the recovery process.">
-2. Follow instructions on the Chrome extension, and download the recovery image onto external storage
+2. Follow instructions on your other device
       </message>
       <message name="rec_disk_step2_desc2" desc="Description string2 for step2 in the recovery process.">
-3. Click next when your external storage device is ready with the recovery image
+When your recovery drive is ready, plug it into this device to start the recovery process.
       </message>
-      <message name="rec_disk_step3_title" desc="Title for step3 in the recovery process.">
-Connect your external storage device
-      </message>
-      <message name="rec_disk_step3_desc0" desc="Description string0 for step3 in the recovery process.">
-If your external storage device is ready with a recovery image, plug it into this device to start the recovery process.
+      <message name="rec_learn_more_at_desc" desc="Description for recovery failure screens. A URL will be shown below this line.">
+Learn more at:
       </message>
       <message name="rec_invalid_title" desc="Title for invalid disk plugged inserted.">
 No valid image detected
       </message>
       <message name="rec_invalid_desc" desc="Description for invalid disk plugged inserted.">
-Make sure your external disk has a valid recovery image, and re-insert the disk when ready.
+Make sure your recovery drive has a valid image and try again.
       </message>
       <message name="rec_rollback_error_title" desc="Title for recovery rollback error.">
 Outdated recovery image
@@ -248,61 +251,61 @@ Outdated recovery image
 This recovery image is too old for your device. Download a new recovery image and try again.
       </message>
       <message name="rec_to_dev_title" desc="Title for transition to dev mode.">
-You are attempting to enable developer mode
+Unlock bootloader?
       </message>
       <message name="rec_to_dev_desc0" desc="String0 for transition to dev mode.">
-This involves erasing all data from your device, and will make your device insecure.
+This will erase all data from your device. Device security will be disabled.
       </message>
-      <message name="rec_to_dev_desc1" desc="String1 for transition to dev mode.">
-Select Cancel to remain protected.
+      <message name="rec_to_dev_desc1_phyrec" desc="String1 for transition to dev mode for devices with physical recovery button.">
+Press the Recovery button on your device to unlock the bootloader, or select Cancel to remain protected.
       </message>
-      <message name="rec_to_dev_desc1_phyrec" desc="String1 for transition to dev mode for chromeboxes.">
-Press the Recovery button on your Chromebox to enable developer mode, or select Cancel to remain protected.
-      </message>
-      <message name="rec_to_dev_desc1_power" desc="String1 for transition to dev mode for detachables and tablets.">
-Press the Power button to enable developer mode, or select Cancel to remain protected.
+      <message name="btn_rec_to_dev" desc="Button that unlocks the bootloader.">
+Unlock
       </message>
       <message name="dev_title" desc="Title for the developer warning screen.">
-You are in developer mode
+Bootloader is unlocked
       </message>
       <message name="dev_desc0" desc="String0 for developer warning screen.">
-To return to the recommended secure mode, select “Return to secure mode” below.
+Your device is not secure while the bootloader is unlocked. To restore device security, lock the bootloader.
       </message>
       <message name="dev_desc1" desc="String1 for developer warning screen.">
 After timeout, the device will automatically boot from the selection below.
       </message>
       <message name="btn_secure_mode" desc="Button for going back to secure mode.">
-Return to secure mode
+Lock bootloader
       </message>
       <message name="btn_int_disk" desc="Button for booting into internal disk.">
 Boot from internal disk
       </message>
-      <message name="btn_ext_disk" desc="Button for booting into the external disk.">
-Boot from external disk
+      <message name="btn_ext_disk" desc="Button for booting into the external drive.">
+Boot from external drive
       </message>
       <message name="btn_alt_bootloader" desc="Button for selecting an alternate bootloader.">
 Select alternate bootloader
       </message>
       <message name="dev_to_norm_title" desc="Title for screen for transition from developer to normal mode.">
-Confirm returning to secure mode
+Lock bootloader?
       </message>
       <message name="dev_to_norm_desc0" desc="String0 for screen for transition from developer to normal mode.">
-This option will disable developer mode and restore your device to its original state.
+This will lock the bootloader and restore your device to its original state.
       </message>
       <message name="dev_to_norm_desc1" desc="String1 for screen for transition from developer to normal mode.">
-Your user data will be wiped in the process.
+User data will be wiped in the process.
       </message>
-      <message name="dev_boot_ext_title" desc="Title for screen instructing user to plug in their USB/SD card containing a ChromeOS recovery image.">
-Plug in your external disk
+      <message name="btn_lock" desc="Button for going back to secure mode.">
+Lock
       </message>
-      <message name="dev_boot_ext_desc0" desc="String1 for screen instructing user to plug in their USB/SD card containing a ChromeOS recovery image.">
-Plug in your external disk with a Chrome OS image. It will be booted automatically.
+      <message name="dev_boot_ext_title" desc="Title for screen instructing user to plug in their USB/SD card containing an OS recovery image.">
+No external drive detected
+      </message>
+      <message name="dev_boot_ext_desc0" desc="String1 for screen instructing user to plug in their USB/SD card containing an OS recovery image.">
+Plug in an external drive with an OS image. Your device will boot automatically.
       </message>
       <message name="dev_invalid_disk_title" desc="Title for screen that appears when user plugs in a USB/SD card with an invalid image on it.">
 No valid image detected
       </message>
       <message name="dev_invalid_disk_desc0" desc="String1 for screen that appears when user plugs in a USB/SD card with an invalid image on it.">
-Make sure your external disk has a valid Chrome OS image, and re-insert the disk when ready.
+Make sure your external drive has a valid OS image, and re-insert it when it's ready.
       </message>
       <message name="btn_launch_diag" desc="String for the button to enter diagnostics.">
 Launch diagnostics
@@ -314,7 +317,7 @@ Select alternate bootloader
 Diagnostic tools
       </message>
       <message name="diag_menu_desc0" desc="String for diagnostic entry menu. This menu provides several self-diagnostic tools including information about storage status and memory tests. This string shows directly under the title of the menu and guides the user to select the desired tool.">
-Select the test you'd like to run.
+Select a test to run
       </message>
       <message name="diag_storage_health_title" desc="Title for storage diagnostic screen. This screen will retrieve health information about the storage (disks) on this device.">
 Storage health info
@@ -340,10 +343,10 @@ Storage self-test (short)
       <message name="btn_diag_storage_ext_test" desc="Menu item for extended storage self-test. This will start a storage self-test and will show the status on the screen. Extended self-test may spend from several minutes to hours to complete.">
 Storage self-test (extended)
       </message>
-      <message name="btn_diag_memory_quick" desc="Menu item to make a Chrome OS device in 'service mode' run a verification of the memory components inside it, and report the results to the user. This quick memory test takes about several seconds to complete.">
+      <message name="btn_diag_memory_quick" desc="Menu item to make a device in 'service mode' run a verification of the memory components inside it, and report the results to the user. This quick memory test takes about several seconds to complete.">
 Memory check (quick)
       </message>
-      <message name="btn_diag_memory_full" desc="Menu item to make a Chrome OS device in 'service mode' run a verification of the memory components inside it, and report the results to the user. This full memory test takes about few minutes to complete.">
+      <message name="btn_diag_memory_full" desc="Menu item to make a device in 'service mode' run a verification of the memory components inside it, and report the results to the user. This full memory test takes about few minutes to complete.">
 Memory check (full)
       </message>
       <message name="btn_next" desc="String for the next button.">
@@ -365,15 +368,15 @@ Advanced options
 Power off
       </message>
       <message name="model" desc="String for the model label.">
-Model:
+Product:
       </message>
       <message name="help_center" desc="String for the help center label.">
 Help center:
       </message>
-      <message name="navigate0" desc="Instruction0 for navigating on a chromebook or chromebox.">
+      <message name="navigate0" desc="Instruction0 for navigating on a device.">
 Use the arrow keys to navigate up or down.
       </message>
-      <message name="navigate1" desc="Instruction1 for navigating on a chromebook or chromebox.">
+      <message name="navigate1" desc="Instruction1 for navigating on a device.">
 Use the enter key to select an option.
       </message>
       <message name="navigate0_tablet" desc="Instruction0 for navigating on a tablet or detachable.">
@@ -383,29 +386,33 @@ Use the volume buttons to navigate up or down.
 Use the power button to select an option.
       </message>
       <message name="error_dev_mode_enabled" desc="Error message when developer mode is already turned on">
-Developer mode is already turned on.
+Bootloader is already unlocked.
       </message>
       <message name="error_untrusted_confirm"
                desc="Error for untrusted confirmation for turning on developer mode">
-You cannot use an external keyboard to turn on developer mode. Please use the on-device buttons noted in the navigation instructions.
+You cannot use an external keyboard to unlock the bootloader. Use the built-in keyboard.
+      </message>
+      <message name="error_untrusted_confirm_detach"
+               desc="Error for untrusted confirmation for turning on developer mode on a tablet or detachable">
+You cannot use a keyboard to unlock the bootloader. Use the Power button ( ⏻ ).
       </message>
       <message name="error_to_norm_not_allowed" desc="Error when to-norm transition is not allowed">
 Returning to secure mode disallowed by GBB flags.
       </message>
       <message name="error_dev_boot_not_allowed" desc="Error when booting in developer mode is not allowed">
-Booting in developer mode is not allowed. For more info, visit:
+Booting with an unlocked bootloader is not allowed. Learn more at:
       </message>
       <message name="error_int_boot_failed"
-               desc="Error when internal boot failed.">
-Something went wrong booting from the internal disk. View firmware log for details.
+               desc="Error when internal boot failed. 'Advanced options' is refering to adv_options_title. 'Firmware log' is refering to btn_firmware_log. '&gt;' symbol shows the path through the menu, that user should take, so replace it with '&lt;' for RTL languages.">
+Something went wrong booting from the internal disk. For details, go to Advanced options > Firmware log.
       </message>
       <message name="error_ext_boot_disabled"
                desc="Error when external boot is disabled. A URL will be shown below this line.">
-Booting from an external disk is disabled. For more info, visit:
+Booting from an external drive is disabled. Learn more at:
       </message>
       <message name="error_alt_boot_disabled"
                desc="Error when alternate bootloaders are disabled. A URL will be shown below this line.">
-Alternate bootloaders are disabled. For more info, visit:
+Alternate bootloaders are disabled. Learn more at:
       </message>
       <message name="error_no_alt_bootloader"
                desc="Error when no alternate bootloader is found. A URL will be shown below this line.">
@@ -424,10 +431,13 @@ Could not get firmware log.
 Could not get diagnostic information.
       </message>
       <message name="error_internet_recovery" desc="Error of using internet recovery">
-Internet recovery partition corrupted or missing. Please recover using external storage instead.
+Internet recovery partition is corrupted or missing. Use a USB drive or SD card instead.
+      </message>
+      <message name="error_internet_recovery_no_sd" desc="Error of using internet recovery when no SD card available on the device">
+Internet recovery partition is corrupted or missing. Use a USB drive instead.
       </message>
       <message name="error_dev_mode_oem_lock" desc="Error message when developer mode is blocked by OEM lock">
-Booting in unlocked bootloader mode is disabled. To enable this, reboot to the OS and enable OEM unlocking in Developer options. Learn more at:
+Booting with an unlocked bootloader is disabled. To enable it, reboot to the OS and enable OEM unlocking in Developer options. Learn more at:
       </message>
       <message name="memory_training_desc" desc="WARNING: The translation for this string is subject to strict character set limitations. Please read all instructions in go/t9n-guide-cros-early-stage-firmware-screens carefully before translating this string.">
 Your device is finishing an update. This may take 1-2 minutes.
