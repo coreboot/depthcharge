@@ -152,9 +152,8 @@ static void update_mem_ranges(struct mte_ctrl *ctrl)
 		/* Storage reserved but MTE disabled: free it to reclaim memory */
 		memory_free_tag_storage();
 	} else {
-		/* MTE requested but storage missing: cannot enable MTE */
-		printf("Memory tag storage is not found! Disable MTE.\n");
-		ctrl->mte = 0;
+		/* We should never get here. */
+		die("ANDROID_MTE is enabled but the tag storage is missing!\n");
 	}
 }
 
