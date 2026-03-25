@@ -3,6 +3,18 @@
 #include <libpayload.h>
 #include "base/cleanup_funcs.h"
 #include "base/init_funcs.h"
+#include "base/late_init_funcs.h"
+#include "drivers/soc/qcom_spmi.h"
+#include "drivers/soc/qcom_spmi_defs.h"
+
+/*
+ * SDAM16 BOOT_REASON register (SDAM16_MEM_030) at SPMI address 0x7F5E
+ * Bits 5:4 - ADSP boot reason (fresh boot / recovery)
+ * Bits 3:1 - ADSP power state
+ * Bit 0    - OSType flag (0 = RTOS, 1 = HLOS)
+ */
+#define SDAM16_MEM_030_ADDR	0x7F5E
+#define OS_TYPE_HLOS		BIT(0)
 
 #define LPASS_AON_CC_LPASS_CORE_HM_COLLAPSE_VOTE_FOR_Q6	((void *)0x06E14000)
 #define LPASS_CORE_HM_GDSCR_ADDR			((void *)0x07E00000)
@@ -26,6 +38,37 @@ static int wait_for_condition(uint32_t timeout_us, int condition)
 		udelay(1);
 	}
 	return 1;
+}
+
+/*
+ * Notify the ADSP of the host OS type by setting OS_TYPE_HLOS (bit 0) in
+ * SDAM16_MEM_030 via PMIC SPMI. Called as a late init function so that all
+ * drivers are available and the write happens before vboot selects a kernel.
+ */
+static int adsp_set_os_type_hlos(struct LateInitFunc *init)
+{
+	QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
+					    PMIC_REG_CHAN0_ADDR,
+					    PMIC_REG_LAST_CHAN_ADDR -
+					    PMIC_REG_FIRST_CHAN_ADDR);
+
+	int val = pmic_spmi->read8(pmic_spmi, SDAM16_MEM_030_ADDR);
+	if (val < 0) {
+		printf("ADSP: SPMI read failed: %d\n", val);
+		free(pmic_spmi);
+		return 0;
+	}
+
+	/* Masked write: set bit 0 (OS_TYPE_HLOS) */
+	int ret = pmic_spmi->write8(pmic_spmi, SDAM16_MEM_030_ADDR,
+				    (uint8_t)(val | OS_TYPE_HLOS));
+	if (ret)
+		printf("ADSP: SPMI write failed: %d\n", ret);
+	else
+		printf("ADSP: OS_TYPE_HLOS set in SDAM16_MEM_030\n");
+
+	free(pmic_spmi);
+	return 0;
 }
 
 static int lpass_cleanup(struct CleanupFunc *cleanup, CleanupType type)
@@ -60,3 +103,4 @@ static int lpass_cleanup_install(void)
 }
 
 INIT_FUNC(lpass_cleanup_install);
+LATE_INIT_FUNC(adsp_set_os_type_hlos);
