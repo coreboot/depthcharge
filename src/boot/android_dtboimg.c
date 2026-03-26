@@ -88,7 +88,9 @@ static bool is_dt_entry_type0_compatible(const struct dt_table_entry *entry)
 	if (entry->custom1 != 0xffffffff && entry->custom1 != lib_sysinfo.sku_id)
 		return false;
 
-	if (lib_sysinfo.board_id < entry->min_rev || lib_sysinfo.board_id > entry->max_rev)
+	/* The range [0,UINT16_MAX] matches any board_id, including unprovisioned one. */
+	if (!(entry->min_rev == 0x0 && entry->max_rev == UINT16_MAX) &&
+	    (lib_sysinfo.board_id < entry->min_rev || lib_sysinfo.board_id > entry->max_rev))
 		return false;
 
 	return true;
