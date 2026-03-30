@@ -34,7 +34,6 @@
 #include "drivers/ec/cros/ec.h"
 #include "drivers/power/power.h"
 
-
 #define DEFAULT_BUF_SIZE 0x100
 
 /* List of registered chip drivers to perform auxfw update */
@@ -84,9 +83,8 @@ uint8_t cros_ec_calc_checksum(const void *data, int size)
  * @param dout_len      Size of output data in bytes
  * @return packet size in bytes, or <0 if error.
  */
-static int create_proto3_request(struct ec_host_request *rq, int rq_size,
-				 int cmd, int cmd_version,
-				 const void *dout, int dout_len)
+static int create_proto3_request(struct ec_host_request *rq, int rq_size, int cmd,
+				 int cmd_version, const void *dout, int dout_len)
 {
 	int out_bytes = dout_len + sizeof(*rq);
 
@@ -145,8 +143,7 @@ static int prepare_proto3_response_buffer(int rs_size, int din_len)
  * @param din_len       Maximum size of data in response in bytes
  * @return number of bytes of response data, or <0 if error
  */
-static int handle_proto3_response(struct ec_host_response *rs,
-				  uint8_t *dinp, int din_len)
+static int handle_proto3_response(struct ec_host_response *rs, uint8_t *dinp, int din_len)
 {
 	int in_bytes;
 	int csum;
@@ -177,8 +174,7 @@ static int handle_proto3_response(struct ec_host_response *rs,
 	/* Verify checksum */
 	csum = cros_ec_calc_checksum(rs, in_bytes);
 	if (csum) {
-		printf("%s: EC response checksum invalid: 0x%02x\n", __func__,
-		      csum);
+		printf("%s: EC response checksum invalid: 0x%02x\n", __func__, csum);
 		return -EC_RES_INVALID_CHECKSUM;
 	}
 
@@ -193,29 +189,26 @@ static int handle_proto3_response(struct ec_host_response *rs,
 	return rs->data_len;
 }
 
-static int send_command_proto3_work(CrosEc *me, int cmd, int cmd_version,
-				    const void *dout, int dout_len,
-				    void *dinp, int din_len)
+static int send_command_proto3_work(CrosEc *me, int cmd, int cmd_version, const void *dout,
+				    int dout_len, void *dinp, int din_len)
 {
 	int out_bytes, in_bytes;
 	int rv;
 
 	/* Create request packet */
-	out_bytes = create_proto3_request(me->proto3_request,
-					  me->proto3_request_size,
-					  cmd, cmd_version, dout, dout_len);
+	out_bytes = create_proto3_request(me->proto3_request, me->proto3_request_size, cmd,
+					  cmd_version, dout, dout_len);
 	if (out_bytes < 0)
 		return out_bytes;
 
 	/* Prepare response buffer */
-	in_bytes = prepare_proto3_response_buffer(me->proto3_response_size,
-						  din_len);
+	in_bytes = prepare_proto3_response_buffer(me->proto3_response_size, din_len);
 
 	if (in_bytes < 0)
 		return in_bytes;
 
-	rv = me->bus->send_packet(me->bus, me->proto3_request, out_bytes,
-				  me->proto3_response, in_bytes);
+	rv = me->bus->send_packet(me->bus, me->proto3_request, out_bytes, me->proto3_response,
+				  in_bytes);
 
 	if (rv < 0)
 		return rv;
@@ -224,14 +217,12 @@ static int send_command_proto3_work(CrosEc *me, int cmd, int cmd_version,
 	return handle_proto3_response(me->proto3_response, dinp, din_len);
 }
 
-static int send_command_proto3(CrosEc *me, int cmd, int cmd_version,
-			       const void *dout, int dout_len,
-			       void *dinp, int din_len)
+static int send_command_proto3(CrosEc *me, int cmd, int cmd_version, const void *dout,
+			       int dout_len, void *dinp, int din_len)
 {
 	int rv;
 
-	rv = send_command_proto3_work(me, cmd, cmd_version, dout, dout_len,
-				      dinp, din_len);
+	rv = send_command_proto3_work(me, cmd, cmd_version, dout, dout_len, dinp, din_len);
 
 	/* If the command doesn't complete, wait a while */
 	if (rv == -EC_RES_IN_PROGRESS) {
@@ -249,43 +240,39 @@ static int send_command_proto3(CrosEc *me, int cmd, int cmd_version,
 			int ret;
 			uint64_t elapsed_us;
 
-			mdelay(50);	/* Insert some reasonable delay */
-			ret = send_command_proto3_work(me,
-				EC_CMD_GET_COMMS_STATUS, 0, NULL, 0,
-				&resp, sizeof(resp));
+			mdelay(50); /* Insert some reasonable delay */
+			ret = send_command_proto3_work(me, EC_CMD_GET_COMMS_STATUS, 0, NULL, 0,
+						       &resp, sizeof(resp));
 			if (ret < 0)
 				return ret;
 
 			elapsed_us = timer_us(start);
 			if ((resp.flags & EC_COMMS_STATUS_PROCESSING) == 0) {
-				printf("%s: command %#02x completed in %lld us\n",
-				       __func__, cmd, elapsed_us);
+				printf("%s: command %#02x completed in %lld us\n", __func__,
+				       cmd, elapsed_us);
 				break;
 			}
 			if (elapsed_us > (CROS_EC_ERASE_TIMEOUT_MS * 1000)) {
-				printf("%s: command %#02x timeout\n", __func__,
-				       cmd);
+				printf("%s: command %#02x timeout\n", __func__, cmd);
 				return -EC_RES_TIMEOUT;
 			}
 		}
 
 		/* OK it completed, so read the status response */
-		rv = send_command_proto3_work(me, EC_CMD_RESEND_RESPONSE,
-			0, NULL, 0, dinp, din_len);
+		rv = send_command_proto3_work(me, EC_CMD_RESEND_RESPONSE, 0, NULL, 0, dinp,
+					      din_len);
 	}
 
 	return rv;
 }
 
-int ec_command(CrosEc *me, int cmd, int cmd_version,
-	       const void *dout, int dout_len,
-	       void *din, int din_len)
+int ec_command(CrosEc *me, int cmd, int cmd_version, const void *dout, int dout_len, void *din,
+	       int din_len)
 {
 	if (!me->initialized && ec_init(me))
 		return -1;
 
-	return send_command_proto3(me, cmd, cmd_version, dout, dout_len, din,
-				   din_len);
+	return send_command_proto3(me, cmd, cmd_version, dout, dout_len, din, din_len);
 }
 
 CrosEc *cros_ec_get(void)
@@ -330,12 +317,12 @@ int cros_ec_cmd_version_supported(int cmd, int ver)
 
 static int cbi_get_uint32(uint32_t *id, uint32_t type)
 {
-	struct ec_params_get_cbi p = { 0 };
+	struct ec_params_get_cbi p = {0};
 
 	p.tag = type;
 
-	int rv = ec_command(cros_ec_get(), EC_CMD_GET_CROS_BOARD_INFO, 0,
-			    &p, sizeof(p), id, sizeof(*id));
+	int rv = ec_command(cros_ec_get(), EC_CMD_GET_CROS_BOARD_INFO, 0, &p, sizeof(p), id,
+			    sizeof(*id));
 
 	return rv < 0 ? rv : 0;
 }
@@ -349,7 +336,6 @@ int cros_ec_cbi_get_oem_id(uint32_t *id)
 {
 	return cbi_get_uint32(id, CBI_TAG_OEM_ID);
 }
-
 
 int cros_ec_pd_control(uint8_t pd_port, enum ec_pd_control_cmd cmd)
 {
@@ -378,9 +364,7 @@ int cros_ec_i2c_get_speed(uint8_t i2c_port, uint16_t *speed_khz)
 	return 0;
 }
 
-int cros_ec_i2c_set_speed(uint8_t i2c_port,
-			  uint16_t new_speed_khz,
-			  uint16_t *old_speed_khz)
+int cros_ec_i2c_set_speed(uint8_t i2c_port, uint16_t new_speed_khz, uint16_t *old_speed_khz)
 {
 	const struct ec_params_i2c_control p = {
 		.port = i2c_port,
@@ -403,8 +387,8 @@ int cros_ec_i2c_set_speed(uint8_t i2c_port,
 
 int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 {
-	if (ec_command(cros_ec_get(), EC_CMD_MKBP_STATE, 0, NULL, 0,
-		       &scan->data, sizeof(scan->data)) != sizeof(scan->data))
+	if (ec_command(cros_ec_get(), EC_CMD_MKBP_STATE, 0, NULL, 0, &scan->data,
+		       sizeof(scan->data)) != sizeof(scan->data))
 		return -1;
 
 	return 0;
@@ -448,8 +432,7 @@ int cros_ec_reboot_param(CrosEc *me, enum ec_reboot_cmd cmd, uint8_t flags)
 		return -1;
 
 	/* Do we expect our command to immediately reboot the EC? */
-	if (cmd != EC_REBOOT_DISABLE_JUMP &&
-	    !(flags & EC_REBOOT_FLAG_ON_AP_SHUTDOWN)) {
+	if (cmd != EC_REBOOT_DISABLE_JUMP && !(flags & EC_REBOOT_FLAG_ON_AP_SHUTDOWN)) {
 		/*
 		 * EC reboot will take place immediately so delay to allow it
 		 * to complete.  Note that some reboot types (EC_REBOOT_COLD)
@@ -463,10 +446,9 @@ int cros_ec_reboot_param(CrosEc *me, enum ec_reboot_cmd cmd, uint8_t flags)
 				printf("EC did not return from reboot.\n");
 				return -1;
 			}
-			mdelay(5);	// avoid spamming bus too hard
+			mdelay(5); // avoid spamming bus too hard
 		}
-		printf("EC returned from reboot after %lluus\n",
-		       timer_us(start));
+		printf("EC returned from reboot after %lluus\n", timer_us(start));
 	}
 
 	return 0;
@@ -481,8 +463,8 @@ int cros_ec_interrupt_pending(void)
 
 int cros_ec_mkbp_info(struct ec_response_mkbp_info *info)
 {
-	if (ec_command(cros_ec_get(), EC_CMD_MKBP_INFO, 0, NULL, 0,
-		       info, sizeof(*info)) != sizeof(*info))
+	if (ec_command(cros_ec_get(), EC_CMD_MKBP_INFO, 0, NULL, 0, info, sizeof(*info)) !=
+	    sizeof(*info))
 		return -1;
 
 	return 0;
@@ -492,8 +474,7 @@ int cros_ec_get_event_mask(u8 type, uint32_t *mask)
 {
 	struct ec_response_host_event_mask rsp;
 
-	if (ec_command(cros_ec_get(), type, 0, NULL, 0,
-		       &rsp, sizeof(rsp)) != sizeof(rsp))
+	if (ec_command(cros_ec_get(), type, 0, NULL, 0, &rsp, sizeof(rsp)) != sizeof(rsp))
 		return -1;
 
 	*mask = rsp.mask;
@@ -507,8 +488,7 @@ int cros_ec_set_event_mask(u8 type, uint32_t mask)
 
 	req.mask = mask;
 
-	if (ec_command(cros_ec_get(), type, 0, &req, sizeof(req),
-		       NULL, 0) < 0)
+	if (ec_command(cros_ec_get(), type, 0, &req, sizeof(req), NULL, 0) < 0)
 		return -1;
 
 	return 0;
@@ -577,8 +557,8 @@ int cros_ec_battery_sustain(unsigned char lower, unsigned char upper)
 	else
 		version = 2;
 
-	int rv = ec_command(cros_ec_get(), EC_CMD_CHARGE_CONTROL, version,
-			&p, sizeof(p), NULL, 0);
+	int rv = ec_command(cros_ec_get(), EC_CMD_CHARGE_CONTROL, version, &p, sizeof(p), NULL,
+			    0);
 
 	if (rv < 0)
 		printf("error, set battery sustainer fail!\n");
@@ -614,8 +594,7 @@ static int read_memmap(uint8_t offset, uint8_t size, void *dest)
 
 	if (ec->bus->read)
 		ec->bus->read(dest, EC_LPC_ADDR_MEMMAP + offset, size);
-	else if (ec_command(ec, EC_CMD_READ_MEMMAP, 0, &params, sizeof(params),
-			    dest, size) < 0)
+	else if (ec_command(ec, EC_CMD_READ_MEMMAP, 0, &params, sizeof(params), dest, size) < 0)
 		return -1;
 
 	return 0;
@@ -826,7 +805,7 @@ int cros_ec_set_bl_pwm_duty(uint32_t percent)
 {
 	struct ec_params_pwm_set_duty params;
 
-	params.duty = (percent * EC_PWM_MAX_DUTY)/100;
+	params.duty = (percent * EC_PWM_MAX_DUTY) / 100;
 	params.pwm_type = EC_PWM_TYPE_DISPLAY_LIGHT;
 	params.index = 0;
 
@@ -845,8 +824,7 @@ static int cros_ec_locate_chip(enum ec_chip_type type, uint8_t port,
 	p.index = port;
 	ret = ec_cmd_locate_chip(cros_ec_get(), &p, r);
 	if (ret < 0) {
-		printf("Failed to locate TCPC chip for port%d ret:%d\n",
-								port, ret);
+		printf("Failed to locate TCPC chip for port%d ret:%d\n", port, ret);
 		return ret;
 	}
 
@@ -885,7 +863,7 @@ int cros_ec_pd_chip_info(int port, int renew, struct ec_response_pd_chip_info_v2
 		ret = ec_cmd_pd_chip_info_v2(cros_ec_get(), &p, r);
 	else
 		ret = ec_cmd_pd_chip_info(cros_ec_get(), &p,
-				(struct ec_response_pd_chip_info *)r);
+					  (struct ec_response_pd_chip_info *)r);
 
 	return ret;
 }
@@ -900,8 +878,7 @@ int cros_ec_get_usb_pd_mux_info(int port, uint8_t *mux_state)
 
 	ret = ec_cmd_usb_pd_mux_info(cros_ec_get(), &req, &resp);
 	if (ret < 0) {
-		printf("Failed to get PD_MUX_INFO port%d ret:%d\n",
-		       port, ret);
+		printf("Failed to get PD_MUX_INFO port%d ret:%d\n", port, ret);
 		return ret;
 	}
 
@@ -923,14 +900,13 @@ int cros_ec_get_usb_pd_control(int port, int *ufp, int *dbg_acc)
 
 	ret = ec_cmd_usb_pd_control_v2(cros_ec_get(), &pd_control, &resp);
 	if (ret < 0) {
-		printf("Failed to get PD_CONTROLv2 port%d ret:%d\n",
-		       port, ret);
+		printf("Failed to get PD_CONTROLv2 port%d ret:%d\n", port, ret);
 		return ret;
 	}
 
 	*ufp = !(resp.role & PD_CTRL_RESP_ROLE_DATA);
-	*dbg_acc = (resp.cc_state == PD_CC_UFP_DEBUG_ACC ||
-		    resp.cc_state == PD_CC_DFP_DEBUG_ACC);
+	*dbg_acc =
+		(resp.cc_state == PD_CC_UFP_DEBUG_ACC || resp.cc_state == PD_CC_DFP_DEBUG_ACC);
 
 	return 0;
 }
@@ -952,8 +928,7 @@ static int set_max_proto3_sizes(CrosEc *me, int request_size, int response_size)
 	me->proto3_request_size = request_size;
 	me->proto3_response_size = response_size;
 
-	me->max_param_size = me->proto3_request_size -
-			     sizeof(struct ec_host_request);
+	me->max_param_size = me->proto3_request_size - sizeof(struct ec_host_request);
 
 	return 0;
 }
@@ -973,8 +948,7 @@ static int ec_init(CrosEc *me)
 
 	me->initialized = 1;
 
-	if (set_max_proto3_sizes(me, DEFAULT_BUF_SIZE,
-				 DEFAULT_BUF_SIZE))
+	if (set_max_proto3_sizes(me, DEFAULT_BUF_SIZE, DEFAULT_BUF_SIZE))
 		return -1;
 
 	struct ec_response_get_protocol_info info;
@@ -982,12 +956,9 @@ static int ec_init(CrosEc *me)
 		printf("ERROR: Cannot read EC protocol info!\n");
 		return -1;
 	}
-	printf("%s: CrosEC protocol v3 supported (%d, %d)\n",
-	       __func__,
-	       info.max_request_packet_size,
-	       info.max_response_packet_size);
-	set_max_proto3_sizes(me, info.max_request_packet_size,
-			     info.max_response_packet_size);
+	printf("%s: CrosEC protocol v3 supported (%d, %d)\n", __func__,
+	       info.max_request_packet_size, info.max_response_packet_size);
+	set_max_proto3_sizes(me, info.max_request_packet_size, info.max_response_packet_size);
 
 	return 0;
 }
@@ -1022,17 +993,17 @@ void cros_ec_probe_aux_fw_chips(void)
 	for (i = 0; i < usb_pd_ports_r.num_ports; i++) {
 		ret = cros_ec_pd_chip_info(i, 0, &pd_chip_r);
 		if (ret < 0) {
-			printf("%s: Cannot get PD port%d info - %d\n",
-			       __func__, i, ret);
+			printf("%s: Cannot get PD port%d info - %d\n", __func__, i, ret);
 			continue;
 		}
 
-		list_for_each(chip, ec_aux_fw_chip_list, list_node) {
+		list_for_each(chip, ec_aux_fw_chip_list, list_node)
+		{
 			if (pd_chip_r.vendor_id != chip->vid ||
 			    pd_chip_r.product_id != chip->pid) {
 				printf("%s: port %d, vid/pid %x/%x != %x/%x, skipping\n",
-				       __func__, i, chip->vid, chip->pid,
-				       pd_chip_r.vendor_id, pd_chip_r.product_id);
+				       __func__, i, chip->vid, chip->pid, pd_chip_r.vendor_id,
+				       pd_chip_r.product_id);
 				continue;
 			}
 
@@ -1088,8 +1059,8 @@ int cros_ec_set_typec_mux(int port, int index, uint8_t mux_state)
 
 	ret = ec_cmd_typec_control(cros_ec_get(), &params);
 	if (ret < 0)
-		printf("%s: Cannot configure mux (%d, %d, %#x, %d)\n",
-			__func__, port, index, mux_state, ret);
+		printf("%s: Cannot configure mux (%d, %d, %#x, %d)\n", __func__, port, index,
+		       mux_state, ret);
 
 	return ret;
 }
@@ -1116,8 +1087,8 @@ int cros_ec_i2c_passthru_protect(int i2c_port)
 	};
 	int result;
 
-	result = ec_command(cros_ec_get(), EC_CMD_I2C_PASSTHRU_PROTECT, 0,
-			    &params, sizeof(params), NULL, 0);
+	result = ec_command(cros_ec_get(), EC_CMD_I2C_PASSTHRU_PROTECT, 0, &params,
+			    sizeof(params), NULL, 0);
 	if (result < 0)
 		return result;
 
@@ -1151,8 +1122,8 @@ int cros_ec_i2c_passthru_protect_tcpc_ports(void)
 	};
 	int ret;
 
-	ret = ec_command(cros_ec_get(), EC_CMD_I2C_PASSTHRU_PROTECT, 0,
-			 &protect_p, sizeof(protect_p), NULL, 0);
+	ret = ec_command(cros_ec_get(), EC_CMD_I2C_PASSTHRU_PROTECT, 0, &protect_p,
+			 sizeof(protect_p), NULL, 0);
 	if (ret < 0)
 		return ret;
 
@@ -1183,8 +1154,8 @@ int cros_ec_print(const char *fmt, ...)
 		return ret;
 	}
 
-	ret = ec_command(cros_ec_get(), EC_CMD_CONSOLE_PRINT, 0,
-			 str, MIN(ret, sizeof(str)), NULL, 0);
+	ret = ec_command(cros_ec_get(), EC_CMD_CONSOLE_PRINT, 0, str, MIN(ret, sizeof(str)),
+			 NULL, 0);
 
 	return ret;
 }
