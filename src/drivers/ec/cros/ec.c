@@ -193,6 +193,7 @@ static int send_command_proto3_work(CrosEc *me, int cmd, int cmd_version, const 
 				    int dout_len, void *dinp, int din_len)
 {
 	int out_bytes, in_bytes;
+	int retry_attempt_counter = 0;
 	int rv;
 
 	/* Create request packet */
@@ -207,8 +208,56 @@ static int send_command_proto3_work(CrosEc *me, int cmd, int cmd_version, const 
 	if (in_bytes < 0)
 		return in_bytes;
 
-	rv = me->bus->send_packet(me->bus, me->proto3_request, out_bytes, me->proto3_response,
-				  in_bytes);
+	/* Re-try mechanism for host commands returning -EC_RES_BUSY (-16)
+	 *
+	 * If the EC host command task is not ready to accept a new host command
+	 * request, it will return EC_RES_BUSY. This signals that the HC should
+	 * be re-attempted. Allow up to three attempts (one initial plus two
+	 * retries) to process the host command, with a 5 ms delay between
+	 * attempts. (https://crrev.com/c/7604595)
+	 *
+	 * The retry mechanism is only invoked on EC_RES_BUSY responses. A
+	 * success response or *any other type of error* is considered a fully
+	 * processed host command. If a host command continues to return
+	 * EC_RES_BUSY on the final retry, -EC_RES_BUSY will be returned to the
+	 * caller. It is the caller's responsibility to handle errors including
+	 * persistent EC_RES_BUSY responses (e.g. giving up or retrying after a
+	 * longer waiting period).
+	 *
+	 * Some host commands return EC_RES_BUSY as an error code from their own
+	 * implementations. For example, EC_CMD_PD_CONTROL with the PD_SUSPEND
+	 * subcommand returns EC_RES_BUSY if the DUT state of charge is unable
+	 * to support a PD firmware update. This response is indistinguishable
+	 * from an unprocessed command due to EC business, so there is no choice
+	 * but to retry it anyways, even through the DUT is unlikely to charge
+	 * enough over a few milliseconds. Fortunately this has no side-effects
+	 * and HCs returning their own EC_RES_BUSY are supposed to be able to
+	 * support a repeated call.
+	 */
+	while (retry_attempt_counter < 3) {
+		rv = me->bus->send_packet(me->bus, me->proto3_request, out_bytes,
+					  me->proto3_response, in_bytes);
+
+		if (rv == -EC_RES_BUSY) {
+			/* EC reports it is busy. Re-send the host command after
+			 * a short delay. */
+
+			retry_attempt_counter++;
+			mdelay(5);
+		} else {
+			/* Success or non-busy error. HC was processed, so
+			 * nothing to retry. Print a log message if the retry
+			 * mechanism was activated to help aid troubleshooting.
+			 */
+
+			if (retry_attempt_counter > 0)
+				printf("%s: HC %#04x processed after retry (retries=%d, "
+				       "ret=%d)\n",
+				       __func__, cmd, retry_attempt_counter, rv);
+
+			break;
+		}
+	}
 
 	if (rv < 0)
 		return rv;
