@@ -355,6 +355,11 @@ PowerOps pantherlake_power_ops = {
 	.power_off = &cannonlake_power_off
 };
 
+PowerOps novalake_power_ops = {
+	.reboot = &pch_reboot,
+	.power_off = &cannonlake_power_off
+};
+
 PowerOps icelake_power_ops = {
 	.reboot = &pch_reboot,
 	.power_off = &icelake_power_off
