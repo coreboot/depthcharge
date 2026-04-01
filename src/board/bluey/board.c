@@ -46,24 +46,18 @@ static const VpdDeviceTreeMap vpd_dt_map[] = {
 static int fix_device_tree(struct device_tree_fixup *fixup,
 			   struct device_tree *tree)
 {
-	struct cb_framebuffer *fb = &lib_sysinfo.framebuffer;
-	struct device_tree_node *old_node, *node;
-	uint32_t addr_cells = 2, size_cells = 2;
+	static const char *const reserved_mem[] = { "reserved-memory", "splash_region", NULL };
+	struct device_tree_node *node;
+	uint32_t addr_cells = 2, size_cells = 1;
 
-	const char *old_path[] = { "reserved-memory", "splash_region", NULL };
-	old_node = dt_find_node(tree->root, old_path, &addr_cells, &size_cells, 0);
-	if (old_node)
-		list_remove(&old_node->list_node);
+	node = dt_find_node(tree->root, reserved_mem, &addr_cells, &size_cells, 0);
 
-	if (!fb || !fb->physical_address)
-		return 0;
+	if (!node) {
+		printf("Failed to locate reserved-memory node for splash region\n");
+		return -1;
+	}
 
-	char name[32];
-	snprintf(name, sizeof(name), "region@%" PRIx64, lib_sysinfo.framebuffer.physical_address);
-	const char *path[] = { "reserved-memory", name, NULL };
-	node = dt_find_node(tree->root, path, &addr_cells, &size_cells, 0);
-	if (node)
-		dt_add_string_prop(node, "label", "cont_splash_region");
+	dt_add_bin_prop(node, "no-map", NULL, 0);
 
 	return 0;
 }
