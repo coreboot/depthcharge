@@ -167,6 +167,28 @@ static vb2_error_t draw_log_desc(struct ui_context *ui,
 	return rv;
 }
 
+static vb2_error_t draw_rec_url_desc(struct ui_context *ui,
+				     const struct ui_state *prev_state,
+				     int32_t *y)
+{
+	struct ui_bitmap bitmap;
+	const int reverse = ui->state->locale->rtl;
+	int32_t x, h;
+	const int32_t w = UI_SIZE_AUTO;
+	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
+
+	x = UI_MARGIN_H;
+
+	VB2_TRY(ui_draw_desc(&ui->state->screen->desc, ui->state, y));
+	VB2_TRY(ui_get_bitmap("rec_url_desc.bmp", NULL, 0, &bitmap));
+	h = UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
+	VB2_TRY(ui_draw_bitmap(&bitmap, x, *y, w, h, flags, reverse));
+	*y += h;
+
+	return VB2_SUCCESS;
+}
+
+
 /******************************************************************************/
 /* Functions for ui error handling */
 
@@ -596,7 +618,9 @@ static const struct ui_screen_info language_select_screen = {
 /* UI_SCREEN_RECOVERY_BROKEN */
 
 static const char *const broken_desc[] = {
-	"broken_desc.bmp",
+	"broken_desc0.bmp",
+	"broken_desc1.bmp",
+	"broken_desc2.bmp",
 };
 
 static const struct ui_menu_item broken_items[] = {
@@ -931,10 +955,23 @@ static const struct ui_screen_info firmware_log_screen = {
 #define RECOVERY_TO_DEV_ITEM_CONFIRM 1
 #define RECOVERY_TO_DEV_ITEM_CANCEL 2
 
-static const char *const recovery_to_dev_desc[] = {
-	"rec_to_dev_desc0.bmp",
-	"rec_to_dev_desc1.bmp",
-};
+static vb2_error_t draw_recovery_to_dev_desc(
+	struct ui_context *ui,
+	const struct ui_state *prev_state,
+	int32_t *y)
+{
+	static const char *const desc_files[] = {
+		"rec_to_dev_desc0.bmp",
+	};
+	static const char *const desc_phyrec_files[] = {
+		"rec_to_dev_desc0.bmp",
+		"rec_to_dev_desc1_phyrec.bmp",
+	};
+	const struct ui_desc desc = CONFIG(PHYSICAL_PRESENCE_KEYBOARD) ?
+		UI_DESC(desc_files) : UI_DESC(desc_phyrec_files);
+
+	return ui_draw_desc(&desc, ui->state, y);
+}
 
 static vb2_error_t recovery_to_dev_init(struct ui_context *ui)
 {
@@ -1049,8 +1086,8 @@ static vb2_error_t recovery_to_dev_action(struct ui_context *ui)
 static const struct ui_menu_item recovery_to_dev_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	[RECOVERY_TO_DEV_ITEM_CONFIRM] = {
-		.name = "Confirm",
-		.file = "btn_confirm.bmp",
+		.name = "Unlock",
+		.file = "btn_rec_to_dev.bmp",
 	},
 	[RECOVERY_TO_DEV_ITEM_CANCEL] = {
 		.name = "Cancel",
@@ -1065,8 +1102,8 @@ static const struct ui_screen_info recovery_to_dev_screen = {
 	.name = "Transition to developer mode",
 	.icon = UI_ICON_TYPE_INFO,
 	.title = "rec_to_dev_title.bmp",
-	.desc = UI_DESC(recovery_to_dev_desc),
 	.menu = UI_MENU(recovery_to_dev_items),
+	.draw_desc = draw_recovery_to_dev_desc,
 	.init = recovery_to_dev_init,
 	.action = recovery_to_dev_action,
 	.mesg = "You are attempting to enable developer mode\n"
@@ -1256,7 +1293,6 @@ vb2_error_t recovery_select_init(struct ui_context *ui)
 
 static const char *const recovery_select_desc[] = {
 	"rec_sel_desc0.bmp",
-	"rec_sel_desc1.bmp",
 };
 
 static const struct ui_menu_item recovery_select_items[] = {
@@ -1306,12 +1342,14 @@ static vb2_error_t draw_recovery_disk_step1_desc(
 	static const char *const desc_files[] = {
 		"rec_disk_step1_desc0.bmp",
 		"rec_disk_step1_desc1.bmp",
-		"rec_step1_desc2.bmp",
+		"rec_disk_step1_desc2.bmp",
+		"rec_disk_step1_desc3.bmp",
 	};
 	static const char *const desc_low_battery_files[] = {
 		"rec_disk_step1_desc0.bmp",
 		"rec_disk_step1_desc1.bmp",
-		"rec_step1_desc2_low_bat.bmp",
+		"rec_disk_step1_desc2.bmp",
+		"rec_disk_step1_desc3_low_bat.bmp",
 	};
 	const struct ui_desc desc = is_battery_low() ?
 		UI_DESC(desc_low_battery_files) : UI_DESC(desc_files);
@@ -1331,8 +1369,8 @@ static const struct ui_screen_info recovery_disk_step1_screen = {
 	.name = "Disk recovery step 1",
 	.icon = UI_ICON_TYPE_STEP,
 	.step = 1,
-	.num_steps = 3,
-	.title = "rec_step1_title.bmp",
+	.num_steps = 2,
+	.title = "rec_disk_step1_title.bmp",
 	.menu = UI_MENU(recovery_disk_step1_items),
 	.draw_desc = draw_recovery_disk_step1_desc,
 	.mesg = "To proceed with the recovery process, you'll need\n"
@@ -1353,7 +1391,6 @@ static const char *const recovery_disk_step2_desc[] = {
 
 static const struct ui_menu_item recovery_disk_step2_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	NEXT_ITEM(UI_SCREEN_RECOVERY_DISK_STEP3),
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
@@ -1363,7 +1400,7 @@ static const struct ui_screen_info recovery_disk_step2_screen = {
 	.name = "Disk recovery step 2",
 	.icon = UI_ICON_TYPE_STEP,
 	.step = 2,
-	.num_steps = 3,
+	.num_steps = 2,
 	.title = "rec_disk_step2_title.bmp",
 	.desc = UI_DESC(recovery_disk_step2_desc),
 	.menu = UI_MENU(recovery_disk_step2_items),
@@ -1375,37 +1412,11 @@ static const struct ui_screen_info recovery_disk_step2_screen = {
 };
 
 /******************************************************************************/
-/* UI_SCREEN_RECOVERY_DISK_STEP3 */
-
-static const char *const recovery_disk_step3_desc[] = {
-	"rec_disk_step3_desc0.bmp",
-};
-
-static const struct ui_menu_item recovery_disk_step3_items[] = {
-	LANGUAGE_SELECT_ITEM,
-	BACK_ITEM,
-	POWER_OFF_ITEM,
-};
-
-static const struct ui_screen_info recovery_disk_step3_screen = {
-	.id = UI_SCREEN_RECOVERY_DISK_STEP3,
-	.name = "Disk recovery step 3",
-	.icon = UI_ICON_TYPE_STEP,
-	.step = 3,
-	.num_steps = 3,
-	.title = "rec_disk_step3_title.bmp",
-	.desc = UI_DESC(recovery_disk_step3_desc),
-	.menu = UI_MENU(recovery_disk_step3_items),
-	.mesg = "Do you have your external disk ready?\n"
-		"If your external disk is ready with a recovery image, plug\n"
-		"it into the device to start the recovery process.",
-};
-
-/******************************************************************************/
 /* UI_SCREEN_RECOVERY_INVALID */
 
 static const char *const recovery_invalid_desc[] = {
 	"rec_invalid_desc.bmp",
+	"rec_learn_more_at_desc.bmp",
 };
 
 static const struct ui_menu_item recovery_invalid_items[] = {
@@ -1417,11 +1428,12 @@ static const struct ui_screen_info recovery_invalid_screen = {
 	.id = UI_SCREEN_RECOVERY_INVALID,
 	.name = "Recovery invalid disk",
 	.icon = UI_ICON_TYPE_STEP,
-	.step = -3,
-	.num_steps = 3,
+	.step = -2,
+	.num_steps = 2,
 	.title = "rec_invalid_title.bmp",
 	.desc = UI_DESC(recovery_invalid_desc),
 	.menu = UI_MENU(recovery_invalid_items),
+	.draw_desc = draw_rec_url_desc,
 	.mesg = "No valid image detected.\n"
 		"Make sure your external disk has a valid recovery image,\n"
 		"and re-insert the disk when ready.",
@@ -1432,6 +1444,7 @@ static const struct ui_screen_info recovery_invalid_screen = {
 
 static const char *const recovery_rollback_error_desc[] = {
 	"rec_rollback_error_desc.bmp",
+	"rec_learn_more_at_desc.bmp",
 };
 
 static const struct ui_menu_item recovery_rollback_error_items[] = {
@@ -1443,11 +1456,12 @@ static const struct ui_screen_info recovery_rollback_error_screen = {
 	.id = UI_SCREEN_RECOVERY_ROLLBACK_ERROR,
 	.name = "Recovery rollback error",
 	.icon = UI_ICON_TYPE_STEP,
-	.step = -3,
-	.num_steps = 3,
+	.step = -2,
+	.num_steps = 2,
 	.title = "rec_rollback_error_title.bmp",
 	.desc = UI_DESC(recovery_rollback_error_desc),
 	.menu = UI_MENU(recovery_rollback_error_items),
+	.draw_desc = draw_rec_url_desc,
 	.mesg = "Outdated recovery image.\n"
 		"Your recovery image is too old to be installed on this device.\n"
 		"Download a new recovery image and try again.",
@@ -1717,7 +1731,7 @@ static const struct ui_screen_info developer_mode_screen = {
 /******************************************************************************/
 /* UI_SCREEN_DEVELOPER_TO_NORM */
 
-#define DEVELOPER_TO_NORM_ITEM_CONFIRM 1
+#define DEVELOPER_TO_NORM_ITEM_LOCK 1
 #define DEVELOPER_TO_NORM_ITEM_CANCEL 2
 
 static vb2_error_t developer_to_norm_init(struct ui_context *ui)
@@ -1728,7 +1742,7 @@ static vb2_error_t developer_to_norm_init(struct ui_context *ui)
 		return set_ui_error_and_go_back(
 			ui, UI_ERROR_TO_NORM_NOT_ALLOWED);
 	}
-	ui->state->focused_item = DEVELOPER_TO_NORM_ITEM_CONFIRM;
+	ui->state->focused_item = DEVELOPER_TO_NORM_ITEM_LOCK;
 	/* If dev boot is not allowed, show an error box and hide "Cancel" */
 	if (!(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED)) {
 		const enum ui_error err = ui->ctx->flags & VB2_CONTEXT_OEM_LOCK_ENABLED ?
@@ -1756,9 +1770,9 @@ static const char *const developer_to_norm_desc[] = {
 
 static const struct ui_menu_item developer_to_norm_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	[DEVELOPER_TO_NORM_ITEM_CONFIRM] = {
-		.name = "Confirm",
-		.file = "btn_confirm.bmp",
+	[DEVELOPER_TO_NORM_ITEM_LOCK] = {
+		.name = "Lock",
+		.file = "btn_lock.bmp",
 		.action = developer_to_norm_action,
 	},
 	[DEVELOPER_TO_NORM_ITEM_CANCEL] = {
@@ -2555,7 +2569,6 @@ static const struct ui_screen_info *const screens[] = {
 	&recovery_select_screen,
 	&recovery_disk_step1_screen,
 	&recovery_disk_step2_screen,
-	&recovery_disk_step3_screen,
 	&recovery_invalid_screen,
 	&recovery_rollback_error_screen,
 	&developer_mode_screen,
