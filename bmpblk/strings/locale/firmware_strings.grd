@@ -426,6 +426,9 @@ Could not get diagnostic information.
       <message name="error_internet_recovery" desc="Error of using internet recovery">
 Internet recovery partition corrupted or missing. Please recover using external storage instead.
       </message>
+      <message name="error_dev_mode_oem_lock" desc="Error message when developer mode is blocked by OEM lock">
+Booting in unlocked bootloader mode is disabled. To enable this, reboot to the OS and enable OEM unlocking in Developer options. Learn more at:
+      </message>
       <message name="memory_training_desc" desc="WARNING: The translation for this string is subject to strict character set limitations. Please read all instructions in go/t9n-guide-cros-early-stage-firmware-screens carefully before translating this string.">
 Your device is finishing an update. This may take 1-2 minutes.
 Please do not turn off your device.

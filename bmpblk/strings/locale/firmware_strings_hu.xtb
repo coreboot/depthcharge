@@ -72,6 +72,7 @@ Kérjük, ne kapcsolja ki eszközét.</translation>
 <translation id="7332672207700801967">Internetes helyreállítás (régebbi verzió)</translation>
 <translation id="7342794948394983731">Diagnosztikai eszközök</translation>
 <translation id="7352651011704765696">Valami nem működik</translation>
+<translation id="7363327341920650426">A feloldott rendszerindítóval való indítás le van tiltva. Az engedélyezéséhez indítsa újra az operációs rendszert, és engedélyezze az OEM-feloldást a Fejlesztői beállításokban. További információ:</translation>
 <translation id="7407610796520500368">Helyreállítás internetkapcsolat használatával</translation>
 <translation id="7420576176825630019">Fejlesztői mód engedélyezése</translation>
 <translation id="7567414219298075193">A probléma megoldásának megkísérléséhez indítsa el a helyreállítási folyamatot. Távolítsa el az összes csatlakoztatott eszközt, majd tartsa lenyomva a Helyreállítás gombot, nyomja meg a Bekapcsológombot ( ⏻ ), végül engedje fel a Helyreállítás gombot.</translation>

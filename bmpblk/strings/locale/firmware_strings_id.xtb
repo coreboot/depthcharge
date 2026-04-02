@@ -72,6 +72,7 @@ Jangan mematikan perangkat Anda.</translation>
 <translation id="7332672207700801967">Pemulihan internet (versi yang lebih lama)</translation>
 <translation id="7342794948394983731">Alat diagnostik</translation>
 <translation id="7352651011704765696">Ada yang tidak beres</translation>
+<translation id="7363327341920650426">Booting dengan bootloader yang tidak terkunci dinonaktifkan. Untuk mengaktifkannya, lakukan reboot ke OS dan aktifkan pembukaan kunci OEM di Opsi developer. Pelajari lebih lanjut di:</translation>
 <translation id="7407610796520500368">Pemulihan menggunakan koneksi internet</translation>
 <translation id="7420576176825630019">Aktifkan mode pengembang</translation>
 <translation id="7567414219298075193">Untuk mencoba memperbaiki masalah tersebut, mulai proses pemulihan. Cabut semua perangkat yang terhubung, lalu tekan dan tahan tombol pemulihan, tekan dan lepaskan tombol daya ( ⏻ ), lalu lepaskan tombol pemulihan.</translation>

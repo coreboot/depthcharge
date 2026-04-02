@@ -72,6 +72,7 @@ Huwag i-off ang iyong device.</translation>
 <translation id="7332672207700801967">Pag-recover ng internet (mas lumang bersyon)</translation>
 <translation id="7342794948394983731">Mga diagnostic tool</translation>
 <translation id="7352651011704765696">Nagkaroon ng problema</translation>
+<translation id="7363327341920650426">Naka-disable ang pag-boot gamit ang naka-unlock na bootloader. Para i-enable ito, mag-reboot sa OS at i-enable ang OEM na pag-unlock sa Mga opsyon ng developer. Matuto pa sa:</translation>
 <translation id="7407610796520500368">Pag-recover gamit ang koneksyon sa internet</translation>
 <translation id="7420576176825630019">I-enable ang developer mode</translation>
 <translation id="7567414219298075193">Para subukang ayusin ang isyu, simulan ang proseso ng pag-recover. Alisin ang lahat ng nakakonektang device, pagkatapos ay pindutin nang matagal ang button na Recovery, pindutin nang isang beses ang Power button ( ⏻ ), bitawan ang button na Recovery.</translation>

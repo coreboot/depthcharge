@@ -71,6 +71,7 @@
 <translation id="7332672207700801967">復原網際網路 (舊版)</translation>
 <translation id="7342794948394983731">診斷工具</translation>
 <translation id="7352651011704765696">發生錯誤</translation>
+<translation id="7363327341920650426">系統啟動載入程式解鎖時啟動系統的功能已停用。如要啟用，請重新啟動裝置進入 OS，然後前往「開發人員選項」啟用「OEM 解鎖」。詳情請參閱：</translation>
 <translation id="7407610796520500368">透過網路連線進行復原</translation>
 <translation id="7420576176825630019">啟用開發人員模式</translation>
 <translation id="7567414219298075193">如要嘗試修正問題，請啟動還原程序。請移除所有外接裝置，然後按住還原按鈕、按下並放開電源按鈕 ( ⏻ )，再放開還原按鈕。</translation>

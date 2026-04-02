@@ -72,6 +72,7 @@ No apagues el dispositivo.</translation>
 <translation id="7332672207700801967">Recuperación de Internet (versión anterior)</translation>
 <translation id="7342794948394983731">Herramientas de diagnóstico</translation>
 <translation id="7352651011704765696">Se produjo un error</translation>
+<translation id="7363327341920650426">Se inhabilitó el inicio con un bootloader desbloqueado. Para habilitarlo, reinicia el SO y habilita el desbloqueo para OEM en Opciones para desarrolladores. Obtén más información en:</translation>
 <translation id="7407610796520500368">Realizar la recuperación con conexión a Internet</translation>
 <translation id="7420576176825630019">Habilitar el modo de desarrollador</translation>
 <translation id="7567414219298075193">Para hacer una prueba y solucionar el problema, inicia el proceso de recuperación. Quita todos los dispositivos conectados; a continuación, mantén presionado el botón de recuperación, presiona y suelta el botón de encendido ( ⏻ ) y, luego, suelta el botón de recuperación.</translation>

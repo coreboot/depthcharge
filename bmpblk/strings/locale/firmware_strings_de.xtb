@@ -72,6 +72,7 @@ Bitte schalte dein Gerät nicht aus.</translation>
 <translation id="7332672207700801967">Wiederherstellung über das Internet (ältere Version)</translation>
 <translation id="7342794948394983731">Diagnose-Tools</translation>
 <translation id="7352651011704765696">Ein Problem ist aufgetreten</translation>
+<translation id="7363327341920650426">Das Starten mit einem entsperrten Bootloader ist deaktiviert. Starte zum Aktivieren das Betriebssystem neu und aktiviere in den Entwickleroptionen die OEM-Entsperrung. Weitere Informationen unter:</translation>
 <translation id="7407610796520500368">Wiederherstellung über die Internetverbindung</translation>
 <translation id="7420576176825630019">Entwicklermodus aktivieren</translation>
 <translation id="7567414219298075193">Bitte starten Sie die Wiederherstellung, um das Problem zu beheben. Entfernen Sie alle verbundenen Geräte, halten Sie die Wiederherstellungstaste gedrückt, drücken Sie dann die Ein-/Aus-Taste ( ⏻ ) einmal und lassen Sie danach die Wiederherstellungstaste wieder los.</translation>

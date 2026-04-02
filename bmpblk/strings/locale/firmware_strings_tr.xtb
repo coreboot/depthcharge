@@ -72,6 +72,7 @@ Lütfen cihazinizi kapatmayin.</translation>
 <translation id="7332672207700801967">İnternet üzerinden kurtarma (eski sürüm)</translation>
 <translation id="7342794948394983731">Teşhis araçları</translation>
 <translation id="7352651011704765696">Bir şeyler ters gitti</translation>
+<translation id="7363327341920650426">Kilidi açılmış bootloader ile başlatma işlevi devre dışı durumda. Bu özelliği etkinleştirmek için işletim sistemini yeniden başlatın ve Geliştirici seçeneklerinden OEM kilit açma özelliğini etkinleştirin. Daha fazla bilgiyi web sitesinde bulabilirsiniz.</translation>
 <translation id="7407610796520500368">İnternet bağlantısını kullanarak kurtarma</translation>
 <translation id="7420576176825630019">Geliştirici modunu etkinleştir</translation>
 <translation id="7567414219298075193">Sorunu düzeltmeyi denemek için kurtarma işlemini başlatın. Tüm bağlı cihazları çıkarın, ardından Kurtarma düğmesini basılı tutun, Güç ( ⏻ ), düğmesine basıp bırakın, Kurtarma düğmesini bırakın.</translation>

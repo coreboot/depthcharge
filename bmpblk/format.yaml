@@ -126,6 +126,7 @@ localized_files:
   error_firmware_log: error
   error_diagnostics: error
   error_internet_recovery: error
+  error_dev_mode_oem_lock: error
   # diagnostic tools - menu
   btn_launch_diag: secondary_button
   diag_menu_title: title

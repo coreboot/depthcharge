@@ -72,6 +72,7 @@ Undlad at slukke din enhed.</translation>
 <translation id="7332672207700801967">Internetgendannelse (ældre version)</translation>
 <translation id="7342794948394983731">Værktøjer til diagnosticering</translation>
 <translation id="7352651011704765696">Der opstod en fejl</translation>
+<translation id="7363327341920650426">Opstart med en bootloader, der er låst op, er deaktiveret. Hvis du vil aktivere det, skal du genstarte til operativsystemet og aktivere OEM-oplåsning under Indstillinger for udviklere. Få flere oplysninger via:</translation>
 <translation id="7407610796520500368">Gendannelse via internetforbindelse</translation>
 <translation id="7420576176825630019">Aktivér udviklertilstand</translation>
 <translation id="7567414219298075193">Start gendannelsesprocessen for at prøve at løse problemet. Fjern alle tilsluttede enheder. Hold derefter gendannelsesknappen inde, mens du trykker på afbryderknappen ( ⏻ ) og slipper den igen. Slip derefter gendannelsesknappen.</translation>

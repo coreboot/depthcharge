@@ -72,6 +72,7 @@ Veuillez ne pas éteindre votre appareil.</translation>
 <translation id="7332672207700801967">Récupération Internet (ancienne version)</translation>
 <translation id="7342794948394983731">Outils de diagnostic</translation>
 <translation id="7352651011704765696">Un problème est survenu</translation>
+<translation id="7363327341920650426">Le démarrage avec un bootloader déverrouillé est désactivé. Pour l'activer, redémarrez l'OS et activez le déverrouillage OEM dans les Options pour les développeurs. Pour plus d'informations, consultez :</translation>
 <translation id="7407610796520500368">Récupération avec la connexion Internet</translation>
 <translation id="7420576176825630019">Activer le mode développeur</translation>
 <translation id="7567414219298075193">Pour tenter de résoudre le problème, lancez le processus de récupération. Retirez tous les périphériques connectés. Ensuite, maintenez le bouton de récupération enfoncé, appuyez sur le bouton Marche/Arrêt ( ⏻ ) et relâchez-le, puis relâchez le bouton de récupération.</translation>

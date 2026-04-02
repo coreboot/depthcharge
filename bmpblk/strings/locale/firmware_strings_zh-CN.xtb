@@ -71,6 +71,7 @@
 <translation id="7332672207700801967">互联网恢复（旧版）</translation>
 <translation id="7342794948394983731">诊断工具</translation>
 <translation id="7352651011704765696">出了点问题</translation>
+<translation id="7363327341920650426">通过解锁的引导加载程序启动功能处于停用状态。若要启用此功能，请重启设备进入操作系统，然后在“开发者选项”中启用“OEM 解锁”。若要了解详情，请前往：</translation>
 <translation id="7407610796520500368">使用互联网连接进行恢复</translation>
 <translation id="7420576176825630019">启用开发者模式</translation>
 <translation id="7567414219298075193">若要尝试解决此问题，请启动恢复流程。请移除所有已连接的设备，然后先按住“恢复”按钮，再按下“电源”按钮 ( ⏻ ) 并松开，最后松开“恢复”按钮。</translation>

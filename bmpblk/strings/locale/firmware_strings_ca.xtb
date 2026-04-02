@@ -72,6 +72,7 @@ No apaguis el dispositiu.</translation>
 <translation id="7332672207700801967">Recuperació d'Internet (versió antiga)</translation>
 <translation id="7342794948394983731">Eines de diagnòstic</translation>
 <translation id="7352651011704765696">S'ha produït un error</translation>
+<translation id="7363327341920650426">L'inici amb un bootloader desbloquejat està desactivat. Per activar-lo, reinicia l'SO i activa el desbloqueig OEM a Opcions per a desenvolupadors. Més informació a:</translation>
 <translation id="7407610796520500368">Recuperació utilitzant la connexió a Internet</translation>
 <translation id="7420576176825630019">Activa el mode de desenvolupador</translation>
 <translation id="7567414219298075193">Per provar de corregir aquest problema, inicia el procés de recuperació. Desconnecta tots els dispositius connectats i mantén premut el botó de recuperació, prem i deixa anar el botó d'engegada ( ⏻ ) i, tot seguit, deixa anar el botó de recuperació.</translation>
