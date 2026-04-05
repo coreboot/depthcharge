@@ -136,7 +136,7 @@ static int board_setup(void)
 
 	/* TODO: Need to drop kernel cmdline */
 	commandline_append("reboot=warm");
-	printf("Mensa: adding `reboot=warm` to kernel cmdline\n");
+	printf("Calypso: adding `reboot=warm` to kernel cmdline\n");
 
 	return 0;
 }

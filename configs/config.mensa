@@ -3,7 +3,7 @@ CONFIG_ARCH_ARM=y
 CONFIG_ARCH_ARM_V8=y
 
 # Board
-CONFIG_BOARD_DIR="mensa"
+CONFIG_BOARD_DIR="calypso"
 CONFIG_VARIANT_NAME="mensa"
 
 # Image
