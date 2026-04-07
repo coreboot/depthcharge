@@ -67,6 +67,15 @@ NEWLINE_PATTERN = re.compile(r'([^\n])\n([^\n])')
 NEWLINE_REPLACEMENT = r'\1 \2'
 CRLF_PATTERN = re.compile(r'\r\n')
 MULTIBLANK_PATTERN = re.compile(r'   *')
+# Symbols use different font than regular text. While symbols used by us,
+# doesn't take more vertical space than regular characters, pango inflates
+# height of the result bitmap to match requirements of symbols font. Use pango
+# markup to ignore height of the font used for symbols. SYMBOL_PATTERN should
+# contain all symbols used in firmware_strings.grd.
+SYMBOL_PATTERN = re.compile(
+    r'([\N{POWER SYMBOL}\N{CLOCKWISE GAPPED CIRCLE ARROW}])'
+)
+SYMBOL_REPLACEMENT = r'<span line_height="0.1">\1</span>'
 
 LocaleInfo = namedtuple('LocaleInfo', ['code', 'rtl'])
 
@@ -137,12 +146,15 @@ def run_pango_view(
     bgcolor,
     fgcolor,
     hinting='full',
+    markup=False,
 ):
     """Runs pango-view."""
     command = ['pango-view', '-q']
     if locale:
         command += ['--language', locale]
 
+    if markup:
+        command += ['--markup']
     # Font size should be proportional to the height. Here we use 2 as the
     # divisor so that setting dpi to 96 (pango-view's default) in boards.yaml
     # will be roughly equivalent to setting the screen resolution to 1366x768.
@@ -183,6 +195,7 @@ def parse_locale_json_file(locale, json_dir):
             msgtext = re.sub(CRLF_PATTERN, '\n', msgtext)
             msgtext = re.sub(NEWLINE_PATTERN, NEWLINE_REPLACEMENT, msgtext)
             msgtext = re.sub(MULTIBLANK_PATTERN, ' ', msgtext)
+            msgtext = re.sub(SYMBOL_PATTERN, SYMBOL_REPLACEMENT, msgtext)
             # Strip any trailing whitespace.  A trailing newline appears to make
             # Pango report a larger layout size than what's actually visible.
             msgtext = msgtext.strip()
@@ -515,6 +528,7 @@ class Converter:
         fgcolor='#ffffff',
         use_svg=False,
         max_num_lines=None,
+        pango_markup=False,
     ):
         """Converts text file `input_file` into image file.
 
@@ -565,6 +579,7 @@ class Converter:
                 bgcolor,
                 fgcolor,
                 hinting='none',
+                markup=pango_markup,
             )
             self.convert_svg_to_png(
                 svg_file, png_file, height, screen_resolution, bgcolor
@@ -585,6 +600,7 @@ class Converter:
             dpi,
             bgcolor,
             fgcolor,
+            markup=pango_markup,
         )
 
         def get_width(width_pt):
@@ -599,6 +615,7 @@ class Converter:
                 dpi,
                 bgcolor,
                 fgcolor,
+                markup=pango_markup,
             )
             num_lines = self.get_num_lines(png_file, one_line_dir)
             with Image.open(png_file) as image:
@@ -793,6 +810,7 @@ class Converter:
                 bgcolor=style[KEY_BGCOLOR],
                 fgcolor=style[KEY_FGCOLOR],
                 max_num_lines=max_num_lines,
+                pango_markup=True,
             )
             if width_pt:
                 width_pt_counter[width_pt] += 1
