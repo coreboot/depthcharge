@@ -50,6 +50,7 @@ const static struct pdc_chip_map {
 	{ "0N", PDC_RTS5452P_VB, PDC_RETIMER_NONE },
 	{ "0U", PDC_RTS5452P_VB, PDC_RETIMER_PS8747 },
 	{ "0W", PDC_RTS5452P_VB, PDC_RETIMER_IT5205 },
+	{ "0X", PDC_RTS5453P_VB, PDC_RETIMER_TUSB546_2 },
 };
 
 static struct pdc_chip *parse_pdc(const char *name)
@@ -94,6 +95,7 @@ static const char *const pdc_chip_series_names[] = {
 	[PDC_RTS5452P] = "RTS5452P",
 	[PDC_RTS5453P] = "RTS5453P",
 	[PDC_RTS5452P_VB] = "RTS5452P-VB",
+	[PDC_RTS5453P_VB] = "RTS5453P-VB"
 };
 
 static const char *const pdc_retimer_names[] = {
@@ -101,6 +103,7 @@ static const char *const pdc_retimer_names[] = {
 	[PDC_RETIMER_NONE] = "NONE",
 	[PDC_RETIMER_PS8747] = "PS8747",
 	[PDC_RETIMER_TUSB546] = "TUSB546",
+	[PDC_RETIMER_TUSB546_2] = "TUSB546 x2",
 	[PDC_RETIMER_IT5205] = "IT5205",
 	[PDC_RETIMER_IT5205_2] = "IT5205 x2",
 };
@@ -143,6 +146,7 @@ void board_rts5453_get_image_paths(const char **image_path, const char **hash_pa
 		name = "rts5453";
 		break;
 	case PDC_RTS5452P_VB:
+	case PDC_RTS5453P_VB:
 		name = "rts5453vb";
 		break;
 	default:
