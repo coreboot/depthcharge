@@ -90,13 +90,6 @@ static int install_memchipinfo_data(struct device_tree_fixup *fixup,
 		return 1;
 
 	for (int i = 0; i < info->num_entries; i++) {
-		/*
-		 * Skip unpopulated ranks. Many SoC vendors often pads the structure
-		 * with type 0 (NONE or INVALID) for ranks that do not exist on the board.
-		 */
-		if ((info->entries[i].type == MEM_CHIP_UNDEFINED) && !info->entries[i].density_mbits)
-			continue;
-
 		if (!lpddr_type_num(info->entries[i].type)) {
 			printf("ERROR:%s: Unknown memory type %d\n",
 			       __func__, info->entries[i].type);
