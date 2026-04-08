@@ -20,6 +20,7 @@
 #define ALINK_CABLE_PID 0x506d
 #define ALINK_DONGLE_PID 0x506e
 #define ALINKQ_DONGLE_PID 0x506f
+#define MAUI_PID 0x5084
 
 /* Indexes of endpoints used for fastboot transport */
 #define FB_EP_IN 0x89
@@ -171,7 +172,8 @@ static int usb_fastboot_probe(GenericUsbDevice *dev)
 	    !(dd->idVendor == GOOGLE_VID && (dd->idProduct == ALINK_CABLE_PID ||
 					     dd->idProduct == ALINK_DONGLE_PID ||
 					     dd->idProduct == ALINKQ_DONGLE_PID ||
-					     dd->idProduct == PL27A1_PID)))
+					     dd->idProduct == PL27A1_PID ||
+					     dd->idProduct == MAUI_PID)))
 		return 0;
 
 	usb_fb_dev = xzalloc(sizeof(UsbFastbootDevice));
