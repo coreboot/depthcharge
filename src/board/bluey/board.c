@@ -213,6 +213,8 @@ static int board_setup(void)
 	/* FIXME: b/470260846 */
 	commandline_append("reboot=warm");
 	printf("Bluey: adding `reboot=warm` to kernel cmdline\n");
+	commandline_append("earlycon console=ttyMSM0,115200");
+	printf("Bluey: Enableing OS serial console\n");
 
 	return 0;
 }
