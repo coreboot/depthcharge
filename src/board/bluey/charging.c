@@ -14,9 +14,6 @@
 #define PMIC_REG_LAST_CHAN_ADDR 0x3000
 #define PMIC_REG_FIRST_CHAN_ADDR 0x2000
 
-#define PMIC_PD_NEGOTIATION_FLAG 0x7E7C
-#define SKIP_PORT_RESET 0x08
-
 #define SMB1_SLAVE_ID 0x07
 #define SMB2_SLAVE_ID 0x0A
 #define SCHG_CHGR_MAX_FAST_CHARGE_CURRENT_CFG 0x2666
@@ -103,27 +100,9 @@ static int enable_slow_battery_charging(void)
 
 INIT_FUNC(enable_slow_battery_charging);
 
-static void adsp_skip_port_reset(void) {
-	if (vboot_in_developer() || vboot_in_recovery() || vboot_in_manual_recovery()
-	   || (CONFIG(DRIVER_EC_CROS) && !cros_ec_is_battery_present())) {
-		QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
-				    PMIC_REG_CHAN0_ADDR,
-				    PMIC_REG_LAST_CHAN_ADDR - PMIC_REG_FIRST_CHAN_ADDR);
-
-		uint8_t flags = (uint8_t)pmic_spmi->read8(pmic_spmi, PMIC_PD_NEGOTIATION_FLAG);
-		if (!(flags & SKIP_PORT_RESET)) {
-			pmic_spmi->write8(pmic_spmi, PMIC_PD_NEGOTIATION_FLAG,
-					flags | SKIP_PORT_RESET);
-			printf("Configured ADSP to avoid port resets\n");
-		}
-		free(pmic_spmi);
-	}
-}
-
 static int board_cleanup(struct CleanupFunc *cleanup, CleanupType type)
 {
 	disable_slow_battery_charging();
-	adsp_skip_port_reset();
 	return 0;
 }
 
