@@ -3,12 +3,15 @@
 #include <commonlib/device_tree.h>
 #include <commonlib/helpers.h>
 #include <endian.h>
+#include <inttypes.h>
 #include <libpayload.h>
 #include <lz4.h>
 #include <stdint.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
+#include <sysinfo.h>
 
+#include "base/fw_config.h"
 #include "boot/android_dtboimg.h"
 #include "boot/android_dt_table.h"
 #include "boot/dt_update.h"
@@ -17,6 +20,7 @@
 enum dt_match_flags {
 	MATCH_REV	= BIT(0),
 	MATCH_SKU	= BIT(1),
+	MATCH_FW_CONFIG	= BIT(2),
 };
 
 struct dt_match {
@@ -24,6 +28,8 @@ struct dt_match {
 	uint16_t min_rev;
 	uint16_t max_rev;
 	uint32_t sku_id;
+	uint64_t fw_config_mask;
+	uint64_t fw_config_value;
 };
 
 struct dt_table_entry {
@@ -48,8 +54,9 @@ static bool is_dtbo_image_valid(const void *dtbo, size_t dtbo_size)
 		return false;
 	}
 
-	if (ntohl(hdr->magic) != DT_TABLE_MAGIC || ntohl(hdr->version) != 1) {
-		printf("%s: Invalid DTBO magic or version\n", __func__);
+	uint32_t magic = ntohl(hdr->magic);
+	if (magic != DT_TABLE_MAGIC) {
+		printf("%s: Invalid DTBO magic: 0x%08x\n", __func__, magic);
 		return false;
 	}
 
@@ -81,12 +88,24 @@ static void parse_dt_match_sku(struct dt_match *match, uint32_t sku_id)
 	match->sku_id = sku_id;
 }
 
-static int get_dt_table_entry(const void *buf, struct dt_table_entry *entry,
-			      size_t img_size)
+static void parse_dt_match_fw_config(struct dt_match *match, uint32_t custom1,
+				     uint32_t custom2, uint32_t custom3,
+				     uint32_t custom4)
+{
+	match->flags |= MATCH_FW_CONFIG;
+	match->fw_config_mask = ((uint64_t)custom1 << 32) | custom2;
+	match->fw_config_value = ((uint64_t)custom3 << 32) | custom4;
+}
+
+static int get_dt_table_entry_v1(const void *buf, struct dt_table_entry *entry,
+				 uint32_t dt_entry_size)
 {
 	const struct dt_table_entry_v1 *v1_entry = buf;
-
-	memset(entry, 0, sizeof(*entry));
+	if (dt_entry_size != sizeof(*v1_entry)) {
+		printf("%s: ERROR: dt_entry_size %u != v1 entry size %zu\n",
+		       __func__, dt_entry_size, sizeof(*v1_entry));
+		return -1;
+	}
 
 	entry->dt_size = ntohl(v1_entry->dt_size);
 	entry->dt_offset = ntohl(v1_entry->dt_offset);
@@ -103,17 +122,79 @@ static int get_dt_table_entry(const void *buf, struct dt_table_entry *entry,
 		return -1;
 	}
 
+	return 0;
+}
+
+static int get_dt_table_entry_v2(const void *buf, struct dt_table_entry *entry,
+				 uint32_t dt_entry_size)
+{
+	const struct dt_table_entry_v2 *v2_entry = buf;
+	if (dt_entry_size != sizeof(*v2_entry)) {
+		printf("%s: ERROR: dt_entry_size %u != v2 entry size %zu\n",
+		       __func__, dt_entry_size, sizeof(*v2_entry));
+		return -1;
+	}
+
+	entry->dt_size = ntohl(v2_entry->dt_size);
+	entry->dt_offset = ntohl(v2_entry->dt_offset);
+	entry->id = ntohl(v2_entry->id);
+	entry->compression_type = ntohl(v2_entry->flags) & DT_COMPRESSION_MASK;
+
+	parse_dt_match_rev(&entry->match, ntohl(v2_entry->rev));
+
+	uint8_t id_type = ntohl(v2_entry->custom[0]) & 0xff;
+	switch (id_type) {
+	case 0:
+		parse_dt_match_sku(&entry->match, ntohl(v2_entry->custom[1]));
+		break;
+	case 1:
+		parse_dt_match_fw_config(&entry->match,
+					 ntohl(v2_entry->custom[1]),
+					 ntohl(v2_entry->custom[2]),
+					 ntohl(v2_entry->custom[3]),
+					 ntohl(v2_entry->custom[4]));
+		break;
+	default:
+		printf("%s: ERROR: Unsupported id_type: %u\n",
+		       __func__, id_type);
+		return -1;
+	}
+
+	return 0;
+}
+
+static int get_dt_table_entry(const void *buf, struct dt_table_entry *entry,
+			      size_t img_size, uint32_t version,
+			      uint32_t dt_entry_size)
+{
+	memset(entry, 0, sizeof(*entry));
+
+	switch (version) {
+	case 1:
+		if (get_dt_table_entry_v1(buf, entry, dt_entry_size))
+			return -1;
+		break;
+	case 2:
+		if (get_dt_table_entry_v2(buf, entry, dt_entry_size))
+			return -1;
+		break;
+	default:
+		printf("%s: ERROR: Unsupported DTBO version: %u\n", __func__, version);
+		return -1;
+	}
+
+	printf("[DT entry] size: %u, offset: %#x, id: %#x, compression: %#x,"
+	       " match_flags: %#x, rev: [%#x..%#x], sku_id: %#x,"
+	       " fw_config_mask = %#" PRIx64 ", fw_config_value = %#" PRIx64 "\n",
+	       entry->dt_size, entry->dt_offset, entry->id, entry->compression_type,
+	       entry->match.flags, entry->match.min_rev, entry->match.max_rev,
+	       entry->match.sku_id, entry->match.fw_config_mask, entry->match.fw_config_value);
+
 	if (entry->dt_offset >= img_size || entry->dt_size > img_size - entry->dt_offset) {
 		printf("%s: ERROR: Entry @offset: %d, size: %d >= DTBO size %zu\n",
 		       __func__, entry->dt_offset, entry->dt_size, img_size);
 		return -1;
 	}
-
-	printf("[DT entry] size: %u, offset: %#x, id: %#x, compression: %#x,"
-	       " match_flags: %#x, rev: [%#x..%#x], sku_id: %#x\n",
-	       entry->dt_size, entry->dt_offset, entry->id, entry->compression_type,
-	       entry->match.flags, entry->match.min_rev, entry->match.max_rev,
-	       entry->match.sku_id);
 
 	return 0;
 }
@@ -132,6 +213,26 @@ static bool is_dt_compatible(const struct dt_match *match)
 	if (match->flags & MATCH_SKU) {
 		if (match->sku_id != SKU_ID_ANY &&
 		    match->sku_id != lib_sysinfo.sku_id)
+			return false;
+	}
+
+	if (match->flags & MATCH_FW_CONFIG) {
+		bool match_any = (match->fw_config_mask == 0x0 &&
+				  match->fw_config_value == 0x0);
+		bool match_unprovisioned = (match->fw_config_mask == ~0ULL &&
+					    match->fw_config_value == UNDEFINED_FW_CONFIG);
+		bool value_matched = ((lib_sysinfo.fw_config & match->fw_config_mask) ==
+				      match->fw_config_value);
+		bool matched;
+
+		if (match_any)
+			matched = true; /* Unprovisioned device is also a match. */
+		else if (match_unprovisioned)
+			matched = !fw_config_is_provisioned();
+		else
+			matched = fw_config_is_provisioned() && value_matched;
+
+		if (!matched)
 			return false;
 	}
 
@@ -216,15 +317,21 @@ struct device_tree *android_parse_dtbs(const void *dtbo, size_t dtbo_size)
 	struct dt_table_entry entry;
 	const void *dt_entry_data;
 	struct list_node overlay_dt_list = {};
+	uint32_t version;
+	uint32_t dt_entry_size;
 
 	if (!is_dtbo_image_valid(dtbo, dtbo_size))
 		return NULL;
 
-	printf("%s: Num of DTBO entries: %d\n", __func__, ntohl(hdr->dt_entry_count));
+	version = ntohl(hdr->version);
+	printf("%s: Num of DTBO entries: %u, version: %u\n", __func__,
+	       ntohl(hdr->dt_entry_count), version);
+	dt_entry_size = ntohl(hdr->dt_entry_size);
 	for (uint32_t i = 0, offset = ntohl(hdr->dt_entries_offset);
 		      i < ntohl(hdr->dt_entry_count);
-		      i++, offset += ntohl(hdr->dt_entry_size)) {
-		if (get_dt_table_entry(dtbo + offset, &entry, dtbo_size))
+		      i++, offset += dt_entry_size) {
+		if (get_dt_table_entry(dtbo + offset, &entry, dtbo_size, version,
+				       dt_entry_size))
 			continue;
 
 		if (!is_dt_compatible(&entry.match))
