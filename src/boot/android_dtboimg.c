@@ -14,16 +14,24 @@
 #include "boot/dt_update.h"
 #include "image/symbols.h"
 
+enum dt_match_flags {
+	MATCH_REV	= BIT(0),
+	MATCH_SKU	= BIT(1),
+};
+
+struct dt_match {
+	uint32_t flags;
+	uint16_t min_rev;
+	uint16_t max_rev;
+	uint32_t sku_id;
+};
+
 struct dt_table_entry {
 	uint32_t dt_size;
 	uint32_t dt_offset;
 	uint32_t id;
-	uint16_t min_rev;
-	uint16_t max_rev;
 	enum dt_compression_info compression_type;
-	uint8_t id_type;
-	uint32_t custom1;
-	uint32_t custom2;
+	struct dt_match match;
 };
 
 static bool is_dtbo_image_valid(const void *dtbo, size_t dtbo_size)
@@ -55,56 +63,79 @@ static bool is_dtbo_image_valid(const void *dtbo, size_t dtbo_size)
 	return true;
 }
 
+static void parse_dt_match_rev(struct dt_match *match, uint32_t rev)
+{
+	uint16_t min_rev = rev & 0xffff;
+	uint16_t max_rev = (rev >> 16) & 0xffff;
+
+	if (!(min_rev == 0x0 && max_rev == 0xffff)) {
+		match->flags |= MATCH_REV;
+		match->min_rev = min_rev;
+		match->max_rev = max_rev;
+	}
+}
+
+static void parse_dt_match_sku(struct dt_match *match, uint32_t sku_id)
+{
+	match->flags |= MATCH_SKU;
+	match->sku_id = sku_id;
+}
+
 static int get_dt_table_entry(const void *buf, struct dt_table_entry *entry,
 			      size_t img_size)
 {
 	const struct dt_table_entry_v1 *v1_entry = buf;
 
+	memset(entry, 0, sizeof(*entry));
+
 	entry->dt_size = ntohl(v1_entry->dt_size);
 	entry->dt_offset = ntohl(v1_entry->dt_offset);
 	entry->id = ntohl(v1_entry->id);
-	entry->min_rev = ntohl(v1_entry->rev) & 0xffff;
-	entry->max_rev = (ntohl(v1_entry->rev) >> 16) & 0xffff;
 	entry->compression_type = ntohl(v1_entry->flags) & DT_COMPRESSION_MASK;
-	entry->id_type = ntohl(v1_entry->custom[0]) & 0xff;
-	entry->custom1 = ntohl(v1_entry->custom[1]);
-	entry->custom2 = ntohl(v1_entry->custom[2]);
-	if (entry->dt_offset >= img_size || (entry->dt_offset + entry->dt_size) > img_size) {
+
+	parse_dt_match_rev(&entry->match, ntohl(v1_entry->rev));
+
+	uint8_t id_type = ntohl(v1_entry->custom[0]) & 0xff;
+	if (id_type == 0) {
+		parse_dt_match_sku(&entry->match, ntohl(v1_entry->custom[1]));
+	} else {
+		printf("%s: ERROR: Unsupported id_type: %u\n", __func__, id_type);
+		return -1;
+	}
+
+	if (entry->dt_offset >= img_size || entry->dt_size > img_size - entry->dt_offset) {
 		printf("%s: ERROR: Entry @offset: %d, size: %d >= DTBO size %zu\n",
 		       __func__, entry->dt_offset, entry->dt_size, img_size);
 		return -1;
 	}
 
-	printf("DT Entry Size: %d, Offset: %#x, Id: %#x, Min Rev: %#x, Max Rev: %#x,"
-	       " Compression Type: %#x, Id Type: %#x, custom[1..2] = [%#x, %#x]\n",
-	       entry->dt_size, entry->dt_offset, entry->id, entry->min_rev, entry->max_rev,
-	       entry->compression_type, entry->id_type, entry->custom1, entry->custom2);
+	printf("[DT entry] size: %u, offset: %#x, id: %#x, compression: %#x,"
+	       " match_flags: %#x, rev: [%#x..%#x], sku_id: %#x\n",
+	       entry->dt_size, entry->dt_offset, entry->id, entry->compression_type,
+	       entry->match.flags, entry->match.min_rev, entry->match.max_rev,
+	       entry->match.sku_id);
+
 	return 0;
 }
 
-static bool is_dt_entry_type0_compatible(const struct dt_table_entry *entry)
-{
-	/* 0xffffffff means matching any SKU, device will never have SKU ID 0xffffffff */
-	if (entry->custom1 != 0xffffffff && entry->custom1 != lib_sysinfo.sku_id)
-		return false;
+/* 0xffffffff means matching any SKU. */
+#define SKU_ID_ANY (~((uint32_t)0))
 
-	/* The range [0,UINT16_MAX] matches any board_id, including unprovisioned one. */
-	if (!(entry->min_rev == 0x0 && entry->max_rev == UINT16_MAX) &&
-	    (lib_sysinfo.board_id < entry->min_rev || lib_sysinfo.board_id > entry->max_rev))
-		return false;
+static bool is_dt_compatible(const struct dt_match *match)
+{
+	if (match->flags & MATCH_REV) {
+		if (lib_sysinfo.board_id < match->min_rev ||
+		    lib_sysinfo.board_id > match->max_rev)
+			return false;
+	}
+
+	if (match->flags & MATCH_SKU) {
+		if (match->sku_id != SKU_ID_ANY &&
+		    match->sku_id != lib_sysinfo.sku_id)
+			return false;
+	}
 
 	return true;
-}
-
-static bool is_dt_entry_compatible(const struct dt_table_entry *entry)
-{
-	switch (entry->id_type) {
-	case 0:
-		return is_dt_entry_type0_compatible(entry);
-	default:
-		printf("Unsupported matching identifier version: %d\n", entry->id_type);
-	}
-	return false;
 }
 
 static const void *get_dt_entry_data(const void *dtbo, struct dt_table_entry *entry)
@@ -196,7 +227,7 @@ struct device_tree *android_parse_dtbs(const void *dtbo, size_t dtbo_size)
 		if (get_dt_table_entry(dtbo + offset, &entry, dtbo_size))
 			continue;
 
-		if (!is_dt_entry_compatible(&entry))
+		if (!is_dt_compatible(&entry.match))
 			continue;
 
 		printf("%s: Entry %d is compatible with the board\n", __func__, i);
