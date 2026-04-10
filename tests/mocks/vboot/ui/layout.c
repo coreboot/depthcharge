@@ -54,16 +54,32 @@ vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
 	return mock_type(vb2_error_t);
 }
 
-vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
+vb2_error_t ui_get_textbox_chars_per_line(uint32_t *chars_per_line)
+{
+	*chars_per_line = ui_mock_chars_per_line();
+	return VB2_SUCCESS;
+}
+
+vb2_error_t ui_get_textbox_lines_per_page(enum ui_screen screen, int32_t y,
+					  uint32_t *lines_per_page)
+{
+	*lines_per_page = ui_mock_lines_per_page();
+	return VB2_SUCCESS;
+}
+
+vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
+					   const struct ui_state *state, int32_t *y,
+					   int32_t first_item, size_t total_items,
+					   size_t items_per_page, bool wrap_lines)
 {
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_draw_text(const char *text,
-			 int32_t x, int32_t y, int32_t height,
-			 const struct rgb_color *bg_color,
-			 const struct rgb_color *fg_color,
-			 uint32_t flags, int reverse)
+vb2_error_t ui_draw_ntext(const char *text, size_t n,
+			  int32_t x, int32_t y, int32_t height,
+			  const struct rgb_color *bg_color,
+			  const struct rgb_color *fg_color,
+			  uint32_t flags, int reverse)
 {
 	return VB2_SUCCESS;
 }

@@ -864,6 +864,18 @@ vb2_error_t ui_get_bitmap_width(const struct ui_bitmap *bitmap,
 uint32_t ui_get_bitmap_num_lines(const struct ui_bitmap *bitmap);
 
 /*
+ * Get width of first n characters from text.
+ *
+ * @param text		Text.
+ * @param n		Text length.
+ * @param height	Text height.
+ * @param width		Text width to be calculated.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_get_ntext_width(const char *text, size_t n, int32_t height, int32_t *width);
+
+/*
  * Get text width.
  *
  * @param text		Text.
@@ -872,8 +884,35 @@ uint32_t ui_get_bitmap_num_lines(const struct ui_bitmap *bitmap);
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_get_text_width(const char *text, int32_t height, int32_t *width);
+static inline vb2_error_t ui_get_text_width(const char *text, int32_t height, int32_t *width)
+{
+	return ui_get_ntext_width(text, SIZE_MAX, height, width);
+}
 
+
+/*
+ * Draw a line of first n characters from text.
+ *
+ * @param text		Text to be drawn, which should contain only printable
+ *			characters, including spaces, but excluding tabs.
+ * @param n		Text length.
+ * @param x		x-coordinate of the top-left corner.
+ * @param y		y-coordinate of the top-left corner.
+ * @param height	Height of the text.
+ * @param bg_color	Background color, which is passed to set_color_map() in
+ *			libpayload.
+ * @param fg_color	Foreground color passed to set_color_map().
+ * @param flags		Flags passed to draw_bitmap() in libpayload.
+ * @param reverse	Whether to reverse the x-coordinate relative to the
+ *			canvas.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_ntext(const char *text, size_t n,
+			  int32_t x, int32_t y, int32_t height,
+			  const struct rgb_color *bg_color,
+			  const struct rgb_color *fg_color,
+			  uint32_t flags, int reverse);
 /*
  * Draw a line of text.
  *
@@ -891,11 +930,15 @@ vb2_error_t ui_get_text_width(const char *text, int32_t height, int32_t *width);
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_draw_text(const char *text,
-			 int32_t x, int32_t y, int32_t height,
-			 const struct rgb_color *bg_color,
-			 const struct rgb_color *fg_color,
-			 uint32_t flags, int reverse);
+static inline vb2_error_t ui_draw_text(const char *text,
+				       int32_t x, int32_t y, int32_t height,
+				       const struct rgb_color *bg_color,
+				       const struct rgb_color *fg_color,
+				       uint32_t flags, int reverse)
+{
+	return ui_draw_ntext(text, SIZE_MAX, x, y, height, bg_color, fg_color, flags, reverse);
+}
+
 
 /*
  * Draw a box with rounded corners.
@@ -1038,6 +1081,31 @@ vb2_error_t ui_draw_desc(const struct ui_desc *desc,
 vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines);
 
 /*
+ * Get the maximum number of characters per line of the textbox.
+ *
+ * The textbox can fit chars_per_line characters in a single line.
+ *
+ * @param chars_per_line	On return, the value will be maximum number of
+ *				characters per line.
+ *
+ * @return VB2_SUCCESS on success, no-zero on error.
+ */
+vb2_error_t ui_get_textbox_chars_per_line(uint32_t *chars_per_line);
+
+/*
+ * Get the maximum number of lines per page of the textbox.
+ *
+ * @param screen		Screen to display the textbox.
+ * @param y			Offset of the textbox from the top of the screen.
+ * @param lines_per_page	On return, the value will be maximum number of
+ *				lines per page.
+ *
+ * @return VB2_SUCCESS on success, no-zero on error.
+ */
+vb2_error_t ui_get_textbox_lines_per_page(enum ui_screen screen, int32_t y,
+					  uint32_t *lines_per_page);
+
+/*
  * Get the dimensions of the log textbox.
  *
  * The log textbox can fit lines_per_page * chars_per_line characters.
@@ -1068,6 +1136,24 @@ vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
  */
 vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
 				int32_t *y);
+
+/*
+ * Draw a textbox for displaying the log screen with custom scrollbar parameters.
+ *
+ * @param str			The full log string, which may contain line breaks.
+ * @param state			UI state.
+ * @param y			Starting y-coordinate of the box. On return, the value
+ *				will be the ending coordinate, excluding the margin
+ *				below the box.
+ * @param first_item		Index of the first item on the screen.
+ * @param total_items		Total items in the log.
+ * @param items_per_page	Number of items on a single page.
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
+					   const struct ui_state *state, int32_t *y,
+					   int32_t first_item, size_t total_items,
+					   size_t items_per_page, bool wrap_lines);
 
 /*
  * Draw a scrollbar based on given current_page and page_count. The height of

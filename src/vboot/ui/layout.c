@@ -677,36 +677,111 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
 	return rv;
 }
 
-vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
-					  const char *locale_code,
-					  uint32_t *lines_per_page,
-					  uint32_t *chars_per_line)
+vb2_error_t ui_draw_auto_wrap_textbox(const char *str, size_t str_len, int32_t *y,
+				      int32_t num_lines, uint32_t chars_per_line)
 {
-	const struct ui_screen_info *screen_info;
-	struct ui_bitmap bitmap;
-	int32_t title_height;
-	int32_t textbox_height;
+	vb2_error_t rv = VB2_SUCCESS;
+	int32_t x;
+	int32_t y_base = *y;
+	int32_t max_height = UI_BOX_TEXT_HEIGHT;
+	int32_t max_content_height, content_width, line_spacing = 0;
+	int32_t box_width, box_height;
+	const char *line;
+	const char *end = str + str_len;
+
+	/* Simply ensure that the textbox won't exceed the screen. */
+	max_content_height = UI_SCALE - *y - 2 * UI_BOX_PADDING_V;
+	line_spacing = UI_BOX_TEXT_LINE_SPACING * (num_lines - 1);
+
+	if (max_height * num_lines + line_spacing > max_content_height)
+		max_height = (max_content_height - line_spacing) / num_lines;
+
+	x = UI_MARGIN_H;
+	box_width = UI_SCALE - UI_MARGIN_H * 2;
+	content_width = box_width - UI_BOX_PADDING_H * 2;
+	box_height = max_height * num_lines + line_spacing +
+		UI_BOX_PADDING_V * 2;
+
+	/* Clear printing area. */
+	ui_draw_rounded_box(x, *y, box_width, box_height,
+			    &ui_color_bg, 0, 0, 0);
+	/* Draw the border of a box. */
+	ui_draw_rounded_box(x, *y, box_width, box_height, &ui_color_fg,
+			    UI_BOX_BORDER_THICKNESS, UI_BOX_BORDER_RADIUS, 0);
+
+	x += UI_BOX_PADDING_H;
+	*y += UI_BOX_PADDING_V;
+
+	for (line = str; str < end && *str && num_lines; line = str, num_lines--) {
+		vb2_error_t line_rv;
+		int32_t line_width;
+		int32_t line_height = max_height;
+		size_t n;
+		for (n = 0; n < chars_per_line; n++, str++) {
+			if (str >= end || *str == '\0')
+				break;
+			if (*str == '\n') {
+				str++;
+				break;
+			}
+		}
+		if (n == chars_per_line && *str == '\n' && str < end)
+			/* We will print this new line now, skip it */
+			str++;
+
+		/* Ensure the text width is no more than box width */
+		line_rv = ui_get_ntext_width(line, n, line_height, &line_width);
+		if (line_rv) {
+			/* Save the first error in rv */
+			if (rv == VB2_SUCCESS)
+				rv = line_rv;
+			continue;
+		}
+		if (line_width > content_width)
+			line_height = line_height * content_width / line_width;
+		line_rv = ui_draw_ntext(line, n, x, *y, line_height,
+					&ui_color_bg, &ui_color_fg,
+					PIVOT_H_LEFT | PIVOT_V_TOP, 0);
+		*y += line_height + UI_BOX_TEXT_LINE_SPACING;
+		/* Save the first error in rv */
+		if (line_rv && rv == VB2_SUCCESS)
+			rv = line_rv;
+	}
+
+	*y = y_base + box_height;
+	return rv;
+}
+
+vb2_error_t ui_get_textbox_chars_per_line(uint32_t *chars_per_line)
+{
 	int32_t char_width;
 
+	VB2_TRY(ui_get_text_width("?", UI_BOX_TEXT_HEIGHT, &char_width));
+
+	*chars_per_line = (UI_SCALE - UI_MARGIN_H * 2 - UI_BOX_PADDING_H * 2 -
+			   UI_SCROLLBAR_WIDTH) /
+			  char_width;
+
+	return VB2_SUCCESS;
+}
+
+vb2_error_t ui_get_textbox_lines_per_page(enum ui_screen screen, int32_t y,
+					  uint32_t *lines_per_page)
+{
+	const struct ui_screen_info *screen_info;
+	int32_t textbox_height;
+
 	screen_info = ui_get_screen_info(screen);
-	VB2_TRY(ui_get_bitmap(screen_info->title, locale_code, 0, &bitmap));
 
 	/* Calculate textbox height by subtracting the height of other items
 	   from UI_SCALE. */
 	if (screen_info->is_fullview) {
-		title_height = UI_FULLVIEW_TITLE_TEXT_HEIGHT *
-				ui_get_bitmap_num_lines(&bitmap);
-		textbox_height = UI_SCALE -
-				UI_FULLVIEW_TITLE_MARGIN * 2 -
-				title_height - UI_NAVIGATION_BAR_MARGIN * 2 -
+		textbox_height = UI_SCALE - y -
+				UI_NAVIGATION_BAR_MARGIN * 2 -
 				UI_NAVIGATION_BAR_HEIGHT;
 	} else {
-		title_height = UI_TITLE_TEXT_HEIGHT *
-				ui_get_bitmap_num_lines(&bitmap);
-		textbox_height = UI_SCALE -
-			UI_MARGIN_TOP -
-			UI_LANG_BOX_HEIGHT - UI_LANG_MARGIN_BOTTOM -
-			title_height - UI_TITLE_MARGIN_BOTTOM -
+		/* TODO(503252263): It would be better to calculate it based on screen menu */
+		textbox_height = UI_SCALE - y -
 			/* Page up, page down, back, and power off button */
 			(UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V) * 4 -
 			UI_DESC_MARGIN_BOTTOM -
@@ -718,39 +793,77 @@ vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
 			   UI_BOX_TEXT_LINE_SPACING) /
 			  (UI_BOX_TEXT_HEIGHT + UI_BOX_TEXT_LINE_SPACING);
 
-	VB2_TRY(ui_get_text_width("?", UI_BOX_TEXT_HEIGHT, &char_width));
-
-	*chars_per_line = (UI_SCALE - UI_MARGIN_H * 2 - UI_BOX_PADDING_H * 2 -
-			   UI_SCROLLBAR_WIDTH) /
-			  char_width;
-
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
-				int32_t *y)
+vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
+					  const char *locale_code,
+					  uint32_t *lines_per_page,
+					  uint32_t *chars_per_line)
 {
-	uint32_t lines_per_page, chars_per_line;
+	const struct ui_screen_info *screen_info;
+	struct ui_bitmap bitmap;
+	int32_t title_height;
+	int32_t above_textbox_height;
+
+	screen_info = ui_get_screen_info(screen);
+	VB2_TRY(ui_get_bitmap(screen_info->title, locale_code, 0, &bitmap));
+
+	/* Calculate textbox height by subtracting the height of other items
+	   from UI_SCALE. */
+	if (screen_info->is_fullview) {
+		title_height = UI_FULLVIEW_TITLE_TEXT_HEIGHT *
+				ui_get_bitmap_num_lines(&bitmap);
+		above_textbox_height = title_height +
+				UI_FULLVIEW_TITLE_MARGIN * 2;
+	} else {
+		title_height = UI_TITLE_TEXT_HEIGHT *
+				ui_get_bitmap_num_lines(&bitmap);
+		above_textbox_height = UI_MARGIN_TOP +
+			UI_LANG_BOX_HEIGHT + UI_LANG_MARGIN_BOTTOM +
+			title_height + UI_TITLE_MARGIN_BOTTOM;
+	}
+
+	VB2_TRY(ui_get_textbox_lines_per_page(screen, above_textbox_height, lines_per_page));
+
+	return ui_get_textbox_chars_per_line(chars_per_line);
+}
+
+vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
+					   const struct ui_state *state, int32_t *y,
+					   int32_t first_item, size_t total_items,
+					   size_t items_per_page, bool wrap_lines)
+{
+	uint32_t lines_per_page;
+	uint32_t chars_per_line;
 	const int32_t y_base = *y;
 	int32_t log_box_inside_height;
 	const int32_t log_box_width = UI_SCALE - UI_MARGIN_H * 2;
 	const int32_t scrollbar_x = UI_MARGIN_H + log_box_width
 		- UI_BOX_BORDER_THICKNESS - UI_SCROLLBAR_WIDTH;
 
-	VB2_TRY(ui_get_log_textbox_dimensions(state->screen->id,
-					      state->locale->code,
-					      &lines_per_page,
-					      &chars_per_line));
-	VB2_TRY(ui_draw_textbox(str, y, lines_per_page));
+	VB2_TRY(ui_get_textbox_lines_per_page(state->screen->id, *y, &lines_per_page));
+	VB2_TRY(ui_get_textbox_chars_per_line(&chars_per_line));
+	if (wrap_lines)
+		VB2_TRY(ui_draw_auto_wrap_textbox(str, n, y, lines_per_page, chars_per_line));
+	else
+		VB2_TRY(ui_draw_textbox(str, y, lines_per_page));
 
 	/* No scrollbar if there is only one page. */
-	if (state->log.page_count <= 1)
+	if (total_items <= items_per_page)
 		return VB2_SUCCESS;
 
 	log_box_inside_height = *y - y_base - UI_BOX_BORDER_THICKNESS * 2;
 	return ui_draw_scrollbar(scrollbar_x, y_base + UI_BOX_BORDER_THICKNESS,
-				 log_box_inside_height, state->current_page,
-				 state->log.page_count, 1);
+				 log_box_inside_height, first_item, total_items,
+				 items_per_page);
+}
+
+vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
+				int32_t *y)
+{
+	return ui_draw_textbox_with_scrollbar(str, 0, state, y, state->current_page,
+					      state->log.page_count, 1, false);
 }
 
 vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,

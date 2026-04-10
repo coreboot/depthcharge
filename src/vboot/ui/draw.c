@@ -181,10 +181,10 @@ static vb2_error_t get_char_width(const char c, int32_t height, int32_t *width)
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_get_text_width(const char *text, int32_t height, int32_t *width)
+vb2_error_t ui_get_ntext_width(const char *text, size_t n, int32_t height, int32_t *width)
 {
 	*width = 0;
-	while (*text) {
+	while (*text && n--) {
 		int32_t char_width;
 		vb2_error_t rv = get_char_width(*text, height, &char_width);
 		if (rv) {
@@ -199,11 +199,11 @@ vb2_error_t ui_get_text_width(const char *text, int32_t height, int32_t *width)
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_draw_text(const char *text,
-			 int32_t x, int32_t y, int32_t height,
-			 const struct rgb_color *bg_color,
-			 const struct rgb_color *fg_color,
-			 uint32_t flags, int reverse)
+vb2_error_t ui_draw_ntext(const char *text, size_t n,
+			  int32_t x, int32_t y, int32_t height,
+			  const struct rgb_color *bg_color,
+			  const struct rgb_color *fg_color,
+			  uint32_t flags, int reverse)
 {
 	int32_t char_width;
 	struct ui_bitmap bitmap;
@@ -215,7 +215,7 @@ vb2_error_t ui_draw_text(const char *text,
 
 	if (flags & PIVOT_H_CENTER || flags & PIVOT_H_RIGHT) {
 		char_width = UI_SIZE_AUTO;
-		VB2_TRY(ui_get_text_width(text, height, &char_width));
+		VB2_TRY(ui_get_ntext_width(text, n, height, &char_width));
 
 		if (flags & PIVOT_H_CENTER) {
 			flags &= ~(PIVOT_H_CENTER);
@@ -228,7 +228,7 @@ vb2_error_t ui_draw_text(const char *text,
 		}
 	}
 
-	while (*text) {
+	while (*text && n--) {
 		/* Replace a non-printable character with a "?". */
 		VB2_TRY(ui_get_char_bitmap(isprint(*text) ? *text : '?',
 					   &bitmap));
