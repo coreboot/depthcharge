@@ -22,6 +22,7 @@ depthcharge-y += display_stub.c
 endif
 
 depthcharge-y += draw.c
+depthcharge-y += fastboot_log.c
 depthcharge-y += input.c
 depthcharge-y += layout.c
 depthcharge-y += log.c

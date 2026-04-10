@@ -31,7 +31,8 @@ static void test_log_init_empty_string(void **state)
 	expect_string(ui_get_log_textbox_dimensions, locale_code, "en");
 
 	ASSERT_VB2_SUCCESS(ui_log_init(UI_SCREEN_FIRMWARE_LOG, "en", "", &log));
-	assert_int_equal(log.page_count, 0);
+	assert_int_equal(log.type, UI_LOG_TYPE_STATIC);
+	assert_int_equal(log.impl.static_log.page_count, 0);
 }
 
 static void test_log_init_one_page(void **state)
@@ -43,7 +44,8 @@ static void test_log_init_one_page(void **state)
 	expect_string(ui_get_log_textbox_dimensions, locale_code, "en");
 
 	ASSERT_VB2_SUCCESS(ui_log_init(UI_SCREEN_FIRMWARE_LOG, "en", "stub", &log));
-	assert_int_equal(log.page_count, 1);
+	assert_int_equal(log.type, UI_LOG_TYPE_STATIC);
+	assert_int_equal(log.impl.static_log.page_count, 1);
 
 	buf = ui_log_get_page_content(&log, 0);
 	assert_string_equal(buf, "stub");
@@ -69,8 +71,8 @@ static void test_log_init_three_pages(void **state)
 	expect_string(ui_get_log_textbox_dimensions, locale_code, "en");
 
 	ASSERT_VB2_SUCCESS(ui_log_init(UI_SCREEN_FIRMWARE_LOG, "en", string, &log));
-
-	assert_int_equal(log.page_count, 3);
+	assert_int_equal(log.type, UI_LOG_TYPE_STATIC);
+	assert_int_equal(log.impl.static_log.page_count, 3);
 
 	buf = ui_log_get_page_content(&log, 0);
 	assert_string_equal(buf, "PAGE0..abc\nab..bc");
@@ -99,7 +101,7 @@ static void test_log_set_empty_anchor(void **state)
 	ASSERT_VB2_SUCCESS(ui_log_init(UI_SCREEN_FIRMWARE_LOG, "en", string, &log));
 
 	ASSERT_VB2_SUCCESS(ui_log_set_anchors(&log, anchors, ARRAY_SIZE(anchors)));
-	anchor_info = &log.anchor_info;
+	anchor_info = &log.impl.static_log.anchor_info;
 	assert_int_equal(anchor_info->total_count, 0);
 	assert_null(anchor_info->per_page_count);
 }
@@ -127,11 +129,11 @@ static void test_log_set_one_anchor(void **state)
 	ASSERT_VB2_SUCCESS(ui_log_init(UI_SCREEN_FIRMWARE_LOG, "en", string, &log));
 	ASSERT_VB2_SUCCESS(ui_log_set_anchors(&log, anchors, ARRAY_SIZE(anchors)));
 
-	anchor_info = &log.anchor_info;
+	anchor_info = &log.impl.static_log.anchor_info;
 	assert_int_equal(anchor_info->total_count,
 			 anchor_test_state->expected_total_count);
 
-	for (i = 0; i < log.page_count; i++) {
+	for (i = 0; i < log.impl.static_log.page_count; i++) {
 		assert_int_equal(anchor_info->per_page_count[i],
 				 anchor_test_state->expected_per_page_count[i]);
 	}
@@ -155,7 +157,7 @@ static void test_log_set_multi_anchors(void **state)
 	ASSERT_VB2_SUCCESS(ui_log_init(UI_SCREEN_FIRMWARE_LOG, "en", string, &log));
 
 	ASSERT_VB2_SUCCESS(ui_log_set_anchors(&log, anchors, ARRAY_SIZE(anchors)));
-	anchor_info = &log.anchor_info;
+	anchor_info = &log.impl.static_log.anchor_info;
 	assert_int_equal(anchor_info->total_count, 8);
 	assert_int_equal(anchor_info->per_page_count[0], 3);
 	assert_int_equal(anchor_info->per_page_count[1], 2);

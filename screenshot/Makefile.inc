@@ -59,6 +59,7 @@ screenshot-srcs += src/fastboot/fastboot_stubs.c
 screenshot-srcs += src/vboot/ui/bitmap.c
 screenshot-srcs += src/vboot/ui/display.c
 screenshot-srcs += src/vboot/ui/draw.c
+screenshot-srcs += src/vboot/ui/fastboot_log.c
 screenshot-srcs += src/vboot/ui/layout.c
 screenshot-srcs += src/vboot/ui/log.c
 screenshot-srcs += src/vboot/ui/loop.c

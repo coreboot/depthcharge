@@ -42,8 +42,10 @@ static void pop_state(struct ui_context *ui)
 	preserve_state(ui->state, tmp);
 	/* No need to free tmp->log.str here, as the memory is owned by the
 	   caller of ui_log_init(). */
-	free(tmp->log.page_start);
-	free(tmp->log.anchor_info.per_page_count);
+	if (tmp->log.type == UI_LOG_TYPE_STATIC) {
+		free(tmp->log.impl.static_log.page_start);
+		free(tmp->log.impl.static_log.anchor_info.per_page_count);
+	}
 	free(tmp);
 }
 

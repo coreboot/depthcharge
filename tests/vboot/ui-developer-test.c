@@ -589,6 +589,7 @@ static void test_developer_ui_select_fastboot_requested(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(ui_keyboard_read, 0);
+	SET_LOG_DIMENSIONS(40, 20);
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_SUCCESS);
@@ -1130,6 +1131,7 @@ static void test_developer_screen_fastboot(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
+	SET_LOG_DIMENSIONS(40, 20);
 
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -1174,6 +1176,7 @@ static void test_developer_screen_fastboot_key_exit(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
+	SET_LOG_DIMENSIONS(40, 20);
 
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);

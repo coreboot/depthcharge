@@ -373,6 +373,12 @@ struct ui_locale {
 struct ui_screen_info;
 struct ui_context;
 
+enum ui_log_type {
+	UI_LOG_TYPE_UNKNOWN = 0,
+	UI_LOG_TYPE_STATIC,
+	UI_LOG_TYPE_FASTBOOT,
+};
+
 /* This struct records the keywords (so-called anchor) occurrences in the log
    pages. */
 struct ui_anchor_info {
@@ -383,13 +389,9 @@ struct ui_anchor_info {
 };
 
 /* Log string and its pages information. */
-struct ui_log_info {
+struct ui_static_log_info {
 	/* Full log content. */
 	const char *str;
-	/* Maximum number of lines per page. */
-	uint32_t lines_per_page;
-	/* Maximum number of characters per line.*/
-	uint32_t chars_per_line;
 	/* Total number of pages. */
 	uint32_t page_count;
 	/*
@@ -400,6 +402,31 @@ struct ui_log_info {
 	const char **page_start;
 	/* Fields for counting anchor occurrences. */
 	struct ui_anchor_info anchor_info;
+};
+
+/* Fastboot log information */
+struct ui_fastboot_log_info {
+	/* First byte currently displayed */
+	uint64_t top_of_screen_byte_anchor;
+	/* Number of bytes currently displayed */
+	size_t bytes_on_screen;
+	/* Total number of bytes in the log */
+	uint64_t total_bytes;
+};
+
+struct ui_log_info {
+	/* Common log info */
+	enum ui_log_type type;
+	/* Maximum number of lines per page. */
+	uint32_t lines_per_page;
+	/* Maximum number of characters per line.*/
+	uint32_t chars_per_line;
+
+	/* Union with implementation specific data */
+	union {
+		struct ui_static_log_info static_log;
+		struct ui_fastboot_log_info fastboot_log;
+	} impl;
 };
 
 enum ui_test_state {
@@ -1224,6 +1251,19 @@ vb2_error_t ui_developer_mode_enter_fwshell_action(struct ui_context *ui);
 /* log.c */
 
 /*
+ * Initialize common log info struct part.
+ *
+ * @param screen	Screen to display the log.
+ * @param locale_code	Language code of locale.
+ * @param log		Log info struct to be initialized.
+ * @param type		Type of the log.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_log_common_init(enum ui_screen screen, const char *locale_code,
+			       struct ui_log_info *log, enum ui_log_type type);
+
+/*
  * Initialize log info struct with a string.
  *
  * @param screen	Screen to display the log.
@@ -1258,6 +1298,53 @@ vb2_error_t ui_log_set_anchors(struct ui_log_info *log,
  * @return The pointer to the page content, NULL on error.
  */
 char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page);
+
+/******************************************************************************/
+/* fastboot_log.c */
+
+/*
+ * Initialize fastboot log info struct.
+ *
+ * @param screen	Screen to display the log.
+ * @param locale_code	Language code of locale.
+ * @param log		Log info struct to be initialized.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_fb_log_init(enum ui_screen screen, const char *locale_code,
+			   struct ui_log_info *log);
+
+/*
+ * Set UI log info structure to point at the first available page in fastboot log.
+ *
+ * @param ui_log	Log info.
+ * @param log		Fastboot log instance.
+ */
+void ui_fb_log_set_first_page(struct ui_log_info *ui_log, struct fastboot_log *log);
+
+/*
+ * Set UI log info structure to point at the last available page in fastboot log.
+ *
+ * @param ui_log	Log info.
+ * @param log		Fastboot log instance.
+ */
+void ui_fb_log_set_last_page(struct ui_log_info *ui_log, struct fastboot_log *log);
+
+/*
+ * Set UI log info structure to point at the next page in fastboot log.
+ *
+ * @param ui_log	Log info.
+ * @param log		Fastboot log instance.
+ */
+void ui_fb_log_set_next_page(struct ui_log_info *ui_log, struct fastboot_log *log);
+
+/*
+ * Set UI log info structure to point at the previous page in fastboot log.
+ *
+ * @param ui_log	Log info.
+ * @param log		Fastboot log instance.
+ */
+void ui_fb_log_set_prev_page(struct ui_log_info *ui_log, struct fastboot_log *log);
 
 /******************************************************************************/
 /* display.c */

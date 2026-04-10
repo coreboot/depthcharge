@@ -232,13 +232,13 @@ static vb2_error_t log_page_update(struct ui_context *ui,
 	if (new_log_string) {
 		VB2_TRY(ui_log_init(screen->id, ui->state->locale->code,
 				    new_log_string, log));
-		if (log->page_count == 0) {
+		if (log->impl.static_log.page_count == 0) {
 			UI_ERROR("page_count is 0\n");
 			return VB2_ERROR_UI_LOG_INIT;
 		}
 
-		if (ui->state->current_page >= log->page_count)
-			ui->state->current_page = log->page_count - 1;
+		if (ui->state->current_page >= log->impl.static_log.page_count)
+			ui->state->current_page = log->impl.static_log.page_count - 1;
 		ui->force_display = 1;
 	}
 
@@ -250,7 +250,7 @@ static vb2_error_t log_page_update(struct ui_context *ui,
 	if (ui->state->current_page == 0)
 		UI_SET_BIT(ui->state->disabled_item_mask,
 			   screen->page_up_item);
-	if (ui->state->current_page == log->page_count - 1)
+	if (ui->state->current_page == log->impl.static_log.page_count - 1)
 		UI_SET_BIT(ui->state->disabled_item_mask,
 			   screen->page_down_item);
 
@@ -263,7 +263,7 @@ static vb2_error_t log_page_reset_to_top(struct ui_context *ui)
 
 	ui->state->current_page = 0;
 	if (ui->state->test_state == UI_TEST_STATE_NONE) {
-		ui->state->focused_item = ui->state->log.page_count > 1
+		ui->state->focused_item = ui->state->log.impl.static_log.page_count > 1
 						   ? screen->page_down_item
 						   : screen->back_item;
 	} else {
@@ -274,58 +274,102 @@ static vb2_error_t log_page_reset_to_top(struct ui_context *ui)
 
 static vb2_error_t log_page_prev_action(struct ui_context *ui)
 {
-	/* Validity check. */
-	if (ui->state->current_page == 0)
-		return VB2_SUCCESS;
+	struct ui_log_info *log = &ui->state->log;
 
-	ui->state->current_page--;
-	return log_page_update(ui, NULL);
+	switch (log->type) {
+	case UI_LOG_TYPE_FASTBOOT:
+		if (ui->state->fb_session != NULL)
+			ui_fb_log_set_prev_page(log, ui->state->fb_session->log);
+		return VB2_SUCCESS;
+	case UI_LOG_TYPE_STATIC:
+		/* Validity check. */
+		if (ui->state->current_page == 0)
+			return VB2_SUCCESS;
+
+		ui->state->current_page--;
+		return log_page_update(ui, NULL);
+	default:
+		return VB2_SUCCESS;
+	}
 }
 
 static vb2_error_t log_page_next_action(struct ui_context *ui)
 {
-	/* Validity check. */
-	if (ui->state->current_page == ui->state->log.page_count - 1)
-		return VB2_SUCCESS;
+	struct ui_log_info *log = &ui->state->log;
 
-	ui->state->current_page++;
-	return log_page_update(ui, NULL);
+	switch (log->type) {
+	case UI_LOG_TYPE_FASTBOOT:
+		if (ui->state->fb_session != NULL)
+			ui_fb_log_set_next_page(log, ui->state->fb_session->log);
+		return VB2_SUCCESS;
+	case UI_LOG_TYPE_STATIC:
+		/* Validity check. */
+		if (ui->state->current_page == log->impl.static_log.page_count - 1)
+			return VB2_SUCCESS;
+
+		ui->state->current_page++;
+		return log_page_update(ui, NULL);
+	default:
+		return VB2_SUCCESS;
+	}
 }
 
 static vb2_error_t log_page_first_action(struct ui_context *ui)
 {
-	/* Validity check. */
-	if (ui->state->current_page == 0)
-		return VB2_SUCCESS;
+	struct ui_log_info *log = &ui->state->log;
 
-	ui->state->current_page = 0;
-	return log_page_update(ui, NULL);
+	switch (log->type) {
+	case UI_LOG_TYPE_FASTBOOT:
+		if (ui->state->fb_session != NULL)
+			ui_fb_log_set_first_page(log, ui->state->fb_session->log);
+		return VB2_SUCCESS;
+	case UI_LOG_TYPE_STATIC:
+		/* Validity check. */
+		if (ui->state->current_page == 0)
+			return VB2_SUCCESS;
+
+		ui->state->current_page = 0;
+		return log_page_update(ui, NULL);
+	default:
+		return VB2_SUCCESS;
+	}
 }
 
 static vb2_error_t log_page_last_action(struct ui_context *ui)
 {
-	/* Validity check. */
-	if (ui->state->current_page == ui->state->log.page_count - 1)
-		return VB2_SUCCESS;
+	struct ui_log_info *log = &ui->state->log;
 
-	ui->state->current_page = (ui->state->log.page_count) ?
-			(ui->state->log.page_count - 1) : 0;
-	return log_page_update(ui, NULL);
+	switch (log->type) {
+	case UI_LOG_TYPE_FASTBOOT:
+		if (ui->state->fb_session != NULL)
+			ui_fb_log_set_last_page(log, ui->state->fb_session->log);
+		return VB2_SUCCESS;
+	case UI_LOG_TYPE_STATIC:
+		/* Validity check. */
+		if (ui->state->current_page == log->impl.static_log.page_count - 1)
+			return VB2_SUCCESS;
+
+		ui->state->current_page = (log->impl.static_log.page_count) ?
+					  (log->impl.static_log.page_count - 1) : 0;
+		return log_page_update(ui, NULL);
+	default:
+		return VB2_SUCCESS;
+	}
 }
 
 static vb2_error_t log_page_anchor(struct ui_context *ui, int dir)
 {
 	struct ui_log_info *log = &ui->state->log;
-	const struct ui_anchor_info *anchor_info = &log->anchor_info;
+	const struct ui_anchor_info *anchor_info = &log->impl.static_log.anchor_info;
 	const struct ui_state *state = ui->state;
 	uint32_t target_page = state->current_page;
 	int i;
 
-	if (!anchor_info->total_count)
+	if (log->type != UI_LOG_TYPE_STATIC || !anchor_info->total_count)
 		return VB2_SUCCESS;
 
 	for (i = state->current_page + dir;
-	     i < log->page_count && i >= 0; i += dir) {
+	     i < log->impl.static_log.page_count && i >= 0; i += dir) {
 		if (anchor_info->per_page_count[i] > 0) {
 			target_page = i;
 			break;
@@ -1163,6 +1207,33 @@ static vb2_error_t draw_fastboot_desc_bitmap(
 	return VB2_SUCCESS;
 }
 
+static vb2_error_t draw_fastboot_log(
+	struct ui_state *state,
+	struct FastbootOps *fb_session,
+	int32_t *y)
+{
+	vb2_error_t draw_err;
+	const uint64_t oldest_byte = fastboot_log_get_oldest_available_byte(fb_session->log);
+	struct ui_fastboot_log_info *ui_fb_log = &state->log.impl.fastboot_log;
+
+	/* Get data to print */
+	const char *page_buf = fastboot_log_get_buf(fb_session->log,
+						    ui_fb_log->top_of_screen_byte_anchor,
+						    &ui_fb_log->bytes_on_screen);
+	if (!page_buf) {
+		page_buf = "";
+		state->log.impl.fastboot_log.bytes_on_screen = 0;
+	}
+
+	draw_err = ui_draw_textbox_with_scrollbar(
+			page_buf, state->log.impl.fastboot_log.bytes_on_screen, state, y,
+			ui_fb_log->top_of_screen_byte_anchor - oldest_byte,
+			ui_fb_log->total_bytes - oldest_byte, ui_fb_log->bytes_on_screen,
+			true);
+	fastboot_log_drop_buf(fb_session->log, page_buf);
+	return draw_err;
+}
+
 static vb2_error_t draw_fastboot_desc(
 	struct ui_context *ui,
 	const struct ui_state *prev_state,
@@ -1184,26 +1255,28 @@ static vb2_error_t draw_fastboot_desc(
 			     &ui_color_bg, &ui_color_fg, flags, reverse));
 	*y += UI_BOX_TEXT_HEIGHT + UI_BOX_TEXT_LINE_SPACING;
 
-	return VB2_SUCCESS;
+	/* If fastboot isn't connected yet, print empty textbox */
+	if (fb_session == NULL)
+		return ui_draw_textbox_with_scrollbar("", 0, state, y, 0, 0, 1, true);
+
+	VB2_TRY(ui_get_textbox_lines_per_page(state->screen->id, *y,
+					      &state->log.lines_per_page));
+
+	return draw_fastboot_log(state, fb_session, y);
 }
 
 static vb2_error_t fastboot_action(struct ui_context *ui)
 {
 	struct ui_state *state = ui->state;
 
-	if (ui->key == UI_KEY_ENTER ||
-	    (CONFIG(DETACHABLE) && ui->key == UI_BUTTON_POWER_SHORT_PRESS)) {
-		ui->key = 0;
-		return ui_screen_back(ui);
-	}
-
 	if (state->fb_session == NULL) {
 		/* Try to init fastboot */
 		state->fb_session = fastboot_init();
 		if (state->fb_session == NULL)
-			return VB2_SUCCESS;
+			return fullview_log_screen_action(ui);
 		/* Change the description based on new fastboot state */
 		ui->force_display = 1;
+		VB2_TRY(ui_fb_log_init(state->screen->id, state->locale->code, &state->log));
 	}
 
 	if (fastboot_is_finished(state->fb_session)) {
@@ -1226,8 +1299,24 @@ static vb2_error_t fastboot_action(struct ui_context *ui)
 	 * fastboot will return after polling transport layer once (up to 100ms).
 	 */
 	fastboot_poll(state->fb_session, 1000);
+	const uint64_t new_total_bytes = fastboot_log_get_total_bytes(state->fb_session->log);
+	if (state->log.impl.fastboot_log.total_bytes != new_total_bytes) {
+		const uint64_t page_start =
+			state->log.impl.fastboot_log.top_of_screen_byte_anchor;
+		const uint64_t page_end = page_start +
+					  state->log.impl.fastboot_log.bytes_on_screen;
+		/* We do it always, because we need to redraw scrollbar */
+		ui->force_display = 1;
+		if (page_start < fastboot_log_get_oldest_available_byte(state->fb_session->log))
+			/* Previous page no longer available, print the first page */
+			ui_fb_log_set_first_page(&state->log, state->fb_session->log);
+		else if (state->log.impl.fastboot_log.total_bytes == page_end)
+			/* Scroll to the last page, if last byte was on the screen before */
+			ui_fb_log_set_last_page(&state->log, state->fb_session->log);
+		state->log.impl.fastboot_log.total_bytes = new_total_bytes;
+	}
 
-	return VB2_SUCCESS;
+	return fullview_log_screen_action(ui);
 }
 
 static vb2_error_t fastboot_exit(struct ui_context *ui)

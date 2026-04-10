@@ -863,7 +863,7 @@ vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
 				int32_t *y)
 {
 	return ui_draw_textbox_with_scrollbar(str, 0, state, y, state->current_page,
-					      state->log.page_count, 1, false);
+					      state->log.impl.static_log.page_count, 1, false);
 }
 
 vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
