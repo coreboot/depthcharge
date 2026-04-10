@@ -741,7 +741,7 @@ class Converter:
                 fgcolor=style[KEY_FGCOLOR],
             )
 
-    def build_locale(self, locale, names):
+    def build_locale(self, locale, names, generic):
         """Builds images of strings for `locale`."""
         dpi = self.config[KEY_DPI]
         styles = self.formats[KEY_STYLES]
@@ -756,6 +756,13 @@ class Converter:
             name, _ = os.path.splitext(os.path.basename(txt_file))
             with open(txt_file, 'r', encoding='utf-8-sig') as f:
                 inputs[name] = f.read().strip()
+
+        # Add generic strings to allow to use them as placeholders
+        inputs.update(generic)
+
+        # Replace placeholders (like '{msg[name]}') with actual values
+        for name, msg in inputs.items():
+            inputs[name] = msg.format(msg=inputs)
 
         stage_dir = os.path.join(self.stage_locale_dir, locale)
         os.makedirs(stage_dir, exist_ok=True)
@@ -844,13 +851,20 @@ class Converter:
 
         names = self.formats[KEY_LOCALIZED_FILES]
 
+        # Walk strings dir to add pre-generated generic texts
+        generic = {}
+        for txt_file in glob.glob(os.path.join(self.strings_dir, '*.txt')):
+            name, _ = os.path.splitext(os.path.basename(txt_file))
+            with open(txt_file, 'r', encoding='utf-8-sig') as f:
+                generic[name] = f.read().strip()
+
         with ProcessPoolExecutor() as executor:
             futures = []
             for locale_info in self.locales:
                 locale = locale_info.code
                 print(locale, end=' ', flush=True)
                 futures.append(
-                    executor.submit(self.build_locale, locale, names)
+                    executor.submit(self.build_locale, locale, names, generic)
                 )
 
             print()

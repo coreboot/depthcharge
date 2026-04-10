@@ -11,6 +11,7 @@ import logging
 import os
 import re
 from xml.etree import ElementTree
+from xml.sax.saxutils import escape
 
 
 DEFAULT_SRC_STRING_PATH = (
@@ -45,7 +46,10 @@ def load_xtb_to_dict(xtb_dir, locale):
     xtb_root = ElementTree.parse(xtb_file).getroot()
     res = {}
     for item in xtb_root:
-        res[item.attrib['id']] = item.text
+        content = escape(item.text) or ''
+        for child in item:
+            content += ElementTree.tostring(child, encoding='unicode')
+        res[item.attrib['id']] = content
     return res
 
 
@@ -60,9 +64,11 @@ def save_dict_to_xtb(data, out_dir, locale):
     out_xtb = ElementTree.Element('translationbundle', {'lang': locale})
     out_xtb.text = '\n'
     for message_id, text in sorted(data.items()):
-        e = ElementTree.SubElement(out_xtb, 'translation', {'id': message_id})
-        e.text = text
+        e = ElementTree.fromstring(
+            f'<translation id="{message_id}">{text}</translation>'
+        )
         e.tail = '\n'
+        out_xtb.append(e)
     out_file = os.path.join(out_dir, f'firmware_strings_{locale}.xtb')
     logging.info('Saving %r', out_file)
     with open(out_file, 'rb+') as f:

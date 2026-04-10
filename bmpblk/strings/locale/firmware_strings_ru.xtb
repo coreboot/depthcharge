@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="1014836725110176376">1. На другом устройстве перейдите по адресу <ph name="REC_URL" />.</translation>
 <translation id="1041985745423354926">Вы можете выполнить восстановление, используя внешнее запоминающее устройство, например USB-накопитель или SD-карту.</translation>
 <translation id="1159332245309393502">Настройте внешний накопитель</translation>
 <translation id="1201402288615127009">Далее</translation>

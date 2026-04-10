@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
+<translation id="1014836725110176376">1. 在另一部设备上访问 <ph name="REC_URL" /></translation>
 <translation id="1041985745423354926">您可以使用外部存储设备（例如 U 盘或 SD 卡）进行恢复。</translation>
 <translation id="1159332245309393502">设置您的外部存储设备</translation>
 <translation id="1201402288615127009">下一步</translation>

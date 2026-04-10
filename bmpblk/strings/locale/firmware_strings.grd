@@ -227,7 +227,7 @@ Your device battery is low. Connect to a power source to continue.
 Set up your recovery drive
       </message>
       <message name="rec_disk_step2_desc0" desc="Description string0 for step2 in the recovery process.">
-1. Go to goo.gle/android_laptop_recovery on your other device
+1. Go to <ph name="REC_URL">{msg[rec_url]}<ex>goo.gle/android_laptop_recovery</ex></ph> on your other device
       </message>
       <message name="rec_disk_step2_desc1" desc="Description string1 for step2 in the recovery process.">
 2. Follow instructions on your other device

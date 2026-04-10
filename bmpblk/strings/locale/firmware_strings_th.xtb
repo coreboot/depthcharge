@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="1014836725110176376">1. ไปที่ <ph name="REC_URL" /> ในอุปกรณ์อีกเครื่อง</translation>
 <translation id="1041985745423354926">คุณกู้คืนได้โดยใช้พื้นที่เก็บข้อมูลภายนอก เช่น ไดรฟ์ USB หรือการ์ด SD</translation>
 <translation id="1159332245309393502">ตั้งค่าที่จัดเก็บข้อมูลภายนอก</translation>
 <translation id="1201402288615127009">ถัดไป</translation>

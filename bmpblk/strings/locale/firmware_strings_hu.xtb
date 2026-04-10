@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="1014836725110176376">1. Nyissa meg a(z) <ph name="REC_URL" /> URL-t a másik eszközén.</translation>
 <translation id="1041985745423354926">A helyreállítás külső tárhely (pl. USB-meghajtó vagy SD-kártya) segítségével lehetséges.</translation>
 <translation id="1159332245309393502">Állítsa be a külső tárhelyet</translation>
 <translation id="1201402288615127009">Tovább</translation>

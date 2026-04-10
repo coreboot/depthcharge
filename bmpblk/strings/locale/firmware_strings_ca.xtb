@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
+<translation id="1014836725110176376">1. Ves a <ph name="REC_URL" /> des de l'altre dispositiu</translation>
 <translation id="1041985745423354926">Pots fer la recuperació utilitzant emmagatzematge extern, com ara una unitat USB o una targeta SD.</translation>
 <translation id="1159332245309393502">Configura l'emmagatzematge extern</translation>
 <translation id="1201402288615127009">Següent</translation>
