@@ -71,6 +71,9 @@ enum fastboot_connection_type {
 	FASTBOOT_USB_CONN,
 };
 
+/* Forward declare fastboot_log, so we can have pointer to it in FastbootOps */
+struct fastboot_log;
+
 /* State of a fastboot session and functions that abstract transport layer */
 struct FastbootOps {
 	/* State of the session */
@@ -110,6 +113,9 @@ struct FastbootOps {
 	enum fastboot_connection_type type;
 	/* Serial number of connection */
 	char *serial;
+
+	/* Log for messages printed during fastboot execution */
+	struct fastboot_log *log;
 };
 
 enum fastboot_response_type {
@@ -146,6 +152,41 @@ enum fastboot_state fastboot_release(struct FastbootOps *fb_session);
  * the function may block for longer time if there is incoming traffic.
  */
 void fastboot_poll(struct FastbootOps *fb_session, uint32_t timeout_ms);
+
+/* Get number of all bytes written to fastboot_log (including already overwritten ones) */
+uint64_t fastboot_log_get_total_bytes(const struct fastboot_log *log);
+/* Get index of the oldest still available byte */
+uint64_t fastboot_log_get_oldest_available_byte(const struct fastboot_log *log);
+/*
+ * Get specified part of the buffer. Valid until new data arrive.
+ *
+ * @param log		Pointer to the fastboot log.
+ * @param start		Index of first byte to get.
+ * @param num		Number of requested bytes. On return, number of bytes in the returned
+ *			buffer (can be less than requested number).
+ *
+ * @return pointer to the buffer on success, NULL on error.
+ */
+const char *fastboot_log_get_buf(const struct fastboot_log *log, uint64_t start, size_t *num);
+/* Return buffer that is no longer needed */
+void fastboot_log_drop_buf(const struct fastboot_log *log, const char *buf);
+/*
+ * Return iterator that can be used in *_iter functions until new data arrive or UINT64_MAX if
+ * byte index isn't available.
+ */
+uint64_t fastboot_log_get_iter(const struct fastboot_log *log, uint64_t byte);
+/*
+ * Try to increment iterator. Return true if successful, false if iterator is pointing at
+ * the last byte (iterator is not updated in that case).
+ */
+bool fastboot_log_inc_iter(const struct fastboot_log *log, uint64_t *iter);
+/*
+ * Try to decrement iterator. Return true if successful, false if iterator is pointing at
+ * the first byte (iterator is not updated in that case).
+ */
+bool fastboot_log_dec_iter(const struct fastboot_log *log, uint64_t *iter);
+/* Get byte pointed by the iterator */
+char fastboot_log_get_byte_at_iter(const struct fastboot_log *log, uint64_t iter);
 
 /* Responses to the client */
 void fastboot_send_fmt(struct FastbootOps *fb, enum fastboot_response_type t, int print_msg,

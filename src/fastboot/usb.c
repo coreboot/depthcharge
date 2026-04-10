@@ -10,6 +10,7 @@
 #include "base/init_funcs.h"
 #include "drivers/bus/usb/usb.h"
 #include "fastboot/fastboot.h"
+#include "fastboot/log.h"
 #include "fastboot/usb.h"
 
 /* USB device ID that can be used as fastboot transport */
@@ -104,16 +105,20 @@ static void usb_fastboot_dev_poll(usbdev_t *dev)
 	if (!is_usb_fastboot_in_use(usb_fb_dev))
 		return;
 
+	fastboot_log_set_active(usb_fb_dev->fb_session.log);
+
 	if (usb_fastboot_recv(usb_fb_dev, packet_buffer, &len, sizeof(packet_buffer)))
-		return;
+		goto exit;
 
 	/* Fastboot protocol documentation says that zero-length packets should be ignored */
 	if (len == 0)
-		return;
+		goto exit;
 
 	fastboot_handle_packet(&usb_fb_dev->fb_session, packet_buffer, len);
 	/* We received something, assume that it is a good idea to check for more data */
 	usb_fb_dev->state = FASTBOOT_TRANSPORT_RX_IN_PROGRESS;
+exit:
+	fastboot_log_set_active(NULL);
 }
 
 static int usb_fastboot_init_endpoints(usbdev_t *dev, UsbFastbootDevice *usb_fb_dev)

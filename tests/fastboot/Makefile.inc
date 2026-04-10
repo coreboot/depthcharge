@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 
 tests-y += cmd-test
+tests-y += log-test
 tests-y += vars-test
 
 fastboot-test-common-config += CONFIG_KERNEL_SIZE=0x10000
@@ -45,6 +46,11 @@ cmd-test-mocks += android_misc_set_oem_cmd
 cmd-test-mocks += android_misc_reset_oem_cmd
 cmd-test-mocks += android_misc_get_virtual_ab_merge_status
 cmd-test-mocks += android_misc_virtual_ab_cancel_update
+
+# log-test
+$(call copy-test,fastboot-test-common,log-test)
+log-test-srcs += tests/fastboot/log-test.c
+log-test-srcs += src/fastboot/log.c
 
 # vars-test
 $(call copy-test,fastboot-test-common,vars-test)

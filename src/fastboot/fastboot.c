@@ -25,6 +25,7 @@
 #include "drivers/input/mkbp/buttons.h"
 #include "fastboot/cmd.h"
 #include "fastboot/fastboot.h"
+#include "fastboot/log.h"
 #include "fastboot/tcp.h"
 #include "fastboot/usb.h"
 #include "image/symbols.h"
@@ -253,6 +254,7 @@ struct FastbootOps *fastboot_init(void)
 		fastboot_reset_staging(fb_session);
 		fastboot_reset_session(fb_session);
 		printf("fastboot starting.\n");
+		fastboot_log_init(fb_session);
 	}
 
 	return fb_session;
@@ -264,6 +266,7 @@ enum fastboot_state fastboot_release(struct FastbootOps *fb_session)
 
 	printf("fastboot done.\n");
 	final_state = fb_session->state;
+	fastboot_log_release(fb_session);
 	if (fb_session->release)
 		fb_session->release(fb_session);
 

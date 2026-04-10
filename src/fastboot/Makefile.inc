@@ -16,6 +16,7 @@ depthcharge-y += fastboot_stubs.c
 fastboot-y += cmd.c
 fastboot-y += disk.c
 fastboot-y += fastboot.c
+fastboot-y += log.c
 fastboot-y += tcp.c
 fastboot-y += vars.c
 fastboot-y += usb.c
