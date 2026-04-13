@@ -26,6 +26,12 @@
 #define PING_STATUS_INVALID_FMT 0x3
 #define RTS_RESTART_DELAY_US 7000000 /* 7s */
 
+/* If an I2C or host command error occurs, wait this long before executing the
+ * next command, such as RESET_TO_FLASH. This allows the chip a safe amount of
+ * time to finish the prior command even if ping status gets skipped.
+ */
+#define FAILURE_NEXT_CMD_DELAY_MS 200
+
 #define MAX_COMMAND_SIZE 32
 #define FW_CHUNK_SIZE 29
 #define FLASH_SEGMENT_SIZE (64 * 1024)
@@ -682,6 +688,7 @@ static int rts545x_update_flash(Rts545x *me, const uint8_t *image, size_t image_
 	ret = rts545x_flash_write(me, image, image_size);
 	if (ret) {
 		printf("%s: Failed during flash write\n", __func__);
+		mdelay(FAILURE_NEXT_CMD_DELAY_MS);
 		rts545x_flash_access_disable(me);
 		return ret;
 	}
@@ -755,6 +762,8 @@ static vb2_error_t rts5453_update_image(const VbootAuxfwOps *vbaux, const uint8_
 	if (rts545x_update_flash(me, image, image_size) != 0) {
 		/* Attempt a retry of the flash but first reset the chip
 		   in case it is in a bad state from a previous run. */
+		mdelay(FAILURE_NEXT_CMD_DELAY_MS);
+
 		ret = rts545x_reset_to_flash(me);
 		if (!ret && rts545x_update_flash(me, image, image_size) == 0)
 			status = VB2_SUCCESS;
