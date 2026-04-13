@@ -9,7 +9,7 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
 
@@ -85,6 +85,6 @@
 #define LPASS_TX_CLK_RST_BASE               0x06AE0000UL
 #define LPASS_TLMM_LITE_GPIO10_BASE         0x06E8A000UL
 #define LPASS_TLMM_LITE_GPIO11_BASE         0x06E8B000UL
-#define LPASS_WSA_CPUN_BASE                 0x06B15004UL
+#define LPASS_WSA_CPUN_BASE                 0x06B15000UL
 
-#endif /*  __DRIVERS_SOC_QCOM_X1P42100_H__ */
+#endif /* __DRIVERS_SOC_QCOM_X1P42100_H__ */
