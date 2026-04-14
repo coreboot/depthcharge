@@ -409,8 +409,8 @@ static const struct ui_screen_info firmware_sync_screen = {
 	.title = "firmware_sync_title.bmp",
 	.desc = UI_DESC(firmware_sync_desc),
 	.no_footer = 1,
-	.mesg = "Please do not power off your device.\n"
-		"Your system is applying a critical update.",
+	.mesg = "Updating your device.\n"
+		"Keep your device turned on. This may take a moment.",
 };
 
 /******************************************************************************/
@@ -636,14 +636,16 @@ static const struct ui_screen_info broken_screen = {
 	.title = "broken_title.bmp",
 	.desc = UI_DESC(broken_desc),
 	.menu = UI_MENU(broken_items),
-	.mesg = "Something is wrong. Please remove all connected devices.\n"
-		"To initiate recovery on a:\n"
-		"* Chromebook: Hold down Escape, Refresh, and Power buttons\n"
-		"* Chromebox/Chromebit: Hold down the Recovery button, press "
-		"Power, release\n"
+	.mesg = "Something went wrong\n"
+		"To fix the issue, start the recovery process.\n"
+		"1. Remove all connected devices.\n"
+		"2. Depending on your device type:\n"
+		"* Laptop: Hold Escape, Refresh, and Power buttons\n"
+		"* Desktop: While holding the Recovery button,\n"
+		"  press and release the Power button, then release\n"
 		"  the Recovery button\n"
-		"* Tablet: Hold down Power, Volume Up, Volume Down buttons for "
-		"10 secs",
+		"* Tablet: Hold down Power, Volume Up, Volume Down buttons for\n"
+		"  at least 10 seconds",
 };
 
 /******************************************************************************/
@@ -716,7 +718,7 @@ vb2_error_t ui_developer_mode_enter_fwshell_action(struct ui_context *ui)
 static const struct ui_menu_item advanced_options_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	[ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE] = {
-		.name = "Enable developer mode",
+		.name = "Unlock bootloader",
 		.file = "btn_dev_mode.bmp",
 		.target = UI_SCREEN_RECOVERY_TO_DEV,
 	},
@@ -1106,11 +1108,11 @@ static const struct ui_screen_info recovery_to_dev_screen = {
 	.draw_desc = draw_recovery_to_dev_desc,
 	.init = recovery_to_dev_init,
 	.action = recovery_to_dev_action,
-	.mesg = "You are attempting to enable developer mode\n"
-		"This involves erasing all data from your device,\n"
-		"and will make your device insecure.\n"
-		"Select \"Confirm\" or press the RECOVERY/POWER button to\n"
-		"enable developer mode,\n"
+	.mesg = "Unlock bootloader?\n"
+		"This will erase all data from your device. Device security\n"
+		"will be disabled.\n"
+		"Select \"Unlock\" or press the RECOVERY button to\n"
+		"unlock the bootloader,\n"
 		"or select \"Cancel\" to remain protected",
 };
 
@@ -1256,7 +1258,7 @@ static const struct ui_screen_info fastboot_screen = {
 	.action = fastboot_action,
 	.exit = fastboot_exit,
 	.draw_desc = draw_fastboot_desc,
-	.mesg = "Fastboot",
+	.mesg = "You're in bootloader fastboot mode",
 	.no_footer = 1,
 	.is_fullview = 1,
 };
@@ -1298,12 +1300,12 @@ static const char *const recovery_select_desc[] = {
 static const struct ui_menu_item recovery_select_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	[RECOVERY_SELECT_ITEM_EXTERNAL_DISK] = {
-		.name = "Recovery using external disk",
+		.name = "Use USB drive or SD card",
 		.file = "btn_rec_by_disk.bmp",
 		.target = UI_SCREEN_RECOVERY_DISK_STEP1,
 	},
 	[RECOVERY_SELECT_ITEM_INTERNET] = {
-		.name = "Recovery using internet connection",
+		.name = "Use internet connection",
 		.file = "btn_rec_by_internet.bmp",
 		.action = ui_recovery_mode_boot_nbr_action,
 	},
@@ -1327,8 +1329,8 @@ static const struct ui_screen_info recovery_select_screen = {
 	.desc = UI_DESC(recovery_select_desc),
 	.menu = UI_MENU(recovery_select_items),
 	.init = recovery_select_init,
-	.mesg = "Select how you'd like to recover.\n"
-		"You can recover using a USB drive or an SD card.",
+	.mesg = "Start the recovery process\n"
+		"Choose a recovery method to get started.",
 };
 
 /******************************************************************************/
@@ -1373,11 +1375,11 @@ static const struct ui_screen_info recovery_disk_step1_screen = {
 	.title = "rec_disk_step1_title.bmp",
 	.menu = UI_MENU(recovery_disk_step1_items),
 	.draw_desc = draw_recovery_disk_step1_desc,
-	.mesg = "To proceed with the recovery process, you'll need\n"
-		"1. An external storage disk such as a USB drive or an SD card"
-		"\n2. An additional device with internet access\n"
-		"We also recommend that you connect to a power source during\n"
-		"the recovery process.",
+	.mesg = "Get ready to recover your device\n"
+		"To create a recovery drive, you'll need:\n"
+		"1. A USB drive or SD card\n"
+		"2. Another device with internet connection\n"
+		"Connecting your device to a power source is recommended.",
 };
 
 /******************************************************************************/
@@ -1404,11 +1406,11 @@ static const struct ui_screen_info recovery_disk_step2_screen = {
 	.title = "rec_disk_step2_title.bmp",
 	.desc = UI_DESC(recovery_disk_step2_desc),
 	.menu = UI_MENU(recovery_disk_step2_items),
-	.mesg = "External disk setup.\n"
-		"Go to google.com/chromeos/recovery on another computer and\n"
-		"install the Chrome extension. Follow instructions on the\n"
-		"Chrome extension, and download the recovery image onto an\n"
-		"external disk.",
+	.mesg = "Set up your recovery drive\n"
+		"1. Go to goo.gle/android_laptop_recovery on your other device\n"
+		"2. Follow instructions on your other device\n"
+		"When your recovery drive is ready, plug it into this device\n"
+		"to start the recovery process.",
 };
 
 /******************************************************************************/
@@ -1435,8 +1437,7 @@ static const struct ui_screen_info recovery_invalid_screen = {
 	.menu = UI_MENU(recovery_invalid_items),
 	.draw_desc = draw_rec_url_desc,
 	.mesg = "No valid image detected.\n"
-		"Make sure your external disk has a valid recovery image,\n"
-		"and re-insert the disk when ready.",
+		"Make sure your recovery drive has a valid image and try again",
 };
 
 /******************************************************************************/
@@ -1463,8 +1464,8 @@ static const struct ui_screen_info recovery_rollback_error_screen = {
 	.menu = UI_MENU(recovery_rollback_error_items),
 	.draw_desc = draw_rec_url_desc,
 	.mesg = "Outdated recovery image.\n"
-		"Your recovery image is too old to be installed on this device.\n"
-		"Download a new recovery image and try again.",
+		"This recovery image is too old for your device. Download\n"
+		"a new recovery image and try again.",
 };
 
 /******************************************************************************/
@@ -1689,7 +1690,7 @@ static vb2_error_t draw_developer_mode_desc(
 static const struct ui_menu_item developer_mode_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	[DEVELOPER_MODE_ITEM_RETURN_TO_SECURE] = {
-		.name = "Return to secure mode",
+		.name = "Lock bootloader",
 		.file = "btn_secure_mode.bmp",
 		.target = UI_SCREEN_DEVELOPER_TO_NORM,
 	},
@@ -1699,7 +1700,7 @@ static const struct ui_menu_item developer_mode_items[] = {
 		.action = ui_developer_mode_boot_internal_action,
 	},
 	[DEVELOPER_MODE_ITEM_BOOT_EXTERNAL] = {
-		.name = "Boot from external disk",
+		.name = "Boot from external drive",
 		.file = "btn_ext_disk.bmp",
 		.action = ui_developer_mode_boot_external_action,
 	},
@@ -1721,9 +1722,10 @@ static const struct ui_screen_info developer_mode_screen = {
 	.init = developer_mode_init,
 	.action = developer_mode_action,
 	.draw_desc = draw_developer_mode_desc,
-	.mesg = "You are in developer mode\n"
-		"To return to the recommended secure mode,\n"
-		"select \"Return to secure mode\" below.\n"
+	.mesg = "Bootloader is unlocked\n"
+		"Your device is not secure while the bootloader is unlocked.\n"
+		"To restore device security, lock the bootloader by selecting\n"
+		"\"Lock bootloader\"\n"
 		"After timeout, the device will automatically boot from\n"
 		"the default boot target.",
 };
@@ -1791,10 +1793,10 @@ static const struct ui_screen_info developer_to_norm_screen = {
 	.desc = UI_DESC(developer_to_norm_desc),
 	.menu = UI_MENU(developer_to_norm_items),
 	.init = developer_to_norm_init,
-	.mesg = "Confirm returning to secure mode.\n"
-		"This option will disable developer mode and restore your\n"
-		"device to its original state.\n"
-		"Your user data will be wiped in the process.",
+	.mesg = "Lock bootloader?\n"
+		"This will lock the bootloader and restore your device to its\n"
+		"original state.\n"
+		"User data will be wiped in the process.",
 };
 
 /******************************************************************************/
@@ -1849,9 +1851,9 @@ static const struct ui_screen_info developer_boot_external_screen = {
 	.init = developer_boot_external_init,
 	.reinit = developer_boot_external_init,
 	.action = ui_developer_mode_boot_external_action,
-	.mesg = "Plug in your external disk\n"
-		"If your external disk is ready with a Chrome OS image,\n"
-		"plug it into the device to boot.",
+	.mesg = "No external drive detected\n"
+		"Plug in an external drive with an OS image. Your device will\n"
+		"boot automatically.",
 };
 
 /******************************************************************************/
@@ -1894,8 +1896,8 @@ static const struct ui_screen_info developer_invalid_disk_screen = {
 	.reinit = developer_invalid_disk_init,
 	.action = ui_developer_mode_boot_external_action,
 	.mesg = "No valid image detected\n"
-		"Make sure your external disk has a valid Chrome OS image,\n"
-		"and re-insert the disk when ready.",
+		"Make sure your external drive has a valid OS image,\n"
+		"and re-insert it when it's ready.",
 };
 
 /******************************************************************************/
@@ -2180,7 +2182,7 @@ static const struct ui_screen_info diagnostics_screen = {
 	.reinit = diagnostics_reinit,
 	.exit = diagnostics_exit,
 	.action = diagnostics_action,
-	.mesg = "Select the component you'd like to check",
+	.mesg = "Select a test to run",
 };
 
 /******************************************************************************/

@@ -39,17 +39,18 @@ static const struct ui_error_message errors[] = {
 	[UI_ERROR_NBR_BOOT_FAILED] = {
 		.file = "error_internet_recovery.bmp",
 		.mesg = "Internet recovery partition corrupted or missing.\n"
-			"Please recover using external storage instead.",
+			"Use a USB drive or SD card (if available) instead.",
 	},
 	[UI_ERROR_DEV_MODE_ALREADY_ENABLED] = {
 		.file = "error_dev_mode_enabled.bmp",
-		.mesg = "Developer mode is already turned on.",
+		.mesg = "Bootloader is already unlocked.",
 	},
 	[UI_ERROR_UNTRUSTED_CONFIRMATION] = {
 		.file = "error_untrusted_confirm.bmp",
-		.mesg = "You cannot use an external keyboard to turn on\n"
-			"developer mode. Please use the on-device buttons\n"
-			"noted in the navigation instructions.",
+		.mesg = "You cannot use an external keyboard to unlock the\n"
+			"bootloader. Use:\n"
+			"* Laptop: built-in keyboard\n"
+			"* Tablet: Power button",
 	},
 	[UI_ERROR_TO_NORM_NOT_ALLOWED] = {
 		.file = "error_to_norm_not_allowed.bmp",
@@ -59,25 +60,25 @@ static const struct ui_error_message errors[] = {
 	[UI_ERROR_DEV_BOOT_NOT_ALLOWED] = {
 		.file = "error_dev_boot_not_allowed.bmp",
 		.show_dev_url = 1,
-		.mesg = "Booting in developer mode is not allowed. For more\n"
-			"info, visit: " DEV_URL,
+		.mesg = "Booting with an unlocked bootloader is not allowed.\n"
+			"Learn more at: " DEV_URL,
 	},
 	[UI_ERROR_INTERNAL_BOOT_FAILED] = {
 		.file = "error_int_boot_failed.bmp",
-		.mesg = "Something went wrong booting from internal disk.\n"
-			"View firmware log for details.",
+		.mesg = "Something went wrong booting from the internal disk.\n"
+			"For details, go to Advanced options > Firmware log.",
 	},
 	[UI_ERROR_EXTERNAL_BOOT_DISABLED] = {
 		.file = "error_ext_boot_disabled.bmp",
 		.show_dev_url = 1,
-		.mesg = "Booting from an external disk is disabled. For more\n"
-			"info, visit: " DEV_URL,
+		.mesg = "Booting from an external drive is disabled. Learn\n"
+			"more at: " DEV_URL,
 	},
 	[UI_ERROR_ALTFW_DISABLED] = {
 		.file = "error_alt_boot_disabled.bmp",
 		.show_dev_url = 1,
-		.mesg = "Alternate bootloaders are disabled. For more info\n"
-			"visit: " DEV_URL,
+		.mesg = "Alternate bootloaders are disabled. Learn more at:\n"
+			DEV_URL,
 	},
 	[UI_ERROR_ALTFW_EMPTY] = {
 		.file = "error_no_alt_bootloader.bmp",
