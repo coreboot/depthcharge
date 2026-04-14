@@ -102,6 +102,15 @@ static const struct ui_error_message errors[] = {
 		.file = "error_diagnostics.bmp",
 		.mesg = "Could not get diagnostic information.",
 	},
+	/* TODO(b/488289370): Change url to https://goo.gle/android_laptop_oem_unlock */
+	[UI_ERROR_DEV_MODE_OEM_LOCK] = {
+		.file = "error_dev_mode_oem_lock.bmp",
+		.show_dev_url = 1,
+		.mesg = "Booting with an unlocked bootloader is disabled.\n"
+			"To enable it, reboot to the OS and enable\n"
+			"OEM unlocking in Developer options. Learn more at:\n"
+			DEV_URL,
+	},
 };
 
 static vb2_error_t init_screen(void)

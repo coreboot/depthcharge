@@ -1731,7 +1731,10 @@ static vb2_error_t developer_to_norm_init(struct ui_context *ui)
 	ui->state->focused_item = DEVELOPER_TO_NORM_ITEM_CONFIRM;
 	/* If dev boot is not allowed, show an error box and hide "Cancel" */
 	if (!(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED)) {
-		set_ui_error(ui, UI_ERROR_DEV_BOOT_NOT_ALLOWED);
+		const enum ui_error err = ui->ctx->flags & VB2_CONTEXT_OEM_LOCK_ENABLED ?
+					  UI_ERROR_DEV_MODE_OEM_LOCK :
+					  UI_ERROR_DEV_BOOT_NOT_ALLOWED;
+		set_ui_error(ui, err);
 		UI_SET_BIT(ui->state->hidden_item_mask,
 			   DEVELOPER_TO_NORM_ITEM_CANCEL);
 	}

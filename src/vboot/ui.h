@@ -294,6 +294,8 @@ enum ui_error {
 	UI_ERROR_FIRMWARE_LOG,
 	/* Diagnostics internal failure */
 	UI_ERROR_DIAGNOSTICS,
+	/* Dev boot not allowed because of OEM Lock */
+	UI_ERROR_DEV_MODE_OEM_LOCK,
 };
 
 static const struct rgb_color ui_color_bg		= { 0x20, 0x21, 0x24 };
