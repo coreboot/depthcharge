@@ -12,6 +12,8 @@ generic_files:
   rec_url: footer         # see strings/rec_url.txt
   rec_url_desc: desc_url  # see strings/rec_url_desc.txt
   dev_mode_url: error_url # see strings/dev_mode_url.txt
+  dev_blocked_url: error_url # see strings/dev_blocked_url.txt
+  oem_lock_url: error_url # see strings/oem_lock_url.txt
 
 # Localized strings
 # Key is the name in firmware_strings.grd; value is the category of the string.
