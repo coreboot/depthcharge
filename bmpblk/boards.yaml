@@ -414,6 +414,8 @@ bluey:
 
 calypso:
   # 1920x1080, boots recovery image on any SD card or USB ports.
+  locales: [en, de, es, es-419, fr, it, nb, pt-BR, ar, hi, zh-CN, ja, ko]
+  rtl: [ar]
   dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
   split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
 
