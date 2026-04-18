@@ -399,6 +399,8 @@ skywalker:
 
 ocelot:
   # 3840x2160, boots recovery image on USB ports.
+  locales: [en, de, es, es-419, fr, it, nb, pt-BR, ar, hi, zh-CN, ja, ko]
+  rtl: [ar]
   sdcard: False
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
   split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
