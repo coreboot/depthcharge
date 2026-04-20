@@ -14,6 +14,9 @@
  */
 
 #include <libpayload.h>
+#include "drivers/gpio/gpio.h"
+#include "drivers/gpio/qcom_gpio.h"
+#include "drivers/gpio/sysinfo.h"
 #include "drivers/soc/x1p42100.h"
 #include "variant.h"
 
@@ -32,4 +35,25 @@ uintptr_t variant_get_ec_spi_base()
 uintptr_t variant_get_gsc_i2c_base()
 {
 	return QUP_SERIAL10_BASE;
+}
+
+#define SLAVE_ID_PWM 0x00
+#define GPIO5_DIG_OUT_SOURCE_CTL ((SLAVE_ID_PWM << 16) | 0xBC44)
+#define GPIO_OUTPUT_LOW 0x00
+
+void variant_display_teardown(QcomSpmi *pmic_spmi)
+{
+	printf("Tearing down the display for Mica\n");
+	/* Disable backlight pwm */
+	pmic_spmi->write8(pmic_spmi, GPIO5_DIG_OUT_SOURCE_CTL, GPIO_OUTPUT_LOW);
+
+	/* Disable power on */
+	GpioOps *display_vdd = sysinfo_lookup_gpio("Panel VDD en", 1,
+				new_gpio_output_from_coreboot);
+	gpio_set(display_vdd, 0);
+
+	/* Disable vtsp */
+	GpioOps *display_vtsp = sysinfo_lookup_gpio("Panel VTSP en", 1,
+				new_gpio_output_from_coreboot);
+	gpio_set(display_vtsp, 0);
 }

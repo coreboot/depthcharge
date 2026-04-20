@@ -59,6 +59,11 @@ static const VpdDeviceTreeMap vpd_dt_map[] = {
 #define GPIO_OUTPUT_HIGH 0x80
 #define GPIO_OUTPUT_LOW 0x00
 
+__weak void variant_display_teardown(QcomSpmi *pmic_spmi)
+{
+	return;
+}
+
 /* TODO: Remove it once SMMU issue is fixed */
 static int display_teardown(struct CleanupFunc *cleanup, CleanupType type)
 {
@@ -71,6 +76,9 @@ static int display_teardown(struct CleanupFunc *cleanup, CleanupType type)
 
 		/* Disable backlight */
 		pmic_spmi->write8(pmic_spmi, GPIO4_DIG_OUT_SOURCE_CTL, GPIO_OUTPUT_LOW);
+
+		/* Call the variant's display power-down logic */
+		variant_display_teardown(pmic_spmi);
 
 		/* Disable TE */
 		write32p(MDP_INTF_TIMING_ENGINE_ADDR, 0x0);

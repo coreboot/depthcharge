@@ -16,11 +16,16 @@
 #ifndef _BOARD_BLUEY_VARIANT_H_
 #define _BOARD_BLUEY_VARIANT_H_
 
+#include "drivers/soc/qcom_spmi.h"
+#include "drivers/soc/qcom_spmi_defs.h"
+
 pcidev_t variant_get_nvme_pcidev(void);
 
 uintptr_t variant_get_ec_spi_base(void);
 
 uintptr_t variant_get_gsc_i2c_base(void);
+
+void variant_display_teardown(QcomSpmi *pmic_spmi);
 
 #endif // _BOARD_BLUEY_VARIANT_H_
 
