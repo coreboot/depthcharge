@@ -24,16 +24,31 @@
 #include "drivers/video/display.h"
 #include "vboot/ui.h"
 
+enum ui_error_url {
+	UI_ERROR_URL_NONE = 0,
+	UI_ERROR_URL_DEV,
+	UI_ERROR_URL_OEM_LOCK,
+	UI_ERROR_URL_DEV_BLOCKED,
+};
+
 struct ui_error_message {
 	/* File name of error strings. */
 	const char *file;
 	/* Whether to show dev mode URL below the error strings. */
-	int show_dev_url;
+	enum ui_error_url url;
 	/* Fallback message */
 	const char *mesg;
 };
 
-#define DEV_URL "google.com/chromeos/devmode"
+#define DEV_URL		"goo.gle/mydevice_developer"
+#define OEM_LOCK_URL	"goo.gle/mydevice_oem_unlock"
+#define DEV_BLOCKED_URL	"goo.gle/mydevice_laptop_blocked"
+
+static const char *const ui_error_url_bmp[] = {
+	[UI_ERROR_URL_DEV] = "dev_mode_url.bmp",
+	[UI_ERROR_URL_OEM_LOCK] = "oem_lock_url.bmp",
+	[UI_ERROR_URL_DEV_BLOCKED] = "dev_blocked_url.bmp",
+};
 
 static const struct ui_error_message errors[] = {
 	[UI_ERROR_NBR_BOOT_FAILED] = {
@@ -56,12 +71,11 @@ static const struct ui_error_message errors[] = {
 		.file = "error_to_norm_not_allowed.bmp",
 		.mesg = "Returning to secure mode disallowed by GBB flags.",
 	},
-	/* TODO(b/210875258): Create google.com/chromeos/blocked_devmode */
 	[UI_ERROR_DEV_BOOT_NOT_ALLOWED] = {
 		.file = "error_dev_boot_not_allowed.bmp",
-		.show_dev_url = 1,
+		.url = UI_ERROR_URL_DEV_BLOCKED,
 		.mesg = "Booting with an unlocked bootloader is not allowed.\n"
-			"Learn more at: " DEV_URL,
+			"Learn more at: " DEV_BLOCKED_URL,
 	},
 	[UI_ERROR_INTERNAL_BOOT_FAILED] = {
 		.file = "error_int_boot_failed.bmp",
@@ -70,19 +84,19 @@ static const struct ui_error_message errors[] = {
 	},
 	[UI_ERROR_EXTERNAL_BOOT_DISABLED] = {
 		.file = "error_ext_boot_disabled.bmp",
-		.show_dev_url = 1,
+		.url = UI_ERROR_URL_DEV,
 		.mesg = "Booting from an external drive is disabled. Learn\n"
 			"more at: " DEV_URL,
 	},
 	[UI_ERROR_ALTFW_DISABLED] = {
 		.file = "error_alt_boot_disabled.bmp",
-		.show_dev_url = 1,
+		.url = UI_ERROR_URL_DEV,
 		.mesg = "Alternate bootloaders are disabled. Learn more at:\n"
 			DEV_URL,
 	},
 	[UI_ERROR_ALTFW_EMPTY] = {
 		.file = "error_no_alt_bootloader.bmp",
-		.show_dev_url = 1,
+		.url = UI_ERROR_URL_DEV,
 		.mesg = "Could not find an alternate bootloader. To learn how\n"
 			"to install one, visit: " DEV_URL,
 	},
@@ -103,14 +117,13 @@ static const struct ui_error_message errors[] = {
 		.file = "error_diagnostics.bmp",
 		.mesg = "Could not get diagnostic information.",
 	},
-	/* TODO(b/488289370): Change url to https://goo.gle/android_laptop_oem_unlock */
 	[UI_ERROR_DEV_MODE_OEM_LOCK] = {
 		.file = "error_dev_mode_oem_lock.bmp",
-		.show_dev_url = 1,
+		.url = UI_ERROR_URL_OEM_LOCK,
 		.mesg = "Booting with an unlocked bootloader is disabled.\n"
 			"To enable it, reboot to the OS and enable\n"
 			"OEM unlocking in Developer options. Learn more at:\n"
-			DEV_URL,
+			OEM_LOCK_URL,
 	},
 };
 
@@ -174,9 +187,9 @@ static vb2_error_t show_error_box(const struct ui_error_message *error,
 	h = UI_ERROR_BOX_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
 	y += h;
-	if (error->show_dev_url) {
+	if (error->url != UI_ERROR_URL_NONE) {
 		y += UI_ERROR_BOX_TEXT_LINE_SPACING;
-		VB2_TRY(ui_get_bitmap("dev_mode_url.bmp", NULL, 0, &bitmap));
+		VB2_TRY(ui_get_bitmap(ui_error_url_bmp[error->url], NULL, 0, &bitmap));
 		h = UI_ERROR_BOX_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
 		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
 		y += h;
