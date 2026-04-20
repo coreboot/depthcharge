@@ -1216,7 +1216,7 @@ bool cros_ec_is_battery_present(void)
 	};
 	struct ec_response_battery_dynamic_info resp;
 
-	if (ec_cmd_battery_get_dynamic(cros_ec_get(), &params, &resp) == 0) {
+	if (ec_cmd_battery_get_dynamic(cros_ec_get(), &params, &resp) == sizeof(resp)) {
 		/* Check if battery is present */
 		if (resp.flags & EC_BATT_FLAG_BATT_PRESENT)
 			return true;
