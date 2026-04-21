@@ -741,7 +741,7 @@ static int r8153_init_priv(R8152Dev *r8152_dev)
 	if (rtl_reset_bmu(dev))
 		return 1;
 
-	if (ocp_word_clearbits(dev, McuTypePla, PlaOobCtl, NowIsOob))
+	if (ocp_byte_clearbits(dev, McuTypePla, PlaOobCtl, NowIsOob))
 		return 1;
 
 	if (ocp_word_clearbits(dev, McuTypePla, PlaSffSts7, McuBornEn))
@@ -904,7 +904,7 @@ static int r8153b_init_priv(R8152Dev *r8152_dev)
 	if (rtl_reset_bmu(dev))
 		return 1;
 
-	if (ocp_word_clearbits(dev, McuTypePla, PlaOobCtl, NowIsOob))
+	if (ocp_byte_clearbits(dev, McuTypePla, PlaOobCtl, NowIsOob))
 		return 1;
 
 	if (ocp_word_clearbits(dev, McuTypePla, PlaSffSts7, McuBornEn))
