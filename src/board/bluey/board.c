@@ -1,7 +1,7 @@
 /*
 * This file is part of the coreboot project.
  *
- * Copyright (C) 2025, The Linux Foundation.  All rights reserved.
+ * Copyright (C) 2025-2026, The Linux Foundation.  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -90,6 +90,9 @@ static int display_teardown(struct CleanupFunc *cleanup, CleanupType type)
 static int fix_device_tree(struct device_tree_fixup *fixup,
 			   struct device_tree *tree)
 {
+	if (CONFIG(MAINBOARD_SKIP_CONT_SPLASH_REGION_UPDATE))
+		return 0;
+
 	static const char *const reserved_mem[] = { "reserved-memory", "splash_region", NULL };
 	struct device_tree_node *node;
 	uint32_t addr_cells = 2, size_cells = 1;
