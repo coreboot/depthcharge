@@ -3,6 +3,7 @@
 tests-y += menu-test
 tests-y += menu-detachable-test
 tests-y += navigation-test
+tests-y += fastboot_log-test
 tests-y += log-test
 tests-y += loop-test
 tests-y += loop-detachable-test
@@ -56,3 +57,7 @@ bitmap-test-srcs += src/vboot/ui/bitmap.c
 
 log-test-srcs += tests/vboot/ui/log-test.c
 log-test-srcs += src/vboot/ui/log.c
+
+fastboot_log-test-srcs += tests/vboot/ui/fastboot_log-test.c
+fastboot_log-test-srcs += src/vboot/ui/fastboot_log.c
+fastboot_log-test-srcs += src/vboot/ui/log.c
