@@ -14,4 +14,4 @@ API_URL = https://api.qrserver.com/v1/create-qr-code/
 PARAMS = color=202124&bgcolor=e8eaed&qzone=2&format=svg
 
 qr_rec.svg:
-	curl "$(API_URL)?$(PARAMS)&data=https://goo.gle/android_laptop_recovery" -o $@
+	curl "$(API_URL)?$(PARAMS)&data=https://goo.gle/mydevice_recovery" -o $@
