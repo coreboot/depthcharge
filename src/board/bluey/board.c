@@ -95,29 +95,6 @@ static int display_teardown(struct CleanupFunc *cleanup, CleanupType type)
 	return 0;
 }
 
-static int fix_device_tree(struct device_tree_fixup *fixup,
-			   struct device_tree *tree)
-{
-	static const char *const reserved_mem[] = { "reserved-memory", "splash_region", NULL };
-	struct device_tree_node *node;
-	uint32_t addr_cells = 2, size_cells = 1;
-
-	node = dt_find_node(tree->root, reserved_mem, &addr_cells, &size_cells, 0);
-
-	if (!node) {
-		printf("Failed to locate reserved-memory node for splash region\n");
-		return -1;
-	}
-
-	dt_add_bin_prop(node, "no-map", NULL, 0);
-
-	return 0;
-}
-
-static struct device_tree_fixup qc_splash_fixup = {
-	.fixup = fix_device_tree
-};
-
 static void usb_setup(void)
 {
 	/* Support USB3.0 XHCI controller in firmware. */
@@ -198,8 +175,6 @@ static void display_setup(void)
 		NULL
 	};
 	list_insert_after(&dev.list_node, &cleanup_funcs);
-
-	list_insert_after(&qc_splash_fixup.list_node, &device_tree_fixups);
 }
 
 static int board_setup(void)
