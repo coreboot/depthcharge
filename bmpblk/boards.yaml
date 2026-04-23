@@ -427,3 +427,10 @@ sapphire:
   locales: [en, de, es, es-419, fr, it, nb, pt-BR, ar, hi, zh-CN, ja, ko]
   rtl: [ar]
   sdcard: False
+
+atria:
+  locales: [en, de, es, es-419, fr, it, nb, pt-BR, ar, hi, zh-CN, ja, ko]
+  rtl: [ar]
+  sdcard: False
+  dpi: 72
+  split_ratio: 100
