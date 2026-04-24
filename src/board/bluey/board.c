@@ -15,6 +15,7 @@
 
 #include <assert.h>
 #include <libpayload.h>
+#include "base/cleanup_funcs.h"
 #include "base/init_funcs.h"
 #include "boot/commandline.h"
 #include "boot/fit.h"
@@ -29,6 +30,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/soc/qcom_spmi.h"
+#include "drivers/soc/qcom_spmi_defs.h"
 #include "drivers/soc/x1p42100.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/route.h"
@@ -48,6 +50,42 @@ static const VpdDeviceTreeMap vpd_dt_map[] = {
 	{ "wifi_mac0", "wifi0/local-mac-address" },
 	{}
 };
+
+#define MDP_INTF_TIMING_ENGINE_ADDR 0x0AE3A000
+#define EDP_SW_RESET_ADDR 0xAEA0010
+
+#define SLAVE_ID 0x03
+#define GPIO4_DIG_OUT_SOURCE_CTL ((SLAVE_ID << 16) | 0x8B44)
+#define GPIO_OUTPUT_HIGH 0x80
+#define GPIO_OUTPUT_LOW 0x00
+
+/* TODO: Remove it once SMMU issue is fixed */
+static int display_teardown(struct CleanupFunc *cleanup, CleanupType type)
+{
+	QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
+			    PMIC_REG_CHAN0_ADDR,
+			    PMIC_REG_LAST_CHAN_ADDR - PMIC_REG_FIRST_CHAN_ADDR);
+	uint8_t value = pmic_spmi->read8(pmic_spmi, GPIO4_DIG_OUT_SOURCE_CTL);
+	if (value == GPIO_OUTPUT_HIGH) {
+		printf("Tearing down the display\n");
+
+		/* Disable backlight */
+		pmic_spmi->write8(pmic_spmi, GPIO4_DIG_OUT_SOURCE_CTL, GPIO_OUTPUT_LOW);
+
+		/* Disable TE */
+		write32p(MDP_INTF_TIMING_ENGINE_ADDR, 0x0);
+
+		/* wait for a vsync pulse */
+		mdelay(20);
+
+		/* Reset eDP */
+		write32p(EDP_SW_RESET_ADDR, 0x1);
+		mdelay(20);
+		write32p(EDP_SW_RESET_ADDR, 0x0);
+	}
+	free(pmic_spmi);
+	return 0;
+}
 
 static int fix_device_tree(struct device_tree_fixup *fixup,
 			   struct device_tree *tree)
@@ -146,6 +184,13 @@ static void audio_setup(void)
 
 static void display_setup(void)
 {
+	static CleanupFunc dev = {
+		&display_teardown,
+		CleanupOnHandoff | CleanupOnLegacy,
+		NULL
+	};
+	list_insert_after(&dev.list_node, &cleanup_funcs);
+
 	list_insert_after(&qc_splash_fixup.list_node, &device_tree_fixups);
 }
 
