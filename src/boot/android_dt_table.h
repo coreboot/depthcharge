@@ -61,7 +61,17 @@ struct dt_table_entry_v2 {
 	uint32_t flags;		/* For version 2 of dt_table_header, the 4 least significant
 				   bits of 'flags' will be used indicate the compression format
 				   of the DT entry as per the enum 'dt_compression_info' */
-	uint32_t custom[11];	/* optional, must be zero if unused */
+	union {
+		uint32_t custom[11];	/* optional, must be zero if unused */
+		struct {
+			uint32_t type;
+			uint32_t fw_config[4];
+			char device[16];
+			uint32_t reserved[2];
+		};
+	};
 };
+_Static_assert(sizeof(struct dt_table_entry_v2) == 64,
+	       "struct dt_table_entry_v2 size must be 64 bytes");
 
 #endif /* _ANDROID_DT_TABLE_H_ */

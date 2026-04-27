@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <assert.h>
 #include <commonlib/device_tree.h>
 #include <commonlib/helpers.h>
 #include <endian.h>
@@ -12,8 +13,10 @@
 #include <sysinfo.h>
 
 #include "base/fw_config.h"
+#include "base/vpd_util.h"
 #include "boot/android_dtboimg.h"
 #include "boot/android_dt_table.h"
+#include "boot/android_vpd.h"
 #include "boot/dt_update.h"
 #include "image/symbols.h"
 
@@ -21,7 +24,10 @@ enum dt_match_flags {
 	MATCH_REV	= BIT(0),
 	MATCH_SKU	= BIT(1),
 	MATCH_FW_CONFIG	= BIT(2),
+	MATCH_DEVICE	= BIT(3),
 };
+
+#define MATCH_DEVICE_NAME_MAX_LEN 16
 
 struct dt_match {
 	uint32_t flags;
@@ -30,6 +36,9 @@ struct dt_match {
 	uint32_t sku_id;
 	uint64_t fw_config_mask;
 	uint64_t fw_config_value;
+	/* If the length is MATCH_DEVICE_NAME_MAX_LEN,
+	   this stores the device name prefix. */
+	char device[MATCH_DEVICE_NAME_MAX_LEN + 1];
 };
 
 struct dt_table_entry {
@@ -97,6 +106,19 @@ static void parse_dt_match_fw_config(struct dt_match *match, uint32_t custom1,
 	match->fw_config_value = ((uint64_t)custom3 << 32) | custom4;
 }
 
+static void parse_dt_match_device(struct dt_match *match, const void *data,
+				  size_t size)
+{
+	if (*(const char *)data == '\0')
+		return;
+
+	assert(size < sizeof(match->device));
+
+	memcpy(match->device, data, size);
+	match->device[size] = '\0';
+	match->flags |= MATCH_DEVICE;
+}
+
 static int get_dt_table_entry_v1(const void *buf, struct dt_table_entry *entry,
 				 uint32_t dt_entry_size)
 {
@@ -149,10 +171,12 @@ static int get_dt_table_entry_v2(const void *buf, struct dt_table_entry *entry,
 		break;
 	case 1:
 		parse_dt_match_fw_config(&entry->match,
-					 ntohl(v2_entry->custom[1]),
-					 ntohl(v2_entry->custom[2]),
-					 ntohl(v2_entry->custom[3]),
-					 ntohl(v2_entry->custom[4]));
+					 ntohl(v2_entry->fw_config[0]),
+					 ntohl(v2_entry->fw_config[1]),
+					 ntohl(v2_entry->fw_config[2]),
+					 ntohl(v2_entry->fw_config[3]));
+		parse_dt_match_device(&entry->match, v2_entry->device,
+				      sizeof(v2_entry->device));
 		break;
 	default:
 		printf("%s: ERROR: Unsupported id_type: %u\n",
@@ -185,10 +209,12 @@ static int get_dt_table_entry(const void *buf, struct dt_table_entry *entry,
 
 	printf("[DT entry] size: %u, offset: %#x, id: %#x, compression: %#x,"
 	       " match_flags: %#x, rev: [%#x..%#x], sku_id: %#x,"
-	       " fw_config_mask = %#" PRIx64 ", fw_config_value = %#" PRIx64 "\n",
+	       " fw_config_mask = %#" PRIx64 ", fw_config_value = %#" PRIx64 ","
+	       " device = %s\n",
 	       entry->dt_size, entry->dt_offset, entry->id, entry->compression_type,
 	       entry->match.flags, entry->match.min_rev, entry->match.max_rev,
-	       entry->match.sku_id, entry->match.fw_config_mask, entry->match.fw_config_value);
+	       entry->match.sku_id, entry->match.fw_config_mask,
+	       entry->match.fw_config_value, entry->match.device);
 
 	if (entry->dt_offset >= img_size || entry->dt_size > img_size - entry->dt_offset) {
 		printf("%s: ERROR: Entry @offset: %d, size: %d >= DTBO size %zu\n",
@@ -201,6 +227,26 @@ static int get_dt_table_entry(const void *buf, struct dt_table_entry *entry,
 
 /* 0xffffffff means matching any SKU. */
 #define SKU_ID_ANY (~((uint32_t)0))
+
+static const char *get_device_from_vpd(void)
+{
+	static char device[ANDROID_VPD_MAX_BUFFER_SIZE];
+	static const char *device_ptr = NULL;
+	static bool device_read = false;
+
+	if (device_read)
+		return device_ptr;
+
+	if (vpd_gets(ANDROID_VPD_KEY_DEVICE, device, sizeof(device))) {
+		device_ptr = device;
+	} else {
+		printf("%s: WARNING: VPD key %s not found\n", __func__,
+		       ANDROID_VPD_KEY_DEVICE);
+	}
+
+	device_read = true;
+	return device_ptr;
+}
 
 static bool is_dt_compatible(const struct dt_match *match)
 {
@@ -233,6 +279,19 @@ static bool is_dt_compatible(const struct dt_match *match)
 			matched = fw_config_is_provisioned() && value_matched;
 
 		if (!matched)
+			return false;
+	}
+
+	if (match->flags & MATCH_DEVICE) {
+		const char *device = get_device_from_vpd();
+		if (!device)
+			return false;
+		/*
+		 * Use fixed-length strncmp intentionally.
+		 * If device takes full 16 bytes, perform prefix matching.
+		 * Otherwise, perform full-string matching.
+		 */
+		if (strncmp(device, match->device, sizeof(match->device) - 1))
 			return false;
 	}
 
