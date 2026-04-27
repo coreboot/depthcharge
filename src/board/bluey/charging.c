@@ -22,9 +22,6 @@
 #define SCHG_CHGR_CHARGING_ENABLE_CMD 0x2642
 #define SMB1_CHGR_CHRG_EN_CMD ((SMB1_SLAVE_ID << 16) | SCHG_CHGR_CHARGING_ENABLE_CMD)
 #define SMB2_CHGR_CHRG_EN_CMD ((SMB2_SLAVE_ID << 16) | SCHG_CHGR_CHARGING_ENABLE_CMD)
-#define SCHG_TYPE_C_TYPE_C_CRUDE_SENSOR_CFG 0x2B4E
-#define SMB1_SCHG_TYPE_C_TYPE_C_CRUDE_SENSOR_CFG \
-((SMB1_SLAVE_ID << 16) | SCHG_TYPE_C_TYPE_C_CRUDE_SENSOR_CFG)
 
 #define FCC_1A_STEP_50MA 0x14
 #define FCC_DISABLE 0x8c
@@ -120,32 +117,3 @@ static int board_cleanup_install(void)
 }
 
 INIT_FUNC(board_cleanup_install);
-
-static int board_poweroff(struct CleanupFunc *cleanup, CleanupType type)
-{
-	QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
-				    PMIC_REG_CHAN0_ADDR,
-				    PMIC_REG_LAST_CHAN_ADDR - PMIC_REG_FIRST_CHAN_ADDR);
-
-	uint8_t value = (uint8_t)pmic_spmi->read8(pmic_spmi, SMB1_SCHG_TYPE_C_TYPE_C_CRUDE_SENSOR_CFG);
-	value &= ~BIT(0);
-	pmic_spmi->write8(pmic_spmi, SMB1_SCHG_TYPE_C_TYPE_C_CRUDE_SENSOR_CFG, value);
-
-	free(pmic_spmi);
-	return 0;
-}
-
-static int board_poweroff_install(void)
-{
-	static CleanupFunc dev =
-	{
-		&board_poweroff,
-		CleanupOnReboot | CleanupOnPowerOff,
-		NULL
-	};
-
-	list_insert_after(&dev.list_node, &cleanup_funcs);
-	return 0;
-}
-
-INIT_FUNC(board_poweroff_install);
