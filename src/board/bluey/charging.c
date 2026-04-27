@@ -73,6 +73,12 @@ static void disable_slow_battery_charging(void)
 
 static int enable_slow_battery_charging(void)
 {
+	/* Don't enable slow charging when no battery */
+	if (CONFIG(DRIVER_EC_CROS) && !cros_ec_is_battery_present()) {
+		printf("No battery, do not enable slow charging.\n");
+		return 0;
+	}
+
 	/* Don't enable slow charging unless we are in Recovery or Developer mode */
 	if (!vboot_in_recovery() && !vboot_in_manual_recovery() && !vboot_in_developer()) {
 		printf("Charging disabled: Not in a recovery or developer mode.\n");
