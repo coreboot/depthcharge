@@ -48,7 +48,7 @@ static int more_input_states(void)
 	if (interrupt >= 0)
 		return interrupt;
 
-	uint32_t events;
+	uint32_t events = 0;
 	const uint32_t mkbp_mask =
 		EC_HOST_EVENT_MASK(EC_HOST_EVENT_MKBP);
 

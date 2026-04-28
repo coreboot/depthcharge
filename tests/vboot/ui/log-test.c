@@ -93,14 +93,12 @@ static void test_log_set_empty_anchor(void **state)
 	const char *string = multi_lines_content();
 	const struct ui_anchor_info *anchor_info;
 
-	const char *const anchors[] = {};
-
 	expect_value(ui_get_log_textbox_dimensions, screen, UI_SCREEN_FIRMWARE_LOG);
 	expect_string(ui_get_log_textbox_dimensions, locale_code, "en");
 
 	ASSERT_VB2_SUCCESS(ui_log_init(UI_SCREEN_FIRMWARE_LOG, "en", string, &log));
 
-	ASSERT_VB2_SUCCESS(ui_log_set_anchors(&log, anchors, ARRAY_SIZE(anchors)));
+	ASSERT_VB2_SUCCESS(ui_log_set_anchors(&log, NULL, 0));
 	anchor_info = &log.impl.static_log.anchor_info;
 	assert_int_equal(anchor_info->total_count, 0);
 	assert_null(anchor_info->per_page_count);

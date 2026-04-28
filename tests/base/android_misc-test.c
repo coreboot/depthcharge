@@ -89,6 +89,7 @@ size_t setup_test_cmd(struct android_misc_oem_cmdline *cmd, const char *cmdline,
 
 	cmd->magic = ANDROID_MISC_OEM_CMDLINE_MAGIC;
 	cmd->version = 0;
+	cmd->reserved = 0;
 	cmd->cmdline_len = strlen(cmdline) + 1;
 	cmd->bootconfig_len = strlen(bootconfig) + 1;
 	memcpy(cmd->data, cmdline, cmd->cmdline_len);

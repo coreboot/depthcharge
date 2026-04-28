@@ -217,6 +217,9 @@ void android_misc_reset_oem_cmd(struct android_misc_oem_cmdline *cmd)
 {
 	cmd->magic = ANDROID_MISC_OEM_CMDLINE_MAGIC;
 	cmd->version = 0;
+	// Set this to a consistent value so we can compare memory byte-wise in
+	// tests.
+	cmd->reserved = 0;
 	cmd->data[0] = '\0';
 	cmd->cmdline_len = 1;
 	cmd->data[1] = '\0';
