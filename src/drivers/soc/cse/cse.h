@@ -85,9 +85,6 @@ enum me_fw_sku {
 	ME_HFS3_FW_SKU_LITE	 = 0x5,
 };
 
-/* Number of cse boot performance data */
-#define NUM_CSE_BOOT_PERF_DATA	64
-
 /* PSR_HECI_FW_DOWNGRADE_BACKUP Command */
 #define PSR_HECI_FW_DOWNGRADE_BACKUP	0x3
 
@@ -308,20 +305,6 @@ enum csme_failure_reason {
 	CSE_LITE_SKU_PART_UPDATE_SUCCESS = 18,
 };
 
-/* CSE boot performance data */
-struct cse_boot_perf_rsp {
-	struct mkhi_hdr hdr;
-
-	/* Data version */
-	uint32_t version;
-
-	/* Data length in DWORDs, represents number of valid elements in timestamp array */
-	uint32_t num_valid_timestamps;
-
-	/* Boot performance data */
-	uint32_t timestamp[NUM_CSE_BOOT_PERF_DATA];
-} __packed;
-
 /*
  * Send message msg of size len to host from host_addr to cse_addr.
  * Returns CSE_TX_RX_SUCCESS on success and other enum values on failure scenarios.
@@ -509,12 +492,6 @@ bool set_cse_device_state(pcidev_t dev, enum cse_device_state requested_state);
  * Returns true if cse sub-parition update is required otherwise false.
  */
 bool skip_cse_sub_part_update(void);
-
-/*
- * This function retrieves a set of boot performance timestamps CSME collected during
- * the last platform boot flow.
- */
-enum cb_err cse_get_boot_performance_data(struct cse_boot_perf_rsp *boot_perf);
 
 /* Function to make cse disable using PMC IPC */
 bool cse_disable_mei_devices(void);

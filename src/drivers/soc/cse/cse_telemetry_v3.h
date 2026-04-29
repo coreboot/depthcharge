@@ -1,7 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#ifndef SOC_INTEL_COMMON_CSE_TELEMETRY_V3_H
-#define SOC_INTEL_COMMON_CSE_TELEMETRY_V3_H
+#ifndef __DRIVERS_SOC_CSE_CSE_TELEMETRY_V3_H__
+#define __DRIVERS_SOC_CSE_CSE_TELEMETRY_V3_H__
+
+/* Number of CSE boot performance data entries */
+#define NUM_CSE_BOOT_PERF_DATA	64
 
 enum cse_boot_perf_data_v3 {
 	/* CSME ROM start execution  */
@@ -38,4 +41,4 @@ enum cse_boot_perf_data_v3 {
 	PERF_DATA_CSME_GET_PERF_RESPONSE = 63,
 };
 
-#endif /* SOC_INTEL_COMMON_CSE_TELEMETRY_V3_H */
+#endif /* __DRIVERS_SOC_CSE_CSE_TELEMETRY_V3_H__ */

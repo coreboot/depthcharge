@@ -18,6 +18,20 @@
 
 #define MSEC_TO_USEC(x) ((s64)x * 1000)
 
+/* CSE boot performance data */
+struct cse_boot_perf_rsp {
+	struct mkhi_hdr hdr;
+
+	/* Data version */
+	uint32_t version;
+
+	/* Data length in DWORDs, represents number of valid elements in timestamp array */
+	uint32_t num_valid_timestamps;
+
+	/* Boot performance data */
+	uint32_t timestamp[NUM_CSE_BOOT_PERF_DATA];
+} __packed;
+
 #if CONFIG(SOC_INTEL_CSE_PRE_CPU_RESET_TELEMETRY_V1)
 static int soc_cbmem_inject_telemetry_data(s64 *time_stamp, s64 current_time)
 {
@@ -96,9 +110,68 @@ static int soc_cbmem_inject_telemetry_data(s64 *time_stamp, s64 current_time)
 	return 0;
 
 }
+#elif CONFIG(SOC_INTEL_CSE_PRE_CPU_RESET_TELEMETRY_V5)
+static int soc_cbmem_inject_telemetry_data(s64 *time_stamp, s64 current_time)
+{
+	s64 start_stamp;
+
+	if (!time_stamp) {
+		printk(BIOS_ERR, "%s: Failed to insert CSME timestamps\n", __func__);
+		return -1;
+	}
+
+	start_stamp = current_time - time_stamp[PERF_DATA_CSME_GET_PERF_RESPONSE];
+
+	timestamp_add(TS_ME_ROM_START, start_stamp);
+	timestamp_add(TS_ME_BOOT_STALL_END,
+		start_stamp + time_stamp[PERF_DATA_CSME_RBE_BOOT_STALL_DONE_TO_PMC]);
+	timestamp_add(TS_ME_ICC_CONFIG_START,
+		start_stamp + time_stamp[PERF_DATA_CSME_GOT_ICC_CFG_START_MSG_FROM_PMC]);
+	timestamp_add(TS_ME_HOST_BOOT_PREP_END,
+		start_stamp + time_stamp[PERF_DATA_CSME_HOST_BOOT_PREP_DONE]);
+	timestamp_add(TS_ME_RECEIVED_CRDA_FROM_PMC,
+		start_stamp + time_stamp[PERF_DATA_PMC_SENT_CRDA]);
+	timestamp_add(TS_DMU_LOAD_END,
+		start_stamp + time_stamp[PERF_DATA_ESE_LOAD_DMU_COMPLETED]);
+	timestamp_add(TS_AUNIT_LOAD_END,
+		start_stamp + time_stamp[PERF_DATA_ESE_LOAD_AUNIT_COMPLETED]);
+
+	return 0;
+
+}
 #else
 #error "Select a valid pre CPU reset telemetry config"
 #endif
+
+static enum cb_err cse_get_boot_performance_data(struct cse_boot_perf_rsp *boot_perf_rsp)
+{
+	struct cse_boot_perf_req {
+		struct mkhi_hdr hdr;
+		uint32_t reserved;
+	} __packed;
+
+	struct cse_boot_perf_req req = {
+		.hdr.group_id = MKHI_GROUP_ID_BUP_COMMON,
+		.hdr.command = MKHI_BUP_COMMON_GET_BOOT_PERF_DATA,
+		.reserved = 0,
+	};
+
+	size_t resp_size = sizeof(struct cse_boot_perf_rsp);
+
+	if (heci_send_receive(&req, sizeof(req), boot_perf_rsp, &resp_size,
+			HECI_MKHI_ADDR)) {
+		printk(BIOS_ERR, "cse_lite: Could not get boot performance data\n");
+		return CB_ERR;
+	}
+
+	if (boot_perf_rsp->hdr.result) {
+		printk(BIOS_ERR, "cse_lite: Get boot performance data resp failed: %d\n",
+			boot_perf_rsp->hdr.result);
+		return CB_ERR;
+	}
+
+	return CB_SUCCESS;
+}
 
 static int process_cse_telemetry_data(void)
 {

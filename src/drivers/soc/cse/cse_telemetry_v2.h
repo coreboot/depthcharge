@@ -14,6 +14,9 @@
 #ifndef __DRIVERS_SOC_CSE_CSE_TELEMETRY_V2_H__
 #define __DRIVERS_SOC_CSE_CSE_TELEMETRY_V2_H__
 
+/* Number of CSE boot performance data entries */
+#define NUM_CSE_BOOT_PERF_DATA	64
+
 enum cse_boot_perf_data_v2 {
 	/* CSME ROM start execution */
 	PERF_DATA_CSME_ROM_START = 0,
@@ -171,4 +174,4 @@ enum cse_boot_perf_data_v2 {
 	PERF_DATA_CSME_GET_PERF_RESPONSE = 63,
 };
 
-#endif // __DRIVERS_SOC_CSE_CSE_TELEMETRY_V2_H__
+#endif /* __DRIVERS_SOC_CSE_CSE_TELEMETRY_V2_H__ */

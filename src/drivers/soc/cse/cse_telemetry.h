@@ -20,6 +20,8 @@
 #include "cse_telemetry_v2.h"
 #elif CONFIG(SOC_INTEL_CSE_PRE_CPU_RESET_TELEMETRY_V3)
 #include "cse_telemetry_v3.h"
+#elif CONFIG(SOC_INTEL_CSE_PRE_CPU_RESET_TELEMETRY_V5)
+#include "cse_telemetry_v5.h"
 #endif
 
 #endif /* __DRIVERS_SOC_CSE_CSE_TELEMETRY_H__ */
