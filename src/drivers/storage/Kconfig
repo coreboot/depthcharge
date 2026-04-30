@@ -141,6 +141,11 @@ config DRIVER_STORAGE_UFS_MTK
 	bool "MediaTek UFS driver"
 	default n
 
+config DRIVER_STORAGE_UFS_QCOM
+	select DRIVER_STORAGE_UFS
+	bool "Qualcomm UFS driver"
+	default n
+
 config DRIVER_STOTRAGE_UFS_BROKEN_HS_MODE
 	bool "UFS controller/FW has broken HS power mode"
 	default n

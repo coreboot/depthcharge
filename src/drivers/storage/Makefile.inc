@@ -33,6 +33,12 @@ depthcharge-$(CONFIG_DRIVER_STORAGE_NVME) += nvme.c bouncebuf.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_UFS) += ufs.c bouncebuf.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_UFS_INTEL) += ufs_intel.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_UFS_MTK) += mtk_ufs.c
+depthcharge-$(CONFIG_DRIVER_STORAGE_UFS_QCOM) += qcom_ufs.c
+
+ifeq ($(CONFIG_DRIVER_STORAGE_UFS_QCOM),y)
+depthcharge-$(CONFIG_DRIVER_SOC_X1P42100) += qcom_ufs_phy_x1p42100.c
+endif
+
 subdirs-y += mtd
 depthcharge-$(CONFIG_DRIVER_STORAGE_MMC_MTK) += mtk_mmc.c bouncebuf.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_MMC_MVMAP2315) += mvmap2315_mmc.c bouncebuf.c
