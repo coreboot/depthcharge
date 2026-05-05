@@ -74,6 +74,17 @@ int bootconfig_append_cmdline(struct bootconfig *bc, char *cmdline_string);
  */
 int bootconfig_append(struct bootconfig *bc, const char *key, const char *value);
 
+/**
+ * Update the value of an existing bootconfig parameter or add a new one.
+ *
+ * @param bc - pointer to bootconfig structure
+ * @param key - pointer to the string comprising key
+ * @param value - pointer to the string comprising new value for key
+ *
+ * @return 0 on success, -1 on error
+ */
+int bootconfig_update_value(struct bootconfig *bc, const char *key, const char *value);
+
 /*
  * Recalculate checksum for bootconfig params and update checksum in trailer.
  *

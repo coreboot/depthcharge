@@ -10,6 +10,21 @@
 char bootconfig_buf[512];
 struct bootconfig bc;
 
+static void test_bootconfig_update(void **state)
+{
+	bootconfig_init(&bc, bootconfig_buf, sizeof(bootconfig_buf));
+
+	/* Test update appends with := */
+	assert_int_equal(bootconfig_append(&bc, "key1", "val1"), 0);
+	assert_int_equal(bootconfig_update_value(&bc, "key1", "new_val1"), 0);
+	assert_non_null(strstr(bootconfig_buf, "key1=\"val1\""));
+	assert_non_null(strstr(bootconfig_buf, "key1:=\"new_val1\""));
+
+	/* Test update non-existent key */
+	assert_int_equal(bootconfig_update_value(&bc, "key2", "val2"), 0);
+	assert_non_null(strstr(bootconfig_buf, "key2:=\"val2\""));
+}
+
 static void test_bootconfig_api(void **state)
 {
 	struct bootconfig_trailer *trailer;
@@ -115,6 +130,7 @@ int main(void)
 		TEST(test_bootconfig_quoting_logic),
 		TEST(test_bootconfig_params_validation),
 		TEST(test_bootconfig_unmatched_quote),
+		TEST(test_bootconfig_update),
 	};
 
 	return cmocka_run_group_tests(tests, NULL, NULL);

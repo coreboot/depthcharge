@@ -95,7 +95,8 @@ exit:
 	return ret;
 }
 
-int bootconfig_append(struct bootconfig *bc, const char *key, const char *value)
+static int append_param(struct bootconfig *bc, const char *key,
+			const char *value, const char *op)
 {
 	const char *forbidden_separators = "'\"\\";
 	char *end;
@@ -104,7 +105,7 @@ int bootconfig_append(struct bootconfig *bc, const char *key, const char *value)
 
 	assert(bc != NULL && key != NULL && value != NULL);
 
-	printf("%s: %s=%s\n", __func__, key, value);
+	printf("%s: %s%s%s\n", __func__, key, op, value);
 	/* Exit early if the value contains any of the forbidden characters */
 	len = strcspn(value, forbidden_separators);
 	if (len != strlen(value)) {
@@ -117,7 +118,8 @@ int bootconfig_append(struct bootconfig *bc, const char *key, const char *value)
 	/* Add parameters at the end */
 	space = bc->limit - bc->size;
 	end = &bc->start[bc->size];
-	len = snprintf(end, space, "%s=\"%s\"%c", key, value, BOOTCONFIG_DELIMITER);
+	len = snprintf(end, space, "%s%s\"%s\"%c", key, op, value,
+		       BOOTCONFIG_DELIMITER);
 	if (len >= space || len < 0) {
 		bc->start[bc->size] = '\0';
 		return -1;
@@ -125,6 +127,17 @@ int bootconfig_append(struct bootconfig *bc, const char *key, const char *value)
 	bc->size += len;
 
 	return 0;
+}
+
+int bootconfig_append(struct bootconfig *bc, const char *key, const char *value)
+{
+	return append_param(bc, key, value, "=");
+}
+
+int bootconfig_update_value(struct bootconfig *bc, const char *key, const char *value)
+{
+	/* Use override operator instead of in-place modification */
+	return append_param(bc, key, value, ":=");
 }
 
 static uint32_t bootconfig_checksum(char *bootconfig, size_t size)
