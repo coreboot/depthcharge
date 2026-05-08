@@ -56,14 +56,15 @@ static FitImageNode *construct_kernel_fit_image_node(void *kernel, size_t kernel
 
 int boot(struct boot_info *bi)
 {
+	FitImageNode *kernel = NULL;
 	struct device_tree *tree = NULL;
-	FitImageNode *kernel = fit_load(bi->kernel, &tree);
 
-	/* If kernel is not FIT format and separate partition exists for DTB/DTBO, then
-	   extract the kernel and devicetree from their respective images. */
-	if ((!kernel || !tree) && bi->dt) {
-		tree = bi->dt;
+	/* Prioritize explicitly provided devicetree over loading a FIT. */
+	if (bi->dt) {
 		kernel = construct_kernel_fit_image_node(bi->kernel, bi->kernel_size);
+		tree = bi->dt;
+	} else {
+		kernel = fit_load(bi->kernel, &tree);
 	}
 
 	if (!kernel || !tree)
