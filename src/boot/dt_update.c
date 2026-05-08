@@ -271,3 +271,66 @@ int dt_add_pkvm_drng(struct device_tree *tree, struct boot_info *bi)
 
 	return add_pkvm_drng_node(tree, seed_buf, ANDROID_PKVM_DRNG_SEED_SIZE);
 }
+
+static bool dt_node_is_available(struct device_tree_node *node)
+{
+	const char *status = dt_find_string_prop(node, "status");
+
+	if (!status)
+		return true;
+
+	if (!strcmp(status, "ok") || !strcmp(status, "okay"))
+		return true;
+
+	return false;
+}
+
+void dt_collect_reserved_memory_ranges(struct device_tree *tree, Ranges *ranges)
+{
+	static const char * const path[] = { "reserved-memory", NULL };
+	struct device_tree_node *res_mem_node;
+	struct device_tree_node *child;
+	uint32_t addr_cells, size_cells;
+
+	ranges_init(ranges);
+
+	if (!tree || !tree->root)
+		return;
+	/*
+	 * Traverse static memory reservation block (reserve_map) to collect
+	 * regions like the FDT footprint.
+	 */
+	struct device_tree_reserve_map_entry *entry;
+	list_for_each(entry, tree->reserve_map, list_node) {
+		if (entry->size > 0)
+			ranges_add(ranges, entry->start,
+				   entry->start + entry->size);
+	}
+
+	res_mem_node = dt_find_node(tree->root, path, &addr_cells, &size_cells, 0);
+	if (!res_mem_node)
+		return;
+
+	list_for_each(child, res_mem_node->children, list_node) {
+		struct device_tree_region regions[16];
+		const void *data;
+		size_t size;
+
+		if (!dt_node_is_available(child))
+			continue;
+
+		/* Only read if 'reg' property exists */
+		dt_find_bin_prop(child, "reg", &data, &size);
+		if (!data)
+			continue;
+
+		size_t count = dt_read_reg_prop(child, addr_cells, size_cells,
+						regions, ARRAY_SIZE(regions));
+		assert(count <= ARRAY_SIZE(regions));
+		for (size_t i = 0; i < count; i++) {
+			if (regions[i].size > 0)
+				ranges_add(ranges, regions[i].addr,
+					   regions[i].addr + regions[i].size);
+		}
+	}
+}
