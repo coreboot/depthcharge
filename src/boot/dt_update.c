@@ -14,7 +14,7 @@
 #include "vboot/stages.h"
 #include "vboot/secdata_tpm.h"
 
-void dt_update_chosen(struct device_tree *tree, const char *cmd_line)
+void dt_update_chosen(struct device_tree *tree, struct boot_info *bi)
 {
 	int ret;
 	union {
@@ -23,10 +23,12 @@ void dt_update_chosen(struct device_tree *tree, const char *cmd_line)
 		};
 		struct {
 			uint64_t kaslr;
-			uint8_t rng[56];
+			uint16_t phys_kaslr;
+			uint8_t rng[54];
 		};
 	} *seed = xzalloc(sizeof(*seed));
 	uint32_t size;
+	const char *cmd_line = bi->cmd_line;
 	static const char * const path[] = { "chosen", NULL };
 	struct device_tree_node *node = dt_find_node(tree->root, path,
 						     NULL, NULL, 1);
@@ -52,6 +54,9 @@ void dt_update_chosen(struct device_tree *tree, const char *cmd_line)
 		   there anyway, so kernel exploits are less of a concern. */
 	}
 	timestamp_mix_in_randomness(seed->tpm_buf, sizeof(seed->tpm_buf));
+
+	/* Save the physical KASLR seed for Depthcharge use */
+	bi->phys_kaslr = seed->phys_kaslr;
 
 	dt_add_u64_prop(node, "kaslr-seed", seed->kaslr);
 	dt_add_bin_prop(node, "rng-seed", seed->rng, sizeof(seed->rng));

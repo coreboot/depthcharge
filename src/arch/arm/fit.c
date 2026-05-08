@@ -70,7 +70,7 @@ int boot(struct boot_info *bi)
 	if (!kernel || !tree)
 		return 1;
 
-	dt_update_chosen(tree, bi->cmd_line);
+	dt_update_chosen(tree, bi);
 	dt_update_memory(tree);
 
 	if (bi->ramdisk_addr && bi->ramdisk_size)

@@ -33,6 +33,7 @@ struct boot_info {
 	size_t pvmfw_size;
 	size_t pvmfw_buffer_size;
 	struct device_tree *dt;
+	uint16_t phys_kaslr;
 };
 
 // To be implemented by each boot method.
