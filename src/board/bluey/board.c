@@ -182,6 +182,11 @@ static void display_setup(void)
 	list_insert_after(&dev.list_node, &cleanup_funcs);
 }
 
+static bool board_boot_in_no_battery_mode(void)
+{
+	return lib_sysinfo.boot_mode == CB_BOOT_MODE_NO_BATTERY;
+}
+
 static int board_setup(void)
 {
 	/*
@@ -221,6 +226,10 @@ static int board_setup(void)
 	printf("Bluey: adding `reboot=warm` to kernel cmdline\n");
 	commandline_append("earlycon console=ttyMSM0,115200");
 	printf("Bluey: Enableing OS serial console\n");
+	if (board_boot_in_no_battery_mode()) {
+		commandline_append("cpufreq.default_governor=powersave");
+		printf("Bluey: Overriding CPU Governor\n");
+	}
 
 	return 0;
 }
