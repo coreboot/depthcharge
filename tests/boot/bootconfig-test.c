@@ -123,6 +123,22 @@ static int setup(void **state)
 	return 0;
 }
 
+static void test_bootconfig_append_params_delimiter(void **state)
+{
+	char *params1 = "k1=v1";
+	char *params2 = "k2=v2" BR;
+
+	bootconfig_init(&bc, bootconfig_buf, sizeof(bootconfig_buf));
+
+	/* Append params without delimiter, should auto-insert one at the end */
+	assert_int_equal(bootconfig_append_params(&bc, params1, strlen(params1)), 0);
+	assert_string_equal("k1=v1" BR, bootconfig_buf);
+
+	/* Append second block which already has delimiter, should not add another */
+	assert_int_equal(bootconfig_append_params(&bc, params2, strlen(params2)), 0);
+	assert_string_equal("k1=v1" BR "k2=v2" BR, bootconfig_buf);
+}
+
 int main(void)
 {
 	const struct CMUnitTest tests[] = {
@@ -131,6 +147,7 @@ int main(void)
 		TEST(test_bootconfig_params_validation),
 		TEST(test_bootconfig_unmatched_quote),
 		TEST(test_bootconfig_update),
+		TEST(test_bootconfig_append_params_delimiter),
 	};
 
 	return cmocka_run_group_tests(tests, NULL, NULL);

@@ -51,6 +51,13 @@ int bootconfig_append_params(struct bootconfig *bc, void *bootsection_params,
 
 	memmove(&bc->start[bc->size], bootsection_params, bootsection_size);
 	bc->size += bootsection_size;
+
+	if (bc->size > 0 && bc->start[bc->size - 1] != BOOTCONFIG_DELIMITER) {
+		if (bc->size + 1 > bc->limit)
+			return -1;
+		bc->start[bc->size++] = BOOTCONFIG_DELIMITER;
+	}
+
 	bc->start[bc->size] = '\0';
 
 	return 0;
