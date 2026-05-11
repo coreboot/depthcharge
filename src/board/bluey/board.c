@@ -111,9 +111,12 @@ static void usb_setup(void)
 static void storage_setup(void)
 {
 	/* NVMe */
-	NvmeCtrlr *nvme = new_nvme_ctrlr(variant_get_nvme_pcidev());
-	list_insert_after(&nvme->ctrlr.list_node,
-			  &fixed_block_dev_controllers);
+	if (CONFIG(DRIVER_STORAGE_NVME)) {
+		NvmeCtrlr *nvme = new_nvme_ctrlr(variant_get_nvme_pcidev());
+		list_insert_after(&nvme->ctrlr.list_node,
+				  &fixed_block_dev_controllers);
+	}
+
 }
 
 static void flash_setup(void)
