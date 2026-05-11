@@ -46,12 +46,6 @@
 #define BEEP_DURATION_MS		120
 #define WSA8845_DEVICE_INDEX	1
 
-static const VpdDeviceTreeMap vpd_dt_map[] = {
-	{ "bluetooth_mac0", "bluetooth0/local-bd-address" },
-	{ "wifi_mac0", "wifi0/local-mac-address" },
-	{}
-};
-
 #define MDP_INTF_TIMING_ENGINE_ADDR 0x0AE3A000
 #define EDP_SW_RESET_ADDR 0xAEA0010
 
@@ -208,8 +202,6 @@ static int board_setup(void)
 		power_set_ops(&psci_power_ops);
 
 	usb_setup();
-
-	dt_register_vpd_mac_fixup(vpd_dt_map);
 
 	storage_setup();
 
