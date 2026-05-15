@@ -31,32 +31,8 @@ enum charging_status {
 	CHRG_ENABLE,
 };
 
-static bool board_boot_in_low_battery_mode_charger_present(void)
-{
-	return lib_sysinfo.boot_mode == CB_BOOT_MODE_LOW_BATTERY_CHARGING;
-}
-
-static bool board_boot_in_offmode_charging_mode(void)
-{
-	return lib_sysinfo.boot_mode == CB_BOOT_MODE_OFFMODE_CHARGING;
-}
-
-static bool do_enable_charging(void)
-{
-	/* Always enable if in developer or recovery mode */
-	if (vboot_in_developer() || vboot_in_recovery() ||
-			vboot_in_manual_recovery())
-		return true;
-
-	return board_boot_in_low_battery_mode_charger_present() ||
-			 board_boot_in_offmode_charging_mode();
-}
-
 static void disable_slow_battery_charging(void)
 {
-	if (!do_enable_charging())
-		return;
-
 	QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
 				    PMIC_REG_CHAN0_ADDR,
 				    PMIC_REG_LAST_CHAN_ADDR - PMIC_REG_FIRST_CHAN_ADDR);
@@ -76,12 +52,6 @@ static int enable_slow_battery_charging(void)
 	/* Don't enable slow charging when no battery */
 	if (CONFIG(DRIVER_EC_CROS) && !cros_ec_is_battery_present()) {
 		printf("No battery, do not enable slow charging.\n");
-		return 0;
-	}
-
-	/* Don't enable slow charging unless we are in Recovery or Developer mode */
-	if (!vboot_in_recovery() && !vboot_in_manual_recovery() && !vboot_in_developer()) {
-		printf("Charging disabled: Not in a recovery or developer mode.\n");
 		return 0;
 	}
 
