@@ -56,11 +56,6 @@
 
 __weak void variant_display_teardown(QcomSpmi *pmic_spmi)
 {
-	/* Disable panel power */
-	GpioOps *display_vdd = sysinfo_lookup_gpio("Panel VDD en", 1,
-				new_gpio_output_from_coreboot);
-	gpio_set(display_vdd, 0);
-
 	return;
 }
 
