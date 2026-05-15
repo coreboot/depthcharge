@@ -67,6 +67,14 @@ void ranges_add(Ranges *ranges, uint64_t start, uint64_t end);
  */
 void ranges_sub(Ranges *ranges, uint64_t start, uint64_t end);
 
+/**
+ * Subtracts a collection of ranges from another.
+ *
+ * @param dest		Destination Ranges structure.
+ * @param sub		Ranges structure to subtract.
+ */
+void ranges_sub_from(Ranges *dest, Ranges *sub);
+
 typedef void (*RangesForEachFunc)(uint64_t start, uint64_t end, void *data);
 
 /*

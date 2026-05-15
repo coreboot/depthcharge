@@ -118,6 +118,16 @@ void ranges_sub(Ranges *ranges, uint64_t start, uint64_t end)
 	ranges_set_region_to(ranges, start, end, 0);
 }
 
+static void ranges_sub_helper(uint64_t start, uint64_t end, void *data)
+{
+	ranges_sub((Ranges *)data, start, end);
+}
+
+void ranges_sub_from(Ranges *dest, Ranges *sub)
+{
+	ranges_for_each(sub, ranges_sub_helper, dest);
+}
+
 /* Run a function on each range in Ranges. */
 void ranges_for_each(Ranges *ranges, RangesForEachFunc func, void *data)
 {
