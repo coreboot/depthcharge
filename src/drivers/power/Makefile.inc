@@ -12,6 +12,7 @@
 ##
 
 depthcharge-$(CONFIG_DRIVER_POWER_AS3722) += as3722.c
+depthcharge-$(CONFIG_DRIVER_POWER_CHROMEEC) += chromeec.c
 depthcharge-$(CONFIG_DRIVER_POWER_EXYNOS) += exynos.c
 depthcharge-$(CONFIG_DRIVER_POWER_IPQ806X) += ipq806x.c
 depthcharge-$(CONFIG_DRIVER_POWER_IPQ40XX) += ipq40xx.c

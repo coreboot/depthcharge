@@ -16,6 +16,12 @@ config DRIVER_POWER_AS3722
 	help
 	  Reboot or power off using the AS3722 PMIC.
 
+config DRIVER_POWER_CHROMEEC
+	bool "Chrome EC based power management"
+	default n
+	help
+	  Reboot or power off using the Chrome EC.
+
 config DRIVER_POWER_EXYNOS
 	bool "Exynos SOC power management"
 	default n
