@@ -28,6 +28,7 @@
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/qcom_gpio.h"
 #include "drivers/gpio/sysinfo.h"
+#include "drivers/power/chromeec.h"
 #include "drivers/power/psci.h"
 #include "drivers/soc/qcom_spmi.h"
 #include "drivers/soc/qcom_spmi_defs.h"
@@ -201,7 +202,10 @@ static int board_setup(void)
 	/* stub out required GPIOs for vboot */
 	flag_replace(FLAG_PWRSW, new_gpio_low());
 
-	power_set_ops(&psci_power_ops);
+	if (CONFIG(DRIVER_POWER_CHROMEEC))
+		power_set_ops(&chromec_power_ops);
+	else
+		power_set_ops(&psci_power_ops);
 
 	usb_setup();
 
