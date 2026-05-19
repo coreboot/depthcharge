@@ -69,11 +69,6 @@ static inline void unused_memset(uint64_t start, uint64_t end, void *data)
 	arch_phys_memset(start, 0, end - start);
 }
 
-static void remove_range(uint64_t start, uint64_t end, void *data)
-{
-	ranges_sub((Ranges *)data, start, end);
-}
-
 static int get_unused_memory(Ranges *ranges)
 {
 	// Process the memory map from coreboot.
@@ -102,7 +97,7 @@ static int get_unused_memory(Ranges *ranges)
 
 	// Exclude memory that's being used.
 	used_list_initialize();
-	ranges_for_each(&used, &remove_range, ranges);
+	ranges_sub_from(ranges, &used);
 
 	return 0;
 }
@@ -150,7 +145,7 @@ int memory_range_init_and_get_unused(Ranges *ranges)
 		ranges_teardown(&payload_used);
 		return result;
 	}
-	ranges_for_each(&payload_used, &remove_range, ranges);
+	ranges_sub_from(ranges, &payload_used);
 	ranges_teardown(&payload_used);
 
 	return 0;
