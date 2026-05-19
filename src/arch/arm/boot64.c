@@ -15,16 +15,20 @@
  * GNU General Public License for more details.
  */
 
-#include <arch/mmu.h>
-#include <coreboot_tables.h>
+#include <assert.h>
+#include <inttypes.h>
 #include <libpayload.h>
 #include <stdlib.h>
 
 #include "arch/arm/boot.h"
+#include "base/device_tree.h"
 #include "base/timestamp.h"
+#include "boot/dt_update.h"
 #include "vboot/boot.h"
+#include "vboot/stages.h"
 #include "base/ranges.h"
 #include "base/physmem.h"
+#include "vboot/util/memory.h"
 
 typedef struct {
 	u32 code0;
@@ -41,40 +45,122 @@ typedef struct {
 	u32 res5;
 } Arm64KernelHeader;
 
-static void *get_kernel_reloc_addr(Arm64KernelHeader *header, size_t image_size)
+#define KERNEL_ALIGNMENT (2 * MiB)
+
+struct kaslr_context {
+	size_t image_size;
+	size_t load_offset;
+	uint32_t total_slots;
+	uint32_t selected_slot;
+	uintptr_t result_addr;
+};
+
+static uint64_t get_kstart(uint64_t start, uint64_t load_offset)
 {
-	size_t load_offset = header->text_offset;
-	int i = 0;
+	uint64_t kstart = ALIGN_DOWN(start, KERNEL_ALIGNMENT) + load_offset;
 
-	for (; i < lib_sysinfo.n_memranges; i++) {
-		struct memrange *range = &lib_sysinfo.memrange[i];
-		if (range->type != CB_MEM_RAM)
-			continue;
+	if (kstart < start)
+		kstart += KERNEL_ALIGNMENT;
 
-		uint64_t start = range->base;
-		uint64_t end = range->base + range->size;
-		uint64_t kstart = ALIGN_DOWN(start, 2*MiB) + load_offset < start
-				? ALIGN_UP(start, 2*MiB) + load_offset
-				: ALIGN_DOWN(start, 2*MiB) + load_offset;
-		uint64_t kend = kstart + image_size;
+	return kstart;
+}
 
-		if (kend > CONFIG_BASE_ADDRESS || kend > CONFIG_KERNEL_START ||
-		    kend > CONFIG_KERNEL_FIT_FDT_ADDR) {
-			printf("ERROR: Kernel might overlap depthcharge!\n");
-			return 0;
-		}
+static uint32_t get_kaslr_range(uint64_t start, uint64_t end, size_t image_size,
+				size_t load_offset, uint64_t *kstart_out,
+				uint64_t *kstart_last_out)
+{
+	uint64_t kstart = get_kstart(start, load_offset);
 
-		if (kend <= end)
-			return (void *)kstart;
+	if (kstart + image_size > end)
+		return 0;
 
-		// Should be avoided in practice, that memory might be wasted.
-		if (!(header->flags & KERNEL_FLAGS_PLACE_ANYWHERE))
-			printf("WARNING: Skipping low memory range [%p:%p]!\n",
-			       (void *)start, (void *)end);
+	uint64_t base_max = ALIGN_DOWN(end - image_size - load_offset,
+				       KERNEL_ALIGNMENT);
+	uint64_t kstart_last = base_max + load_offset;
+
+	*kstart_out = kstart;
+	*kstart_last_out = kstart_last;
+
+	return (kstart_last - kstart) / KERNEL_ALIGNMENT + 1;
+}
+
+static void count_kaslr_slots(uint64_t start, uint64_t end, void *data)
+{
+	struct kaslr_context *ctx = data;
+	uint64_t kstart, kstart_last;
+
+	ctx->total_slots += get_kaslr_range(start, end, ctx->image_size, ctx->load_offset,
+					    &kstart, &kstart_last);
+}
+
+static void pick_kaslr_slot(uint64_t start, uint64_t end, void *data)
+{
+	struct kaslr_context *ctx = data;
+	uint64_t kstart, kstart_last;
+
+	if (ctx->result_addr)
+		return;
+
+	uint32_t slots_in_range = get_kaslr_range(start, end, ctx->image_size, ctx->load_offset,
+						  &kstart, &kstart_last);
+
+	if (ctx->selected_slot < slots_in_range)
+		ctx->result_addr = kstart + (uint64_t)ctx->selected_slot * KERNEL_ALIGNMENT;
+	else
+		ctx->selected_slot -= slots_in_range;
+}
+
+static void *get_kernel_reloc_random_addr(struct boot_info *bi,
+					  Arm64KernelHeader *header,
+					  size_t image_size)
+{
+	Ranges available;
+
+	/* 1. Collect all available RAM regions from coreboot/MMU */
+	if (memory_range_init_and_get_unused(&available))
+		return 0;
+
+	/* 2. Subtract DT reserved memory */
+	Ranges reserved;
+	dt_collect_reserved_memory_ranges(bi->dt, &reserved);
+	ranges_sub_from(&available, &reserved);
+	ranges_teardown(&reserved);
+
+	/* 3. Subtract the [Depthcharge _start, 4GB) 'danger zone' per b/504966477#comment13 */
+	uint64_t min_start = MIN(CONFIG_BASE_ADDRESS,
+				 MIN(CONFIG_KERNEL_START, CONFIG_KERNEL_FIT_FDT_ADDR));
+	assert(min_start < 4ULL * GiB);
+	ranges_sub(&available, min_start, 4ULL * GiB);
+
+	/* 4. Prepare KASLR context */
+	struct kaslr_context ctx = {
+		.image_size = image_size,
+		.load_offset = header->text_offset,
+		.total_slots = 0,
+		.selected_slot = 0,
+		.result_addr = 0,
+	};
+
+	/* 5. Count total available slots */
+	ranges_for_each(&available, count_kaslr_slots, &ctx);
+
+	if (ctx.total_slots == 0) {
+		printf("ERROR: Cannot find enough continuous memory for kernel!\n");
+		ranges_teardown(&available);
+		return 0;
 	}
 
-	printf("ERROR: Cannot find enough continuous memory for kernel!\n");
-	return 0;
+	/* 6. Pick a random slot */
+	if (CONFIG(ARM64_SKIP_PHYS_KASLR))
+		ctx.selected_slot = 0;
+	else
+		ctx.selected_slot = bi->phys_kaslr % ctx.total_slots;
+
+	ranges_for_each(&available, pick_kaslr_slot, &ctx);
+
+	ranges_teardown(&available);
+
+	return (void *)ctx.result_addr;
 }
 
 int boot_arm_linux(struct boot_info *bi, void *fdt, FitImageNode *kernel)
@@ -110,7 +196,8 @@ int boot_arm_linux(struct boot_info *bi, void *fdt, FitImageNode *kernel)
 	else
 		printf("WARNING: Kernel image_size is 0 (pre-3.17 kernel?)\n");
 
-	void *reloc_addr = get_kernel_reloc_addr(&scratch.header, image_size);
+	void *reloc_addr = get_kernel_reloc_random_addr(bi, &scratch.header, image_size);
+
 	if (!reloc_addr)
 		return 1;
 

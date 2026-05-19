@@ -292,17 +292,17 @@ size_t fit_decompress(FitImageNode *node, void *buffer, size_t bufsize)
 {
 	switch (node->compression) {
 	case CompressionNone:
-		printf("Relocating %s to %p\n", node->name, buffer);
+		printf("Relocating %s\n", node->name);
 		memmove(buffer, node->data, MIN(node->size, bufsize));
 		return node->size <= bufsize ? node->size : 0;
 	case CompressionLzma:
-		printf("LZMA decompressing %s to %p\n", node->name, buffer);
+		printf("LZMA decompressing %s\n", node->name);
 		return ulzman(node->data, node->size, buffer, bufsize);
 	case CompressionLz4:
-		printf("LZ4 decompressing %s to %p\n", node->name, buffer);
+		printf("LZ4 decompressing %s\n", node->name);
 		return ulz4fn(node->data, node->size, buffer, bufsize);
 	case CompressionLegacyLz4:
-		printf("Legacy LZ4 decompressing %s to %p\n", node->name, buffer);
+		printf("Legacy LZ4 decompressing %s\n", node->name);
 		return ulz4ln(node->data, node->size, buffer, bufsize);
 	default:
 		printf("ERROR: Illegal compression algorithm (%d) for %s!\n",

@@ -99,6 +99,9 @@ int boot(struct boot_info *bi)
 	if (dt_apply_fixups(tree))
 		return 1;
 
+	/* Save the updated DT so KASLR logic can account for all reserved regions. */
+	bi->dt = tree;
+
 	// Allocate a spot for the FDT in memory.
 	void *fdt = &_fit_fdt_start;
 	uint32_t size = dt_flat_size(tree);

@@ -52,6 +52,18 @@ config ATAG_BASE
 	depends on ARCH_ARM
 	default 0x0
 
+config ARM64_SKIP_PHYS_KASLR
+	bool "Skip kernel physical address randomization"
+	depends on ARCH_ARM_V8
+	default n
+	help
+	  Disable kernel physical address randomization (KASLR) in the
+	  bootloader. By default, Depthcharge will select a random
+	  2MiB-aligned memory slot for the kernel using a seed from the TPM.
+	  Enabling this will force the kernel to be loaded at the first
+	  available valid physical address (Slot 0). This is safer than the
+	  legacy method as it always respects reserved memory regions.
+
 config KERNEL_FIT_FDT_ADDR
 	hex "FIT device tree load address."
 	default 0x0
