@@ -128,20 +128,20 @@ static vb2_error_t ui_draw_step_icons(const struct ui_state *state,
 	return VB2_SUCCESS;
 }
 
-static const char *get_model_from_vpd(void)
+static const char *get_device_from_vpd(void)
 {
-	static char product[ANDROID_VPD_MAX_BUFFER_SIZE];
+	static char device[ANDROID_VPD_MAX_BUFFER_SIZE];
 
-	if (!vpd_gets(ANDROID_VPD_KEY_PRODUCT, product, sizeof(product))) {
+	if (!vpd_gets(ANDROID_VPD_KEY_DEVICE, device, sizeof(device))) {
 		printf("%s: VPD key %s not found\n", __func__,
-		       ANDROID_VPD_KEY_PRODUCT);
+		       ANDROID_VPD_KEY_DEVICE);
 		return NULL;
 	}
 
-	return product;
+	return device;
 }
 
-static const char *get_model_from_hwid(void)
+static const char *get_device_from_hwid(void)
 {
 	static char hwid[VB2_GBB_HWID_MAX_SIZE] = {0};
 	uint32_t hwid_size = sizeof(hwid);
@@ -171,14 +171,14 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	const int32_t footer_height = UI_FOOTER_HEIGHT;
 	struct ui_bitmap bitmap;
 
-	/* Get model name. */
-	static const char *model;
-	if (!model) {
-		model = get_model_from_vpd();
-		if (!model)
-			model = get_model_from_hwid();
-		if (!model)
-			model = "NOT FOUND";
+	/* Get device name. */
+	static const char *device;
+	if (!device) {
+		device = get_device_from_vpd();
+		if (!device)
+			device = get_device_from_hwid();
+		if (!device)
+			device = "NOT FOUND";
 	}
 
 	/* Column 1 */
@@ -193,10 +193,10 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	y = footer_y;
 	vspacing = footer_height - text_height * 4 -
 		UI_FOOTER_COL2_LINE_SPACING * 2;
-	VB2_TRY(ui_get_bitmap("model.bmp", locale_code, 0, &bitmap));
+	VB2_TRY(ui_get_bitmap("device.bmp", locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
 	y += text_height + UI_FOOTER_COL2_LINE_SPACING;
-	VB2_TRY(ui_draw_text(model, x, y, text_height,
+	VB2_TRY(ui_draw_text(device, x, y, text_height,
 			     &ui_color_bg, &ui_color_footer_fg,
 			     flags, reverse));
 	y += text_height + vspacing;

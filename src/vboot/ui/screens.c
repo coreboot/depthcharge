@@ -821,6 +821,7 @@ static const char *debug_info_get_string(struct ui_context *ui)
 	char *buf;
 	size_t buf_size;
 	char *vboot_buf;
+	char device[ANDROID_VPD_MAX_BUFFER_SIZE];
 	char product[ANDROID_VPD_MAX_BUFFER_SIZE];
 	char hw_descr[ANDROID_VPD_MAX_BUFFER_SIZE];
 	char hwid[VB2_GBB_HWID_MAX_SIZE];
@@ -843,6 +844,9 @@ static const char *debug_info_get_string(struct ui_context *ui)
 		free(vboot_buf);
 		return NULL;
 	}
+
+	if (!vpd_gets(ANDROID_VPD_KEY_DEVICE, device, sizeof(device)))
+		strcpy(device, DEBUG_INFO_UNSUPPORTED);
 
 	if (!vpd_gets(ANDROID_VPD_KEY_PRODUCT, product, sizeof(product)))
 		strcpy(product, DEBUG_INFO_UNSUPPORTED);
@@ -878,6 +882,7 @@ static const char *debug_info_get_string(struct ui_context *ui)
 	}
 
 	snprintf(buf, buf_size,
+		 "device: %s\n"
 		 "product: %s\n"
 		 "hardware descriptor: %s\n"
 		 "HWID: %s\n"
@@ -887,7 +892,7 @@ static const char *debug_info_get_string(struct ui_context *ui)
 		 "battery level: %s\n"
 		 "TPM state: %s\n"
 		 "%s",
-		 product, hw_descr, hwid, mfg_sku_id,
+		 device, product, hw_descr, hwid, mfg_sku_id,
 		 get_ro_fw_id(), get_active_fw_id(),
 		 batt_pct_str, tpm_str,
 		 vboot_buf);
