@@ -40,7 +40,6 @@
 Please do not turn off your device.</translation>
 <translation id="4991849386608920411">기기에서 '복구' 버튼을 눌러 부트로더를 잠금 해제하거나 '취소'를 선택하여 보호 상태를 유지하세요.</translation>
 <translation id="5018618999152115810">USB 드라이브 사용</translation>
-<translation id="5070315104093438679">제품:</translation>
 <translation id="5184662919967270437">기기 업데이트 중</translation>
 <translation id="5232488980254489397">진단 실행</translation>
 <translation id="5258940999070776327">실행할 테스트 선택</translation>
@@ -58,6 +57,7 @@ Please do not turn off your device.</translation>
 <translation id="6172915643608608639">내부 디스크로 부팅</translation>
 <translation id="6209959435052494013">부트로더를 잠그시겠습니까?</translation>
 <translation id="6259657716425232440">부트로더가 이미 잠금 해제되었습니다.</translation>
+<translation id="6326551461084488743">기기:</translation>
 <translation id="635783852215913562">화살표 키를 사용하여 위아래로 이동하세요.</translation>
 <translation id="6437078769036639380">외장 드라이브에 유효한 OS 이미지가 있는지 확인한 후 준비되면 다시 삽입하세요.</translation>
 <translation id="6453188622241717495">부트로더 잠금 해제</translation>

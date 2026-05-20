@@ -110,7 +110,7 @@ localized_files:
   page_up_disabled_help: help
   page_down_disabled_help: help
   # footer
-  model: footer
+  device: footer
   help_center: footer
   navigate0: footer_nav
   navigate1: footer_nav

@@ -41,7 +41,6 @@
 Lütfen cihazinizi kapatmayin.</translation>
 <translation id="4991849386608920411">Bootloader'ın kilidini açmak için cihazınızda Kurtarma düğmesine basın veya korunmaya devam etmek için İptal'i seçin.</translation>
 <translation id="5018618999152115810">USB sürücü kullan</translation>
-<translation id="5070315104093438679">Ürün:</translation>
 <translation id="5184662919967270437">Cihazınız güncelleniyor</translation>
 <translation id="5232488980254489397">Teşhisi başlat</translation>
 <translation id="5258940999070776327">Çalıştırılacak bir test seçin</translation>
@@ -59,6 +58,7 @@ Lütfen cihazinizi kapatmayin.</translation>
 <translation id="6172915643608608639">Dahili diskten başlat</translation>
 <translation id="6209959435052494013">Bootloader kilitlensin mi?</translation>
 <translation id="6259657716425232440">Bootloader kilidi zaten açık.</translation>
+<translation id="6326551461084488743">Cihaz:</translation>
 <translation id="635783852215913562">Yukarı veya aşağı gitmek için ok tuşlarını kullanın</translation>
 <translation id="6437078769036639380">Harici sürücünüzde geçerli bir OS görüntüsü olduğundan emin olun ve hazır olduğunda sürücüyü yeniden takın.</translation>
 <translation id="6453188622241717495">Bootloader'ın kilidini aç</translation>

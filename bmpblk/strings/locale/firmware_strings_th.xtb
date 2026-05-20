@@ -40,7 +40,6 @@
 โปรดอย่าปิดอุปกรณ์</translation>
 <translation id="4991849386608920411">กดปุ่มกู้คืนในอุปกรณ์เพื่อปลดล็อก Bootloader หรือเลือก "ยกเลิก" เพื่อคงการป้องกันไว้</translation>
 <translation id="5018618999152115810">ใช้ไดรฟ์ USB</translation>
-<translation id="5070315104093438679">ผลิตภัณฑ์:</translation>
 <translation id="5184662919967270437">กำลังอัปเดตอุปกรณ์ของคุณ</translation>
 <translation id="5232488980254489397">เปิดการวินิจฉัย</translation>
 <translation id="5258940999070776327">เลือกการทดสอบที่จะเรียกใช้</translation>
@@ -58,6 +57,7 @@
 <translation id="6172915643608608639">บูตจากดิสก์ภายใน</translation>
 <translation id="6209959435052494013">ล็อก Bootloader ไหม</translation>
 <translation id="6259657716425232440">ปลดล็อก Bootloader แล้ว</translation>
+<translation id="6326551461084488743">อุปกรณ์:</translation>
 <translation id="635783852215913562">ใช้แป้นลูกศรเพื่อเลื่อนขึ้นหรือลง</translation>
 <translation id="6437078769036639380">ตรวจสอบว่าไดรฟ์ภายนอกมีอิมเมจระบบปฏิบัติการที่ถูกต้องแล้วใส่ไดรฟ์อีกครั้งเมื่อพร้อม</translation>
 <translation id="6453188622241717495">ปลดล็อก Bootloader</translation>

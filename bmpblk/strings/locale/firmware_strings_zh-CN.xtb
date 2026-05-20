@@ -40,7 +40,6 @@
 请勿关闭您的设备。</translation>
 <translation id="4991849386608920411">若要解锁引导加载程序，请按下设备上的“恢复”按钮；若要保持受保护状态，请选择“取消”。</translation>
 <translation id="5018618999152115810">使用 U 盘</translation>
-<translation id="5070315104093438679">产品：</translation>
 <translation id="5184662919967270437">正在更新您的设备</translation>
 <translation id="5232488980254489397">启动诊断</translation>
 <translation id="5258940999070776327">选择要运行的测试</translation>
@@ -58,6 +57,7 @@
 <translation id="6172915643608608639">从内部磁盘启动</translation>
 <translation id="6209959435052494013">锁定引导加载程序？</translation>
 <translation id="6259657716425232440">引导加载程序已经处于解锁状态。</translation>
+<translation id="6326551461084488743">设备：</translation>
 <translation id="635783852215913562">使用箭头键可向上/向下移动。</translation>
 <translation id="6437078769036639380">请确保您的外部驱动器包含有效的操作系统映像，并在准备就绪后重新插入它。</translation>
 <translation id="6453188622241717495">解锁引导加载程序</translation>

@@ -40,7 +40,6 @@
 No apagues el dispositivo.</translation>
 <translation id="4991849386608920411">Pulsa el botón de recuperación de tu dispositivo para desbloquear el bootloader o selecciona Cancelar para mantener la protección.</translation>
 <translation id="5018618999152115810">Usar unidad USB</translation>
-<translation id="5070315104093438679">Producto:</translation>
 <translation id="5184662919967270437">Actualizando tu dispositivo</translation>
 <translation id="5232488980254489397">Iniciar diagnóstico</translation>
 <translation id="5258940999070776327">Selecciona una prueba para ejecutarla</translation>
@@ -58,6 +57,7 @@ No apagues el dispositivo.</translation>
 <translation id="6172915643608608639">Iniciar desde disco interno</translation>
 <translation id="6209959435052494013">¿Bloquear bootloader?</translation>
 <translation id="6259657716425232440">El bootloader ya está desbloqueado.</translation>
+<translation id="6326551461084488743">Dispositivo:</translation>
 <translation id="635783852215913562">Usa las teclas de flecha para desplazarte hacia arriba o hacia abajo.</translation>
 <translation id="6437078769036639380">Comprueba que tu unidad externa tenga una imagen de SO válida y vuelve a insertarla cuando esté lista.</translation>
 <translation id="6453188622241717495">Desbloquear bootloader</translation>

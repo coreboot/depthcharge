@@ -40,7 +40,6 @@
 Please do not turn off your device.</translation>
 <translation id="4991849386608920411">ブートローダーのロックを解除するにはデバイスのリカバリボタンを押します。保護された状態を維持するには [キャンセル] を選択します。</translation>
 <translation id="5018618999152115810">USB ドライブを使用</translation>
-<translation id="5070315104093438679">サービス:</translation>
 <translation id="5184662919967270437">デバイスを更新しています</translation>
 <translation id="5232488980254489397">診断ツールを起動</translation>
 <translation id="5258940999070776327">実行するテストを選択</translation>
@@ -58,6 +57,7 @@ Please do not turn off your device.</translation>
 <translation id="6172915643608608639">内部ディスクから起動</translation>
 <translation id="6209959435052494013">ブートローダーをロックしますか？</translation>
 <translation id="6259657716425232440">ブートローダーはすでにロック解除されています。</translation>
+<translation id="6326551461084488743">デバイス:</translation>
 <translation id="635783852215913562">上下に移動するには矢印キーを使用します。</translation>
 <translation id="6437078769036639380">外部ドライブに有効な OS イメージがあることを確認し、準備ができたらもう一度接続してください。</translation>
 <translation id="6453188622241717495">ブートローダーのロックを解除</translation>

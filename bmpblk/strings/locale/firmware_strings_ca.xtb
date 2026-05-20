@@ -40,7 +40,6 @@
 No l'apaguis.</translation>
 <translation id="4991849386608920411">Prem el botó de recuperació al dispositiu per desbloquejar el bootloader o selecciona Cancel·la per mantenir la protecció.</translation>
 <translation id="5018618999152115810">Utilitza la unitat USB</translation>
-<translation id="5070315104093438679">Producte:</translation>
 <translation id="5184662919967270437">S'està actualitzant el dispositiu</translation>
 <translation id="5232488980254489397">Diagnòstics de llançament</translation>
 <translation id="5258940999070776327">Selecciona una prova per executar-la</translation>
@@ -58,6 +57,7 @@ No l'apaguis.</translation>
 <translation id="6172915643608608639">Inicia des del disc intern</translation>
 <translation id="6209959435052494013">Vols bloquejar el bootloader?</translation>
 <translation id="6259657716425232440">El bootloader ja està desbloquejat.</translation>
+<translation id="6326551461084488743">Dispositiu:</translation>
 <translation id="635783852215913562">Fes servir les tecles de fletxa per navegar cap amunt o cap avall.</translation>
 <translation id="6437078769036639380">Comprova que la unitat externa tingui una imatge d'SO vàlida i torna a inserir-la quan estigui a punt.</translation>
 <translation id="6453188622241717495">Desbloqueja el bootloader</translation>

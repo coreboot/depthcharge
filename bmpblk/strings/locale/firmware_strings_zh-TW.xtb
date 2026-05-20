@@ -40,7 +40,6 @@
 請勿關閉裝置。</translation>
 <translation id="4991849386608920411">按下裝置上的「復原」鍵會解鎖系統啟動載入程式，或選擇「取消」維持受保護的狀態。</translation>
 <translation id="5018618999152115810">使用 USB 隨身碟</translation>
-<translation id="5070315104093438679">產品：</translation>
 <translation id="5184662919967270437">正在更新裝置</translation>
 <translation id="5232488980254489397">啟動診斷</translation>
 <translation id="5258940999070776327">選取要執行的測試</translation>
@@ -58,6 +57,7 @@
 <translation id="6172915643608608639">從內部磁碟啟動</translation>
 <translation id="6209959435052494013">要鎖定系統啟動載入程式嗎？</translation>
 <translation id="6259657716425232440">系統啟動載入程式已解鎖。</translation>
+<translation id="6326551461084488743">裝置：</translation>
 <translation id="635783852215913562">請使用方向鍵向上或向下瀏覽。</translation>
 <translation id="6437078769036639380">請確認外接硬碟包含有效的 OS 映像檔，準備好後再重新插入。</translation>
 <translation id="6453188622241717495">解鎖系統啟動載入程式</translation>

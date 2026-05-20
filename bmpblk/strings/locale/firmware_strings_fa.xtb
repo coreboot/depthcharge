@@ -40,7 +40,6 @@
 لطفاً دستگاهتان را خاموش نکنید.</translation>
 <translation id="4991849386608920411">برای باز کردن قفل bootloader، دکمه Recovery (بازیابی) را در دستگاهتان فشار دهید یا برای ایمن ماندن، «لغو» را انتخاب کنید.</translation>
 <translation id="5018618999152115810">استفاده از درایو USB</translation>
-<translation id="5070315104093438679">محصول:</translation>
 <translation id="5184662919967270437">درحال به‌روزرسانی دستگاه</translation>
 <translation id="5232488980254489397">اجرای عیب‌یابی</translation>
 <translation id="5258940999070776327">آزمایشی را برای اجرا انتخاب کنید</translation>
@@ -58,6 +57,7 @@
 <translation id="6172915643608608639">راه‌اندازی از دیسک داخلی</translation>
 <translation id="6209959435052494013">‫bootloaderقفل شود؟</translation>
 <translation id="6259657716425232440">قفل Bootloader قبلاً باز شده است.</translation>
+<translation id="6326551461084488743">دستگاه:</translation>
 <translation id="635783852215913562">از کلیدهای جهت‌نما برای پیمایش به بالا یا پایین استفاده کنید.</translation>
 <translation id="6437078769036639380">مطمئن شوید که درایو خارجی تصویر سیستم‌عامل معتبری دارد، و وقتی آماده شد، آن را دوباره وصل کنید.</translation>
 <translation id="6453188622241717495">باز کردن قفل bootloader</translation>

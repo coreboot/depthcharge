@@ -367,8 +367,8 @@ Advanced options
       <message name="btn_power_off" desc="String for the power off button.">
 Power off
       </message>
-      <message name="model" desc="String for the model label.">
-Product:
+      <message name="device" desc="String for the device name.">
+Device:
       </message>
       <message name="help_center" desc="String for the help center label.">
 Help center:
