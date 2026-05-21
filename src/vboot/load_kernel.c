@@ -13,7 +13,7 @@
 static inline int is_valid_disk(BlockDev *bdev, blockdev_type_t type)
 {
 	return bdev->block_size >= 512 && IS_POWER_OF_2(bdev->block_size) &&
-	       bdev->block_count >= 16 &&
+	       bdev->block_size <= 4*KiB && bdev->block_count >= 16 &&
 	       type == (bdev->removable ? BLOCKDEV_REMOVABLE : BLOCKDEV_FIXED);
 }
 
