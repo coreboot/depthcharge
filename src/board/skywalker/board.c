@@ -47,6 +47,7 @@ const static struct pdc_chip_map {
 	{ "0C", PDC_RTS5452P, PDC_RETIMER_TUSB546 },
 	{ "0D", PDC_RTS5452P, PDC_RETIMER_IT5205 },
 	{ "0E", PDC_RTS5453P, PDC_RETIMER_IT5205_2 },
+	{ "0K", PDC_TPS6699X, PDC_RETIMER_PS8747 },
 	{ "0N", PDC_RTS5452P_VB, PDC_RETIMER_NONE },
 	{ "0U", PDC_RTS5452P_VB, PDC_RETIMER_PS8747 },
 	{ "0W", PDC_RTS5452P_VB, PDC_RETIMER_IT5205 },
@@ -95,7 +96,8 @@ static const char *const pdc_chip_series_names[] = {
 	[PDC_RTS5452P] = "RTS5452P",
 	[PDC_RTS5453P] = "RTS5453P",
 	[PDC_RTS5452P_VB] = "RTS5452P-VB",
-	[PDC_RTS5453P_VB] = "RTS5453P-VB"
+	[PDC_RTS5453P_VB] = "RTS5453P-VB",
+	[PDC_TPS6699X] = "TPS6699X",
 };
 
 static const char *const pdc_retimer_names[] = {
@@ -115,9 +117,9 @@ static void print_pdc(const struct pdc_chip *pdc, const char *name)
 	       pdc_retimer_names[pdc->retimer]);
 }
 
-/* Override of func in src/drivers/ec/rts5453/rts5453.c */
-void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
-				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
+static void get_pdc_image_paths(const char **image_path, const char **hash_path,
+				int ec_pd_id, struct ec_response_pd_chip_info_v2 *r,
+				const char *default_name)
 {
 	assert(ec_pd_id >= 0 && ec_pd_id < MAX_PDC_PORT_NUM);
 	*image_path = NULL;
@@ -149,10 +151,13 @@ void board_rts5453_get_image_paths(const char **image_path, const char **hash_pa
 	case PDC_RTS5453P_VB:
 		name = "rts5453vb";
 		break;
+	case PDC_TPS6699X:
+		name = "tps6699x";
+		break;
 	default:
-		printf("%s: Unknown chip for %s; using rts5453\n",
-		       __func__, pdc->config.str);
-		name = "rts5453";
+		printf("%s: Unknown chip for %s; using %s\n", __func__,
+		       pdc->config.str, default_name);
+		name = default_name;
 		break;
 	}
 
@@ -170,6 +175,20 @@ void board_rts5453_get_image_paths(const char **image_path, const char **hash_pa
 
 exit:
 	free(pdc);
+}
+
+/* Override of func in src/drivers/ec/rts5453/rts5453.c */
+void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
+				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
+{
+	get_pdc_image_paths(image_path, hash_path, ec_pd_id, r, "rts5453");
+}
+
+/* Override of func in src/drivers/ec/tps6699x/tps6699x.c */
+void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path,
+				    int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
+{
+	get_pdc_image_paths(image_path, hash_path, ec_pd_id, r, "tps6699x");
 }
 
 static int tpm_irq_status(void)

@@ -31,6 +31,7 @@ enum pdc_chip_series {
 	PDC_RTS5453P,
 	PDC_RTS5452P_VB,
 	PDC_RTS5453P_VB,
+	PDC_TPS6699X,
 };
 
 enum pdc_retimer {
