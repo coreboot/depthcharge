@@ -4,8 +4,7 @@
 #include <libpayload.h>
 
 #include "drivers/soc/qcom_spmi.h"
-
-#define PPID_MASK		(0xfffU << 8)
+#include "drivers/soc/qcom_spmi_defs.h"
 
 /* These are opcodes specific to this SPMI arbitrator, *not* SPMI commands. */
 #define OPC_EXT_WRITEL		0
@@ -22,10 +21,11 @@
 static QcomSpmiRegs *find_apid(QcomSpmi *me, uint32_t addr)
 {
 	size_t i;
+	uint32_t target_ppid = SPMI_PPID_FROM_ADDR(addr);
 
 	for (i = 0U; i < me->num_apid; i++) {
 		uint32_t reg = read32(&me->apid_map[i]);
-		if ((reg != 0U) && ((addr & PPID_MASK) == (reg & PPID_MASK)))
+		if ((reg != 0U) && (target_ppid == SPMI_PPID_FROM_REG(reg)))
 			return &me->regs_per_apid[i];
 	}
 
