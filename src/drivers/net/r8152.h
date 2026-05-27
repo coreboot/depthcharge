@@ -138,6 +138,25 @@ enum {
 /* PlaMisc1 */
 static const uint16_t RxdyGatedEn = 0x0008;
 
+/* PlaRcr */
+enum {
+	SlotEn = 0x0800,
+};
+
+static const uint16_t PlaRcr1 = 0xc012;
+static const uint16_t PlaCpcr = 0xe854;
+static const uint16_t PlaPolarGpioCtrl = 0xdc6a;
+static const uint16_t PlaGphyCtrl = 0xd3ae;
+
+/* PlaCpcr */
+static const uint16_t FlowCtrlEn = 0x0001;
+
+/* PlaPolarGpioCtrl */
+static const uint16_t DackDetEn = 0x8000;
+
+/* PlaGphyCtrl */
+static const uint16_t GphyFlash = 0x0008;
+
 /* PlaSffSts7 */
 enum {
 	ReInitLl = 0x8000,
@@ -162,7 +181,17 @@ enum {
 	UsbMisc0 = 0xd81a,
 	UsbAfeCtrl2 = 0xd824,
 	UsbUpsFlags = 0xd848,
-	UsbWdt11Ctrl = 0xe43c
+	UsbWdt11Ctrl = 0xe43c,
+	UsbEcmOp = 0xd26b,
+	UsbSpeedOption = 0xd32a,
+	UsbEcmOption = 0xcfee,
+	UsbU2p3Ctrl = 0xb460,
+	UsbFcTimer = 0xd340,
+	UsbFwCtrl = 0xd334,
+	UsbFwTask = 0xd4e8,
+	UsbGphyCtrl = 0xd284,
+	UsbLpmConfig = 0xcfd8,
+	UsbUpsCtrl = 0xd800
 };
 
 /* UsbCsrDummy1 */
@@ -224,6 +253,45 @@ enum {
 /* UsbWdt11Ctrl */
 static const uint16_t Timer11En = 0x0001;
 
+/* UsbEcmOp */
+static const uint8_t EnAllSpeed = 0x01;
+
+/* UsbSpeedOption */
+enum {
+	RgPwrdnEn = 0x0040,
+	AllSpeedOff = 0x0020,
+};
+
+/* UsbEcmOption */
+static const uint16_t BypassMacReset = 0x0004;
+
+/* UsbU2p3Ctrl */
+enum {
+	RxDetect8 = 0x0008,
+	U2p3En = 0x0001,
+};
+
+/* UsbFwCtrl */
+enum {
+	AutoSpeedup = 0x0100,
+	FlowCtrlPatch2 = 0x0004,
+};
+
+/* UsbFwTask */
+static const uint16_t FcPatchTask = 0x0001;
+
+/* UsbFcTimer */
+static const uint16_t CtrlTimerEn = 0x8000;
+
+/* UsbGphyCtrl */
+enum {
+	BypassFlash = 0x0004,
+	GphyPatchDone = 0x0010,
+};
+
+/* UsbLpmConfig */
+static const uint16_t LpmU1u2En = 0x0001;
+
 enum {
 	McuTypeUsb = 0x0000,
 	McuTypePla = 0x0100
@@ -239,7 +307,8 @@ enum {
 	OcpSramData = 0xa438,
 	OcpDownSpeed = 0xa442,
 	OcpEeeAdv = 0xa5d0,
-	OcpAdcCfg = 0xbc06
+	OcpAdcCfg = 0xbc06,
+	Ocp10Gbtctl = 0xa5d4
 };
 
 /* OcpPhyStatus */
@@ -256,7 +325,8 @@ enum {
 /* OcpPowerCfg */
 enum {
 	EeeClkdivEn = 0x8000,
-	En10mPlloff = 0x0001
+	En10mPlloff = 0x0001,
+	EnAldps = 0x0001,
 };
 
 /* OcpEeeCfg */
@@ -275,6 +345,13 @@ enum {
 	AdcCfgCkadselL = 0x0100,
 	AdcCfgAdcEn = 0x0080,
 	AdcCfgEnEmiL = 0x0040
+};
+
+static const uint16_t OcpIntrEn = 0xa424;
+
+/* OcpIntrEn */
+enum {
+	IntrSpeedForce = 0x0002,
 };
 
 enum {
