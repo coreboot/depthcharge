@@ -158,8 +158,8 @@ static int rts545x_block_out_transfer(Rts545x *me, uint8_t cmd_code, size_t len,
 
 static int rts545x_block_in_transfer(Rts545x *me, size_t len, uint8_t *read_data)
 {
-	return i2c_readblock(&me->bus->ops, me->chip_info.i2c_addr, RTS545X_READ_DATA_CMD, read_data,
-			     len);
+	return i2c_readblock(&me->bus->ops, me->chip_info.i2c_addr, RTS545X_READ_DATA_CMD,
+			     read_data, len);
 }
 
 static int rts545x_vendor_cmd_enable(Rts545x *me)
@@ -813,8 +813,7 @@ __weak void board_rts5453_get_image_paths(const char **image_path, const char **
 	*hash_path = NULL;
 }
 
-Rts545x *new_rts5453(CrosECTunnelI2c *bus, int ec_pd_id,
-			struct ec_response_pd_chip_info_v2 *r)
+Rts545x *new_rts5453(CrosECTunnelI2c *bus, int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
 	VbootAuxfwOps fw_ops = {
 		.check_hash = rts5453_check_hash,
@@ -849,7 +848,7 @@ const VbootAuxfwOps *new_rts545x_from_chip_info(struct ec_response_pd_chip_info_
 	Rts545x *rts545x;
 
 	/* Skip firmware update if fw_update_flags flag is set */
-	if(r->fw_update_flags & USB_PD_CHIP_INFO_FWUP_FLAG_NO_UPDATE) {
+	if (r->fw_update_flags & USB_PD_CHIP_INFO_FWUP_FLAG_NO_UPDATE) {
 		printf("Ignoring port%d to avoid double-upgrade\n", ec_pd_id);
 		return NULL;
 	}
