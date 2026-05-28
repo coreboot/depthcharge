@@ -76,6 +76,6 @@ const VbootAuxfwOps *new_tps6699x_from_chip_info(struct ec_response_pd_chip_info
  * @param r Pointer to the EC_CMD_PD_CHIP_INFO_V2 command response
  */
 void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path,
-				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r);
+				    int ec_pd_id, struct ec_response_pd_chip_info_v2 *r);
 
 #endif /* __DRIVERS_EC_TPS6699X_H_ */

@@ -89,7 +89,7 @@ static int get_appconfig_offsets(Tps6699x *me, uint16_t num_data_blocks, int *me
 static void command_task_to_string(enum tps6699x_4cc_tasks task, char str_out[5])
 {
 	if (task == 0) {
-		strncpy(str_out, "0000", strlen("0000")+1);
+		strncpy(str_out, "0000", strlen("0000") + 1);
 		return;
 	}
 
