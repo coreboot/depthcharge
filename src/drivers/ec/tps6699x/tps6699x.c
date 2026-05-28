@@ -159,11 +159,9 @@ static vb2_error_t tps6699x_check_hash(const VbootAuxfwOps *vbaux, const uint8_t
 	if ((ver_current == ver_new && !memcmp(hash_fw_name_str, me->chip_info.fw_name_str,
 					       TPS6699X_PROJECT_NAME_LENGTH)) &&
 	    !force_update(me)) {
-		printf("No upgrade necessary for %s. Already at "
-		       "%u.%u.%u(%s).\n",
-		       me->chip_name, PDC_FWVER_MAJOR(ver_current),
-		       PDC_FWVER_MINOR(ver_current), PDC_FWVER_PATCH(ver_current),
-		       me->chip_info.fw_name_str);
+		printf("%s: No upgrade necessary. Already at %u.%u.%u(%s).\n", me->chip_name,
+		       PDC_FWVER_MAJOR(ver_current), PDC_FWVER_MINOR(ver_current),
+		       PDC_FWVER_PATCH(ver_current), me->chip_info.fw_name_str);
 		*severity = VB2_AUXFW_NO_UPDATE;
 		return VB2_SUCCESS;
 	}
@@ -179,12 +177,14 @@ static vb2_error_t tps6699x_check_hash(const VbootAuxfwOps *vbaux, const uint8_t
 		break;
 	case -EC_RES_BUSY:
 		/* EC power state or battery not ready for update */
-		printf("Skipping update: Battery SoC or power state inadequate: %d\n", ret);
+		printf("%s: Skipping update: Battery SoC or power state inadequate: %d\n",
+		       me->chip_name, ret);
 		*severity = VB2_AUXFW_NO_UPDATE;
 		return VB2_SUCCESS;
 	default:
 		/* Unknown error */
-		printf("Skipping update: Error suspending PD stack: %d\n", ret);
+		printf("%s: Skipping update: Error suspending PD stack: %d\n", me->chip_name,
+		       ret);
 		*severity = VB2_AUXFW_NO_DEVICE;
 		return VB2_SUCCESS;
 	}
@@ -303,12 +303,12 @@ Tps6699x *new_tps6699x(int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 
 	if (fw_ops.fw_image_name == NULL || fw_ops.fw_hash_name == NULL) {
 		/* No files, so don't perform an update */
-		printf("Unknown PDC configuration. Skipping update.\n");
+		printf("tps6699x.%d: Unknown PDC configuration. Skipping update.\n", ec_pd_id);
 		return NULL;
 	}
 
-	printf("Using PDC image '%s' with hash file '%s'\n", fw_ops.fw_image_name,
-	       fw_ops.fw_hash_name);
+	printf("tps6699x.%d: Using PDC image '%s' with hash file '%s'\n", ec_pd_id,
+	       fw_ops.fw_image_name, fw_ops.fw_hash_name);
 
 	Tps6699x *me = xzalloc(sizeof(*me));
 
@@ -326,13 +326,15 @@ const VbootAuxfwOps *new_tps6699x_from_chip_info(struct ec_response_pd_chip_info
 
 	/* Skip firmware update if fw_update_flags flag is set */
 	if (r->fw_update_flags & USB_PD_CHIP_INFO_FWUP_FLAG_NO_UPDATE) {
-		printf("Ignoring port%d to avoid double-upgrade\n", ec_pd_id);
+		printf("tps6699x.%d: Ignoring port to avoid double-upgrade\n", ec_pd_id);
 		return NULL;
 	}
 
 	tps6699x = new_tps6699x(ec_pd_id, r);
 	if (tps6699x == NULL) {
-		printf("Error instantiating tps6699x driver. Skipping FW update.\n");
+		printf("tps6699x.%d: Error instantiating tps6699x driver. Skipping FW "
+		       "update.\n",
+		       ec_pd_id);
 		return NULL;
 	}
 
@@ -341,7 +343,7 @@ const VbootAuxfwOps *new_tps6699x_from_chip_info(struct ec_response_pd_chip_info
 	tps6699x->chip_info.fw_version = (pdc_fw_ver_t)r->fw_version_number;
 	memcpy(tps6699x->chip_info.fw_name_str, r->fw_name_str, TPS6699X_PROJECT_NAME_LENGTH);
 
-	printf("TPS6699x VID/PID %04x:%04x\n", tps6699x->chip_info.vid,
+	printf("tps6699x.%d: VID/PID %04x:%04x\n", ec_pd_id, tps6699x->chip_info.vid,
 	       tps6699x->chip_info.pid);
 	return &tps6699x->fw_ops;
 }
