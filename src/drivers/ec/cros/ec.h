@@ -28,8 +28,7 @@
 #include "drivers/ec/cros/commands.h"
 #include "drivers/gpio/gpio.h"
 
-typedef struct CrosEcBusOps
-{
+typedef struct CrosEcBusOps {
 	int (*init)(struct CrosEcBusOps *me);
 
 	/**
@@ -42,8 +41,7 @@ typedef struct CrosEcBusOps
 	 * @param din_len       Maximum size off input buffer in bytes
 	 * @return 0 on success or negative EC_RES_XXX code on error
 	 */
-	int (*send_packet)(struct CrosEcBusOps *me,
-			   const void *dout, uint32_t dout_len,
+	int (*send_packet)(struct CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 			   void *din, uint32_t din_len);
 
 	/**
@@ -61,8 +59,7 @@ typedef struct CrosEcBusOps
 	void (*write)(const uint8_t *data, uint16_t port, int size);
 } CrosEcBusOps;
 
-typedef struct CrosEc
-{
+typedef struct CrosEc {
 	VbootEcOps vboot;
 	CrosEcBusOps *bus;
 	GpioOps *interrupt_gpio;
@@ -77,8 +74,7 @@ typedef struct CrosEc
 /* Maximum wait time for EC flash erase completion */
 #define CROS_EC_ERASE_TIMEOUT_MS 30000
 
-typedef struct CrosEcAuxfwChipInfo
-{
+typedef struct CrosEcAuxfwChipInfo {
 	/* List Node in the chip list */
 	struct list_node list_node;
 	/* Chip identifier as defined by the vendor_id:product_id */
@@ -88,9 +84,8 @@ typedef struct CrosEcAuxfwChipInfo
 	 * Function to create and register the firmware update operations
 	 * for that chip.
 	 */
-	const VbootAuxfwOps * (*new_chip_aux_fw_ops)(
-				struct ec_response_pd_chip_info_v2 *chip,
-				uint8_t ec_pd_id);
+	const VbootAuxfwOps *(*new_chip_aux_fw_ops)(struct ec_response_pd_chip_info_v2 *chip,
+						    uint8_t ec_pd_id);
 } CrosEcAuxfwChipInfo;
 
 /*
@@ -111,9 +106,8 @@ extern struct list_node ec_aux_fw_chip_list;
  * @param din_len	Max number of bytes to accept from EC
  * @return negative EC_RES_xxx error code, or positive num bytes received.
  */
-int ec_command(CrosEc *ec, int cmd, int cmd_version,
-	       const void *dout, int dout_len,
-	       void *din, int din_len);
+int ec_command(CrosEc *ec, int cmd, int cmd_version, const void *dout, int dout_len, void *din,
+	       int din_len);
 
 /**
  * Get the handle to main/primary EC
@@ -191,9 +185,7 @@ int cros_ec_i2c_get_speed(uint8_t i2c_port, uint16_t *speed_khz);
  *			tracked.
  * @return 0 if ok, negative (EC return code) on error
  */
-int cros_ec_i2c_set_speed(uint8_t i2c_port,
-			  uint16_t new_speed_khz,
-			  uint16_t *old_speed_khz);
+int cros_ec_i2c_set_speed(uint8_t i2c_port, uint16_t new_speed_khz, uint16_t *old_speed_khz);
 
 /**
  * Read a keyboard scan from the ChromeOS EC device
@@ -335,7 +327,6 @@ int cros_ec_read_batt_state_of_charge(uint32_t *state);
  */
 int cros_ec_read_limit_power_request(int *limit_power);
 
-
 /**
  * Set duty cycle of the display panel.
  *
@@ -466,8 +457,7 @@ void cros_ec_probe_aux_fw_chips(void);
  *
  * @return 0 if ok, -1 on error
  */
-int cros_ec_pd_chip_info(int port, int renew,
-			 struct ec_response_pd_chip_info_v2 *r);
+int cros_ec_pd_chip_info(int port, int renew, struct ec_response_pd_chip_info_v2 *r);
 
 /**
  * Return a port's mux state.
