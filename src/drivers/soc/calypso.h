@@ -59,4 +59,18 @@
 #define QUP_SERIAL24_BASE		0x00780000
 #define QUP_SERIAL25_BASE		0x00784000
 
+/*
+ * GCC QSPI Clock Branch Control Registers (absolute physical addresses)
+ */
+#define GCC_QSPI_CNOC_PERIPH_AHB_CBCR	((void *)0x150004)
+#define GCC_QSPI_CORE_CBCR		((void *)0x150008)
+#define GCC_QUPV3_OOB_QSPI_S0_CBCR	((void *)0x1E7040)
+#define GCC_QUPV3_OOB_QSPI_S1_CBCR	((void *)0x1E729C)
+#define GCC_QUPV3_WRAP0_QSPI_S2_CBCR	((void *)0x12879C)
+#define GCC_QUPV3_WRAP0_QSPI_S3_CBCR	((void *)0x1288CC)
+#define GCC_QUPV3_WRAP1_QSPI_S2_CBCR	((void *)0x1B379C)
+#define GCC_QUPV3_WRAP1_QSPI_S3_CBCR	((void *)0x1B38CC)
+#define GCC_QUPV3_WRAP2_QSPI_S2_CBCR	((void *)0x1B479C)
+#define GCC_QUPV3_WRAP2_QSPI_S3_CBCR	((void *)0x1B48CC)
+
 #endif /*  __DRIVERS_SOC_QCOM_CALYPSO_H__ */

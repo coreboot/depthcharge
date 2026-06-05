@@ -56,6 +56,21 @@ static void storage_setup(void)
 			  &fixed_block_dev_controllers);
 }
 
+static void qspi_clock_setup(void)
+{
+	/* Enable GCC QSPI clock branches (bit 0 = CLK_ENABLE) */
+	write32(GCC_QSPI_CNOC_PERIPH_AHB_CBCR, read32(GCC_QSPI_CNOC_PERIPH_AHB_CBCR) | BIT(0));
+	write32(GCC_QSPI_CORE_CBCR, read32(GCC_QSPI_CORE_CBCR) | BIT(0));
+	write32(GCC_QUPV3_OOB_QSPI_S0_CBCR, read32(GCC_QUPV3_OOB_QSPI_S0_CBCR) | BIT(0));
+	write32(GCC_QUPV3_OOB_QSPI_S1_CBCR, read32(GCC_QUPV3_OOB_QSPI_S1_CBCR) | BIT(0));
+	write32(GCC_QUPV3_WRAP0_QSPI_S2_CBCR, read32(GCC_QUPV3_WRAP0_QSPI_S2_CBCR) | BIT(0));
+	write32(GCC_QUPV3_WRAP0_QSPI_S3_CBCR, read32(GCC_QUPV3_WRAP0_QSPI_S3_CBCR) | BIT(0));
+	write32(GCC_QUPV3_WRAP1_QSPI_S2_CBCR, read32(GCC_QUPV3_WRAP1_QSPI_S2_CBCR) | BIT(0));
+	write32(GCC_QUPV3_WRAP1_QSPI_S3_CBCR, read32(GCC_QUPV3_WRAP1_QSPI_S3_CBCR) | BIT(0));
+	write32(GCC_QUPV3_WRAP2_QSPI_S2_CBCR, read32(GCC_QUPV3_WRAP2_QSPI_S2_CBCR) | BIT(0));
+	write32(GCC_QUPV3_WRAP2_QSPI_S3_CBCR, read32(GCC_QUPV3_WRAP2_QSPI_S3_CBCR) | BIT(0));
+}
+
 static void flash_setup(void)
 {
 	/* SPI-NOR Flash driver - GPIO_132 as Chip Select */
@@ -121,6 +136,8 @@ static int board_setup(void)
 	dt_register_vpd_mac_fixup(vpd_dt_map);
 
 	storage_setup();
+
+	qspi_clock_setup();
 
 	flash_setup();
 
