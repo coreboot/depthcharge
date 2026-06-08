@@ -10,6 +10,7 @@
 
 #include "base/ranges.h"
 #include "base/timestamp.h"
+#include "boot/dt_util.h"
 #include "vboot/boot.h"
 #include "vboot/stages.h"
 #include "vboot/secdata_tpm.h"
@@ -233,6 +234,35 @@ void dt_update_memory(struct device_tree *tree)
 
 	// Assemble the final property and add it to the device tree.
 	dt_add_bin_prop(node, "reg", data, length);
+}
+
+void dt_add_ramdisk(struct device_tree *tree, void *ramdisk_addr,
+		    size_t ramdisk_size)
+{
+	static const char * const path[] = { "chosen", NULL };
+	struct device_tree_node *node = dt_find_node(tree->root, path,
+						     NULL, NULL, 1);
+
+	/* Warning: this assumes the ramdisk is currently located below 4GiB. */
+	u32 start = (uintptr_t)ramdisk_addr;
+	u32 end = start + ramdisk_size;
+
+	dt_add_u32_prop(node, "linux,initrd-start", start);
+	dt_add_u32_prop(node, "linux,initrd-end", end);
+}
+
+/*
+ * Add a node with linux,pkvm-guest-firmware-memory compatible under
+ * reserved-memory node reg pointing to the given address and size.
+ * This shall be ran after fit_load() has been called.
+ */
+int dt_add_pvmfw(struct device_tree *tree, void *pvmfw_addr, size_t pvmfw_size)
+{
+	if (!dt_add_reserved_memory_region(tree, "pkvm_guest_firmware",
+			 "linux,pkvm-guest-firmware-memory",
+			 (uintptr_t)pvmfw_addr, pvmfw_size, true))
+		return -1;
+	return 0;
 }
 
 static int add_pkvm_drng_node(struct device_tree *tree, void *seed_addr, size_t seed_size)

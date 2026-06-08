@@ -40,8 +40,8 @@ extern char _estack[];
 extern char _end[];
 extern char _kernel_start[];
 extern char _kernel_end[];
-extern char _fit_fdt_start[];
-extern char _fit_fdt_end[];
+extern char _fdt_start[];
+extern char _fdt_end[];
 extern char _init_funcs_start[];
 extern char _init_funcs_end[];
 

@@ -23,7 +23,7 @@
 #include "arch/arm/boot.h"
 #include "base/device_tree.h"
 #include "base/timestamp.h"
-#include "boot/dt_update.h"
+#include "boot/dt_util.h"
 #include "vboot/boot.h"
 #include "vboot/stages.h"
 #include "base/ranges.h"
@@ -128,7 +128,7 @@ static void *get_kernel_reloc_random_addr(struct boot_info *bi,
 
 	/* 3. Subtract the [Depthcharge _start, 4GB) 'danger zone' per b/504966477#comment13 */
 	uint64_t min_start = MIN(CONFIG_BASE_ADDRESS,
-				 MIN(CONFIG_KERNEL_START, CONFIG_KERNEL_FIT_FDT_ADDR));
+				 MIN(CONFIG_KERNEL_START, CONFIG_KERNEL_FDT_ADDR));
 	assert(min_start < 4ULL * GiB);
 	ranges_sub(&available, min_start, 4ULL * GiB);
 

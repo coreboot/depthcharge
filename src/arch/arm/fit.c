@@ -24,7 +24,7 @@
 #include "base/device_tree.h"
 #include "boot/android_dtboimg.h"
 #include "boot/commandline.h"
-#include "boot/dt_update.h"
+#include "boot/dt_util.h"
 #include "boot/fit.h"
 #include "drivers/storage/blockdev.h"
 #include "image/symbols.h"
@@ -74,11 +74,11 @@ int boot(struct boot_info *bi)
 	dt_update_memory(tree);
 
 	if (bi->ramdisk_addr && bi->ramdisk_size)
-		fit_add_ramdisk(tree, bi->ramdisk_addr, bi->ramdisk_size);
+		dt_add_ramdisk(tree, bi->ramdisk_addr, bi->ramdisk_size);
 
 	/* Add DT node if pvmfw was loaded to memory */
 	if (CONFIG(ANDROID_PVMFW) && bi->pvmfw_addr && bi->pvmfw_size &&
-	    fit_add_pvmfw(tree, bi->pvmfw_addr, bi->pvmfw_size) != 0) {
+	    dt_add_pvmfw(tree, bi->pvmfw_addr, bi->pvmfw_size) != 0) {
 		/*
 		 * Failed to add pvmfw node, clear the pvmfw with secrets from
 		 * memory.
@@ -103,9 +103,9 @@ int boot(struct boot_info *bi)
 	bi->dt = tree;
 
 	// Allocate a spot for the FDT in memory.
-	void *fdt = &_fit_fdt_start;
+	void *fdt = &_fdt_start;
 	uint32_t size = dt_flat_size(tree);
-	if (_fit_fdt_start + size > _fit_fdt_end) {
+	if (_fdt_start + size > _fdt_end) {
 		printf("ERROR: FDT image overflows buffer!\n");
 		return 1;
 	}

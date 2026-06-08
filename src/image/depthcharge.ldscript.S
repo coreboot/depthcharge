@@ -37,8 +37,8 @@ SECTIONS
 {
 	_kernel_start = CONFIG_KERNEL_START;
 	_kernel_end = CONFIG_KERNEL_START + CONFIG_KERNEL_SIZE;
-	_fit_fdt_start = CONFIG_KERNEL_FIT_FDT_ADDR;
-	_fit_fdt_end = CONFIG_KERNEL_FIT_FDT_ADDR + 8M;
+	_fdt_start = CONFIG_KERNEL_FDT_ADDR;
+	_fdt_end = CONFIG_KERNEL_FDT_ADDR + 8M;
 
 
 	/* The main portion of depthcharge. */
@@ -113,10 +113,10 @@ SECTIONS
 
 	_ = ASSERT(_kernel_end <= _start,
 		   "Kernel buffer must be placed before depthcharge image!");
-	_ = ASSERT(!CONFIG_KERNEL_FIT_FDT_ADDR ||
-		   (_fit_fdt_end <= _start &&
-		    (_kernel_end <= _fit_fdt_start ||
-		     _fit_fdt_end <= _kernel_start)),
+	_ = ASSERT(!CONFIG_KERNEL_FDT_ADDR ||
+		   (_fdt_end <= _start &&
+		    (_kernel_end <= _fdt_start ||
+		   _fdt_end <= _kernel_start)),
 		   "FDT buffer (8MB) must be placed before depthcharge image and not overlap kernel buffer!");
 
 	/* Stuff we don't want in the final image. */

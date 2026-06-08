@@ -64,11 +64,11 @@ config ARM64_SKIP_PHYS_KASLR
 	  available valid physical address (Slot 0). This is safer than the
 	  legacy method as it always respects reserved memory regions.
 
-config KERNEL_FIT_FDT_ADDR
-	hex "FIT device tree load address."
+config KERNEL_FDT_ADDR
+	hex "Device tree load address."
 	default 0x0
 	help
-	  Where to put the updated device tree when booting a FIT image. The
+	  Where to put the updated device tree when booting the kernel. The
 	  area reserved by this is 8MB.
 
 	  ==== Placement guide (also see kernel/Documentation/<arch>/boot*) ====

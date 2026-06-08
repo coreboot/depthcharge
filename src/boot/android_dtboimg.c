@@ -17,7 +17,7 @@
 #include "boot/android_dtboimg.h"
 #include "boot/android_dt_table.h"
 #include "boot/android_vpd.h"
-#include "boot/dt_update.h"
+#include "boot/dt_util.h"
 #include "image/symbols.h"
 
 enum dt_match_flags {
@@ -302,8 +302,8 @@ static const void *get_dt_entry_data(const void *dtbo, struct dt_table_entry *en
 {
 	/* Reuse the output FDT buffer as a convenient, guaranteed FDT-sized
 	   scratchpad that is still unused (for it's real purpose) right now. */
-	void *buffer = (void *)&_fit_fdt_start;
-	size_t size = _fit_fdt_end - _fit_fdt_start;
+	void *buffer = (void *)&_fdt_start;
+	size_t size = _fdt_end - _fdt_start;
 
 	switch (entry->compression_type) {
 	case NO_COMPRESSION:

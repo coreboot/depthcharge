@@ -27,7 +27,7 @@ config KERNEL_START
 	  arm32: Within first 128MB of RAM. Ideally at exactly 32MB. Do not
 	  overlap DMA_COHERENT area (from coreboot memlayout)!
 	  arm64: Anywhere, but leave as much space as possible empty from the
-	  start of RAM (ideally up to 512MB, see KERNEL_FIT_FDT_ADDR help).
+	  start of RAM (ideally up to 512MB, see KERNEL_FDT_ADDR help).
 	  x86: Do not change, defaults should work fine.
 
 config KERNEL_SIZE

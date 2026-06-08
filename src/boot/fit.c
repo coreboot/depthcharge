@@ -27,6 +27,7 @@
 
 #include "base/ranges.h"
 #include "base/timestamp.h"
+#include "boot/dt_util.h"
 #include "boot/fit.h"
 #include "drivers/power/power.h"
 #include "image/symbols.h"
@@ -319,8 +320,8 @@ static void *get_fdt_data(FitImageNode *fdt)
 
 	// Reuse the output FDT buffer as a convenient, guaranteed FDT-sized
 	// scratchpad that is still unused (for it's real purpose) right now.
-	void *buffer = (void *)&_fit_fdt_start;
-	size_t size = _fit_fdt_end - _fit_fdt_start;
+	void *buffer = (void *)&_fdt_start;
+	size_t size = _fdt_end - _fdt_start;
 
 	size = fit_decompress(fdt, buffer, size);
 	if (!size)
@@ -330,30 +331,6 @@ static void *get_fdt_data(FitImageNode *fdt)
 	if (ret)
 		memcpy(ret, buffer, size);
 	return ret;
-}
-
-void fit_add_ramdisk(struct device_tree *tree, void *ramdisk_addr,
-		     size_t ramdisk_size)
-{
-	const char *path[] = { "chosen", NULL };
-	struct device_tree_node *node = dt_find_node(tree->root, path,
-						     NULL, NULL, 1);
-
-	/* Warning: this assumes the ramdisk is currently located below 4GiB. */
-	u32 start = (uintptr_t)ramdisk_addr;
-	u32 end = start + ramdisk_size;
-
-	dt_add_u32_prop(node, "linux,initrd-start", start);
-	dt_add_u32_prop(node, "linux,initrd-end", end);
-}
-
-int fit_add_pvmfw(struct device_tree *tree, void *pvmfw_addr, size_t pvmfw_size)
-{
-	if (!dt_add_reserved_memory_region(tree, "pkvm_guest_firmware",
-			 "linux,pkvm-guest-firmware-memory",
-			 (uintptr_t)pvmfw_addr, pvmfw_size, true))
-		return -1;
-	return 0;
 }
 
 FitImageNode *fit_load(void *fit, struct device_tree **dt)
@@ -486,8 +463,8 @@ FitImageNode *fit_load(void *fit, struct device_tree **dt)
 			printf("Ramdisk compression not supported.\n");
 			return NULL;
 		}
-		fit_add_ramdisk(*dt, to_boot->ramdisk->data,
-				to_boot->ramdisk->size);
+		dt_add_ramdisk(*dt, to_boot->ramdisk->data,
+			       to_boot->ramdisk->size);
 	}
 
 	return to_boot->kernel;
