@@ -116,4 +116,13 @@
 #define QCOM_UFS_HCI_BASE		0x01D84000
 #define QCOM_UFS_PHY_BASE		0x01D80000
 
+/* UFS Clock Configuration */
+#define UFS_NOM_SYSCLK_1US		300
+#define UFS_NOM_MAX_CORE_CLK_1US	300
+#define UFS_NOM_PA_VS_40NS		12
+#define UFS_RCG_SRC_SEL			1
+#define UFS_RCG_DIV			3
+#define UFS_ICE_RCG_SRC_SEL		5
+#define UFS_GEAR_MASK			QPHY_G4
+
 #endif /* __DRIVERS_SOC_QCOM_X1P42100_H__ */

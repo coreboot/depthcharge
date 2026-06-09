@@ -32,16 +32,24 @@ static void ufs_enable_gdsc(void)
 	}
 }
 
-static void ufs_enable_clocks(void)
+static void ufs_configure_rcg(void)
 {
-	gcc_write32(GCC_UFS_PHY_AXI_CFG_RCGR, RCG_CFG_SRC_SEL_GPLL0 | RCG_CFG_SRC_DIV_2);
+	uint32_t rcg_cfg = (UFS_RCG_SRC_SEL << 8) | (UFS_RCG_DIV << 0);
+	uint32_t ice_rcg_cfg = (UFS_ICE_RCG_SRC_SEL << 8) | (UFS_RCG_DIV << 0);
+
+	gcc_write32(GCC_UFS_PHY_AXI_CFG_RCGR, rcg_cfg);
 	gcc_write32(GCC_UFS_PHY_AXI_CMD_RCGR, RCG_CMD_UPDATE);
 
-	gcc_write32(GCC_UFS_PHY_UNIPRO_CORE_CFG_RCGR, RCG_CFG_SRC_SEL_GPLL0 | RCG_CFG_SRC_DIV_2);
+	gcc_write32(GCC_UFS_PHY_UNIPRO_CORE_CFG_RCGR, rcg_cfg);
 	gcc_write32(GCC_UFS_PHY_UNIPRO_CORE_CMD_RCGR, RCG_CMD_UPDATE);
 
-	gcc_write32(GCC_UFS_PHY_ICE_CORE_CFG_RCGR, RCG_CFG_SRC_SEL_GPLL4 | RCG_CFG_SRC_DIV_2);
+	gcc_write32(GCC_UFS_PHY_ICE_CORE_CFG_RCGR, ice_rcg_cfg);
 	gcc_write32(GCC_UFS_PHY_ICE_CORE_CMD_RCGR, RCG_CMD_UPDATE);
+}
+
+static void ufs_enable_clocks(void)
+{
+	ufs_configure_rcg();
 
 	clrsetbits_le32(gcc + GCC_UFS_PHY_AXI_CBCR,
 			CBCR_MEM_FLAGS_MASK, CBCR_CLK_ENABLE);
@@ -371,7 +379,7 @@ struct qcom_ufs_ctlr *new_qcom_ufs_ctlr(uintptr_t hci_base)
 	qcom_ufs->ufs.hci_base          = (void *)hci_base;
 	qcom_ufs->ufs.hook_fn           = qcom_ufs_hook_fn;
 	qcom_ufs->avail_lanes           = 0;
-	qcom_ufs->gear_mask             = QPHY_G4;
+	qcom_ufs->gear_mask             = UFS_GEAR_MASK;
 	qcom_ufs->phy_cfg               = &qcom_ufs_phy_cfg;
 
 	return qcom_ufs;
