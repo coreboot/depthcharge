@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <assert.h>
 #include <libpayload.h>
 #include <pci.h>
 #include <pci/pci.h>
@@ -11,45 +12,46 @@
 #include "drivers/storage/storage_common.h"
 
 #define EC_PCH_INT_ODL		GPD2
-#define PDC_RTS5453_BYPASS		"GOOG0901"
-#define PDC_RTS5453_TUSB546		"GOOG0F00"
-#define PDC_RTS5453VB_BYPASS	"GOOG0N01"
-#define PDC_RTS5453VB_TUSB546	"GOOG0O01"
+#define MAX_PDC_PORT_NUM	2
+#define PDC_FW_NAME_REVISION_INDEX	6
+#define PDC_FW_NAME_VARIANT_INDEX	7
+
+static const struct pdc_fw_map {
+	const char *config_id;
+	const char *image;
+	const char *hash;
+} pdc_fw_map[] = {
+	{ "GOOG0901", "rts5453_GOOG0901.bin", "rts5453_GOOG0901.hash" },
+	{ "GOOG0F00", "rts5453_GOOG0F00.bin", "rts5453_GOOG0F00.hash" },
+	{ "GOOG0N01", "rts5453vb_GOOG0N01.bin", "rts5453vb_GOOG0N01.hash" },
+	{ "GOOG0O01", "rts5453vb_GOOG0O01.bin", "rts5453vb_GOOG0O01.hash" },
+};
 
 /* Override of func in src/drivers/ec/rts5453/rts5453.c */
 void board_rts5453_get_image_paths(const char **image_path, const char **hash_path,
 				   int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
-	switch (ec_pd_id) {
-	case 0:
-		/* bypass retimer */
-		if (!strcmp(r->fw_name_str, PDC_RTS5453_BYPASS)) {
-			*image_path = "rts5453_GOOG0901.bin";
-			*hash_path = "rts5453_GOOG0901.hash";
-		} else if (!strcmp(r->fw_name_str, PDC_RTS5453VB_BYPASS)) {
-			*image_path = "rts5453vb_GOOG0N01.bin";
-			*hash_path = "rts5453vb_GOOG0N01.hash";
-		} else {
-			*image_path = NULL;
-			*hash_path = NULL;
+	assert(ec_pd_id >= 0 && ec_pd_id < MAX_PDC_PORT_NUM);
+	*image_path = NULL;
+	*hash_path = NULL;
+
+	for (int i = 0; i < ARRAY_SIZE(pdc_fw_map); i++) {
+		const struct pdc_fw_map *m = &pdc_fw_map[i];
+		/*
+		 * PDC FW 16.10.4 to 16.14.4 change revision fields
+		 * (e.g. GOOG0O01 -> GOOG0O11). Ignore patching revision.
+		 * Only need to match the first 6 chars and variant index.
+		 */
+		if (!strncmp(m->config_id, r->fw_name_str,
+			     PDC_FW_NAME_REVISION_INDEX) &&
+		    m->config_id[PDC_FW_NAME_VARIANT_INDEX] ==
+			    r->fw_name_str[PDC_FW_NAME_VARIANT_INDEX]) {
+			*image_path = m->image;
+			*hash_path = m->hash;
+			return;
 		}
-		break;
-	case 1:
-		/* TUSB546/1044 */
-		if (!strcmp(r->fw_name_str, PDC_RTS5453_TUSB546)) {
-			*image_path = "rts5453_GOOG0F00.bin";
-			*hash_path = "rts5453_GOOG0F00.hash";
-		} else if (!strcmp(r->fw_name_str, PDC_RTS5453VB_TUSB546)) {
-			*image_path = "rts5453vb_GOOG0O01.bin";
-			*hash_path = "rts5453vb_GOOG0O01.hash";
-		} else {
-			*image_path = NULL;
-			*hash_path = NULL;
-		}
-		break;
-	default:
-		printf("Unknown ec_pd_id %d\n", ec_pd_id);
 	}
+	printf("Unknown PDC name (ec_pd_id %d): %s\n", ec_pd_id, r->fw_name_str);
 }
 
 const struct audio_config *variant_probe_audio_config(void)
