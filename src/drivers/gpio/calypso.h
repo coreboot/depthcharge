@@ -17,7 +17,7 @@
 #define _SOC_QUALCOMM_CALYPSO_GPIO_H_
 
 #include "gpio.h"
-#include "drivers/soc/x1p42100.h"
+#include "drivers/soc/calypso.h"
 
 #define TLMM_GPIO_OFF_DELTA	0x1000
 
