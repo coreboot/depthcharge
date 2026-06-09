@@ -6,7 +6,7 @@
 #include "drivers/storage/qcom_ufs.h"
 #include "drivers/timer/timer.h"
 
-static void *const gcc = (void *)QCOM_GCC_BASE;
+static void *const gcc = (void *)QCOM_GCC_CLK_CNTRL_BASE;
 
 static void gcc_write32(uint32_t offset, uint32_t value)
 {
