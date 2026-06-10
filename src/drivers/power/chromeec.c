@@ -21,7 +21,7 @@
 
 static int chromeec_reset(PowerOps *me)
 {
-	cros_ec_reboot(EC_REBOOT_FLAG_IMMEDIATE);
+	cros_ec_ap_reset();
 	halt();
 }
 
