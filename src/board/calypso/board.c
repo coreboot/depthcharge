@@ -31,6 +31,7 @@
 #include "drivers/soc/qcom_spmi.h"
 #include "drivers/soc/calypso.h"
 #include "drivers/storage/nvme.h"
+#include "drivers/storage/qcom_ufs.h"
 #include "drivers/tpm/google/i2c.h"
 #include <pci.h>
 #include <pci/pci.h>
@@ -50,10 +51,19 @@ static void usb_setup(void)
 
 static void storage_setup(void)
 {
+	/* UFS */
+	if (CONFIG(DRIVER_STORAGE_UFS_QCOM)) {
+		struct qcom_ufs_ctlr *ufs_host = new_qcom_ufs_ctlr(QCOM_UFS_HCI_BASE);
+		list_insert_after(&ufs_host->ufs.bctlr.list_node,
+				  &fixed_block_dev_controllers);
+	}
+
 	/* NVMe */
-	NvmeCtrlr *nvme = new_nvme_ctrlr(variant_get_nvme_pcidev());
-	list_insert_after(&nvme->ctrlr.list_node,
-			  &fixed_block_dev_controllers);
+	if (CONFIG(DRIVER_STORAGE_NVME)) {
+		NvmeCtrlr *nvme = new_nvme_ctrlr(variant_get_nvme_pcidev());
+		list_insert_after(&nvme->ctrlr.list_node,
+				  &fixed_block_dev_controllers);
+	}
 }
 
 static void qspi_clock_setup(void)
