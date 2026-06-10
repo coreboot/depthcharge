@@ -37,3 +37,4 @@ dev-y += net.c
 dev-y += enet.c
 
 dev-$(CONFIG_DRIVER_SOC_QCOM_SPMI) += spmi.c
+dev-y += kernel_cmdline.c
