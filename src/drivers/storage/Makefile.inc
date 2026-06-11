@@ -36,6 +36,7 @@ depthcharge-$(CONFIG_DRIVER_STORAGE_UFS_QCOM) += qcom_ufs.c
 
 ifeq ($(CONFIG_DRIVER_STORAGE_UFS_QCOM),y)
 depthcharge-$(CONFIG_DRIVER_SOC_X1P42100) += qcom_ufs_phy_x1p42100.c
+depthcharge-$(CONFIG_DRIVER_SOC_CALYPSO) += qcom_ufs_phy_calypso.c
 endif
 
 subdirs-y += mtd
