@@ -41,8 +41,8 @@ enum timestamp_id {
 
 	/* 990-997 reserved for vendorcode extensions (990-997: Intel ME continued) */
 	TS_ME_ROM_START = 990,
-	TS_ISSE_DMU_LOAD_END = 991,
-	TS_ESE_LOAD_AUNIT_END = 992,
+	TS_DMU_LOAD_END = 991,
+	TS_AUNIT_LOAD_END = 992,
 
 	/* 998-999 reserved for vendorcode extensions (998-999: ARM Trusted Firmware) */
 	TS_TFA_LOAD_BL32_START = 998,
