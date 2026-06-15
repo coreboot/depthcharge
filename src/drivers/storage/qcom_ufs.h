@@ -106,6 +106,7 @@ enum qcom_ufs_phy_reg_idx {
 	QPHY_PCS_READY_STATUS,
 	QPHY_POWER_DOWN_CTRL,
 	QPHY_LINECFG,
+	QPHY_MULTI_LANE_CTRL1,
 	QPHY_REGS_MAX,
 };
 
@@ -131,6 +132,8 @@ struct qcom_ufs_ctlr {
 };
 
 struct qcom_ufs_ctlr *new_qcom_ufs_ctlr(uintptr_t hci_base);
+void qcom_ufs_dev_reset(void);
+void qcom_ufs_setup_mux(void);
 
 extern const struct qcom_ufs_phy_cfg qcom_ufs_phy_cfg;
 

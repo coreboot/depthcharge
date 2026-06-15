@@ -84,6 +84,10 @@ static void qcom_ufs_phy_init_tbls(struct qcom_ufs_ctlr *qcom_ufs, int lanes)
 	const struct qcom_ufs_phy_tbls *tbls = &cfg->tbls;
 	uintptr_t base = cfg->phy_base;
 	const struct qcom_ufs_phy_offsets *offs = cfg->offsets;
+	void *pcs = (void *)(base + offs->pcs);
+
+	if (cfg->regs[QPHY_MULTI_LANE_CTRL1])
+		write32(pcs + cfg->regs[QPHY_MULTI_LANE_CTRL1], 0x0A);
 
 	qcom_ufs_phy_write_tbl(qcom_ufs, base + offs->serdes, tbls->serdes, tbls->serdes_num);
 	qcom_ufs_phy_write_tbl(qcom_ufs, base + offs->tx, tbls->tx, tbls->tx_num);
@@ -95,6 +99,14 @@ static void qcom_ufs_phy_init_tbls(struct qcom_ufs_ctlr *qcom_ufs, int lanes)
 	}
 
 	qcom_ufs_phy_write_tbl(qcom_ufs, base + offs->pcs, tbls->pcs, tbls->pcs_num);
+}
+
+__weak void qcom_ufs_dev_reset(void)
+{
+}
+
+__weak void qcom_ufs_setup_mux(void)
+{
 }
 
 static int qcom_ufs_pre_hce(struct qcom_ufs_ctlr *qcom_ufs)
@@ -114,6 +126,8 @@ static int qcom_ufs_pre_hce(struct qcom_ufs_ctlr *qcom_ufs)
 
 	ufs_enable_clocks();
 
+	qcom_ufs_dev_reset();
+
 	rc = ufs_dme_get(ufs, PA_AVAILTXDATALANES, &qcom_ufs->avail_lanes);
 	if (rc) {
 		printf("%s: DME_GET PA_AvailTxDataLanes failed (%d)\n",
@@ -127,6 +141,8 @@ static int qcom_ufs_pre_hce(struct qcom_ufs_ctlr *qcom_ufs)
 		       __func__, lanes, cfg->lanes);
 		return -1;
 	}
+
+	qcom_ufs_setup_mux();
 
 	ufs_write32(ufs, UFS_MEM_CFG1,
 		    ufs_read32(ufs, UFS_MEM_CFG1) | CFG1_UFS_PHY_SOFT_RESET);
