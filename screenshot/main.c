@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 	state->focused_item = __ITEM__;
 	state->disabled_item_mask = __DISABLED_ITEM_MASK__;
 	state->hidden_item_mask = __HIDDEN_ITEM_MASK__;
+	state->error_code = __ERROR_CODE__;
 	state->current_page = __PAGE__;
 
 	/*
