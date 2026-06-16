@@ -22,15 +22,16 @@ static void tps6699x_set_i2c_speed(Tps6699x *me)
 
 	if (CONFIG_DRIVER_EC_TPS6699X_I2C_SPEED_KHZ == 0) {
 		/* Feature not used. Do not adjust the bus speed. */
-		printf("%s: Skipping adjusting I2C bus speed\n", me->chip_name);
+		cros_ec_ap_print("%s: Skipping adjusting I2C bus speed\n", me->chip_name);
 		return;
 	}
 
 	status = cros_ec_i2c_set_speed(me->bus->remote_bus,
 				       CONFIG_DRIVER_EC_TPS6699X_I2C_SPEED_KHZ, &old_speed_khz);
 	if (status < 0) {
-		printf("%s: Could not set I2C bus speed to %u kHz! (%d)\n", me->chip_name,
-		       CONFIG_DRIVER_EC_TPS6699X_I2C_SPEED_KHZ, status);
+		cros_ec_ap_print("%s: Could not set I2C bus speed to %u kHz! (%d)\n",
+				 me->chip_name, CONFIG_DRIVER_EC_TPS6699X_I2C_SPEED_KHZ,
+				 status);
 		return;
 	}
 
@@ -52,8 +53,8 @@ static void tps6699x_restore_i2c_speed(Tps6699x *me)
 	 */
 	status = cros_ec_i2c_set_speed(me->bus->remote_bus, me->saved_i2c_speed_khz, 0);
 	if (!status)
-		printf("%s: Could not restore I2C speed to %u kHz! (%d)\n", me->chip_name,
-		       me->saved_i2c_speed_khz, status);
+		cros_ec_ap_print("%s: Could not restore I2C speed to %u kHz! (%d)\n",
+				 me->chip_name, me->saved_i2c_speed_khz, status);
 }
 
 static int tps6699x_construct_i2c_tunnel(Tps6699x *me)
@@ -66,13 +67,13 @@ static int tps6699x_construct_i2c_tunnel(Tps6699x *me)
 		return ret;
 
 	if (r.bus_type != EC_BUS_TYPE_I2C) {
-		printf("%s: Unexpected bus %d for port %d\n", me->chip_name, r.bus_type,
-		       me->ec_pd_id);
+		cros_ec_ap_print("%s: Unexpected bus %d for port %d\n", me->chip_name,
+				 r.bus_type, me->ec_pd_id);
 		return -1;
 	}
 
-	printf("%s: Located chip at port %d, addr 0x%02x\n", me->chip_name, r.i2c_info.port,
-	       r.i2c_info.addr_flags);
+	cros_ec_ap_print("%s: Located chip at port %d, addr 0x%02x\n", me->chip_name,
+			 r.i2c_info.port, r.i2c_info.addr_flags);
 
 	me->bus = new_cros_ec_tunnel_i2c(r.i2c_info.port);
 	me->chip_info.i2c_addr = r.i2c_info.addr_flags;
@@ -87,7 +88,8 @@ static vb2_error_t tps6699x_ec_tunnel_status(const VbootAuxfwOps *vbaux, int *pr
 
 	ret = cros_ec_tunnel_i2c_protect_status(me->bus, protected);
 	if (ret < 0) {
-		printf("%s: Error %d getting EC I2C tunnel status.\n", me->chip_name, ret);
+		cros_ec_ap_print("%s: Error %d getting EC I2C tunnel status.\n", me->chip_name,
+				 ret);
 		return VB2_ERROR_UNKNOWN;
 	}
 
@@ -109,7 +111,7 @@ static bool tps6699x_query_chip_host_cmd(Tps6699x *me)
 
 	status = cros_ec_pd_chip_info(me->ec_pd_id, /* live= */ true, &r);
 	if (status < 0) {
-		printf("%s: could not get chip info (%d)\n", me->chip_name, status);
+		cros_ec_ap_print("%s: could not get chip info (%d)\n", me->chip_name, status);
 		return false;
 	}
 
@@ -130,12 +132,12 @@ static bool force_update(Tps6699x *me)
 
 	/* If forcing update, only do this once to avoid looping */
 	if (me->has_updated) {
-		printf("%s: Not forcing update because an update already happened.\n",
-		       me->chip_name);
+		cros_ec_ap_print("%s: Not forcing update because an update already happened.\n",
+				 me->chip_name);
 		return false;
 	}
 
-	printf("%s: Forcing an update\n", me->chip_name);
+	cros_ec_ap_print("%s: Forcing an update\n", me->chip_name);
 	return true;
 }
 
@@ -177,23 +179,28 @@ static vb2_error_t tps6699x_check_hash(const VbootAuxfwOps *vbaux, const uint8_t
 		break;
 	case -EC_RES_BUSY:
 		/* EC power state or battery not ready for update */
-		printf("%s: Skipping update: Battery SoC or power state inadequate: %d\n",
-		       me->chip_name, ret);
+		cros_ec_ap_print(
+			"%s: Skipping update: Battery SoC or power state inadequate: %d\n",
+			me->chip_name, ret);
 		*severity = VB2_AUXFW_NO_UPDATE;
 		return VB2_SUCCESS;
 	default:
 		/* Unknown error */
-		printf("%s: Skipping update: Error suspending PD stack: %d\n", me->chip_name,
-		       ret);
+		cros_ec_ap_print("%s: Skipping update: Error suspending PD stack: %d\n",
+				 me->chip_name, ret);
 		*severity = VB2_AUXFW_NO_DEVICE;
 		return VB2_SUCCESS;
 	}
 
-	printf("%s: Update FW from %u.%u.%u (%s) to %u.%u.%u (%s)\n", me->chip_name,
-	       PDC_FWVER_MAJOR(ver_current), PDC_FWVER_MINOR(ver_current),
-	       PDC_FWVER_PATCH(ver_current), me->chip_info.fw_name_str,
-	       PDC_FWVER_MAJOR(ver_new), PDC_FWVER_MINOR(ver_new), PDC_FWVER_PATCH(ver_new),
-	       hash_fw_name_str);
+	cros_ec_ap_print("%s: Update FW from %u.%u.%u (%s) to %u.%u.%u (%s)\n", me->chip_name,
+			 PDC_FWVER_MAJOR(ver_current), PDC_FWVER_MINOR(ver_current),
+			 PDC_FWVER_PATCH(ver_current), me->chip_info.fw_name_str,
+			 PDC_FWVER_MAJOR(ver_new), PDC_FWVER_MINOR(ver_new),
+			 PDC_FWVER_PATCH(ver_new), hash_fw_name_str);
+
+	/* Repeat this log message into the EC console */
+	cros_ec_print("%s: Using PDC image '%s' with hash file '%s'\n", me->chip_name,
+		      vbaux->fw_image_name, vbaux->fw_hash_name);
 
 	*severity = VB2_AUXFW_SLOW_UPDATE;
 	debug("update severity %d\n", *severity);
@@ -213,7 +220,7 @@ static vb2_error_t tps6699x_update_image(const VbootAuxfwOps *vbaux, const uint8
 
 	/* If the I2C tunnel is not known, probe EC for that */
 	if (!me->bus && tps6699x_construct_i2c_tunnel(me)) {
-		printf("%s: Error constructing i2c tunnel\n", me->chip_name);
+		cros_ec_ap_print("%s: Error constructing i2c tunnel\n", me->chip_name);
 		goto exit;
 	}
 
@@ -238,8 +245,8 @@ static vb2_error_t tps6699x_update_image(const VbootAuxfwOps *vbaux, const uint8
 	if (ret == 0)
 		status = VB2_SUCCESS;
 
-	printf("%s: tps6699x_perform_fw_update return code: %d (vb2 status=%d)\n",
-	       me->chip_name, ret, status);
+	cros_ec_ap_print("%s: tps6699x_perform_fw_update return code: %d (vb2 status=%d)\n",
+			 me->chip_name, ret, status);
 
 	me->has_updated = true;
 
@@ -256,25 +263,25 @@ static vb2_error_t tps6699x_post_update(const VbootAuxfwOps *vbaux)
 	/* Re-enable the EC PD stack */
 	ret = cros_ec_pd_control(me->ec_pd_id, PD_RESUME);
 	if (ret) {
-		printf("%s: Cannot resume PD: %d. Rebooting.\n", me->chip_name, ret);
+		cros_ec_ap_print("%s: Cannot resume PD: %d. Rebooting.\n", me->chip_name, ret);
 		/* Resuming the EC PD stack failed. Reboot the EC to recover */
 		return VB2_REQUEST_REBOOT_EC_TO_RO;
 	}
 
-	printf("%s: PDC control handed back to EC\n", me->chip_name);
+	cros_ec_ap_print("%s: PDC control handed back to EC\n", me->chip_name);
 
 	/* Give a generous timeout for the EC PD stack to resume */
 	start = timer_us(0);
 	do {
 		mdelay(200);
-		printf("%s: Polling for chip...\n", me->chip_name);
+		cros_ec_ap_print("%s: Polling for chip...\n", me->chip_name);
 		if (tps6699x_query_chip_host_cmd(me)) {
-			printf("%s: Chip is up. All done.\n", me->chip_name);
+			cros_ec_ap_print("%s: Chip is up. All done.\n", me->chip_name);
 			return VB2_SUCCESS;
 		}
 	} while (timer_us(start) < TPS6699X_RESTART_DELAY_US);
 
-	printf("%s: Timed out contacting PDC\n", me->chip_name);
+	cros_ec_ap_print("%s: Timed out contacting PDC\n", me->chip_name);
 
 	/* Cannot contact PDC after timeout. Reboot the EC to recover. */
 	return VB2_REQUEST_REBOOT_EC_TO_RO;
@@ -303,7 +310,8 @@ Tps6699x *new_tps6699x(int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 
 	if (fw_ops.fw_image_name == NULL || fw_ops.fw_hash_name == NULL) {
 		/* No files, so don't perform an update */
-		printf("tps6699x.%d: Unknown PDC configuration. Skipping update.\n", ec_pd_id);
+		cros_ec_ap_print("tps6699x.%d: Unknown PDC configuration. Skipping update.\n",
+				 ec_pd_id);
 		return NULL;
 	}
 
@@ -332,9 +340,10 @@ const VbootAuxfwOps *new_tps6699x_from_chip_info(struct ec_response_pd_chip_info
 
 	tps6699x = new_tps6699x(ec_pd_id, r);
 	if (tps6699x == NULL) {
-		printf("tps6699x.%d: Error instantiating tps6699x driver. Skipping FW "
-		       "update.\n",
-		       ec_pd_id);
+		cros_ec_ap_print(
+			"tps6699x.%d: Error instantiating tps6699x driver. Skipping FW "
+			"update.\n",
+			ec_pd_id);
 		return NULL;
 	}
 

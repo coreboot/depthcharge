@@ -102,21 +102,21 @@ int tps6699x_stream_data(Tps6699x *me, const uint8_t broadcast_address, const ui
 		rv = i2c_write_raw(&me->bus->ops, broadcast_address, (uint8_t *)write_start_pos,
 				   write_length);
 		if (rv) {
-			printf("%s: Streaming data block failed (ret=%d, "
-			       "offset_into_block=%d, total_block_size=%zu,"
-			       "chunk_size=%d)",
-			       me->chip_name, rv, chunk_offset, buf_len,
-			       TPS6699X_DATA_CHUNK_LEN);
+			cros_ec_ap_print("%s: Streaming data block failed (ret=%d, "
+					 "offset_into_block=%d, total_block_size=%zu,"
+					 "chunk_size=%d)",
+					 me->chip_name, rv, chunk_offset, buf_len,
+					 TPS6699X_DATA_CHUNK_LEN);
 			return rv;
 		}
 
 		/* Periodically print a progress log message */
 		if ((chunk_offset / TPS6699X_DATA_CHUNK_LEN) % 32 == 0) {
-			printf("%s:  Block progress %u / %zu\n", me->chip_name, chunk_offset,
-			       buf_len);
+			cros_ec_ap_print("%s:  Block progress %u / %zu\n", me->chip_name,
+					 chunk_offset, buf_len);
 		}
 	}
 
-	printf("%s:  Block complete (%zu)\n", me->chip_name, buf_len);
+	cros_ec_ap_print("%s:  Block complete (%zu)\n", me->chip_name, buf_len);
 	return 0;
 }
