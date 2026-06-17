@@ -43,6 +43,7 @@
 #define FASTBOOT_PREFIX_LEN 4
 #define FASTBOOT_MSG_LEN_WO_PREFIX (FASTBOOT_MSG_MAX - FASTBOOT_PREFIX_LEN)
 #define FASTBOOT_MAX_DOWNLOAD_SIZE ((uint64_t)CONFIG_KERNEL_SIZE)
+#define FASTBOOT_MAX_FETCH_SIZE (0xFFFFFFFF)
 /* Maximum length of command packet as stated in the Fastboot documentation */
 #define FASTBOOT_COMMAND_MAX 4096
 

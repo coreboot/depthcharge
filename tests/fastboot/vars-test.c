@@ -533,6 +533,14 @@ static void test_fb_getvar_download_size(void **state)
 	TEST_FASTBOOT_GETVAR_OK(VAR_DOWNLOAD_SIZE, "", expected);
 }
 
+static void test_fb_getvar_max_fetch_size(void **state)
+{
+	char expected[32];
+	snprintf(expected, sizeof(expected), "0x%x", FASTBOOT_MAX_FETCH_SIZE);
+
+	TEST_FASTBOOT_GETVAR_OK(VAR_MAX_FETCH_SIZE, "", expected);
+}
+
 static void test_fb_getvar_current_slot(void **state)
 {
 	WILL_GET_ACTIVE_SLOT('a');
@@ -1041,6 +1049,17 @@ static void test_fb_cmd_getvar_download_size(void **state)
 	fastboot_cmd_getvar(fb, "max-download-size");
 }
 
+static void test_fb_cmd_getvar_max_fetch_size(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char expected[32];
+	snprintf(expected, sizeof(expected), "OKAY0x%x", FASTBOOT_MAX_FETCH_SIZE);
+
+	WILL_SEND_EXACT(fb, expected);
+
+	fastboot_cmd_getvar(fb, "max-fetch-size");
+}
+
 static void test_fb_cmd_getvar_is_userspace(void **state)
 {
 	struct FastbootOps *fb = *state;
@@ -1316,6 +1335,7 @@ static void test_fb_cmd_getvar_all(void **state)
 {
 	struct FastbootOps *fb = *state;
 	char expected_max_download_size[64];
+	char expected_max_fetch_size[64];
 
 	memset(&packets_list, 0, sizeof(packets_list));
 	/* Always should get the same FB pointer */
@@ -1329,6 +1349,9 @@ static void test_fb_cmd_getvar_all(void **state)
 	snprintf(expected_max_download_size, sizeof(expected_max_download_size),
 		 "INFOmax-download-size:0x%llx", FASTBOOT_MAX_DOWNLOAD_SIZE);
 
+	/* Expected response for max-fetch-size */
+	snprintf(expected_max_fetch_size, sizeof(expected_max_fetch_size),
+		 "INFOmax-fetch-size:0x%x", FASTBOOT_MAX_FETCH_SIZE);
 
 	/* Setup for slot-successful */
 	setup_partition_table(VAR_SLOT_SUCCESSFUL);
@@ -1411,6 +1434,7 @@ static void test_fb_cmd_getvar_all(void **state)
 
 	check_fb_cmd_getvar_all_contains("INFOcurrent-slot:a");
 	check_fb_cmd_getvar_all_contains(expected_max_download_size);
+	check_fb_cmd_getvar_all_contains(expected_max_fetch_size);
 	check_fb_cmd_getvar_all_contains("INFOis-userspace:no");
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:vbmeta_a:0x100");
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:boot_a:0x300");
@@ -1455,6 +1479,7 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 {
 	struct FastbootOps *fb = *state;
 	char expected_max_download_size[64];
+	char expected_max_fetch_size[64];
 
 	memset(&packets_list, 0, sizeof(packets_list));
 	/* Always should get the same FB pointer */
@@ -1464,6 +1489,10 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	/* Expected response for max-download-size */
 	snprintf(expected_max_download_size, sizeof(expected_max_download_size),
 		 "INFOmax-download-size:0x%llx", FASTBOOT_MAX_DOWNLOAD_SIZE);
+
+	/* Expected response for max-fetch-size */
+	snprintf(expected_max_fetch_size, sizeof(expected_max_fetch_size),
+		 "INFOmax-fetch-size:0x%x", FASTBOOT_MAX_FETCH_SIZE);
 
 	/* Setup for current-slot - will fail */
 	WILL_GET_ACTIVE_SLOT(0);
@@ -1548,6 +1577,7 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	check_fb_cmd_getvar_all_contains("OKAY");
 
 	check_fb_cmd_getvar_all_contains(expected_max_download_size);
+	check_fb_cmd_getvar_all_contains(expected_max_fetch_size);
 	check_fb_cmd_getvar_all_contains("INFOis-userspace:no");
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:vbmeta_a:0x100");
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:boot_a:0x300");
@@ -1610,6 +1640,7 @@ int main(void)
 		TEST(test_fb_getvar_partition_type_at_index_no_name),
 		TEST(test_fb_getvar_partition_type_at_index_last),
 		TEST(test_fb_getvar_download_size),
+		TEST(test_fb_getvar_max_fetch_size),
 		TEST(test_fb_getvar_current_slot),
 		TEST(test_fb_getvar_current_slot_fail),
 		TEST(test_fb_getvar_slot_suffixes),
@@ -1666,6 +1697,7 @@ int main(void)
 		TEST(test_fb_getvar_total_block_count),
 		TEST(test_fb_cmd_getvar_current_slot),
 		TEST(test_fb_cmd_getvar_download_size),
+		TEST(test_fb_cmd_getvar_max_fetch_size),
 		TEST(test_fb_cmd_getvar_is_userspace),
 		TEST(test_fb_cmd_getvar_partition_size),
 		TEST(test_fb_cmd_getvar_partition_type),

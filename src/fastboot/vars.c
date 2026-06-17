@@ -63,6 +63,7 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 	VAR_NO_ARGS("sku", VAR_SKU),
 	VAR_NO_ARGS("oem", VAR_OEM_ID),
 	VAR_NO_ARGS("partner-custom", VAR_PARTNER_CUSTOM),
+	VAR_NO_ARGS("max-fetch-size", VAR_MAX_FETCH_SIZE),
 	{.name = NULL},
 };
 
@@ -266,6 +267,9 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		break;
 	case VAR_DOWNLOAD_SIZE:
 		used_len = snprintf(outbuf, outbuf_len, "0x%llx", FASTBOOT_MAX_DOWNLOAD_SIZE);
+		break;
+	case VAR_MAX_FETCH_SIZE:
+		used_len = snprintf(outbuf, outbuf_len, "0x%x", FASTBOOT_MAX_FETCH_SIZE);
 		break;
 	case VAR_IS_USERSPACE:
 		used_len = snprintf(outbuf, outbuf_len, "no");

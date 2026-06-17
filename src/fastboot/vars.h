@@ -48,6 +48,7 @@ typedef enum fastboot_var {
 	VAR_SKU,
 	VAR_OEM_ID,
 	VAR_PARTNER_CUSTOM,
+	VAR_MAX_FETCH_SIZE,
 } fastboot_var_t;
 
 typedef enum fastboot_getvar_result {
