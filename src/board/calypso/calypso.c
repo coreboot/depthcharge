@@ -33,3 +33,13 @@ uintptr_t variant_get_gsc_i2c_base()
 {
 	return QUP_SERIAL1_BASE;
 }
+
+bool variant_nvme_supported(void)
+{
+	return true; // TODO: Use CDT/SMEM information
+}
+
+bool variant_ufs_supported(void)
+{
+	return true; // TODO: Use CDT/SMEM information
+}

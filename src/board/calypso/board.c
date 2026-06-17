@@ -15,6 +15,7 @@
 
 #include <assert.h>
 #include <libpayload.h>
+#include "base/fw_config.h"
 #include "base/init_funcs.h"
 #include "boot/commandline.h"
 #include "boot/fit.h"
@@ -49,19 +50,29 @@ static void usb_setup(void)
 	/* placeholder */
 }
 
+__weak bool variant_nvme_supported(void)
+{
+	return (!fw_config_is_provisioned() ||
+		fw_config_probe(FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_NVME)));
+}
+
+__weak bool variant_ufs_supported(void)
+{
+	return (!fw_config_is_provisioned() ||
+		fw_config_probe(FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_UFS)));
+}
+
 static void storage_setup(void)
 {
-	/* UFS */
-	if (CONFIG(DRIVER_STORAGE_UFS_QCOM)) {
-		struct qcom_ufs_ctlr *ufs_host = new_qcom_ufs_ctlr(QCOM_UFS_HCI_BASE);
-		list_insert_after(&ufs_host->ufs.bctlr.list_node,
+	if (CONFIG(DRIVER_STORAGE_NVME) && variant_nvme_supported()) {
+		NvmeCtrlr *nvme = new_nvme_ctrlr(variant_get_nvme_pcidev());
+		list_insert_after(&nvme->ctrlr.list_node,
 				  &fixed_block_dev_controllers);
 	}
 
-	/* NVMe */
-	if (CONFIG(DRIVER_STORAGE_NVME)) {
-		NvmeCtrlr *nvme = new_nvme_ctrlr(variant_get_nvme_pcidev());
-		list_insert_after(&nvme->ctrlr.list_node,
+	if (CONFIG(DRIVER_STORAGE_UFS_QCOM) && variant_ufs_supported()) {
+		struct qcom_ufs_ctlr *ufs_host = new_qcom_ufs_ctlr(QCOM_UFS_HCI_BASE);
+		list_insert_after(&ufs_host->ufs.bctlr.list_node,
 				  &fixed_block_dev_controllers);
 	}
 }
