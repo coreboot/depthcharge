@@ -33,10 +33,20 @@ enum timestamp_id {
 	TS_CSE_FW_SYNC_START = 948,
 	TS_CSE_FW_SYNC_END = 949,
 
-	/* 990+ reserved for vendorcode extensions (990-999: Intel ME continued) */
+	/* 980-990 reserved for vendorcode extensions (980-990: Qualcomm/QCLib) */
+	TS_QUALCOMM_QCLIB_INIT_START = 980,
+	TS_QUALCOMM_QCLIB_INIT_END = 981,
+	TS_QUALCOMM_QCLIB_REINIT_START = 982,
+	TS_QUALCOMM_QCLIB_REINIT_END = 983,
+
+	/* 990-997 reserved for vendorcode extensions (990-997: Intel ME continued) */
 	TS_ME_ROM_START = 990,
 	TS_ISSE_DMU_LOAD_END = 991,
 	TS_ESE_LOAD_AUNIT_END = 992,
+
+	/* 998-999 reserved for vendorcode extensions (998-999: ARM Trusted Firmware) */
+	TS_TFA_LOAD_BL32_START = 998,
+	TS_TFA_LOAD_BL32_END = 999,
 
 	// Depthcharge entry IDs start at 1000.
 	TS_START = 1000,
