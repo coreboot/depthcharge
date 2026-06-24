@@ -41,8 +41,13 @@ int boot(struct boot_info *bi)
 		if (bi->ramdisk_addr) {
 			uint32_t initrd_addr_max = header->initrd_addr_max;
 
-			if (initrd_addr_max > INITRD_MAX_ADDRESS)
-				initrd_addr_max = INITRD_MAX_ADDRESS;
+			initrd_addr_max = MIN(initrd_addr_max,
+					      MIN(INITRD_MAX_ADDRESS, CONFIG_BASE_ADDRESS - 1));
+
+			if (initrd_addr_max < bi->ramdisk_size) {
+				printf("Ramdisk is too large\n");
+				return -1;
+			}
 
 			void *ramdisk = (void*)ALIGN_DOWN(
 				initrd_addr_max - bi->ramdisk_size, 4096);
@@ -55,7 +60,7 @@ int boot(struct boot_info *bi)
 				return -1;
 			}
 
-			memcpy(ramdisk, bi->ramdisk_addr, bi->ramdisk_size);
+			memmove(ramdisk, bi->ramdisk_addr, bi->ramdisk_size);
 			bi->ramdisk_addr = ramdisk;
 			header->ramdisk_image = (uintptr_t)ramdisk;
 			header->ramdisk_size = bi->ramdisk_size;
