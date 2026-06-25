@@ -296,6 +296,8 @@ static void send_cse_eop_async(void *unused)
 {
 	if (is_cse_eop_supported())
 		do_send_end_of_post(false);
+	else
+		cse_late_finalize();
 }
 
 static void send_cse_eop_with_late_finalize(void *unused)

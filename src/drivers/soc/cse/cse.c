@@ -1085,8 +1085,17 @@ static void cse_final_end_of_firmware(void)
 /* This function to perform essential post EOP cse related operations.*/
 void cse_late_finalize(void)
 {
+	static bool cse_finalize = false;
+
+	if (cse_finalize) {
+		printk(BIOS_WARNING, "CSE already finalized\n");
+		return;
+	}
+
 	cse_final_ready_to_boot();
 	cse_final_end_of_firmware();
+
+	cse_finalize = true;
 }
 
 void pmc_global_reset_disable_and_lock(void)
