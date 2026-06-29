@@ -249,6 +249,7 @@ struct FastbootOps *fastboot_init(void)
 		fb_session = fastboot_setup_tcp();
 
 	if (fb_session != NULL) {
+		fb_session->reboot_is_pending = false;
 		if (CONFIG(DRIVER_EC_CROS))
 			cros_ec_print("Fastboot %s\n", fb_session->serial);
 		fastboot_reset_staging(fb_session);
@@ -265,7 +266,7 @@ enum fastboot_state fastboot_release(struct FastbootOps *fb_session)
 	enum fastboot_state final_state;
 
 	printf("fastboot done.\n");
-	final_state = fb_session->state;
+	final_state = fb_session->reboot_is_pending ? REBOOT : fb_session->state;
 	fastboot_log_release(fb_session);
 	if (fb_session->release)
 		fb_session->release(fb_session);

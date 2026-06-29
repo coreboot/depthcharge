@@ -79,6 +79,8 @@ struct fastboot_log;
 struct FastbootOps {
 	/* State of the session */
 	enum fastboot_state state;
+	/* Reboot on exit */
+	bool reboot_is_pending;
 
 	/* Device used as a target for flash/erase command. Maybe NULL. */
 	BlockDev *disk;
