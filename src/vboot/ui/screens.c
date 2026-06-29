@@ -491,7 +491,7 @@ static vb2_error_t language_select_action(struct ui_context *ui)
 	UI_INFO("Locale changed to %u\n", locale_id);
 
 	/* Write locale id back to nvdata. */
-	vb2api_set_locale_id(ui->ctx, locale_id);
+	vb2api_nv_set(ui->ctx, VB2_NV_LOCALIZATION_INDEX, locale_id);
 
 	/* Commit nvdata changes immediately, in case of three-finger salute
 	   reboot. Ignore commit errors in recovery mode. */
@@ -1268,7 +1268,7 @@ static const struct ui_screen_info fastboot_screen = {
 /* Set VB2_NV_DIAG_REQUEST and reboot. */
 static vb2_error_t launch_diagnostics_action(struct ui_context *ui)
 {
-	vb2api_request_diagnostics(ui->ctx);
+	vb2api_nv_set(ui->ctx, VB2_NV_DIAG_REQUEST, 1);
 	return VB2_REQUEST_REBOOT;
 }
 

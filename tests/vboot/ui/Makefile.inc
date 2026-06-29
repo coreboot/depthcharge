@@ -40,8 +40,7 @@ loop-test-mocks += vb2api_enable_developer_mode
 loop-test-mocks += vb2api_gbb_get_flags
 loop-test-mocks += vb2api_get_dev_default_boot_target
 loop-test-mocks += vb2api_get_locale_id
-loop-test-mocks += vb2api_request_diagnostics
-loop-test-mocks += vb2api_set_locale_id
+loop-test-mocks += vb2api_nv_set
 
 $(call copy-test,loop-test,loop-detachable-test)
 loop-detachable-test-config += CONFIG_DETACHABLE=1

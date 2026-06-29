@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 	struct ui_context ui;
 	struct ui_state *state;
 
-	vb2api_set_locale_id(fake_ctx, 0);
+	vb2api_nv_set(fake_ctx, VB2_NV_LOCALIZATION_INDEX, 0);
 	VB2_TRY(ui_init_context(&ui, fake_ctx, __SCREEN__));
 	state = ui.state;
 	state->menu_state.focused_item = __ITEM__;

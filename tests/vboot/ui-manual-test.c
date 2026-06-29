@@ -597,7 +597,7 @@ static void test_manual_ui_enter_diagnostics(void **state)
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
-	expect_function_call(vb2api_request_diagnostics);
+	WILL_NV_SET(VB2_NV_DIAG_REQUEST, 1);
 	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
@@ -774,6 +774,7 @@ static void test_language_ui_change_language(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select language */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select locale 24 */
+	WILL_NV_SET(VB2_NV_LOCALIZATION_INDEX, 24);
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_HAVE_NO_EXTERNAL();
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, 23);
@@ -799,6 +800,7 @@ static void test_language_ui_locale_count_0(void **state)
 	WILL_PRESS_KEY(UI_KEY_UP, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select language */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select locale 0 */
+	WILL_NV_SET(VB2_NV_LOCALIZATION_INDEX, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_HAVE_NO_EXTERNAL();
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, 23);

@@ -16,11 +16,6 @@ uint32_t vb2api_get_locale_id(struct vb2_context *ctx)
 	return mock_locale_id;
 }
 
-void vb2api_set_locale_id(struct vb2_context *ctx, uint32_t locale_id)
-{
-	mock_locale_id = locale_id;
-}
-
 int vb2api_diagnostic_ui_enabled(struct vb2_context *ctx)
 {
 	return mock();
@@ -32,9 +27,15 @@ vb2_error_t vb2api_enable_developer_mode(struct vb2_context *ctx)
 	return VB2_SUCCESS;
 }
 
-void vb2api_request_diagnostics(struct vb2_context *ctx)
+vb2_error_t vb2api_nv_set(struct vb2_context *ctx, enum vb2_nv_param param, uint32_t value)
 {
-	function_called();
+	check_expected(param);
+	check_expected(value);
+
+	if (param == VB2_NV_LOCALIZATION_INDEX)
+		mock_locale_id = value;
+
+	return VB2_SUCCESS;
 }
 
 enum vb2_dev_default_boot_target
