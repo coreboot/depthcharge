@@ -1124,7 +1124,7 @@ static void do_full_reset(void)
 	reboot();
 }
 
-void do_global_reset(void)
+void soc_global_reset(void)
 {
 	/* Ask CSE to do the global reset */
 	if (cse_request_global_reset())
@@ -1133,4 +1133,9 @@ void do_global_reset(void)
 	/* global reset if CSE fail to reset */
 	pmc_global_reset_enable(1);
 	do_full_reset();
+}
+
+void do_global_reset(void)
+{
+	soc_global_reset();
 }

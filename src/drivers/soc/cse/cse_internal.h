@@ -28,6 +28,7 @@
 void pmc_global_reset_disable_and_lock(void);
 void pmc_global_reset_enable(bool enable);
 void do_global_reset(void);
+void soc_global_reset(void);
 bool acpi_get_sleep_type_s3(void);
 
 #endif // __DRIVERS_SOC_CSE_CSE_INTERNAL_H__
