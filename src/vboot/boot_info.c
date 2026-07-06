@@ -41,6 +41,7 @@
 
 #define VBMETA_DIGEST_KEY "androidboot.vbmeta.public_key_digest"
 #define VBMETA_DIGEST_LEN (VB2_SHA256_DIGEST_SIZE * 2)
+#define MIN_KERNEL_SIZE 1024
 
 /************************* CrOS Image Parsing ****************************/
 
@@ -267,11 +268,21 @@ static int fill_info_gki(struct boot_info *bi,
 			free_gpt(bdev, gpt);
 	}
 
-	/* Parse devicetree before setting up bootconfig. This will allow to populate
-	   androidboot.dtbo_idx bootconfig parameter for use by FirmwareDtboVerification. */
 	struct boot_img_hdr_v4 *boot_hdr = (struct boot_img_hdr_v4 *)kparams->kernel_buffer;
 
+	/* Validate boot partition header and kernel size */
+	if (memcmp(boot_hdr->magic, BOOT_MAGIC, BOOT_MAGIC_SIZE) != 0 ||
+	    boot_hdr->kernel_size < MIN_KERNEL_SIZE ||
+	    boot_hdr->kernel_size > bi->ramdisk_addr - bi->kernel) {
+		printf("Incorrect 'boot' partition header, kernel_size: %u\n",
+			  boot_hdr->kernel_size);
+		return -1;
+	}
+
 	bi->kernel_size = boot_hdr->kernel_size;
+
+	/* Parse devicetree before setting up bootconfig. This will allow to populate
+	   androidboot.dtbo_idx bootconfig parameter for use by FirmwareDtboVerification. */
 	if (CONFIG(ARCH_ARM))
 		bi->dt = android_parse_dtbs(kparams->dtbo, kparams->dtbo_size);
 

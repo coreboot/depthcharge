@@ -16,6 +16,7 @@
  */
 
 #include <libpayload.h>
+#include <limits.h>
 
 #include "arch/x86/boot.h"
 #include "vboot/boot.h"
@@ -37,6 +38,25 @@ int boot(struct boot_info *bi)
 		// Find the kernel header.
 		struct setup_header *header = &bparams->hdr;
 
+		if (header->syssize > UINT_MAX / 16) {
+			printf("Invalid kernel syssize\n");
+			return -1;
+		}
+		size_t kernel_size = header->syssize * 16;
+
+		uint8_t setup_sects = header->setup_sects ? header->setup_sects : 4;
+		uintptr_t pm_offset = (setup_sects + 1) * SectSize;
+
+		if (kernel_size > SIZE_MAX - pm_offset) {
+			printf("Kernel size overflow\n");
+			return -1;
+		}
+
+		if (pm_offset + kernel_size > bi->kernel_size) {
+			printf("Kernel image exceeds buffer size\n");
+			return -1;
+		}
+
 		// Add ramdisk if provided
 		if (bi->ramdisk_addr) {
 			uint32_t initrd_addr_max = header->initrd_addr_max;
@@ -51,8 +71,6 @@ int boot(struct boot_info *bi)
 
 			void *ramdisk = (void*)ALIGN_DOWN(
 				initrd_addr_max - bi->ramdisk_size, 4096);
-
-			unsigned long kernel_size = header->syssize * 16;
 
 			if (((uintptr_t)bi->kernel + kernel_size) >
 			    (uintptr_t)ramdisk) {
@@ -78,10 +96,8 @@ int boot(struct boot_info *bi)
 		bi->params = &tmp_params;
 
 		// Move the protected mode part of the kernel into place.
-		uintptr_t pm_offset = (header->setup_sects + 1) * SectSize;
-		uintptr_t pm_size = header->syssize * 16;
 		uintptr_t pm_start = (uintptr_t)bi->kernel + pm_offset;
-		memmove(bi->kernel, (void *)pm_start, pm_size);
+		memmove(bi->kernel, (void *)pm_start, kernel_size);
 	}
 
 	return boot_x86_linux(bi);
