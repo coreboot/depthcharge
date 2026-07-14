@@ -388,10 +388,6 @@ static void gsc_i2c_tpm_ready(I2cTpmChipOps *me)
 	// Ignore any write error, but it is logged.
 	if (gsc_i2c_write(tpm, tpm_sts(tpm->base.locality), buf, sizeof(buf)))
 		printf("%s: Failed to write TpmStsCommandReady\n", __func__);
-
-	/* Why do we need this delay? gsc_i2c_write already waits for a write
-	 * ack interrupt. */
-	udelay(GscTimeoutShort);
 }
 
 /*
