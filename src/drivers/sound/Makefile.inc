@@ -53,5 +53,6 @@ depthcharge-$(CONFIG_DRIVER_SOUND_RT722_SNDW) += rt7xx_sndw.c
 depthcharge-$(CONFIG_DRIVER_SOUND_SSM4567) += ssm4567.c
 depthcharge-$(CONFIG_DRIVER_SOUND_TAS2563) += tas2563.c
 depthcharge-$(CONFIG_DRIVER_SOUND_TEGRA_AUDIO_HUB) += tegra_ahub.c
+depthcharge-$(CONFIG_DRIVER_SOUND_RT1321_SNDW) += rt1321_sndw.c
 depthcharge-$(CONFIG_DRIVER_SOUND_WSA8845_SNDW) += wsa8845_sndw.c
 depthcharge-y += dummy.c sound.c

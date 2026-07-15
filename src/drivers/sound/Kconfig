@@ -197,6 +197,10 @@ config DRIVER_SOUND_MAX98396
 config DRIVER_INTEL_GENERIC_AUDIO
 	bool "Audio setup for Intel platform"
 
+config DRIVER_SOUND_RT1321_SNDW
+	bool "RT1321 SNDW codec driver"
+	default n
+
 config DRIVER_SOUND_WSA8845_SNDW
 	bool "WSA8845 SNDW codec driver"
 	default n

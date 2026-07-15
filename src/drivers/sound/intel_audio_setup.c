@@ -315,6 +315,14 @@ static SoundOps *setup_rt1320_sndw(SndwOps *ops, unsigned int beep_ms)
 	return &new_rt1320_sndw(ops, beep_ms)->ops;
 }
 
+static SoundOps *setup_rt1321_sndw(SndwOps *ops, unsigned int beep_ms)
+{
+	if (!CONFIG(DRIVER_SOUND_RT1321_SNDW))
+		return NULL;
+
+	return &new_rt1321_sndw(ops, beep_ms)->ops;
+}
+
 static void configure_audio_codec(const struct audio_codec *codec,
 				  struct audio_data *data)
 {
@@ -404,6 +412,10 @@ static void configure_audio_codec(const struct audio_codec *codec,
                         data->ops = &data->route->ops;
                 }
                 break;
+	case AUDIO_RT1321:
+		if (data->type == AUDIO_SNDW)
+			data->ops = setup_rt1321_sndw(&data->sndw->ops, BEEP_DURATION);
+		break;
 	default:
 		break;
 	}
@@ -492,6 +504,8 @@ enum audio_codec_type audio_get_type(unsigned int link)
 		return AUDIO_MAX98363;
 	else if (CONFIG(DRIVER_SOUND_MAX98373_SNDW) && audio_compare_codec_id(&info, &max98373_id))
 		return AUDIO_MAX98373;
+	else if (CONFIG(DRIVER_SOUND_RT1321_SNDW) && audio_compare_codec_id(&info, &rt1321_id))
+		return AUDIO_RT1321;
 	else
 		return AUDIO_CODEC_NONE;
 }
