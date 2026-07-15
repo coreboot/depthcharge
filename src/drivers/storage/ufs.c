@@ -922,6 +922,70 @@ static int ufs_get_descriptor(UfsCtlr *ufs, UfsDesc *desc, uint8_t idn, uint8_t 
 	return 0;
 }
 
+/* Read UFS string descriptor by index and convert UTF-16BE to ASCII */
+static void ufs_read_string_desc(UfsCtlr *ufs, uint8_t index, char *buf, size_t max_len)
+{
+	uint8_t raw_str[UFS_DESCRIPTOR_MAX_SIZE];
+	uint8_t resp_len = 0;
+	size_t out_idx = 0;
+
+	snprintf(buf, max_len, "Unknown");
+	if (!index)
+		return;
+
+	if (ufs_read_descriptor(ufs, UFS_DESC_IDN_STRING, index,
+				raw_str, sizeof(raw_str), &resp_len))
+		return;
+
+	uint8_t desc_len = raw_str[0];
+	uint8_t desc_type = raw_str[1];
+
+	if (desc_type != UFS_DESC_IDN_STRING || desc_len < 2)
+		return;
+
+	for (size_t i = 2; i + 1 < desc_len && out_idx < max_len - 1; i += 2) {
+		uint16_t ch = (raw_str[i] << 8) | raw_str[i + 1];
+		buf[out_idx++] = (ch <= 0x7F) ? (char)ch : '?';
+	}
+	buf[out_idx] = '\0';
+}
+
+/* Read Geometry Descriptor to get total raw device capacity in bytes */
+static uint64_t ufs_get_total_capacity_bytes(UfsCtlr *ufs)
+{
+	UfsDesc geo_desc = {};
+	if (ufs_get_descriptor(ufs, &geo_desc, UFS_DESC_IDN_GEOMETRY, 0) == 0) {
+		UfsDescGeometry *geo = (UfsDescGeometry *)geo_desc.raw;
+		return be64toh(geo->qTotalRawDeviceCapacity) * 512ULL;
+	}
+	return 0;
+}
+
+/* Print UFS device details (specification version, manufacturer, product name, capacity) */
+static void print_ufs_device_info(UfsCtlr *ufs)
+{
+	char mfg_name[32];
+	char prod_name[32];
+
+	UfsDescDev *dd = ufs_dd(ufs);
+	ufs_read_string_desc(ufs, dd->iManufacturerName, mfg_name, sizeof(mfg_name));
+	ufs_read_string_desc(ufs, dd->iProductName, prod_name, sizeof(prod_name));
+
+	uint16_t spec_ver = be16toh(dd->wSpecVersion);
+	uint8_t spec_major = (spec_ver >> 8) & 0xf;
+	uint8_t spec_minor = (spec_ver >> 4) & 0xf;
+
+	uint64_t cap_bytes = ufs_get_total_capacity_bytes(ufs);
+	uint64_t cap_gib = cap_bytes / (1024ULL * 1024 * 1024);
+
+	if (cap_gib > 0)
+		printf("Identified UFS %u.%u model %s %s (%llu GiB)\n",
+			spec_major, spec_minor, mfg_name, prod_name, (unsigned long long)cap_gib);
+	else
+		printf("Identified UFS %u.%u model %s %s\n",
+			spec_major, spec_minor, mfg_name, prod_name);
+}
+
 static int ufs_populate_device_descriptor(UfsCtlr *ufs)
 {
 	int rc;
@@ -1109,6 +1173,8 @@ static int ufs_ctrlr_setup(UfsCtlr *ufs)
 		if (rc)
 			return rc;
 	}
+
+	print_ufs_device_info(ufs);
 
 	ufs->ctlr_initialized = true;
 

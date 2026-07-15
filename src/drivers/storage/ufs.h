@@ -566,6 +566,15 @@ typedef struct __packed {
 	uint8_t		bLargeUnitGranularity_M1;
 } UfsDescUnit;
 
+// JESD220B Table 14.16 - Geometry Descriptor (big-endian)
+typedef struct __packed {
+	uint8_t		bLength;
+	uint8_t		bDescriptorType;
+	uint8_t		bMediaTechnology;
+	uint8_t		rsrvd;
+	uint64_t	qTotalRawDeviceCapacity;
+} UfsDescGeometry;
+
 // JESD220B Table 14.23 - Device Health Descriptor (big-endian)
 typedef struct __packed {
 	uint8_t		bLength;
