@@ -32,17 +32,25 @@ int gsc_irq_status(void)
 const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
-	if (CONFIG(DRIVER_SOUND_CS35L56_SNDW)) {
-	config = (struct audio_config){
-		.bus = {
-			.type = AUDIO_SNDW,
-			.sndw.link = AUDIO_SNDW_LINK2
-		},
-		.codec = {
-			.type = AUDIO_CS35L56,
-		},
-	};
+
+	if (CONFIG(DRIVER_SOUND_RT1321_SNDW)&& CONFIG(DRIVER_SOUND_RT721_SNDW)) {
+		unsigned int link = AUDIO_SNDW_LINK3;
+		enum audio_codec_type audio_type = audio_get_type(link);
+
+		if (audio_type == AUDIO_CODEC_NONE)
+			return NULL;
+
+		config = (struct audio_config){
+			.bus = {
+				.type = AUDIO_SNDW,
+				.sndw.link = link,
+			},
+			.codec = {
+				.type = audio_type,
+			},
+		};
 	}
+
 	return &config;
 }
 
