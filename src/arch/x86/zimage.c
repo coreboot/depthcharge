@@ -94,10 +94,7 @@ int boot(struct boot_info *bi)
 		memset(&tmp_params, 0, sizeof(tmp_params));
 		memcpy(&tmp_params.hdr, header, header_size);
 		bi->params = &tmp_params;
-
-		// Move the protected mode part of the kernel into place.
-		uintptr_t pm_start = (uintptr_t)bi->kernel + pm_offset;
-		memmove(bi->kernel, (void *)pm_start, kernel_size);
+		bi->kernel = (void *)((uintptr_t)bi->kernel + pm_offset);
 	}
 
 	return boot_x86_linux(bi);
