@@ -219,7 +219,7 @@ int boot_arm_linux(struct boot_info *bi, void *fdt, FitImageNode *kernel)
 	/* Flush dcache and icache to make loaded code visible. */
 	arch_program_segment_loaded(reloc_addr, true_size);
 
-	if (CONFIG(WIDEVINE_PROVISION)) {
+	if (CONFIG(CLEAR_DATA)) {
 		void *dma_start;
 		size_t dma_size;
 		dma_allocator_range(&dma_start, &dma_size);
