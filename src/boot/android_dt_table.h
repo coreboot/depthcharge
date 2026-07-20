@@ -74,4 +74,8 @@ struct dt_table_entry_v2 {
 _Static_assert(sizeof(struct dt_table_entry_v2) == 64,
 	       "struct dt_table_entry_v2 size must be 64 bytes");
 
+#define ENTRY_FLAGS_AVF_PVM_DTBO	BIT(31)
+/* Flag safe guarding the older firmware from loading DTBO as by mistake */
+#define ENTRY_ID_TYPE_SAFE_GUARD_FLAG	BIT(7)
+
 #endif /* _ANDROID_DT_TABLE_H_ */

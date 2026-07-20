@@ -21,10 +21,11 @@
 #include "image/symbols.h"
 
 enum dt_match_flags {
-	MATCH_REV	= BIT(0),
-	MATCH_SKU	= BIT(1),
-	MATCH_FW_CONFIG	= BIT(2),
-	MATCH_DEVICE	= BIT(3),
+	MATCH_REV		= BIT(0),
+	MATCH_SKU		= BIT(1),
+	MATCH_FW_CONFIG		= BIT(2),
+	MATCH_DEVICE		= BIT(3),
+	MATCH_AVF_PVM_DTBO	= BIT(4),
 };
 
 #define MATCH_DEVICE_NAME_MAX_LEN 16
@@ -40,6 +41,7 @@ struct dt_match {
 	   this stores the device name prefix. */
 	char device[MATCH_DEVICE_NAME_MAX_LEN + 1];
 };
+
 
 struct dt_table_entry {
 	uint32_t dt_size;
@@ -165,6 +167,16 @@ static int get_dt_table_entry_v2(const void *buf, struct dt_table_entry *entry,
 	parse_dt_match_rev(&entry->match, ntohl(v2_entry->rev));
 
 	uint8_t id_type = ntohl(v2_entry->custom[0]) & 0xff;
+
+	/*
+	 * Drop the flag protecting older fw from treating VM DTBO as host DTBO
+	 * and mark as AVF pVM DTBO.
+	 */
+	if (ntohl(v2_entry->flags) & ENTRY_FLAGS_AVF_PVM_DTBO) {
+		id_type &= ~ENTRY_ID_TYPE_SAFE_GUARD_FLAG;
+		entry->match.flags |= MATCH_AVF_PVM_DTBO;
+	}
+
 	switch (id_type) {
 	case 0:
 		parse_dt_match_sku(&entry->match, ntohl(v2_entry->custom[1]));
@@ -369,6 +381,40 @@ static int apply_stashed_overlay_dt(struct device_tree *base_dt,
 	return 0;
 }
 
+#define MAX_AVF_PVM_DTBO_IDX_BC_LEN 16
+static char stashed_pvm_dtbo_idx_buf[MAX_AVF_PVM_DTBO_IDX_BC_LEN];
+static const void *stashed_pvm_dtbo;
+
+static int stash_pvm_dtbo(uint32_t dt_entry_index, const void *dt_entry_data)
+{
+	int ret;
+
+	if (stashed_pvm_dtbo)
+		return -1;
+
+	ret = snprintf(stashed_pvm_dtbo_idx_buf, sizeof(stashed_pvm_dtbo_idx_buf), "%u",
+		       dt_entry_index);
+	if (ret < 0 || ret >= MAX_AVF_PVM_DTBO_IDX_BC_LEN)
+		return -1;
+
+	stashed_pvm_dtbo = dt_entry_data;
+
+	return 0;
+}
+
+const char *android_get_pvm_dtbo_index(void)
+{
+	if (!stashed_pvm_dtbo)
+		return NULL;
+
+	return stashed_pvm_dtbo_idx_buf;
+}
+
+const void *android_get_pvm_dtbo_data(void)
+{
+	return stashed_pvm_dtbo;
+}
+
 struct device_tree *android_parse_dtbs(const void *dtbo, size_t dtbo_size)
 {
 	struct device_tree *base_dt = NULL, *tree;
@@ -400,6 +446,14 @@ struct device_tree *android_parse_dtbs(const void *dtbo, size_t dtbo_size)
 		dt_entry_data = get_dt_entry_data(dtbo, &entry);
 		if (!dt_entry_data)
 			continue;
+
+		if (entry.match.flags & MATCH_AVF_PVM_DTBO) {
+			printf("%s: Entry %d is AVF's pVM DTBO\n", __func__, i);
+			int ret = stash_pvm_dtbo(i, dt_entry_data);
+			if (ret)
+				printf("%s: Failed(%d) to stash pVM DTBO\n", __func__, ret);
+			continue;
+		}
 
 		tree = fdt_unflatten(dt_entry_data);
 		if (!tree) {
