@@ -66,5 +66,7 @@ QupI2c *new_qup_i2c(uintptr_t regs)
 
 	bus->reg_addr = (QupRegs *)regs;
 	bus->ops.transfer = &i2c_transfer;
+	dc_dev_add_i2c_controller_to_list(&bus->ops, "qupv3-i2c-%08x",
+				   (uint32_t)regs);
 	return bus;
 }
