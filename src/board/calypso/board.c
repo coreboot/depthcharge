@@ -48,7 +48,10 @@ static const VpdDeviceTreeMap vpd_dt_map[] = {
 
 static void usb_setup(void)
 {
-	/* placeholder */
+	UsbHostController *usb_host;
+
+	usb_host = new_usb_hc(XHCI, QCOM_XHCI_TYPE_A_BASE);
+	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 }
 
 __weak bool variant_nvme_supported(void)
