@@ -211,72 +211,80 @@ static int add_pvm_dtbo_entry(struct pvmfw_config_v1_3 *cfg, size_t max_cfg_size
 	return PVMFW_SUCCESS;
 }
 
-static int create_fw_android_node(struct device_tree *ref_dtb, char *bootconfig)
+struct vm_ref_bootconfig_prop {
+	const char *property;
+	const char *bootconfig;
+	size_t bootconfig_len;
+};
+
+#define VM_REF_BOOTCONFIG_PROP(__bootconfig, __property)                                       \
+	((struct vm_ref_bootconfig_prop){                                                      \
+		.property = (__property),                                                      \
+		.bootconfig = (__bootconfig "="),                                              \
+		.bootconfig_len = sizeof(__bootconfig "=") - 1, /* - '\0'*/                    \
+	})
+
+static void copy_bootconfig_to_vm_ref(char *bootconfig, struct device_tree_node *android_fw)
 {
-	static const char *const dt_entries[][2] = {
-		{"androidboot.vbmeta.digest=", "host.vbmeta.digest"},
-		{"androidboot.verifiedbootstate=", "host.verifiedbootstate"},
-		{"androidboot.vbmeta.device_state=", "host.vbmeta.device_state"},
-		{"androidboot.vbmeta.public_key_digest=", "host.vbmeta.public_key_digest"},
+	const struct vm_ref_bootconfig_prop dt_props[] = {
+		/* clang-format off */
+		VM_REF_BOOTCONFIG_PROP("androidboot.vbmeta.digest",
+				       "host.vbmeta.digest"),
+
+		VM_REF_BOOTCONFIG_PROP("androidboot.verifiedbootstate",
+				       "host.verifiedbootstate"),
+
+		VM_REF_BOOTCONFIG_PROP("androidboot.vbmeta.device_state",
+				       "host.vbmeta.device_state"),
+
+		VM_REF_BOOTCONFIG_PROP("androidboot.vbmeta.public_key_digest",
+				       "host.vbmeta.public_key_digest"),
+		/* clang-format on */
 	};
-	static const char *const fw_android_path[] = {"firmware", "android", NULL};
-	struct device_tree_node *node;
+	const struct vm_ref_bootconfig_prop *prop;
 	char *saveptr;
 	char *pair;
-	size_t len;
 	int i;
-
-	/* Create /firmware/android DT node */
-	node = dt_find_node(ref_dtb->root, fw_android_path, NULL, NULL, 1);
-	if (!node)
-		return PVMFW_ERR_DT_CREATE_FAIL;
-
-	/* Set node's compatible string */
-	dt_add_string_prop(node, "compatible", "android,firmware");
-
-	/*
-	 * Create a copy of the bootconfig so we can use strtok_r safely,
-	 * without corrupting state.
-	 */
-	bootconfig = strdup(bootconfig);
-	if (!bootconfig)
-		return PVMFW_ERR_NO_MEM;
 
 	/* Iterate over key=value pairs delimited by spaces. */
 	for (pair = strtok_r(bootconfig, " ", &saveptr); pair != NULL;
 	     pair = strtok_r(NULL, " ", &saveptr)) {
 		/* Find the index of key in the dt_entries */
-		for (i = 0; i < ARRAY_SIZE(dt_entries); i++) {
-			len = strlen(dt_entries[i][0]);
+		for (i = 0; i < ARRAY_SIZE(dt_props); i++) {
+			prop = &dt_props[i];
 
 			/* Skip unrelevant pair */
-			if (strncmp(pair, dt_entries[i][0], len) != 0)
+			if (strncmp(pair, prop->bootconfig, prop->bootconfig_len) != 0)
 				continue;
 
 			/* Add just the pair's value with translated property name */
-			dt_add_string_prop(node, dt_entries[i][1], pair + len);
+			dt_add_string_prop(android_fw, prop->property,
+					   pair + prop->bootconfig_len);
 			break;
 		}
 	}
-
-	return PVMFW_SUCCESS;
 }
 
-static int create_avf_vm_ref_dt(const struct vb2_kernel_params *kparams,
-				struct device_tree **tree)
+static int create_avf_vm_ref_dt(char *bootconfig, struct device_tree **tree)
 {
+	static const char *const fw_android_path[] = {"firmware", "android", NULL};
+	struct device_tree_node *node;
 	struct device_tree *ref_dtb;
-	int ret;
 
 	/* Create new empty device tree for the VM reference DT */
 	ref_dtb = fdt_unflatten(empty_dtb);
 	if (!ref_dtb)
 		return PVMFW_ERR_DT_CREATE_FAIL;
 
-	/* Create firmware,android node with data parsed from bootconfig */
-	ret = create_fw_android_node(ref_dtb, kparams->bootconfig_cmdline_buffer);
-	if (ret)
-		return ret;
+	/* Create a /firmware/android node and set compat */
+	node = dt_find_node(ref_dtb->root, fw_android_path, NULL, NULL, 1);
+	if (!node)
+		return PVMFW_ERR_DT_CREATE_FAIL;
+
+	dt_add_string_prop(node, "compatible", "android,firmware");
+
+	/* Populate /firmware/android node with bootconfig values */
+	copy_bootconfig_to_vm_ref(bootconfig, node);
 
 	*tree = ref_dtb;
 	return PVMFW_SUCCESS;
@@ -627,9 +635,16 @@ int setup_android_pvmfw(const struct vb2_kernel_params *kparams, size_t *pvmfw_s
 	uintptr_t pvmfw_addr, pvmfw_max, cfg_addr;
 	struct pvmfw_config_v1_3 *cfg;
 	struct device_tree *vm_ref_dt;
+	char *bootconfig;
+
+	/*
+	 * Create a copy of the bootconfig so `create_avf_vm_ref_dt`
+	 * can use `strtok_r` safely, without corrupting state.
+	 */
+	bootconfig = strdup(kparams->bootconfig_cmdline_buffer);
 
 	/* Create the unflatten VM reference DT */
-	ret = create_avf_vm_ref_dt(kparams, &vm_ref_dt);
+	ret = bootconfig ? create_avf_vm_ref_dt(bootconfig, &vm_ref_dt) : PVMFW_ERR_NO_MEM;
 	if (ret) {
 		printf("Failed to create VM ref DT (error: %d). Ignoring...\n", ret);
 		vm_ref_dt = NULL;
@@ -670,8 +685,11 @@ int setup_android_pvmfw(const struct vb2_kernel_params *kparams, size_t *pvmfw_s
 	*pvmfw_size =
 		ALIGN_UP(cfg_addr - pvmfw_addr + cfg->total_size, ANDROID_PVMFW_CFG_ALIGN);
 
-	return PVMFW_SUCCESS;
+	ret = PVMFW_SUCCESS;
 fail:
-	*pvmfw_size = 0;
+	if (ret != PVMFW_SUCCESS)
+		*pvmfw_size = 0;
+	if (bootconfig)
+		free(bootconfig);
 	return ret;
 }
