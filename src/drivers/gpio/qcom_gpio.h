@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  */
 
-#ifndef _SOC_QUALCOMM_COMMOM_GPIO_H_
+#ifndef _SOC_QUALCOMM_COMMON_GPIO_H_
 #define _SOC_QUALCOMM_COMMON_GPIO_H_
 
 #include "gpio.h"
