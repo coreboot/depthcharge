@@ -71,7 +71,8 @@ LIBPAYLOAD_CONFIG := $(libpayloadobj)/libpayload-config.h
 CMAKE := cmake
 OBJCOPY ?= objcopy
 OBJDUMP ?= objdump
-
+CMOCKA_LIB ?= -lcmocka
+CMOCKA_INCLUDES ?=
 TEST_CFLAGS :=
 TEST_LDFLAGS :=
 
@@ -197,7 +198,7 @@ $($(1)-objs): $(testobj)/$(1)/%.o: $$$$*.c $$($(1)-config-file) $(LIBPAYLOAD_CON
 $($(1)-bin): $($(1)-objs) $$($(1)-libpayload)
 	@printf "    CC       $$(subst $$(testobj)/,,$$(@))\n"
 	mkdir -p $$(dir $$@)
-	$(HOSTCC) $$(TEST_LDFLAGS) -lcmocka $$^ \
+	$(HOSTCC) $$(TEST_LDFLAGS) $$^ $$(CMOCKA_LIB) \
 		-Wl,--exclude-libs,ALL -lc $($(1)-cflags) -o $$@
 endef
 
@@ -250,3 +251,6 @@ $(LIBPAYLOAD_LIB): $(LIBPAYLOAD_KCONFIG_AUTOHEADER)
 $(LIBPAYLOAD_CONFIG): $(LIBPAYLOAD_KCONFIG_AUTOHEADER)
 	mkdir -p $(dir $@)
 	cp $< $@
+
+# Add host-override CMocka includes at the very end to avoid system headers conflicts
+TEST_CFLAGS += $(CMOCKA_INCLUDES)

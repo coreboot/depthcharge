@@ -189,7 +189,8 @@ static NVME_STATUS nvme_submit_cmd(NvmeCtrlr *ctrlr, uint16_t qid,
 }
 
 static NVME_STATUS nvme_sync_cmd(NvmeCtrlr *ctrlr, uint16_t qid,
-				 uint32_t cqsize, uint32_t timeout_ms)
+				 uint32_t sqsize, uint32_t cqsize,
+				 uint32_t timeout_ms)
 {
 	NVME_CQ *cq;
 	uint32_t ncmds;
@@ -237,7 +238,12 @@ static NVME_STATUS nvme_sync_cmd(NvmeCtrlr *ctrlr, uint16_t qid,
 			ctrlr->cq_h_dbl[qid] = 0;
 			ctrlr->pt[qid] ^= 1;
 		}
-		/* Update SQ head pointer */
+		/* Verify SQ head pointer is within valid queue range */
+		if (cq->sqhd >= sqsize) {
+			printf("%s: ERROR - invalid sqhd %u (max %u)\n",
+			       __func__, cq->sqhd, sqsize - 1);
+			return NVME_DEVICE_ERROR;
+		}
 		ctrlr->sqhd[qid] = cq->sqhd;
 	}
 
@@ -279,7 +285,7 @@ static NVME_STATUS nvme_do_one_cmd_synchronous(NvmeCtrlr *ctrlr, uint16_t qid,
 		return status;
 	}
 
-	return nvme_sync_cmd(ctrlr, qid, cqsize, timeout_ms);
+	return nvme_sync_cmd(ctrlr, qid, sqsize, cqsize, timeout_ms);
 }
 
 /* Sends Set Feature 07h to allocate count number of IO queues */
@@ -435,7 +441,8 @@ static NVME_STATUS nvme_block_rw(NvmeDrive *drive, void *buffer, lba_t start,
 		DEBUG("%s: Too many outstanding commands. Completing in-flights\n",
 		      __func__);
 		status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX,
-				       NVME_CCQ_SIZE, NVME_GENERIC_TIMEOUT);
+				       ctrlr->iosq_sz, NVME_CCQ_SIZE,
+				       NVME_GENERIC_TIMEOUT);
 		if (NVME_ERROR(status)) {
 			printf("%s: error %d completing outstanding commands\n",
 			       __func__, status);
@@ -450,6 +457,11 @@ static NVME_STATUS nvme_block_rw(NvmeDrive *drive, void *buffer, lba_t start,
 
 	sq->opc = read ? NVME_IO_READ_OPC : NVME_IO_WRITE_OPC;
 	sq->cid = ctrlr->cid[NVME_IO_QUEUE_INDEX]++;
+	if (sq->cid >= ctrlr->iosq_sz) {
+		printf("%s: ERROR - Command ID %d out of bounds (max %d)!\n",
+		       __func__, sq->cid, ctrlr->iosq_sz);
+		return NVME_DEVICE_ERROR;
+	}
 	sq->nsid = drive->namespace_id;
 
 	status = nvme_fill_prp(ctrlr->prp_list[sq->cid], sq->prp, buffer,
@@ -520,7 +532,8 @@ static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
 
 		if (!NVME_ERROR(status) && bounce_buffer_did_bounce(&bbstate)) {
 			status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX,
-					       NVME_CCQ_SIZE, NVME_GENERIC_TIMEOUT);
+					       ctrlr->iosq_sz, NVME_CCQ_SIZE,
+					       NVME_GENERIC_TIMEOUT);
 			needs_sync = false;
 		}
 
@@ -533,8 +546,9 @@ static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
 	}
 
 	if (needs_sync) {
-		status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX, NVME_CCQ_SIZE,
-				NVME_GENERIC_TIMEOUT);
+		status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX,
+				       ctrlr->iosq_sz, NVME_CCQ_SIZE,
+				       NVME_GENERIC_TIMEOUT);
 		if (NVME_ERROR(status))
 			printf("%s: error %d failed to sync command\n",
 			__func__, status);
@@ -585,6 +599,11 @@ static NVME_STATUS nvme_read_log_page(NvmeDrive *drive, int log_page_id,
 	sq->opc = NVME_ADMIN_GET_LOG_PAGE;
 
 	sq->cid = ctrlr->cid[NVME_ADMIN_QUEUE_INDEX]++;
+	if (sq->cid >= NVME_ASQ_SIZE) {
+		printf("%s: ERROR - Admin Command ID %d out of bounds (max %d)!\n",
+		       __func__, sq->cid, NVME_ASQ_SIZE);
+		return NVME_DEVICE_ERROR;
+	}
 	sq->nsid = NVME_NSID_ALL; // NSID_ALL for controller.
 
 	// Number of Dwords is 0-based.

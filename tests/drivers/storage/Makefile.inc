@@ -13,3 +13,8 @@ slice-test-srcs += src/drivers/storage/blockdev.c
 
 ufs-selftest-test-srcs += tests/drivers/storage/ufs-selftest.c
 ufs-selftest-test-config += CONFIG_DRIVER_STORAGE_UFS=1
+
+tests-y += nvme-test
+nvme-test-srcs += tests/drivers/storage/nvme-test.c
+nvme-test-srcs += src/drivers/storage/blockdev.c
+nvme-test-config += CONFIG_DRIVER_STORAGE_NVME=1
