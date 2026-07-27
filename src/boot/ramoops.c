@@ -37,6 +37,7 @@ typedef struct
 #define CONSOLE_SIZE		0x40000
 #define FTRACE_SIZE		0x20000
 #define PMSG_SIZE		0x20000
+#define MAX_REASON		CONFIG_RAMOOPS_DUMP_REASON
 
 static int ramoops_fixup(struct device_tree_fixup *fixup,
 			 struct device_tree *tree)
@@ -59,6 +60,9 @@ static int ramoops_fixup(struct device_tree_fixup *fixup,
 	dt_add_u32_prop(node, "console-size", CONSOLE_SIZE);
 	dt_add_u32_prop(node, "ftrace-size", FTRACE_SIZE);
 	dt_add_u32_prop(node, "pmsg-size", PMSG_SIZE);
+
+	// Add max-reason property
+	dt_add_u32_prop(node, "max-reason", MAX_REASON);
 
 	// Add the optional dump-oops property.
 	dt_add_bin_prop(node, "dump-oops", NULL, 0);

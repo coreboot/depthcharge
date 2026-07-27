@@ -120,3 +120,17 @@ config ANDROID_MTE
 	  By enabling this option, depthcharge reads MTE control values from the
 	  the kernel command line and misc partition and sets the relevant
 	  kernel cmdline accordingly.
+
+config RAMOOPS_DUMP_REASON_MAX
+	bool "Set ramoops dump reason to max (4)"
+	help
+	  Enables storing kernel logs in pstore for normal reboot and shutdown
+	  events instead of just Oopses and Panics.
+
+config RAMOOPS_DUMP_REASON
+	int "Ramoops dump reason"
+	default 4 if RAMOOPS_DUMP_REASON_MAX
+	default 2
+	help
+	  Sets the max-reason property in the ramoops device tree node.
+	  Values correspond to the kernel's kmsg_dump_reason enum.
