@@ -25,5 +25,6 @@ depthcharge-$(CONFIG_DRIVER_VIDEO_TEGRA132) += tegra132.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_TEGRA210) += tegra132.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_MTK) += mtk_ddp.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_MTK) += mtk_dsi.c
+depthcharge-$(CONFIG_DRIVER_VIDEO_MTK) += mtk_edp.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_SC7180) += sc7180.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_SC7280) += sc7280.c
