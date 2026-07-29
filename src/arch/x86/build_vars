@@ -13,10 +13,10 @@
 
 ifeq ($(CONFIG_ARCH_X86_64),y)
 VB_FIRMWARE_ARCH=x86_64
-ARCH_ABI_FLAGS += -mpreferred-stack-boundary=4
+ARCH_ABI_FLAGS += -mpreferred-stack-boundary=4 -mno-mmx -mno-sse
 else
 VB_FIRMWARE_ARCH=x86
-ARCH_ABI_FLAGS += -mpreferred-stack-boundary=2
+ARCH_ABI_FLAGS += -mpreferred-stack-boundary=2 -mno-mmx -mno-sse
 ARCH_LINK_FLAGS := -Wl,--wrap=__divdi3 -Wl,--wrap=__udivdi3 \
 	-Wl,--wrap=__moddi3 -Wl,--wrap=__umoddi3
 endif
