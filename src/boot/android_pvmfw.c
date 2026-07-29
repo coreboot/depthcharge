@@ -265,9 +265,11 @@ static void copy_bootconfig_to_vm_ref(char *bootconfig, struct device_tree_node 
 	}
 }
 
-static int create_avf_vm_ref_dt(char *bootconfig, struct device_tree **tree)
+static int create_avf_vm_ref_dt(char *bootconfig, char *microdroid_vendor_digest,
+				struct device_tree **tree)
 {
 	static const char *const fw_android_path[] = {"firmware", "android", NULL};
+	static const char *const avf_path[] = {"avf", NULL};
 	struct device_tree_node *node;
 	struct device_tree *ref_dtb;
 
@@ -285,6 +287,22 @@ static int create_avf_vm_ref_dt(char *bootconfig, struct device_tree **tree)
 
 	/* Populate /firmware/android node with bootconfig values */
 	copy_bootconfig_to_vm_ref(bootconfig, node);
+
+	/* Create a /avf node */
+	node = dt_find_node(ref_dtb->root, avf_path, NULL, NULL, 1);
+	if (!node)
+		return PVMFW_ERR_DT_CREATE_FAIL;
+
+	/*
+	 * If microdroid vendor partition digest is missing replace digest with
+	 * non hexadecimal string to block any matches.
+	 */
+	if (!microdroid_vendor_digest)
+		microdroid_vendor_digest = "<missing>";
+
+	/* Add microdroid vendor digest as bin without null terminator */
+	dt_add_bin_prop(node, "vendor_hashtree_descriptor_root_digest",
+			microdroid_vendor_digest, strlen(microdroid_vendor_digest));
 
 	*tree = ref_dtb;
 	return PVMFW_SUCCESS;
@@ -644,7 +662,12 @@ int setup_android_pvmfw(const struct vb2_kernel_params *kparams, size_t *pvmfw_s
 	bootconfig = strdup(kparams->bootconfig_cmdline_buffer);
 
 	/* Create the unflatten VM reference DT */
-	ret = bootconfig ? create_avf_vm_ref_dt(bootconfig, &vm_ref_dt) : PVMFW_ERR_NO_MEM;
+	if (bootconfig)
+		ret = create_avf_vm_ref_dt(bootconfig, kparams->microdroid_vendor_digest,
+					   &vm_ref_dt);
+	else
+		ret = PVMFW_ERR_NO_MEM;
+
 	if (ret) {
 		printf("Failed to create VM ref DT (error: %d). Ignoring...\n", ret);
 		vm_ref_dt = NULL;
