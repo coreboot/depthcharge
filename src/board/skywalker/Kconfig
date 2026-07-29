@@ -5,3 +5,10 @@ config BOARD_USE_USB_PORT0
 	default n
 	help
 	  Enable this if the board uses USB port 0.
+
+config USE_PANEL_BOE_NV140FHM
+	bool "Board uses BOE NV140FHM eDP panel"
+	default n
+	help
+	  By enabling this option, depthcharge runs the panel-specific
+	  power-off routine in panel_boe_nv140fhm.c.

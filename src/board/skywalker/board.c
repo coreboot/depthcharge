@@ -434,7 +434,7 @@ static int board_backlight_update(DisplayOps *me, bool enable)
 	return 0;
 }
 
-static int board_panel_poweroff(MtkDisplay *me)
+static int mipi_panel_poweroff(MtkDisplay *me)
 {
 	static MtkPmif *pmif;
 
@@ -471,6 +471,11 @@ static int board_panel_poweroff(MtkDisplay *me)
 	/* Disable VDDI for MIPI panel. */
 	mt6359p_enable_vcn18(false);
 	return 0;
+}
+
+__weak int board_panel_poweroff(MtkDisplay *me)
+{
+	return mipi_panel_poweroff(me);
 }
 
 static int board_setup(void)
@@ -551,6 +556,7 @@ static int board_setup(void)
 		MtkDisplay *display = new_mtk_display(
 			board_backlight_update, board_panel_poweroff,
 			0x14002000, 2, 0, 0, 0, 0x14016000, 0);
+		display->edp_base = 0x11B70000;
 		display_set_ops(&display->ops);
 	} else {
 		printf("[%s] no display init required!\n", __func__);

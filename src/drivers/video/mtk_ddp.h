@@ -36,6 +36,7 @@ typedef struct MtkDisplay {
 	uintptr_t blender_base1;
 	uintptr_t dsi_base;
 	uintptr_t dsi_base1;
+	uintptr_t edp_base;
 	int lanes;
 	enum ovl_type type;
 } MtkDisplay;

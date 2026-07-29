@@ -5,6 +5,8 @@
 
 #include <stdint.h>
 
+#include "drivers/video/mtk_ddp.h"
+
 #define MAX_PDC_PORT_NUM 2
 #define PDC_FW_NAME_LEN 8
 
@@ -52,5 +54,12 @@ struct pdc_chip {
 };
 
 int override_pdc_chip(struct pdc_chip *pdc);
+
+/*
+ * Panel power-off callback, invoked via MtkDisplay ops. Weak default
+ * lives in board.c; strong overrides may be provided by panel_*.c
+ * files (e.g. panel_boe_nv140fhm.c).
+ */
+int board_panel_poweroff(MtkDisplay *me);
 
 #endif /* _BOARD_SKYWALKER_VARIANT_H_ */
