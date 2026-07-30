@@ -9,11 +9,9 @@
 
 bool cse_disable_mei_devices(void)
 {
-	struct pmc_ipc_buffer req;
+	struct pmc_ipc_buffer req = { 0 };
 	struct pmc_ipc_buffer rsp;
 	uint32_t cmd;
-
-	memset(&req, 0, sizeof(req));
 
 	cmd = pmc_make_ipc_cmd(PMC_IPC_MEI_DISABLE_ID, PMC_IPC_MEI_DISABLE_SUBID_DISABLE, 0);
 	if (pmc_send_cmd(cmd, &req, &rsp) != CB_SUCCESS) {
