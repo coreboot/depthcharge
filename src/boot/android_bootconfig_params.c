@@ -184,6 +184,24 @@ static int append_dtbo_indices(struct bootconfig *bc)
 	return 0;
 }
 
+#define HW_REVISION_KEY_STR "androidboot.hardware.revision"
+#define MAX_HW_REVISION_LENGTH 16
+
+static int append_hw_revision(struct bootconfig *bc)
+{
+	char hw_rev_str[MAX_HW_REVISION_LENGTH];
+
+	if (lib_sysinfo.board_id == UNDEFINED_STRAPPING_ID)
+		return 0;
+
+	int len = snprintf(hw_rev_str, sizeof(hw_rev_str), "%u",
+			   lib_sysinfo.board_id);
+	if (len < 0 || len >= sizeof(hw_rev_str))
+		return -1;
+
+	return bootconfig_append(bc, HW_REVISION_KEY_STR, hw_rev_str);
+}
+
 int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_params *kp)
 {
 	return append_boot_part_uuid(bc, kp) |
@@ -192,6 +210,7 @@ int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_pa
 	       append_vpd(bc, ANDROID_VPD_KEY_SERIAL_NUM, SERIAL_NUM_CONFIG_KEY) |
 	       append_display_orientation(bc, kp) |
 	       append_skuid(bc) |
+	       append_hw_revision(bc) |
 	       append_boot_source(bc, kp) |
 	       append_bootloader_version(bc) |
 	       append_ddr_size(bc) |
