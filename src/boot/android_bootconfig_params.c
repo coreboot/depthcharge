@@ -202,6 +202,20 @@ static int append_hw_revision(struct bootconfig *bc)
 	return bootconfig_append(bc, HW_REVISION_KEY_STR, hw_rev_str);
 }
 
+#define VM_DTBO_IDX_CONFIG_KEY	"androidboot.hypervisor.vm_dtbo_idx"
+
+static int append_vm_dtbo_index(struct bootconfig *bc)
+{
+	if (CONFIG(ARCH_ARM)) {
+		const char *vm_dtbo_idx = android_get_pvm_dtbo_index();
+		if (!vm_dtbo_idx)
+			return 0;
+
+		return bootconfig_append(bc, VM_DTBO_IDX_CONFIG_KEY, vm_dtbo_idx);
+	}
+	return 0;
+}
+
 int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_params *kp)
 {
 	return append_boot_part_uuid(bc, kp) |
@@ -214,7 +228,8 @@ int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_pa
 	       append_boot_source(bc, kp) |
 	       append_bootloader_version(bc) |
 	       append_ddr_size(bc) |
-	       append_dtbo_indices(bc);
+	       append_dtbo_indices(bc) |
+	       append_vm_dtbo_index(bc);
 }
 
 int append_android_bootconfig_boottime(struct boot_info *bi)
