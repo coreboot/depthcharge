@@ -3,8 +3,26 @@
 #include <libpayload.h>
 
 #include "base/fw_config.h"
+#include "drivers/bus/soundwire/cavs_2_5-sndwregs.h"
 #include "drivers/soc/novalake.h"
+#include "drivers/sound/intel_audio_setup.h"
 #include "drivers/storage/storage_common.h"
+
+const struct audio_config *variant_probe_audio_config(void)
+{
+	static struct audio_config config;
+	config = (struct audio_config){
+		.bus = {
+			.type = AUDIO_SNDW,
+			.sndw.link = AUDIO_SNDW_LINK3,
+		},
+		.codec = {
+			.type = AUDIO_RT1320,
+		},
+	};
+
+	return &config;
+}
 
 static const struct storage_config storage_configs[] = {
 	{
