@@ -140,6 +140,7 @@ int net_wait_for_link(bool loop)
 enum net_poll_status net_poll(void)
 {
 	int ret;
+	enum net_poll_status status = NET_POLL_NO_RX;
 	static uint32_t periodic_timer_us = 0;
 	static uint32_t arp_timer_us = 0;
 
@@ -150,9 +151,10 @@ enum net_poll_status net_poll(void)
 
 	struct uip_eth_hdr *hdr = (struct uip_eth_hdr *)uip_buf;
 	ret = net_device->ops->recv(net_device, uip_buf, &uip_len, CONFIG_UIP_BUFSIZE);
-	if (ret)
+	if (ret) {
 		printf("Receive failed. (%d)\n", ret);
-	if (!ret && uip_len) {
+		status = NET_POLL_RX_ERR;
+	} else if (uip_len) {
 		if (hdr->type == htonw(UIP_ETHTYPE_IP)) {
 			uip_arp_ipin();
 			uip_input();
@@ -165,8 +167,7 @@ enum net_poll_status net_poll(void)
 			if (uip_len > 0)
 				net_device->ops->send(net_device, uip_buf, uip_len);
 		}
-
-		return NET_POLL_RX;
+		status = NET_POLL_RX;
 	}
 
 	if (timer_us(periodic_timer_us) > UIP_PERIODIC_INTERVAL_US) {
@@ -184,7 +185,7 @@ enum net_poll_status net_poll(void)
 		}
 	}
 
-	return ret ? NET_POLL_RX_ERR : NET_POLL_NO_RX;
+	return status;
 }
 
 int net_send(void *buf, uint16_t len)
