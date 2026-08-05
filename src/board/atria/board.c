@@ -101,6 +101,14 @@ static void tpm_setup(void)
 				&new_gsc_rec_switch(&tpm->base.ops)->ops);
 }
 
+__weak const struct audio_config *variant_probe_audio_config(void)
+{
+	static struct audio_config config;
+
+	printf("%s Empty stub. Please add variant audio config\n", __func__);
+	return &config;
+}
+
 static void flash_setup(void)
 {
 	if(CONFIG(DRIVER_FLASH_FAST_SPI)) {
@@ -123,6 +131,7 @@ static int board_setup(void)
 	tpm_setup();
 	power_set_ops(&novalake_power_ops);
 	flash_setup();
+	common_audio_setup(variant_probe_audio_config());
 
 	return 0;
 }
