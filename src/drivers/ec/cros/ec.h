@@ -578,4 +578,11 @@ int cros_ec_ap_print(const char *fmt, ...) __attribute__((format(printf, 1, 2)))
  */
 bool cros_ec_is_battery_present(void);
 
+/**
+ * Send a post code to ChromeOS EC.
+ *
+ * @param code		Post code to send
+ */
+void cros_ec_post_code(uint16_t code);
+
 #endif /* __DRIVERS_EC_CROS_EC_H__ */

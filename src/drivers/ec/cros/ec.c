@@ -1260,3 +1260,17 @@ bool cros_ec_is_battery_present(void)
 
 	return false;
 }
+
+void cros_ec_post_code(uint16_t code)
+{
+	CrosEc *ec = cros_ec_get();
+
+	if (!ec || !ec->initialized)
+		return;
+
+	const struct ec_params_port80_write params = {
+		.code = code
+	};
+
+	ec_cmd_port80_write(ec, &params);
+}
