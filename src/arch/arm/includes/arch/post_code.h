@@ -21,10 +21,12 @@
 #include <stdint.h>
 
 #include "base/post_code.h"
+#include "drivers/ec/cros/ec.h"
 
 static inline void post_code(uint16_t val)
 {
-	/* It would be nice to do something here... */
+	if (CONFIG(DRIVER_EC_CROS_POST_CODE))
+		cros_ec_post_code(val);
 }
 
 #endif /* __ARCH_ARM_INCLUDES_ARCH_POST_CODE_H__ */
