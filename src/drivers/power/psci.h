@@ -20,6 +20,8 @@
 
 #include "drivers/power/power.h"
 
+#define PSCI_RESET2_SYSTEM_WARM_RESET	0x80000000
+
 extern PowerOps psci_power_ops;
 
 #endif /* __DRIVERS_POWER_PSCI_H__ */

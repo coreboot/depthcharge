@@ -23,7 +23,7 @@
 static int psci_reset(PowerOps *me)
 {
 	if (CONFIG(DRIVER_POWER_PSCI_RESET2))
-		smc(PSCI_SYSTEM_RESET2, 0x80000000, 0, 0, 0, 0, 0);
+		smc(PSCI_SYSTEM_RESET2, PSCI_RESET2_SYSTEM_WARM_RESET, 0, 0, 0, 0, 0);
 	else
 		smc(PSCI_SYSTEM_RESET, 0, 0, 0, 0, 0, 0);
 	halt();
