@@ -453,15 +453,17 @@ int cros_ec_get_next_event(struct ec_response_get_next_event_v3 *e)
  *
  * @return 0 if ok, <0 if the test failed
  */
-static int ec_test(CrosEc *me)
+static int ec_test(CrosEc *me, enum ec_reboot_cmd cmd)
 {
-	struct ec_params_hello req;
-	struct ec_response_hello resp;
+	struct ec_response_get_version resp;
 
-	req.in_data = 0x12345678;
-	if (ec_cmd_hello(cros_ec_get(), &req, &resp) != sizeof(resp))
+	if (ec_cmd_get_version(cros_ec_get(), &resp) < 0)
 		return -1;
-	if (resp.out_data != req.in_data + 0x01020304)
+
+	if (cmd == EC_REBOOT_JUMP_RW && resp.current_image != EC_IMAGE_RW)
+		return -1;
+
+	if (cmd == EC_REBOOT_JUMP_RO && resp.current_image != EC_IMAGE_RO)
 		return -1;
 
 	return 0;
@@ -490,7 +492,7 @@ int cros_ec_reboot_param(CrosEc *me, enum ec_reboot_cmd cmd, uint8_t flags)
 		 */
 		uint64_t start = timer_us(0);
 		mdelay(CONFIG_DRIVER_EC_CROS_DELAY_AFTER_EC_REBOOT_MS);
-		while (ec_test(me)) {
+		while (ec_test(me, cmd)) {
 			if (timer_us(start) > 3 * 1000 * 1000) {
 				printf("EC did not return from reboot.\n");
 				return -1;
