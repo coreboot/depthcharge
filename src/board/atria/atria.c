@@ -3,8 +3,33 @@
 #include <libpayload.h>
 
 #include "base/fw_config.h"
+#include "drivers/bus/soundwire/cavs_2_5-sndwregs.h"
 #include "drivers/soc/novalake.h"
+#include "drivers/sound/intel_audio_setup.h"
 #include "drivers/storage/storage_common.h"
+
+const struct audio_config *variant_probe_audio_config(void)
+{
+	static struct audio_config config;
+
+	if (CONFIG(DRIVER_SOUND_RT721_SNDW) &&
+			fw_config_probe(FW_CONFIG(AUDIO_CODEC, AUDIO_CODEC_ALC721))) {
+		config = (struct audio_config) {
+			.bus = {
+				.type = AUDIO_SNDW,
+				.sndw.link = AUDIO_SNDW_LINK3,
+			},
+			.codec = {
+				.type = AUDIO_RT721,
+			},
+		};
+	} else {
+		printf("Implement variant audio config for other FW CONFIG options\n");
+		return NULL;
+	}
+
+	return &config;
+}
 
 static const struct storage_config storage_configs[] = {
 	{
