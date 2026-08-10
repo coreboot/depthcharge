@@ -69,6 +69,13 @@ const CrosEcLpcBusVariant variant_get_ec_lpc_bus(void)
 void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path,
 				    int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
-	*image_path = "tps6699x_GOOG0I00.bin";
-	*hash_path = "tps6699x_GOOG0I00.hash";
+	switch (ec_pd_id) {
+	case 0:
+	case 1:
+		*image_path = "tps6699x_GOOG0I00.bin";
+		*hash_path = "tps6699x_GOOG0I00.hash";
+		break;
+	default:
+		printf("Unknown ec_pd_id %d\n", ec_pd_id);
+	}
 }
