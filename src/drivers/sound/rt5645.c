@@ -228,6 +228,18 @@ static int rt5645_enable(SoundRouteComponentOps *me)
 	return ret;
 }
 
+static int rt5645_disable(SoundRouteComponentOps *me)
+{
+	rt5645Codec *codec = container_of(me, rt5645Codec, component.ops);
+
+	/* mute SPK */
+	rt5645_i2c_writew(codec, RT5645_AD_DA_MIXER, 0xc0c0);
+	rt5645_update_bits(codec, RT5645_SPK_VOL,
+			   RT5645_L_MUTE | RT5645_R_MUTE, RT5645_L_MUTE | RT5645_R_MUTE);
+
+	return rt5645_reset(codec);
+}
+
 rt5645Codec *new_rt5645_codec(I2cOps *i2c, uint8_t chip)
 {
 	printf("%s: chip = 0x%02X\n", __func__, chip);
@@ -235,6 +247,7 @@ rt5645Codec *new_rt5645_codec(I2cOps *i2c, uint8_t chip)
 	rt5645Codec *codec = xzalloc(sizeof(*codec));
 
 	codec->component.ops.enable = &rt5645_enable;
+	codec->component.ops.disable = &rt5645_disable;
 
 	codec->i2c = i2c;
 	codec->chip = chip;
