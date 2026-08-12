@@ -171,17 +171,6 @@ static int board_backlight_update(DisplayOps *me, bool enable)
 	return 0;
 }
 
-static int force_display_cleanup(struct CleanupFunc *cleanup, CleanupType type)
-{
-	return display_stop();
-}
-
-static CleanupFunc force_display_cleanup_func = {
-	.cleanup = &force_display_cleanup,
-	.types = CleanupOnReboot | CleanupOnPowerOff |
-		 CleanupOnHandoff | CleanupOnLegacy,
-};
-
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
@@ -257,8 +246,6 @@ static int board_setup(void)
 		display_set_ops(&display->ops);
 
 		list_insert_after(&reserve_framebuffer_fixup.list_node, &device_tree_fixups);
-		/* workaround for b/435289727 */
-		list_insert_after(&force_display_cleanup_func.list_node, &cleanup_funcs);
 	} else {
 		printf("[%s] no display_init_required()!\n", __func__);
 	}
