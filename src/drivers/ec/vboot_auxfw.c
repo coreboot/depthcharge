@@ -72,64 +72,6 @@ static vb2_error_t check_dev_fw_hash(const VbootAuxfwOps *auxfw,
 	return result;
 }
 
-vb2_error_t check_vboot_auxfw(enum vb2_auxfw_update_severity *severity)
-{
-	enum vb2_auxfw_update_severity max;
-	enum vb2_auxfw_update_severity current;
-	vb2_error_t status;
-
-	if (CONFIG(CROS_EC_PROBE_AUX_FW_INFO))
-		cros_ec_probe_aux_fw_chips();
-	max = VB2_AUXFW_NO_DEVICE;
-	for (int i = 0; i < vboot_auxfw_count; ++i) {
-		const VbootAuxfwOps *const auxfw = vboot_auxfw[i].fw_ops;
-
-		status = check_dev_fw_hash(auxfw, &current);
-		if (status != VB2_SUCCESS)
-			return status;
-
-		vboot_auxfw[i].severity = current;
-		max = MAX(max, current);
-	}
-
-	*severity = max;
-	return VB2_SUCCESS;
-}
-
-/**
- * Display firmware sync screen if needed.
- *
- * When there'll be a slow update, try to display firmware sync screen. If
- * the display hasn't been initialized, request a reboot.
- *
- * @return VB2_SUCCESS, or non-zero if error.
- */
-static vb2_error_t display_firmware_sync_screen(void)
-{
-	struct ui_context ui;
-	struct vb2_context *ctx = vboot_get_context();
-
-	for (int i = 0; i < vboot_auxfw_count; ++i) {
-		/* Display firmware sync screen only if update is slow */
-		if (vboot_auxfw[i].severity != VB2_AUXFW_SLOW_UPDATE)
-			continue;
-
-		if (vb2api_need_reboot_for_display(ctx))
-			return VB2_REQUEST_REBOOT;
-
-		printf("AUXFW is updating. Show firmware sync screen.\n");
-		if (ui_init_context(&ui, ctx, UI_SCREEN_FIRMWARE_SYNC)
-		    == VB2_SUCCESS)
-			ui_display(&ui, NULL);
-		else
-			printf("Failed to initialize UI context.\n");
-
-		break;
-	}
-
-	return VB2_SUCCESS;
-}
-
 /**
  * Apply the device firmware update.
  *
@@ -222,12 +164,86 @@ static vb2_error_t do_post_update(void)
 	return status;
 }
 
+vb2_error_t check_vboot_auxfw(enum vb2_auxfw_update_severity *severity)
+{
+	enum vb2_auxfw_update_severity max;
+	enum vb2_auxfw_update_severity current;
+	vb2_error_t status;
+
+	if (CONFIG(CROS_EC_PROBE_AUX_FW_INFO))
+		cros_ec_probe_aux_fw_chips();
+	max = VB2_AUXFW_NO_DEVICE;
+	for (int i = 0; i < vboot_auxfw_count; ++i) {
+		const VbootAuxfwOps *const auxfw = vboot_auxfw[i].fw_ops;
+
+		status = check_dev_fw_hash(auxfw, &current);
+		if (status != VB2_SUCCESS) {
+			/* Resume any chips previously suspended by pre_update() */
+			do_post_update();
+			return status;
+		}
+
+		if (current > VB2_AUXFW_NO_UPDATE && auxfw->pre_update) {
+			status = auxfw->pre_update(auxfw);
+			if (status == VB2_ERROR_EX_AUXFW_PERIPHERAL_BUSY)
+				current = VB2_AUXFW_NO_UPDATE;
+			else if (status != VB2_SUCCESS)
+				current = VB2_AUXFW_NO_DEVICE;
+		}
+
+		vboot_auxfw[i].severity = current;
+		max = MAX(max, current);
+	}
+
+	*severity = max;
+	return VB2_SUCCESS;
+}
+
+/**
+ * Display firmware sync screen if needed.
+ *
+ * When there'll be a slow update, try to display firmware sync screen. If
+ * the display hasn't been initialized, request a reboot.
+ *
+ * @return VB2_SUCCESS, or non-zero if error.
+ */
+static vb2_error_t display_firmware_sync_screen(void)
+{
+	struct ui_context ui;
+	struct vb2_context *ctx = vboot_get_context();
+
+	for (int i = 0; i < vboot_auxfw_count; ++i) {
+		/* Display firmware sync screen only if update is slow */
+		if (vboot_auxfw[i].severity != VB2_AUXFW_SLOW_UPDATE)
+			continue;
+
+		if (vb2api_need_reboot_for_display(ctx))
+			return VB2_REQUEST_REBOOT;
+
+		printf("AUXFW is updating. Show firmware sync screen.\n");
+		if (ui_init_context(&ui, ctx, UI_SCREEN_FIRMWARE_SYNC)
+		    == VB2_SUCCESS)
+			ui_display(&ui, NULL);
+		else
+			printf("Failed to initialize UI context.\n");
+
+		break;
+	}
+
+	return VB2_SUCCESS;
+}
+
 vb2_error_t update_vboot_auxfw(void)
 {
 	vb2_error_t status, post_status;
 	bool lid_shutdown_disabled = false;
 
-	VB2_TRY(display_firmware_sync_screen());
+	status = display_firmware_sync_screen();
+	if (status != VB2_SUCCESS) {
+		/* Resume any chips suspended by pre_update() before display reboot */
+		do_post_update();
+		return status;
+	}
 
 	/* Disable lid shutdown on x86 if enabled */
 	if (CONFIG(DRIVER_EC_CROS) &&

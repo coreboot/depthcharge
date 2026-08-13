@@ -595,7 +595,6 @@ static vb2_error_t rts5453_check_hash(const VbootAuxfwOps *vbaux, const uint8_t 
 		me->fw_info.major_ver, me->fw_info.minor_ver, me->fw_info.patch_ver);
 	pdc_fw_ver_t ver_new = 0;
 	bool dev_is_present = false;
-	int ret;
 	char project_name[USB_PD_CHIP_INFO_PROJECT_NAME_LEN + 1] = {0};
 
 	dev_is_present = is_rts545x_device_present(me, false);
@@ -629,30 +628,6 @@ static vb2_error_t rts5453_check_hash(const VbootAuxfwOps *vbaux, const uint8_t 
 		return VB2_SUCCESS;
 	}
 
-	/*
-	 * Prepare to perform a PDC update: shut off the EC's PD stack so it
-	 * does not communicate with the PDC during updates and interfere.
-	 */
-	ret = cros_ec_pd_control(me->ec_pd_id, PD_SUSPEND);
-	switch (ret) {
-	case EC_RES_SUCCESS:
-		/* PD stack is suspended. Safe to proceed. */
-		break;
-	case -EC_RES_BUSY:
-		/* EC power state or battery not ready for update */
-		cros_ec_ap_print(
-			"%s: Skipping update: Battery SoC or power state inadequate: %d\n",
-			me->chip_name, ret);
-		*severity = VB2_AUXFW_NO_UPDATE;
-		return VB2_SUCCESS;
-	default:
-		/* Unknown error */
-		cros_ec_ap_print("%s: Skipping update: Error suspending PD stack: %d\n",
-				 me->chip_name, ret);
-		*severity = VB2_AUXFW_NO_DEVICE;
-		return VB2_SUCCESS;
-	}
-
 	cros_ec_ap_print("%s: Update FW from %u.%u.%u(%s) to %u.%u.%u(%s)\n", me->chip_name,
 			 PDC_FWVER_MAJOR(ver_current), PDC_FWVER_MINOR(ver_current),
 			 PDC_FWVER_PATCH(ver_current), me->chip_info.project_name,
@@ -666,6 +641,34 @@ static vb2_error_t rts5453_check_hash(const VbootAuxfwOps *vbaux, const uint8_t 
 	*severity = VB2_AUXFW_SLOW_UPDATE;
 	debug("update severity %d\n", *severity);
 	return VB2_SUCCESS;
+}
+
+static vb2_error_t rts5453_pre_update(const VbootAuxfwOps *vbaux)
+{
+	Rts545x *me = container_of(vbaux, Rts545x, fw_ops);
+	int ret;
+
+	/*
+	 * Prepare to perform a PDC update: shut off the EC's PD stack so it
+	 * does not communicate with the PDC during updates and interfere.
+	 */
+	ret = cros_ec_pd_control(me->ec_pd_id, PD_SUSPEND);
+	switch (ret) {
+	case EC_RES_SUCCESS:
+		/* PD stack is suspended. Safe to proceed. */
+		return VB2_SUCCESS;
+	case -EC_RES_BUSY:
+		/* EC power state or battery not ready for update */
+		cros_ec_ap_print(
+			"%s: Skipping update: Battery SoC or power state inadequate: %d\n",
+			me->chip_name, ret);
+		return VB2_ERROR_EX_AUXFW_PERIPHERAL_BUSY;
+	default:
+		/* Unknown error */
+		cros_ec_ap_print("%s: Skipping update: Error suspending PD stack: %d\n",
+				 me->chip_name, ret);
+		return VB2_ERROR_UNKNOWN;
+	}
 }
 
 static int rts545x_update_flash(Rts545x *me, const uint8_t *image, size_t image_size)
@@ -843,6 +846,7 @@ Rts545x *new_rts5453(CrosECTunnelI2c *bus, int ec_pd_id, struct ec_response_pd_c
 {
 	VbootAuxfwOps fw_ops = {
 		.check_hash = rts5453_check_hash,
+		.pre_update = rts5453_pre_update,
 		.update_image = rts5453_update_image,
 		.post_update = rts5453_post_update,
 	};

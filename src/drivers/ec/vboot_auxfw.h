@@ -27,6 +27,11 @@ struct VbootAuxfwOps {
 				const uint8_t *hash, size_t hash_size,
 				enum vb2_auxfw_update_severity *severity);
 	/*
+	 * Pre-update hook to call if check_hash() determines an update is needed.
+	 * Used for suspending PD stack and checking battery/power state.
+	 */
+	vb2_error_t (*pre_update)(const VbootAuxfwOps *me);
+	/*
 	 * Return VB2_SUCCESS on successful update. Auxfw Sync in turn
 	 * requests for an EC reboot to RO on successful update, so that any
 	 * chip whose FW is updated gets reset to a clean state.
