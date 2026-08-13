@@ -500,7 +500,7 @@ static enum cb_err cse_set_and_boot_from_next_bp(enum boot_partition_id bp)
 	 * that CSE/PMC based global resets might not take effect leading to
 	 * unexpected behavior, use EC reset in such cases and continue using
 	 * CSE/PMC based global reset in other scenarios like CSE sync (RW -> RO).
-	 * `CONFIG_SOC_INTEL_CSE_SKIP_GLOBAL_RESET` must be selected to use this
+	 * `CONFIG(SOC_INTEL_CSE_SKIP_GLOBAL_RESET)` must be selected to use this
 	 * logic, if not `do_global_reset` falls back to performing CSE/PMC
 	 * based reset same as `soc_global_reset` API.
 	 */
