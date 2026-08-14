@@ -16,22 +16,39 @@
  */
 
 #include <libpayload.h>
+#include "drivers/ec/cros/commands.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/power/chromeec.h"
 
+/* Reboot AP via EC */
 static int chromeec_reset(PowerOps *me)
 {
 	cros_ec_ap_reset();
 	halt();
 }
 
+/* Reboot EC */
+static int chromeec_reset2(PowerOps *me)
+{
+	cros_ec_reboot(EC_REBOOT_FLAG_IMMEDIATE);
+	halt();
+}
+
+/* Poweroff AP via EC */
 static int chromeec_off(PowerOps *me)
 {
 	cros_ec_ap_poweroff();
 	halt();
 }
 
+/* Standard ops to reboot/poweroff AP via EC */
 PowerOps chromec_power_ops = {
 	.reboot = &chromeec_reset,
+	.power_off = &chromeec_off,
+};
+
+/* Custom ops to reboot/poweroff AP via EC */
+PowerOps chromec_power2_ops = {
+	.reboot = &chromeec_reset2,
 	.power_off = &chromeec_off,
 };

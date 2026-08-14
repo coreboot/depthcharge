@@ -21,5 +21,6 @@
 #include "drivers/power/power.h"
 
 extern PowerOps chromec_power_ops;
+extern PowerOps chromec_power2_ops;
 
 #endif /* __DRIVERS_POWER_CHROMEEC_H__ */
