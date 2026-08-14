@@ -830,7 +830,12 @@ int cros_ec_read_batt_state_of_charge(uint32_t *state)
 
 int cros_ec_reboot(uint8_t flags)
 {
-	return cros_ec_reboot_param(cros_ec_get(), EC_REBOOT_COLD, flags);
+	struct ec_params_reboot_ec p = {
+		.cmd = EC_REBOOT_COLD,
+		.flags = flags,
+	};
+
+	return ec_cmd_reboot_ec(cros_ec_get(), &p);
 }
 
 int cros_ec_ap_poweroff(void)
