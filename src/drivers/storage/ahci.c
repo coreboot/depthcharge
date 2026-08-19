@@ -88,6 +88,38 @@ static const char *ahci_decode_mode(uint32_t mode)
 	}
 }
 
+static void ahci_deactivate_port(uint8_t *port_mmio)
+{
+	uint32_t port_cmd = read32(port_mmio + PORT_CMD);
+	int timeout;
+
+	/* If port DMA is not running, nothing to do */
+	if (!(port_cmd & (PORT_CMD_START | PORT_CMD_LIST_ON |
+			  PORT_CMD_FIS_RX | PORT_CMD_FIS_ON)))
+		return;
+
+	printf("Port is active. Deactivating.\n");
+
+	/* Step 1: Clear ST (PORT_CMD_START) */
+	port_cmd &= ~PORT_CMD_START;
+	write32_with_flush(port_mmio + PORT_CMD, port_cmd);
+
+	/* Step 2: Wait for CR (PORT_CMD_LIST_ON) to clear to 0 */
+	timeout = 1000; /* Wait up to 1ms (normally clears in a few microseconds) */
+	while ((read32(port_mmio + PORT_CMD) & PORT_CMD_LIST_ON) && timeout--)
+		udelay(1);
+
+	/* Step 3: Clear FRE (PORT_CMD_FIS_RX) */
+	port_cmd = read32(port_mmio + PORT_CMD);
+	port_cmd &= ~PORT_CMD_FIS_RX;
+	write32_with_flush(port_mmio + PORT_CMD, port_cmd);
+
+	/* Step 4: Wait for FR (PORT_CMD_FIS_ON) to clear to 0 */
+	timeout = 1000; /* Wait up to 1ms */
+	while ((read32(port_mmio + PORT_CMD) & PORT_CMD_FIS_ON) && timeout--)
+		udelay(1);
+}
+
 static void ahci_print_info(AhciCtrlr *ctrlr)
 {
 	pcidev_t pdev = ctrlr->dev;
@@ -243,6 +275,7 @@ static int ahci_device_data_io(AhciIoPort *port, void *fis, int fis_len,
 	// Wait for the command to complete.
 	if (WAIT_WHILE((read32(port_mmio + PORT_CMD_ISSUE) & 0x1), wait)) {
 		printf("AHCI: I/O timeout!\n");
+		ahci_deactivate_port(port_mmio);
 		return -1;
 	}
 
@@ -464,6 +497,9 @@ static int ahci_exit(struct CleanupFunc *cleanup, CleanupType type)
 		}
 		uint8_t *port_mmio = (uint8_t *)ahci_port_base(mmio, i);
 
+		/* Deactivate port DMA before handoff */
+		ahci_deactivate_port(port_mmio);
+
 		/* disable all port interrupts */
 		write32(port_mmio + PORT_IRQ_MASK, 0);
 
@@ -550,23 +586,12 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 		uint8_t *port_mmio = (uint8_t *)ctrlr->ports[i].port_mmio;
 		ahci_setup_port(&ctrlr->ports[i], mmio, i);
 
+		printf("Port Index is %d.\n", i);
 		/* make sure port is not active */
-		uint32_t port_cmd = read32(port_mmio + PORT_CMD);
-		uint32_t port_cmd_bits =
-			PORT_CMD_LIST_ON | PORT_CMD_FIS_ON |
-			PORT_CMD_FIS_RX | PORT_CMD_START;
-		if (port_cmd & port_cmd_bits) {
-			printf("Port %d is active. Deactivating.\n", i);
-			port_cmd &= ~port_cmd_bits;
-			write32_with_flush(port_mmio + PORT_CMD, port_cmd);
-
-			/* spec says 500 msecs for each bit, so
-			 * this is slightly incorrect.
-			 */
-			mdelay(500);
-		}
+		ahci_deactivate_port(port_mmio);
 
 		/* Bring up SATA link. */
+		uint32_t port_cmd = read32(port_mmio + PORT_CMD);
 		port_cmd = PORT_CMD_SPIN_UP | PORT_CMD_FIS_RX;
 		write32_with_flush(port_mmio + PORT_CMD, port_cmd);
 
