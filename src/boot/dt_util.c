@@ -34,9 +34,24 @@ void dt_update_chosen(struct device_tree *tree, struct boot_info *bi)
 	struct device_tree_node *node = dt_find_node(tree->root, path,
 						     NULL, NULL, 1);
 
-	/* Update only if non-NULL cmd line */
-	if (cmd_line)
-		dt_add_string_prop(node, "bootargs", cmd_line);
+	/* Update or append cmd line to /chosen/bootargs */
+	if (cmd_line && *cmd_line) {
+		const char *existing = dt_find_string_prop(node, "bootargs");
+
+		if (existing && *existing) {
+			/*
+			 * Allocate space for the existing bootargs, space separator (' '),
+			 * the command line, and the null terminator ('\0') (+2).
+			 */
+			const size_t len = strlen(existing) + strlen(cmd_line) + 2;
+			char *merged = xzalloc(len);
+
+			snprintf(merged, len, "%s %s", existing, cmd_line);
+			dt_add_string_prop(node, "bootargs", merged);
+		} else {
+			dt_add_string_prop(node, "bootargs", cmd_line);
+		}
+	}
 
 	if (CONFIG(MOCK_TPM))
 		return;
