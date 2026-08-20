@@ -198,8 +198,11 @@ static vb2_error_t do_post_update(void)
 		auxfw = vboot_auxfw[i].fw_ops;
 		if (auxfw->post_update) {
 			post_status = auxfw->post_update(auxfw);
-			if (post_status != VB2_SUCCESS)
-				status = post_status;
+			if (post_status != VB2_SUCCESS) {
+				if (status == VB2_SUCCESS)
+					status = post_status;
+				continue;
+			}
 		}
 
 		if (!vboot_auxfw[i].updated)
@@ -207,10 +210,13 @@ static vb2_error_t do_post_update(void)
 
 		/* Re-check hash after update */
 		post_status = check_dev_fw_hash(auxfw, &severity);
-		if (post_status != VB2_SUCCESS)
-			status = post_status;
-		else if (severity != VB2_AUXFW_NO_UPDATE)
-			status = VB2_ERROR_UNKNOWN;
+		if (post_status != VB2_SUCCESS) {
+			if (status == VB2_SUCCESS)
+				status = post_status;
+		} else if (severity != VB2_AUXFW_NO_UPDATE) {
+			/* Best-effort attempt to recover by EC reset */
+			status = VB2_REQUEST_REBOOT_EC_TO_RO;
+		}
 	}
 
 	return status;
