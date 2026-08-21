@@ -660,8 +660,8 @@ static vb2_error_t rts5453_check_hash(const VbootAuxfwOps *vbaux, const uint8_t 
 			 PDC_FWVER_PATCH(ver_new), project_name);
 
 	/* Repeat this log message into the EC console */
-	printf("%s: Using PDC image '%s' with hash file '%s'\n", me->chip_name,
-	       vbaux->fw_image_name, vbaux->fw_hash_name);
+	cros_ec_print("%s: Using PDC image '%s' with hash file '%s'\n", me->chip_name,
+		      vbaux->fw_image_name, vbaux->fw_hash_name);
 
 	*severity = VB2_AUXFW_SLOW_UPDATE;
 	debug("update severity %d\n", *severity);
@@ -809,13 +809,20 @@ static vb2_error_t rts5453_post_update(const VbootAuxfwOps *vbaux)
 		return VB2_REQUEST_REBOOT_EC_TO_RO;
 	}
 
+	cros_ec_ap_print("%s: PDC control handed back to EC\n", me->chip_name);
+
 	/* Give a generous timeout for the EC PD stack to resume */
 	start = timer_us(0);
 	do {
 		mdelay(200);
-		if (is_rts545x_device_present(me, true))
+		cros_ec_ap_print("%s: Polling for chip...\n", me->chip_name);
+		if (is_rts545x_device_present(me, true)) {
+			cros_ec_ap_print("%s: Chip is up. All done.\n", me->chip_name);
 			return VB2_SUCCESS;
+		}
 	} while (timer_us(start) < RTS_RESTART_DELAY_US);
+
+	cros_ec_ap_print("%s: Timed out contacting PDC\n", me->chip_name);
 
 	/* Cannot contact PDC after timeout. Reboot the EC to recover. */
 	return VB2_REQUEST_REBOOT_EC_TO_RO;

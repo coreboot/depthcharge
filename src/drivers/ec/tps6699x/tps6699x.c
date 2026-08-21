@@ -52,7 +52,7 @@ static void tps6699x_restore_i2c_speed(Tps6699x *me)
 	 * restore the speed if it was reported previously.
 	 */
 	status = cros_ec_i2c_set_speed(me->bus->remote_bus, me->saved_i2c_speed_khz, 0);
-	if (!status)
+	if (status != 0)
 		cros_ec_ap_print("%s: Could not restore I2C speed to %u kHz! (%d)\n",
 				 me->chip_name, me->saved_i2c_speed_khz, status);
 }
