@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <ctype.h>
 #include <inttypes.h>
 #include <libpayload.h>
 #include <lp_vboot.h>
@@ -216,6 +217,34 @@ static int append_vm_dtbo_index(struct bootconfig *bc)
 	return 0;
 }
 
+#define WIFI_COUNTRY_CODE_VPD_KEY "region"
+#define WIFI_COUNTRY_CODE_CONFIG_KEY "androidboot.wificountrycode"
+#define DEFAULT_WIFI_COUNTRY_CODE "00"
+
+static int append_wifi_country_code(struct bootconfig *bc)
+{
+	char buffer[ANDROID_VPD_MAX_BUFFER_SIZE];
+	const char *country_code = DEFAULT_WIFI_COUNTRY_CODE;
+
+	if (vpd_gets(WIFI_COUNTRY_CODE_VPD_KEY, buffer, sizeof(buffer))) {
+		char *sep = strchr(buffer, '.');
+		if (sep)
+			*sep = '\0';
+		int len = strlen(buffer);
+		if (len == 2 && isalpha(buffer[0]) && isalpha(buffer[1])) {
+			buffer[0] = toupper(buffer[0]);
+			buffer[1] = toupper(buffer[1]);
+			country_code = buffer;
+		} else {
+			printf("Invalid VPD region: %s, using fallback\n", buffer);
+		}
+	} else {
+		printf("VPD region not found, using fallback value: %s\n", country_code);
+	}
+
+	return bootconfig_append(bc, WIFI_COUNTRY_CODE_CONFIG_KEY, country_code);
+}
+
 int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_params *kp)
 {
 	return append_boot_part_uuid(bc, kp) |
@@ -229,7 +258,8 @@ int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_pa
 	       append_bootloader_version(bc) |
 	       append_ddr_size(bc) |
 	       append_dtbo_indices(bc) |
-	       append_vm_dtbo_index(bc);
+	       append_vm_dtbo_index(bc) |
+	       append_wifi_country_code(bc);
 }
 
 int append_android_bootconfig_boottime(struct boot_info *bi)
