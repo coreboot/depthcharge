@@ -9,7 +9,7 @@
 #include <pci/pci.h>
 
 #include "base/init_funcs.h"
-#include "board/fatcat/include/variant.h"
+#include "board/ocelot/include/variant.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"

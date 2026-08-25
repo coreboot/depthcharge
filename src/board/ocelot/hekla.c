@@ -2,7 +2,7 @@
 
 #include <libpayload.h>
 #include "drivers/ec/tps6699x/tps6699x.h"
-#include "board/fatcat/include/variant.h"
+#include "board/ocelot/include/variant.h"
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "base/fw_config.h"
