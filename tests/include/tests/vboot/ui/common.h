@@ -23,11 +23,11 @@
 					     "screen"); \
 		} \
 		if ((_focused_item) != MOCK_IGNORE) \
-			assert_int_equal_msg((_state)->focused_item, \
+			assert_int_equal_msg((_state)->menu_state.focused_item, \
 					     (_focused_item), \
 					     "focused_item"); \
 		if ((_hidden_item_mask) != MOCK_IGNORE) \
-			assert_int_equal_msg((_state)->hidden_item_mask, \
+			assert_int_equal_msg((_state)->menu_state.hidden_item_mask, \
 					     (_hidden_item_mask), \
 					     "hidden_item_mask"); \
 	} while (0)

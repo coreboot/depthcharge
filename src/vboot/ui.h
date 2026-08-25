@@ -438,6 +438,24 @@ struct ui_menu {
 	const struct ui_menu_item *items;
 };
 
+/* Runtime state of a menu */
+struct ui_menu_state {
+	const struct ui_menu *menu;
+	/* Index of the menu item under focus. */
+	uint32_t focused_item;
+	/*
+	 * Mask for disabled menu items. Bit (1 << idx) indicates whether item
+	 * 'idx' is disabled. A disabled (greyed out) menu item is visible and
+	 * can be set focus on, but cannot be selected.
+	 */
+	uint32_t disabled_item_mask;
+	/*
+	 * Mask for hidden menu items. Bit (1 << idx) indicates whether item
+	 * 'idx' is hidden. A hidden menu item is invisible on the screen.
+	 */
+	uint32_t hidden_item_mask;
+};
+
 /* Icon type. */
 enum ui_icon_type {
 	/* No reserved space for any icon. */
@@ -619,21 +637,8 @@ struct ui_state {
 	 */
 	const struct ui_screen_info *screen;
 
-	/* Index of the menu item under focus. */
-	uint32_t focused_item;
-
-	/*
-	 * Mask for disabled menu items. Bit (1 << idx) indicates whether item
-	 * 'idx' is disabled. A disabled (greyed out) menu item is visible and
-	 * can be set focus on, but cannot be selected.
-	 */
-	uint32_t disabled_item_mask;
-
-	/*
-	 * Mask for hidden menu items. Bit (1 << idx) indicates whether item
-	 * 'idx' is hidden. A hidden menu item is invisible on the screen.
-	 */
-	uint32_t hidden_item_mask;
+	/* Menu state on the current screen. */
+	struct ui_menu_state menu_state;
 
 	/***********************************************************************
 	 * Fields for log screens. These will be ignored for non-log screens.

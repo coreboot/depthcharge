@@ -31,7 +31,7 @@ void test_prev_valid_action(void **state)
 	struct ui_context *ui = *state;
 
 	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 2;
+	ui->state->menu_state.focused_item = 2;
 	ui->key = UI_KEY_UP;
 
 	ASSERT_VB2_SUCCESS(ui_menu_prev(ui));
@@ -43,8 +43,8 @@ void test_prev_valid_action_with_hidden_mask(void **state)
 	struct ui_context *ui = *state;
 
 	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 2;
-	ui->state->hidden_item_mask = 0x0a; /* 0b01010 */
+	ui->state->menu_state.focused_item = 2;
+	ui->state->menu_state.hidden_item_mask = 0x0a; /* 0b01010 */
 	ui->key = UI_KEY_UP;
 
 	ASSERT_VB2_SUCCESS(ui_menu_prev(ui));
@@ -56,8 +56,8 @@ void test_prev_disable_mask_does_not_affect(void **state)
 	struct ui_context *ui = *state;
 
 	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 2;
-	ui->state->disabled_item_mask = 0x0a; /* 0b01010 */
+	ui->state->menu_state.focused_item = 2;
+	ui->state->menu_state.disabled_item_mask = 0x0a; /* 0b01010 */
 	ui->key = UI_KEY_UP;
 
 	ASSERT_VB2_SUCCESS(ui_menu_prev(ui));
@@ -69,7 +69,7 @@ void test_prev_invalid_action_blocked(void **state)
 	struct ui_context *ui = *state;
 
 	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 0;
+	ui->state->menu_state.focused_item = 0;
 	ui->key = UI_KEY_UP;
 
 	ASSERT_VB2_SUCCESS(ui_menu_prev(ui));
@@ -81,8 +81,8 @@ void test_prev_invalid_action_blocked_by_mask(void **state)
 	struct ui_context *ui = *state;
 
 	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 2;
-	ui->state->hidden_item_mask = 0x0b; /* 0b01011 */
+	ui->state->menu_state.focused_item = 2;
+	ui->state->menu_state.hidden_item_mask = 0x0b; /* 0b01011 */
 	ui->key = UI_KEY_UP;
 
 	ASSERT_VB2_SUCCESS(ui_menu_prev(ui));
@@ -94,7 +94,7 @@ void test_next_valid_action(void **state)
 	struct ui_context *ui = *state;
 
 	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 2;
+	ui->state->menu_state.focused_item = 2;
 	ui->key = UI_KEY_DOWN;
 
 	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
@@ -106,8 +106,8 @@ void test_next_valid_action_with_hidden_mask(void **state)
 	struct ui_context *ui = *state;
 
 	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 2;
-	ui->state->hidden_item_mask = 0x0a; /* 0b01010 */
+	ui->state->menu_state.focused_item = 2;
+	ui->state->menu_state.hidden_item_mask = 0x0a; /* 0b01010 */
 	ui->key = UI_KEY_DOWN;
 
 	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
@@ -119,8 +119,8 @@ void test_next_disable_mask_does_not_affect(void **state)
 	struct ui_context *ui = *state;
 
 	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 2;
-	ui->state->disabled_item_mask = 0x0a; /* 0b01010 */
+	ui->state->menu_state.focused_item = 2;
+	ui->state->menu_state.disabled_item_mask = 0x0a; /* 0b01010 */
 	ui->key = UI_KEY_DOWN;
 
 	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
@@ -132,7 +132,7 @@ void test_next_invalid_action_blocked(void **state)
 	struct ui_context *ui = *state;
 
 	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 4;
+	ui->state->menu_state.focused_item = 4;
 	ui->key = UI_KEY_DOWN;
 
 	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
@@ -144,8 +144,8 @@ void test_next_invalid_action_blocked_by_mask(void **state)
 	struct ui_context *ui = *state;
 
 	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 2;
-	ui->state->hidden_item_mask = 0x1a; /* 0b11010 */
+	ui->state->menu_state.focused_item = 2;
+	ui->state->menu_state.hidden_item_mask = 0x1a; /* 0b11010 */
 	ui->key = UI_KEY_DOWN;
 
 	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
@@ -168,7 +168,7 @@ void test_select_item_with_target(void **state)
 	struct ui_context *ui = *state;
 
 	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 2;
+	ui->state->menu_state.focused_item = 2;
 	ui->key = UI_KEY_ENTER;
 	expect_value(ui_screen_change, id, MOCK_SCREEN_TARGET2);
 
@@ -180,7 +180,7 @@ void test_select_item_with_action(void **state)
 	struct ui_context *ui = *state;
 
 	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 3;
+	ui->state->menu_state.focused_item = 3;
 	ui->key = UI_KEY_ENTER;
 	expect_function_call(mock_action_base);
 
@@ -192,7 +192,7 @@ void test_select_item_with_no_target_and_action(void **state)
 	struct ui_context *ui = *state;
 
 	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 4;
+	ui->state->menu_state.focused_item = 4;
 	ui->key = UI_KEY_ENTER;
 
 	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
@@ -204,8 +204,8 @@ void test_select_item_disabled(void **state)
 	struct ui_context *ui = *state;
 
 	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 3;
-	ui->state->disabled_item_mask = 0x08; /* 0b01000 */
+	ui->state->menu_state.focused_item = 3;
+	ui->state->menu_state.disabled_item_mask = 0x08; /* 0b01000 */
 	ui->key = UI_KEY_ENTER;
 
 	ASSERT_VB2_SUCCESS(ui_menu_select(ui));

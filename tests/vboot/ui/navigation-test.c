@@ -56,8 +56,8 @@ static void test_screen_back_to_previous_restore_state(void **state)
 
 	ui_screen_change(ui, MOCK_SCREEN_ROOT);
 	ui_screen_change(ui, MOCK_SCREEN_BASE);
-	ui->state->focused_item = 2;
-	ui->state->hidden_item_mask = 0x10;
+	ui->state->menu_state.focused_item = 2;
+	ui->state->menu_state.hidden_item_mask = 0x10;
 	ui_screen_change(ui, MOCK_SCREEN_MENU);
 
 	assert_int_equal(ui_screen_back(ui), VB2_REQUEST_UI_CONTINUE);
@@ -92,8 +92,8 @@ static void test_screen_change_to_state_in_stack(void **state)
 
 	ui_screen_change(ui, MOCK_SCREEN_ROOT);
 	ui_screen_change(ui, MOCK_SCREEN_BASE);
-	ui->state->focused_item = 2;
-	ui->state->hidden_item_mask = 0x10;
+	ui->state->menu_state.focused_item = 2;
+	ui->state->menu_state.hidden_item_mask = 0x10;
 	ui_screen_change(ui, MOCK_SCREEN_MENU);
 
 	assert_int_equal(ui_screen_change(ui, MOCK_SCREEN_BASE),

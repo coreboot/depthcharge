@@ -937,6 +937,9 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 	int32_t x;
 	int32_t button_width;
 	int clear_help;
+	const struct ui_menu_state *ms = &state->menu_state;
+	const struct ui_menu_state *prev_ms = prev_state ?
+		&prev_state->menu_state : NULL;
 
 	/* Primary buttons */
 	x = UI_MARGIN_H;
@@ -944,15 +947,15 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 	for (i = 0; i < menu->num_items; i++) {
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
 			continue;
-		if (UI_GET_BIT(state->hidden_item_mask, i))
+		if (UI_GET_BIT(ms->hidden_item_mask, i))
 			continue;
-		clear_help = prev_state &&
-			     prev_state->focused_item == i &&
-			     UI_GET_BIT(prev_state->disabled_item_mask, i);
+		clear_help = prev_ms &&
+			     prev_ms->focused_item == i &&
+			     UI_GET_BIT(prev_ms->disabled_item_mask, i);
 		VB2_TRY(ui_draw_button(&menu->items[i], state, x, y,
 				       button_width, UI_BUTTON_HEIGHT,
-				       state->focused_item == i,
-				       UI_GET_BIT(state->disabled_item_mask, i),
+				       ms->focused_item == i,
+				       UI_GET_BIT(ms->disabled_item_mask, i),
 				       clear_help));
 		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
 	}
@@ -962,13 +965,13 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 	y = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT -
 		UI_FOOTER_MARGIN_TOP - UI_BUTTON_HEIGHT;
 	for (i = menu->num_items - 1; i >= 0; i--) {
-		if (UI_GET_BIT(state->hidden_item_mask, i))
+		if (UI_GET_BIT(ms->hidden_item_mask, i))
 			continue;
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_SECONDARY)
 			continue;
 		VB2_TRY(ui_draw_link(&menu->items[i], state,
 				     x, y, UI_BUTTON_HEIGHT,
-				     state->focused_item == i));
+				     ms->focused_item == i));
 		y -= UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
 	}
 
@@ -981,6 +984,9 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	const struct ui_state *state = ui->state;
 	const struct ui_screen_info *screen = state->screen;
 	const struct ui_menu *menu = ui_get_menu(ui);
+	const struct ui_menu_state *ms = &state->menu_state;
+	const struct ui_menu_state *prev_ms = prev_state ?
+		&prev_state->menu_state : NULL;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
 	int focused;
@@ -1022,12 +1028,13 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	/* Language dropdown header */
 	if (menu->num_items > 0 &&
 	    menu->items[0].type == UI_MENU_ITEM_TYPE_LANGUAGE) {
-		focused = state->focused_item == 0;
+		focused = ms->focused_item == 0;
 		if (!prev_state ||
 		    prev_state->screen != state->screen ||
 		    prev_state->locale != state->locale ||
 		    prev_state->error_code != state->error_code ||
-		    (prev_state->focused_item == 0) != focused) {
+		    !prev_ms ||
+		    (prev_ms->focused_item == 0) != focused) {
 			VB2_TRY(ui_draw_language_header(state->locale, state,
 							focused));
 		}

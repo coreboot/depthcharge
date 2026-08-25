@@ -21,37 +21,40 @@ const struct ui_menu *ui_get_menu(struct ui_context *ui)
 
 vb2_error_t ui_menu_prev(struct ui_context *ui)
 {
+	struct ui_menu_state *ms = &ui->state->menu_state;
 	int item;
 
-	item = ui->state->focused_item - 1;
-	while (item >= 0 && UI_GET_BIT(ui->state->hidden_item_mask, item))
+	item = (int)ms->focused_item - 1;
+	while (item >= 0 && UI_GET_BIT(ms->hidden_item_mask, item))
 		item--;
 	/* Only update if item is valid */
 	if (item >= 0)
-		ui->state->focused_item = item;
+		ms->focused_item = item;
 
 	return VB2_SUCCESS;
 }
 
 vb2_error_t ui_menu_next(struct ui_context *ui)
 {
+	struct ui_menu_state *ms = &ui->state->menu_state;
 	int item;
 	const struct ui_menu *menu;
 
 	menu = ui_get_menu(ui);
-	item = ui->state->focused_item + 1;
+	item = (int)ms->focused_item + 1;
 	while (item < menu->num_items &&
-	       UI_GET_BIT(ui->state->hidden_item_mask, item))
+	       UI_GET_BIT(ms->hidden_item_mask, item))
 		item++;
 	/* Only update if item is valid */
 	if (item < menu->num_items)
-		ui->state->focused_item = item;
+		ms->focused_item = item;
 
 	return VB2_SUCCESS;
 }
 
 vb2_error_t ui_menu_select(struct ui_context *ui)
 {
+	struct ui_menu_state *ms = &ui->state->menu_state;
 	const struct ui_menu *menu;
 	const struct ui_menu_item *menu_item;
 
@@ -59,11 +62,11 @@ vb2_error_t ui_menu_select(struct ui_context *ui)
 	if (menu->num_items == 0)
 		return VB2_SUCCESS;
 
-	menu_item = &menu->items[ui->state->focused_item];
+	menu_item = &menu->items[ms->focused_item];
 
 	/* Cannot select a disabled menu item */
-	if (UI_GET_BIT(ui->state->disabled_item_mask,
-		       ui->state->focused_item)) {
+	if (UI_GET_BIT(ms->disabled_item_mask,
+		       ms->focused_item)) {
 		UI_WARN("Menu item <%s> disabled; ignoring\n",
 			menu_item->name);
 		return VB2_SUCCESS;

@@ -305,11 +305,12 @@ vb2_error_t ui_display(struct ui_context *ui,
 {
 	vb2_error_t rv;
 	const struct ui_state *state = ui->state;
+	const struct ui_menu_state *ms = &state->menu_state;
 	UI_INFO("screen=%#x, locale=%u, focused_item=%u, "
 		"disabled_item_mask=%#x, hidden_item_mask=%#x, "
 		"timer_disabled=%d, current_page=%u, error=%#x\n",
-		state->screen->id, ui->state->locale->id, state->focused_item,
-		state->disabled_item_mask, state->hidden_item_mask,
+		state->screen->id, ui->state->locale->id, ms->focused_item,
+		ms->disabled_item_mask, ms->hidden_item_mask,
 		state->timer_disabled, state->current_page, state->error_code);
 
 	int32_t y = UI_BOX_MARGIN_V;
@@ -347,7 +348,7 @@ vb2_error_t ui_display(struct ui_context *ui,
 		if (screen->mesg)
 			ui_draw_textbox(screen->mesg, &y, 1);
 		/* Also draw colored stripes */
-		draw_fallback_stripes(screen->id, state->focused_item);
+		draw_fallback_stripes(screen->id, ms->focused_item);
 	}
 	/* Disable screen dimming. */
 	if (error)

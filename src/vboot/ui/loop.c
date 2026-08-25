@@ -143,6 +143,13 @@ vb2_error_t ui_init_context(struct ui_context *ui, struct vb2_context *ctx,
 	return ui_screen_init(ui);
 }
 
+static const char *get_menu_item_name(const struct ui_menu *menu, uint32_t index)
+{
+	if (!menu || index >= menu->num_items || !menu->items[index].name)
+		return "null";
+	return menu->items[index].name;
+}
+
 static vb2_error_t ui_loop_impl(
 	struct ui_context *ui, struct vb2_context *ctx,
 	vb2_error_t (*global_action)(struct ui_context *ui))
@@ -168,14 +175,14 @@ static vb2_error_t ui_loop_impl(
 		    ui->force_display) {
 
 			menu = ui_get_menu(ui);
+			const struct ui_menu_state *ms =
+				&ui->state->menu_state;
+			const char *item_name =
+				get_menu_item_name(menu, ms->focused_item);
 			UI_INFO("<%s> menu item <%s>\n",
-				ui->state->screen->name
-					? ui->state->screen->name
-					: "null",
-				menu->num_items
-					? menu->items[ui->state->focused_item]
-						  .name
-					: "null");
+				ui->state->screen->name ?
+				ui->state->screen->name : "null",
+				item_name);
 			rv = ui_display(ui, need_redraw ? NULL : &prev_state);
 			/* If the drawing failed, set the flag so that NULL will
 			   be passed to ui_display() in the next iteration. */

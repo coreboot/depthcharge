@@ -44,9 +44,9 @@ int main(int argc, char *argv[])
 	vb2api_set_locale_id(fake_ctx, 0);
 	VB2_TRY(ui_init_context(&ui, fake_ctx, __SCREEN__));
 	state = ui.state;
-	state->focused_item = __ITEM__;
-	state->disabled_item_mask = __DISABLED_ITEM_MASK__;
-	state->hidden_item_mask = __HIDDEN_ITEM_MASK__;
+	state->menu_state.focused_item = __ITEM__;
+	state->menu_state.disabled_item_mask = __DISABLED_ITEM_MASK__;
+	state->menu_state.hidden_item_mask = __HIDDEN_ITEM_MASK__;
 	state->error_code = __ERROR_CODE__;
 	state->current_page = __PAGE__;
 
