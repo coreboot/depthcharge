@@ -370,8 +370,172 @@ struct ui_locale {
 };
 
 /* Forward declarations. */
-struct ui_screen_info;
+struct ui_state;
 struct ui_context;
+
+/* Menu item type. */
+enum ui_menu_item_type {
+	/* Primary button. */
+	UI_MENU_ITEM_TYPE_PRIMARY = 0,
+	/* Secondary button. */
+	UI_MENU_ITEM_TYPE_SECONDARY,
+	/* Language selection. */
+	UI_MENU_ITEM_TYPE_LANGUAGE,
+};
+
+enum ui_menu_item_flag {
+	/* No arrow; valid for UI_MENU_ITEM_TYPE_SECONDARY only. */
+	UI_MENU_ITEM_FLAG_NO_ARROW		= 1 << 0,
+};
+
+/* Menu item. */
+struct ui_menu_item {
+	/*
+	 * Item name for printing to console, required for all menu items.
+	 * When both 'file' and 'get_file' are not specified, the string will be
+	 * used to draw the button text with monospace font.
+	 */
+	const char *name;
+	/* Pre-generated bitmap containing button text. */
+	const char *file;
+	/*
+	 * Custom function for getting bitmap file. If non-null, field 'file'
+	 * will be ignored.
+	 */
+	const char *(*get_file)(const struct ui_state *state);
+	/*
+	 * Custom function for getting the item text width. When 'get_file' is
+	 * set, this should also be set to return the maximum text width among
+	 * all possible files returned by 'get_file'. If not set, the text width
+	 * of the active bitmap (either from 'get_file' or 'file') will be used.
+	 */
+	vb2_error_t (*get_width)(const struct ui_state *state, int32_t *width);
+	/*
+	 * If UI_MENU_ITEM_TYPE_LANGUAGE, the 'file', 'get_file' and 'get_width'
+	 * fields will not be used.
+	 */
+	enum ui_menu_item_type type;
+	/* Icon file for UI_MENU_ITEM_TYPE_SECONDARY only. */
+	const char *icon_file;
+	/*
+	 * Bitmap file of the help text displayed next to the button.
+	 * This field is only for disabled buttons of type
+	 * UI_MENU_ITEM_TYPE_PRIMARY.
+	 */
+	const char *disabled_help_text_file;
+	/* Flags are defined in enum ui_menu_item_flag. */
+	uint8_t flags;
+	/* Target screen */
+	enum ui_screen target;
+	/* Action function takes precedence over target screen if non-NULL. */
+	vb2_error_t (*action)(struct ui_context *ui);
+};
+
+/* List of menu items. */
+struct ui_menu {
+	size_t num_items;
+	/* Only the first item allowed to be UI_MENU_ITEM_TYPE_LANGUAGE. */
+	const struct ui_menu_item *items;
+};
+
+/* Icon type. */
+enum ui_icon_type {
+	/* No reserved space for any icon. */
+	UI_ICON_TYPE_NONE = 0,
+	UI_ICON_TYPE_INFO,
+	UI_ICON_TYPE_ERROR,
+	UI_ICON_TYPE_DEV_MODE,
+	UI_ICON_TYPE_RESTART,
+	UI_ICON_TYPE_STEP,
+};
+
+/* List of description files. */
+struct ui_desc {
+	size_t count;
+	const char *const *files;
+};
+
+struct ui_screen_info {
+	/* Screen id */
+	enum ui_screen id;
+	/* Screen name for printing to console only */
+	const char *name;
+	/* Icon type */
+	enum ui_icon_type icon;
+	/*
+	 * Current step number; valid only if icon is UI_ICON_TYPE_STEP. A
+	 * negative value indicates an error in the abs(step)-th step.
+	 */
+	int step;
+	/* Total number of steps; valid only if icon is UI_ICON_TYPE_STEP */
+	int num_steps;
+	/* File for screen title; required with ui_draw_default(). */
+	const char *title;
+	/* Files for screen descriptions. */
+	struct ui_desc desc;
+	/* Menu items. */
+	struct ui_menu menu;
+	/* Absence of footer */
+	int no_footer;
+	/*
+	 * Display the screen content in full view. If is_fullview is set,
+	 * - no_footer must be set.
+	 * - no menu items.
+	 */
+	int is_fullview;
+	/*
+	 * Init function runs once when changing to the screen which is not in
+	 * the history stack.
+	 */
+	vb2_error_t (*init)(struct ui_context *ui);
+	/*
+	 * Re-init function runs once when changing to the screen which is
+	 * already in the history stack, for example, when going back to the
+	 * screen. Exactly one of init() and reinit() will be called.
+	 */
+	vb2_error_t (*reinit)(struct ui_context *ui);
+	/*
+	 * Exit function runs once when the screen is popped out from the
+	 * history stack.
+	 */
+	vb2_error_t (*exit)(struct ui_context *ui);
+	/*
+	 * Action function runs repeatedly while on the screen.
+	 * - If it triggers screen change due to a key press, the action
+	 *   function must clear ui->key.
+	 * - If it handles a key press but doesn't change the screen, it can
+	 *   either clear ui->key or not, depending on whether we want
+	 *   subsequent actions to handle the same key press.
+	 */
+	vb2_error_t (*action)(struct ui_context *ui);
+	/*
+	 * Custom drawing function. When it is NULL, the default drawing
+	 * function ui_draw_default() will be called instead.
+	 */
+	vb2_error_t (*draw)(struct ui_context *ui,
+			    const struct ui_state *prev_state);
+	/* Custom description drawing function. */
+	vb2_error_t (*draw_desc)(struct ui_context *ui,
+				 const struct ui_state *prev_state,
+				 int32_t *y);
+	/* Custom menu items drawing function. */
+	vb2_error_t (*draw_menu_items)(struct ui_context *ui,
+				       const struct ui_state *prev_state);
+	/* Fallback message. */
+	const char *mesg;
+	/*
+	 * Custom function for getting menu items. If non-null, field 'menu'
+	 * will be ignored.
+	 */
+	const struct ui_menu *(*get_menu)(struct ui_context *ui);
+	/*
+	 * Indices of menu items;
+	 * used by log_page_* functions in ui/screens.c.
+	 */
+	uint32_t page_up_item;
+	uint32_t page_down_item;
+	uint32_t back_item;
+};
 
 enum ui_log_type {
 	UI_LOG_TYPE_UNKNOWN = 0,
@@ -499,93 +663,11 @@ struct ui_state {
 	struct ui_state *prev;
 };
 
-/* Icon type. */
-enum ui_icon_type {
-	/* No reserved space for any icon. */
-	UI_ICON_TYPE_NONE = 0,
-	UI_ICON_TYPE_INFO,
-	UI_ICON_TYPE_ERROR,
-	UI_ICON_TYPE_DEV_MODE,
-	UI_ICON_TYPE_RESTART,
-	UI_ICON_TYPE_STEP,
-};
-
-/* List of description files. */
-struct ui_desc {
-	size_t count;
-	const char *const *files;
-};
-
-/* Menu item type. */
-enum ui_menu_item_type {
-	/* Primary button. */
-	UI_MENU_ITEM_TYPE_PRIMARY = 0,
-	/* Secondary button. */
-	UI_MENU_ITEM_TYPE_SECONDARY,
-	/* Language selection. */
-	UI_MENU_ITEM_TYPE_LANGUAGE,
-};
-
-enum ui_menu_item_flag {
-	/* No arrow; valid for UI_MENU_ITEM_TYPE_SECONDARY only. */
-	UI_MENU_ITEM_FLAG_NO_ARROW		= 1 << 0,
-};
-
 enum ui_dcache_state {
 	UI_DCACHE_STATE_UNKNOWN = 0,
 	UI_DCACHE_STATE_CLEANED = 0,
 	UI_DCACHE_STATE_NEED_CLEAN_AFTER_UI_DISPLAY,
 	UI_DCACHE_STATE_SCHEDULE_CLEAN,
-};
-
-/* Menu item. */
-struct ui_menu_item {
-	/*
-	 * Item name for printing to console, required for all menu items.
-	 * When both 'file' and 'get_file' are not specified, the string will be
-	 * used to draw the button text with monospace font.
-	 */
-	const char *name;
-	/* Pre-generated bitmap containing button text. */
-	const char *file;
-	/*
-	 * Custom function for getting bitmap file. If non-null, field 'file'
-	 * will be ignored.
-	 */
-	const char *(*get_file)(const struct ui_state *state);
-	/*
-	 * Custom function for getting the item text width. When 'get_file' is
-	 * set, this should also be set to return the maximum text width among
-	 * all possible files returned by 'get_file'. If not set, the text width
-	 * of the active bitmap (either from 'get_file' or 'file') will be used.
-	 */
-	vb2_error_t (*get_width)(const struct ui_state *state, int32_t *width);
-	/*
-	 * If UI_MENU_ITEM_TYPE_LANGUAGE, the 'file', 'get_file' and 'get_width'
-	 * fields will not be used.
-	 */
-	enum ui_menu_item_type type;
-	/* Icon file for UI_MENU_ITEM_TYPE_SECONDARY only. */
-	const char *icon_file;
-	/*
-	 * Bitmap file of the help text displayed next to the button.
-	 * This field is only for disabled buttons of type
-	 * UI_MENU_ITEM_TYPE_PRIMARY.
-	 */
-	const char *disabled_help_text_file;
-	/* Flags are defined in enum ui_menu_item_flag. */
-	uint8_t flags;
-	/* Target screen */
-	enum ui_screen target;
-	/* Action function takes precedence over target screen if non-NULL. */
-	vb2_error_t (*action)(struct ui_context *ui);
-};
-
-/* List of menu items. */
-struct ui_menu {
-	size_t num_items;
-	/* Only the first item allowed to be UI_MENU_ITEM_TYPE_LANGUAGE. */
-	const struct ui_menu_item *items;
 };
 
 /* States of power button. */
@@ -640,88 +722,6 @@ struct ui_context {
 
 	/* For indicating dcache clean is required after test exit. */
 	enum ui_dcache_state dcache_state;
-};
-
-struct ui_screen_info {
-	/* Screen id */
-	enum ui_screen id;
-	/* Screen name for printing to console only */
-	const char *name;
-	/* Icon type */
-	enum ui_icon_type icon;
-	/*
-	 * Current step number; valid only if icon is UI_ICON_TYPE_STEP. A
-	 * negative value indicates an error in the abs(step)-th step.
-	 */
-	int step;
-	/* Total number of steps; valid only if icon is UI_ICON_TYPE_STEP */
-	int num_steps;
-	/* File for screen title; required with ui_draw_default(). */
-	const char *title;
-	/* Files for screen descriptions. */
-	struct ui_desc desc;
-	/* Menu items. */
-	struct ui_menu menu;
-	/* Absence of footer */
-	int no_footer;
-	/*
-	 * Display the screen content in full view. If is_fullview is set,
-	 * - no_footer must be set.
-	 * - no menu items.
-	 */
-	int is_fullview;
-	/*
-	 * Init function runs once when changing to the screen which is not in
-	 * the history stack.
-	 */
-	vb2_error_t (*init)(struct ui_context *ui);
-	/*
-	 * Re-init function runs once when changing to the screen which is
-	 * already in the history stack, for example, when going back to the
-	 * screen. Exactly one of init() and reinit() will be called.
-	 */
-	vb2_error_t (*reinit)(struct ui_context *ui);
-	/*
-	 * Exit function runs once when the screen is popped out from the
-	 * history stack.
-	 */
-	vb2_error_t (*exit)(struct ui_context *ui);
-	/*
-	 * Action function runs repeatedly while on the screen.
-	 * - If it triggers screen change due to a key press, the action
-	 *   function must clear ui->key.
-	 * - If it handles a key press but doesn't change the screen, it can
-	 *   either clear ui->key or not, depending on whether we want
-	 *   subsequent actions to handle the same key press.
-	 */
-	vb2_error_t (*action)(struct ui_context *ui);
-	/*
-	 * Custom drawing function. When it is NULL, the default drawing
-	 * function ui_draw_default() will be called instead.
-	 */
-	vb2_error_t (*draw)(struct ui_context *ui,
-			    const struct ui_state *prev_state);
-	/* Custom description drawing function. */
-	vb2_error_t (*draw_desc)(struct ui_context *ui,
-				 const struct ui_state *prev_state,
-				 int32_t *y);
-	/* Custom menu items drawing function. */
-	vb2_error_t (*draw_menu_items)(struct ui_context *ui,
-				       const struct ui_state *prev_state);
-	/* Fallback message. */
-	const char *mesg;
-	/*
-	 * Custom function for getting menu items. If non-null, field 'menu'
-	 * will be ignored.
-	 */
-	const struct ui_menu *(*get_menu)(struct ui_context *ui);
-	/*
-	 * Indices of menu items;
-	 * used by log_page_* functions in ui/screens.c.
-	 */
-	uint32_t page_up_item;
-	uint32_t page_down_item;
-	uint32_t back_item;
 };
 
 /******************************************************************************/
