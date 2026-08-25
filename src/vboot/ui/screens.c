@@ -90,9 +90,8 @@
 #define ADVANCED_OPTIONS_ITEM ((struct ui_menu_item){	\
 	.name = "Advanced options",			\
 	.file = "btn_adv_options.bmp",			\
-	.type = UI_MENU_ITEM_TYPE_SECONDARY,		\
-	.icon_file = "ic_settings.bmp",			\
-	.target = UI_SCREEN_ADVANCED_OPTIONS,		\
+	.type = UI_MENU_ITEM_TYPE_DROPDOWN,		\
+	.sub_menu = &advanced_options_menu,		\
 })
 
 /* Action that will power off the device. */
@@ -665,46 +664,14 @@ static const struct ui_screen_info language_select_screen = {
 };
 
 /******************************************************************************/
-/* UI_SCREEN_RECOVERY_BROKEN */
+/* Advanced options sub-menu */
 
-static const char *const broken_desc[] = {
-	"broken_desc0.bmp",
-	"broken_desc1.bmp",
-	"broken_desc2.bmp",
-};
-
-static const struct ui_menu_item broken_items[] = {
-	LANGUAGE_SELECT_ITEM,
-	ADVANCED_OPTIONS_ITEM,
-	POWER_OFF_ITEM,
-};
-
-static const struct ui_screen_info broken_screen = {
-	.id = UI_SCREEN_RECOVERY_BROKEN,
-	.name = "Recover broken device",
-	.title = "broken_title.bmp",
-	.desc = UI_DESC(broken_desc),
-	.menu = UI_MENU(broken_items),
-	.mesg = "Something went wrong\n"
-		"To fix the issue, start the recovery process.\n"
-		"1. Remove all connected devices.\n"
-		"2. Depending on your device type:\n"
-		"* Laptop: Hold Escape, Refresh, and Power buttons\n"
-		"* Desktop: While holding the Recovery button,\n"
-		"  press and release the Power button, then release\n"
-		"  the Recovery button\n"
-		"* Tablet: Hold down Power, Volume Up, Volume Down buttons for\n"
-		"  at least 10 seconds",
-};
-
-/******************************************************************************/
-/* UI_SCREEN_ADVANCED_OPTIONS */
-
-#define ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE 1
-#define ADVANCED_OPTIONS_ITEM_DEBUG_INFO 2
-#define ADVANCED_OPTIONS_ITEM_ENTER_FASTBOOT 3
-#define ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY 5
-#define ADVANCED_OPTIONS_ITEM_FIRMWARE_SHELL 6
+#define ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE 0
+#define ADVANCED_OPTIONS_ITEM_DEBUG_INFO 1
+#define ADVANCED_OPTIONS_ITEM_ENTER_FASTBOOT 2
+#define ADVANCED_OPTIONS_ITEM_FIRMWARE_LOG 3
+#define ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY 4
+#define ADVANCED_OPTIONS_ITEM_FIRMWARE_SHELL 5
 
 static vb2_error_t boot_nbr_impl(struct ui_context *ui, int non_active_only)
 {
@@ -728,9 +695,9 @@ static vb2_error_t boot_old_nbr_action(struct ui_context *ui)
 	return boot_nbr_impl(ui, 1);
 }
 
-vb2_error_t advanced_options_init(struct ui_context *ui)
+static vb2_error_t advanced_options_menu_init(struct ui_context *ui)
 {
-	struct ui_menu_state *ms = &ui->state->menu_state;
+	struct ui_menu_state *ms = ui_active_menu_state(ui->state);
 
 	ms->focused_item = ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE;
 	if ((ui->ctx->flags & VB2_CONTEXT_DEVELOPER_MODE) ||
@@ -766,8 +733,7 @@ vb2_error_t ui_developer_mode_enter_fwshell_action(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-static const struct ui_menu_item advanced_options_items[] = {
-	LANGUAGE_SELECT_ITEM,
+static const struct ui_menu_item adv_options_items[] = {
 	[ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE] = {
 		.name = "Unlock bootloader",
 		.file = "btn_dev_mode.bmp",
@@ -783,7 +749,7 @@ static const struct ui_menu_item advanced_options_items[] = {
 		.file = "btn_fastboot.bmp",
 		.target = UI_SCREEN_FASTBOOT,
 	},
-	{
+	[ADVANCED_OPTIONS_ITEM_FIRMWARE_LOG] = {
 		.name = "Firmware log",
 		.file = "btn_firmware_log.bmp",
 		.target = UI_SCREEN_FIRMWARE_LOG,
@@ -798,18 +764,45 @@ static const struct ui_menu_item advanced_options_items[] = {
 		.file = "btn_firmware_shell.bmp",
 		.action = ui_developer_mode_enter_fwshell_action,
 	},
-	BACK_ITEM,
+};
+
+static const struct ui_menu advanced_options_menu = {
+	.num_items = ARRAY_SIZE(adv_options_items),
+	.items = adv_options_items,
+	.init = advanced_options_menu_init,
+};
+
+/******************************************************************************/
+/* UI_SCREEN_RECOVERY_BROKEN */
+
+static const char *const broken_desc[] = {
+	"broken_desc0.bmp",
+	"broken_desc1.bmp",
+	"broken_desc2.bmp",
+};
+
+static const struct ui_menu_item broken_items[] = {
+	LANGUAGE_SELECT_ITEM,
+	ADVANCED_OPTIONS_ITEM,
 	POWER_OFF_ITEM,
 };
 
-static const struct ui_screen_info advanced_options_screen = {
-	.id = UI_SCREEN_ADVANCED_OPTIONS,
-	.name = "Advanced options",
-	.icon = UI_ICON_TYPE_NONE,
-	.title = "adv_options_title.bmp",
-	.init = advanced_options_init,
-	.mesg = "Advanced options",
-	.menu = UI_MENU(advanced_options_items),
+static const struct ui_screen_info broken_screen = {
+	.id = UI_SCREEN_RECOVERY_BROKEN,
+	.name = "Recover broken device",
+	.title = "broken_title.bmp",
+	.desc = UI_DESC(broken_desc),
+	.menu = UI_MENU(broken_items),
+	.mesg = "Something went wrong\n"
+		"To fix the issue, start the recovery process.\n"
+		"1. Remove all connected devices.\n"
+		"2. Depending on your device type:\n"
+		"* Laptop: Hold Escape, Refresh, and Power buttons\n"
+		"* Desktop: While holding the Recovery button,\n"
+		"  press and release the Power button, then release\n"
+		"  the Recovery button\n"
+		"* Tablet: Hold down Power, Volume Up, Volume Down buttons for\n"
+		"  at least 10 seconds",
 };
 
 /******************************************************************************/
@@ -1371,7 +1364,8 @@ static const struct ui_screen_info fastboot_screen = {
 
 #define RECOVERY_SELECT_ITEM_EXTERNAL_DISK 1
 #define RECOVERY_SELECT_ITEM_INTERNET 2
-#define RECOVERY_SELECT_ITEM_DIAGNOSTICS 3
+#define RECOVERY_SELECT_ITEM_ADVANCED_OPTIONS 3
+#define RECOVERY_SELECT_ITEM_DIAGNOSTICS 4
 
 /* Set VB2_NV_DIAG_REQUEST and reboot. */
 static vb2_error_t launch_diagnostics_action(struct ui_context *ui)
@@ -1414,6 +1408,7 @@ static const struct ui_menu_item recovery_select_items[] = {
 		.file = "btn_rec_by_internet.bmp",
 		.action = ui_recovery_mode_boot_nbr_action,
 	},
+	[RECOVERY_SELECT_ITEM_ADVANCED_OPTIONS] = ADVANCED_OPTIONS_ITEM,
 	[RECOVERY_SELECT_ITEM_DIAGNOSTICS] = {
 		.name = "Launch diagnostics",
 		.file = "btn_launch_diag.bmp",
@@ -1422,7 +1417,6 @@ static const struct ui_menu_item recovery_select_items[] = {
 		.flags = UI_MENU_ITEM_FLAG_NO_ARROW,
 		.action = launch_diagnostics_action,
 	},
-	ADVANCED_OPTIONS_ITEM,
 	POWER_OFF_ITEM,
 };
 
@@ -2672,7 +2666,6 @@ static const struct ui_screen_info *const screens[] = {
 	&firmware_sync_screen,
 	&language_select_screen,
 	&broken_screen,
-	&advanced_options_screen,
 	&debug_info_screen,
 	&firmware_log_screen,
 	&fastboot_screen,

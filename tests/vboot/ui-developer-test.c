@@ -1017,88 +1017,50 @@ static void test_developer_screen_advanced_options(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-
-	EXPECT_UI_DISPLAY_ANY();
-	/* #5: Advanced options */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, MOCK_IGNORE,
-			  0x0, 0x22);
-	/* End of menu */
-	WILL_PRESS_KEY(UI_KEY_ESC, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0); /* Blocked */
-	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 6);
-
-	will_return_maybe(ui_keyboard_read, 0);
-
-	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
-			 VB2_REQUEST_SHUTDOWN);
-}
-
-static void test_developer_screen_advanced_options_screen(void **state)
-{
-	struct ui_context *ui = *state;
-
-	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
-	will_return_maybe(vb2api_get_dev_default_boot_target,
-			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
-	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_get_locale_count, 10);
 	SET_LOG_DIMENSIONS(40, 20);
 	will_return_maybe(fastboot_init, NULL);
 
 	EXPECT_UI_DISPLAY_ANY();
+	/* #5: Advanced options (open dropdown) */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY_ANY();
-	/* #0: Language menu */
-	WILL_PRESS_KEY(UI_KEY_UP, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 1, 0x0, 0x11);
+	/* #5 -> #1: Debug info (#0: Enable dev mode is hidden) */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_LANGUAGE_SELECT);
-	/* #1: (Hidden) */
-	/* #2: Debug info */
-	WILL_PRESS_KEY(UI_KEY_ESC, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO);
-	/* #3: Fastboot */
+	/* #5 -> #2: Fastboot */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 1);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 2);
 	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
-	/* #4: Firmware log */
+	/* #5 -> #3: Firmware log */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 4);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 2);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 3);
 	EXPECT_UI_DISPLAY(UI_SCREEN_FIRMWARE_LOG);
-	/* #5: (Hidden) */
-	/* #7: Back */
+	/* Return from Firmware log into open sub-menu */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 3);
+	/* #5 -> #5: Firmware shell (#4: Internet recovery is hidden) */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);  /* #6: Firmware Shell */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 6);
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 7);
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE);
-	/* End of menu */
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
+	expect_function_call(dc_dev_enter_firmware_shell);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 5);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 5);
+	/* Close dropdown and navigate to Power off (#6) */
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0); /* Blocked at end of menu */
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 6);
 
 	will_return_maybe(ui_keyboard_read, 0);
 
@@ -1139,10 +1101,10 @@ static void test_developer_screen_fastboot(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 1);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 2);
 	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
 
 	struct FastbootOps mock_fb_session;
@@ -1160,7 +1122,7 @@ static void test_developer_screen_fastboot(void **state)
 	will_return(fastboot_is_finished, true);
 	expect_value(fastboot_release, fb_session, &mock_fb_session);
 	will_return(fastboot_release, FINISHED);
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 2);
 
 	will_return_maybe(ui_keyboard_read, 0);
 
@@ -1184,10 +1146,10 @@ static void test_developer_screen_fastboot_key_exit(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 1);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 2);
 	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
 
 	struct FastbootOps mock_fb_session;
@@ -1208,7 +1170,7 @@ static void test_developer_screen_fastboot_key_exit(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	expect_value(fastboot_release, fb_session, &mock_fb_session);
 	will_return(fastboot_release, DISCONNECTED);
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 2);
 
 	will_return_maybe(ui_keyboard_read, 0);
 
@@ -1299,7 +1261,6 @@ int main(void)
 		UI_TEST(test_developer_screen),
 		UI_TEST(test_developer_screen_external_default),
 		UI_TEST(test_developer_screen_advanced_options),
-		UI_TEST(test_developer_screen_advanced_options_screen),
 		UI_TEST(test_developer_screen_debug_info),
 		UI_TEST(test_developer_screen_fastboot),
 		UI_TEST(test_developer_screen_fastboot_key_exit),

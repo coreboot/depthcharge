@@ -235,8 +235,8 @@ enum ui_screen {
 	UI_SCREEN_FIRMWARE_SYNC				= 0x100,
 	/* Broken screen */
 	UI_SCREEN_RECOVERY_BROKEN			= 0x110,
-	/* Advanced options */
-	UI_SCREEN_ADVANCED_OPTIONS			= 0x120,
+	/* Advanced options; deprecated in b/551743258 */
+	UI_SCREEN_DEPRECATED_ADVANCED_OPTIONS		= 0x120,
 	/* Language selection screen */
 	UI_SCREEN_LANGUAGE_SELECT			= 0x130,
 	/* Debug info */

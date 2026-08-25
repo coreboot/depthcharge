@@ -190,8 +190,7 @@ static void test_manual_ui_internet_recovery_menu_old(void **state)
 	/* Try older version from advanced options screen */
 	WILL_PRESS_KEY(0, 0);			/* #1: External disk recovery */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #2: Internet recovery */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #3: Diagnostics */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #4: Advanced options */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #3: Advanced options */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* #1: Enable developer mode */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #2: Debug info */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #3: Firmware log*/
@@ -587,6 +586,7 @@ static void test_manual_ui_enter_diagnostics(void **state)
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	expect_function_call(vb2api_request_diagnostics);
@@ -649,23 +649,24 @@ static void test_recovery_select_screen(void **state)
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 1);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_DISK_STEP1);
-	/* #3: Launch diagnostics */
+	/* #2: Internet recovery */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);  /* #3: Internet recovery */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 2);
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 3);
-	/* #4: Advanced options */
+	/* #3: Advanced options */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 4);
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS);
-	/* End of menu */
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 3);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_SELECT, 3, 0);
+	/* #4: Launch diagnostics */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);  /* Blocked */
 	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 4);
+	/* End of menu */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);  /* Blocked */
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 5);
 
 	will_return_maybe(ui_keyboard_read, 0);
@@ -675,7 +676,7 @@ static void test_recovery_select_screen(void **state)
 			 VB2_REQUEST_SHUTDOWN);
 }
 
-static void test_advanced_options_screen_disabled_and_hidden_mask(void **state)
+static void test_advanced_options_disabled_and_hidden_mask(void **state)
 {
 	struct ui_context *ui = *state;
 
@@ -686,13 +687,10 @@ static void test_advanced_options_screen_disabled_and_hidden_mask(void **state)
 	EXPECT_UI_DISPLAY_ANY();
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, MOCK_IGNORE,
-			  0x0, 0x48);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_SELECT, 3, 0, 0x0, 0x24);
 
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_HAVE_NO_EXTERNAL();
@@ -701,7 +699,7 @@ static void test_advanced_options_screen_disabled_and_hidden_mask(void **state)
 			 VB2_REQUEST_SHUTDOWN);
 }
 
-static void test_advanced_options_screen(void **state)
+static void test_advanced_options(void **state)
 {
 	struct ui_context *ui = *state;
 
@@ -713,54 +711,27 @@ static void test_advanced_options_screen(void **state)
 	EXPECT_UI_DISPLAY_ANY();
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY_ANY();
-	/* #0: Language menu */
-	WILL_PRESS_KEY(UI_KEY_UP, 0);
+	/* #3 -> #0: Enable dev mode */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_LANGUAGE_SELECT);
-	/* #1: Enable dev mode */
-	WILL_PRESS_KEY(UI_KEY_ESC, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 1);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_TO_DEV);
-	/* #2: Debug info */
+	/* #3 -> #1: Debug info */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_SELECT, 3, 0);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_SELECT, 3, 1);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO);
-	/* #3: Fastboot (Hidden) */
-	/* #4: Firmware log */
+	/* #3 -> #3: Firmware log (fastboot #2 is hidden) */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 4);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_SELECT, 3, 1);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_SELECT, 3, 3);
 	EXPECT_UI_DISPLAY(UI_SCREEN_FIRMWARE_LOG);
-	/* #5: (Hidden) */
-	/* #7: Back */
-	WILL_PRESS_KEY(UI_KEY_ESC, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);  /* #6: Internet recovery */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 5);
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 7);
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
-	/* End of menu */
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
 
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(ui_is_physical_presence_pressed, 0);
@@ -848,7 +819,6 @@ static void test_firmware_log(void **state)
 	WILL_CLOSE_LID_IN(10);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -900,9 +870,9 @@ int main(void)
 		/* Recovery select screen */
 		UI_TEST(test_recovery_select_screen_disabled_and_hidden_mask),
 		UI_TEST(test_recovery_select_screen),
-		/* Advanced options screen */
-		UI_TEST(test_advanced_options_screen_disabled_and_hidden_mask),
-		UI_TEST(test_advanced_options_screen),
+		/* Advanced options */
+		UI_TEST(test_advanced_options_disabled_and_hidden_mask),
+		UI_TEST(test_advanced_options),
 		/* Language select screen */
 		UI_TEST(test_language_ui_change_language),
 		UI_TEST(test_language_ui_locale_count_0),
