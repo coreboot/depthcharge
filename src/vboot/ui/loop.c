@@ -46,6 +46,8 @@ static vb2_error_t ui_menu_navigation_action(struct ui_context *ui)
 		return ui_menu_select(ui);
 	case UI_KEY_ESC:
 		ui->key = 0;
+		if (ui->state->is_sub_menu_active)
+			return ui_menu_close_sub_menu(ui);
 		return ui_screen_back(ui);
 	default:
 		if (key != 0)
@@ -143,11 +145,17 @@ vb2_error_t ui_init_context(struct ui_context *ui, struct vb2_context *ctx,
 	return ui_screen_init(ui);
 }
 
-static const char *get_menu_item_name(const struct ui_menu *menu, uint32_t index)
+static const char *get_menu_item_name(const struct ui_menu_state *ms)
 {
-	if (!menu || index >= menu->num_items || !menu->items[index].name)
+	if (!ms)
 		return "null";
-	return menu->items[index].name;
+	if (ms->trigger_focused)
+		return "[trigger]";
+	if (!ms->menu || ms->focused_item >= ms->menu->num_items ||
+	    !ms->menu->items[ms->focused_item].name)
+		return "null";
+
+	return ms->menu->items[ms->focused_item].name;
 }
 
 static vb2_error_t ui_loop_impl(
@@ -156,7 +164,6 @@ static vb2_error_t ui_loop_impl(
 {
 	struct ui_state prev_state;
 	int need_redraw;
-	const struct ui_menu *menu;
 	uint32_t key_flags;
 	uint32_t start_time_ms, elapsed_ms;
 	vb2_error_t rv;
@@ -173,16 +180,21 @@ static vb2_error_t ui_loop_impl(
 		    ui->error_beep != 0 ||
 		    /* Redraw on a screen request to refresh. */
 		    ui->force_display) {
-
-			menu = ui_get_menu(ui);
-			const struct ui_menu_state *ms =
-				&ui->state->menu_state;
+			const char *screen_name = ui->state->screen->name
+				? ui->state->screen->name
+				: "null";
 			const char *item_name =
-				get_menu_item_name(menu, ms->focused_item);
-			UI_INFO("<%s> menu item <%s>\n",
-				ui->state->screen->name ?
-				ui->state->screen->name : "null",
-				item_name);
+				get_menu_item_name(&ui->state->menu_state);
+
+			if (ui->state->is_sub_menu_active) {
+				const char *sub_item_name =
+					get_menu_item_name(&ui->state->sub_menu_state);
+				UI_INFO("<%s> menu item <%s> -> <%s>\n",
+					screen_name, item_name, sub_item_name);
+			} else {
+				UI_INFO("<%s> menu item <%s>\n",
+					screen_name, item_name);
+			}
 			rv = ui_display(ui, need_redraw ? NULL : &prev_state);
 			/* If the drawing failed, set the flag so that NULL will
 			   be passed to ui_display() in the next iteration. */

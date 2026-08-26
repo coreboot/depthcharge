@@ -113,6 +113,21 @@
 #define UI_BUTTON_MARGIN_V			10
 #define UI_BUTTON_HELP_TEXT_MARGIN_L		30
 
+/* For dropdown trigger */
+#define UI_DROPDOWN_PADDING_H			16
+#define UI_DROPDOWN_ARROW_SIZE			20
+#define UI_DROPDOWN_ARROW_MARGIN_H		12
+#define UI_DROPDOWN_FOCUS_RING_THICKNESS	3
+
+/* For sub-menu */
+#define UI_SUB_MENU_WIDTH			380
+#define UI_SUB_MENU_ITEM_HEIGHT			48
+#define UI_SUB_MENU_ITEM_TEXT_HEIGHT		20
+#define UI_SUB_MENU_PADDING_H			16
+#define UI_SUB_MENU_PADDING_V			8
+#define UI_SUB_MENU_BORDER_RADIUS		12
+#define UI_SUB_MENU_BORDER_THICKNESS		1
+
 /* For secondary (link) buttons */
 #define UI_LINK_TEXT_PADDING_LEFT		16
 #define UI_LINK_ICON_SIZE			24
@@ -381,6 +396,8 @@ enum ui_menu_item_type {
 	UI_MENU_ITEM_TYPE_SECONDARY,
 	/* Language selection. */
 	UI_MENU_ITEM_TYPE_LANGUAGE,
+	/* Dropdown menu trigger. */
+	UI_MENU_ITEM_TYPE_DROPDOWN,
 };
 
 enum ui_menu_item_flag {
@@ -415,6 +432,8 @@ struct ui_menu_item {
 	 * fields will not be used.
 	 */
 	enum ui_menu_item_type type;
+	/* Sub-menu opened when selecting this item. */
+	const struct ui_menu *sub_menu;
 	/* Icon file for UI_MENU_ITEM_TYPE_SECONDARY only. */
 	const char *icon_file;
 	/*
@@ -436,6 +455,8 @@ struct ui_menu {
 	size_t num_items;
 	/* Only the first item allowed to be UI_MENU_ITEM_TYPE_LANGUAGE. */
 	const struct ui_menu_item *items;
+	/* Sub-menu initialization callback. */
+	vb2_error_t (*init)(struct ui_context *ui);
 };
 
 /* Runtime state of a menu */
@@ -443,6 +464,8 @@ struct ui_menu_state {
 	const struct ui_menu *menu;
 	/* Index of the menu item under focus. */
 	uint32_t focused_item;
+	/* Whether focus is on the parent dropdown trigger button. */
+	bool trigger_focused;
 	/*
 	 * Mask for disabled menu items. Bit (1 << idx) indicates whether item
 	 * 'idx' is disabled. A disabled (greyed out) menu item is visible and
@@ -637,8 +660,14 @@ struct ui_state {
 	 */
 	const struct ui_screen_info *screen;
 
-	/* Menu state on the current screen. */
+	/* Root menu state on the current screen. */
 	struct ui_menu_state menu_state;
+
+	/* Active sub-menu state. */
+	struct ui_menu_state sub_menu_state;
+
+	/* Whether a sub-menu is currently active. */
+	bool is_sub_menu_active;
 
 	/***********************************************************************
 	 * Fields for log screens. These will be ignored for non-log screens.
@@ -728,6 +757,11 @@ struct ui_context {
 	/* For indicating dcache clean is required after test exit. */
 	enum ui_dcache_state dcache_state;
 };
+
+static inline struct ui_menu_state *ui_active_menu_state(struct ui_state *state)
+{
+	return state->is_sub_menu_active ? &state->sub_menu_state : &state->menu_state;
+}
 
 /******************************************************************************/
 /* archive.c */
@@ -1212,13 +1246,16 @@ vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
  * @param state			UI state.
  * @param prev_state		Previous UI state.
  * @param y			Starting y-coordinate of the descriptions.
+ * @param out_focused_item_y	Will store the y-coordinate of the menu item
+ *				under focus. Must not be NULL.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
 vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 			       const struct ui_state *state,
 			       const struct ui_state *prev_state,
-			       int32_t y);
+			       int32_t y,
+			       int32_t *out_focused_item_y);
 
 /*
  * Default drawing function.
@@ -1468,6 +1505,21 @@ vb2_error_t ui_loop(struct vb2_context *ctx, enum ui_screen root_screen_id,
 /* menu.c */
 
 const struct ui_menu *ui_get_menu(struct ui_context *ui);
+
+/*
+ * Initialize the runtime state for a menu.
+ *
+ * @param ui		UI context.
+ * @param ms		Menu runtime state to initialize.
+ * @param menu		Menu to initialize state for.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_menu_state_init(struct ui_context *ui,
+			       struct ui_menu_state *ms,
+			       const struct ui_menu *menu);
+
+vb2_error_t ui_menu_close_sub_menu(struct ui_context *ui);
 
 vb2_error_t ui_menu_prev(struct ui_context *ui);
 

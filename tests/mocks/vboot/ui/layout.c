@@ -13,7 +13,8 @@ vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
 vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 			       const struct ui_state *state,
 			       const struct ui_state *prev_state,
-			       int32_t y)
+			       int32_t y,
+			       int32_t *out_focused_item_y)
 {
 	return VB2_SUCCESS;
 }

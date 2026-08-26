@@ -25,6 +25,7 @@ static int setup_ui_context(void **state)
 	memset(&test_ui_state, 0, sizeof(test_ui_state));
 	test_ui_ctx.state = &test_ui_state;
 	test_ui_state.screen = screen;
+	test_ui_state.menu_state.menu = &screen->menu;
 	*state = &test_ui_ctx;
 	return 0;
 }
@@ -199,6 +200,25 @@ static void test_select_item_disabled(void **state)
 	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
 }
 
+static void test_select_item_with_sub_menu(void **state)
+{
+	struct ui_context *ui = *state;
+
+	ui->state->menu_state.focused_item = 0;
+	ui->key = UI_KEY_ENTER;
+
+	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
+	assert_true(ui->state->is_sub_menu_active);
+	assert_ptr_equal(ui_active_menu_state(ui->state)->menu, &mock_sub_menu);
+	assert_int_equal(ui_active_menu_state(ui->state)->focused_item, 0);
+
+	/* Test closing sub-menu */
+	ASSERT_VB2_SUCCESS(ui_menu_close_sub_menu(ui));
+	assert_false(ui->state->is_sub_menu_active);
+	assert_ptr_equal(ui_active_menu_state(ui->state)->menu,
+			 &mock_screen_sub_menu.menu);
+}
+
 #define UI_TEST_SCREEN(test_function_name, screen) \
 	cmocka_unit_test_prestate_setup_teardown( \
 		test_function_name, setup_ui_context, NULL, (void *)(screen))
@@ -226,6 +246,7 @@ int main(void)
 		UI_TEST(test_select_item_with_action),
 		UI_TEST(test_select_item_with_no_target_and_action),
 		UI_TEST(test_select_item_disabled),
+		UI_TEST_SCREEN(test_select_item_with_sub_menu, &mock_screen_sub_menu),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }

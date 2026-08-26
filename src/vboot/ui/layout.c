@@ -470,6 +470,85 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 }
 
 /*
+ * Draw a dropdown trigger button.
+ *
+ * @param item		Menu item.
+ * @param state		UI state.
+ * @param x		x-coordinate of the top-left corner.
+ * @param y		y-coordinate of the top-left corner.
+ * @param height	Height of the box.
+ * @param focused	1 for focused and 0 for non-focused.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+static vb2_error_t ui_draw_dropdown(const struct ui_menu_item *item,
+				    const struct ui_state *state,
+				    int32_t x, int32_t y, int32_t height,
+				    int focused)
+{
+	struct ui_bitmap bitmap;
+	int32_t text_width, width;
+	const int32_t x_base = x;
+	const int32_t y_center = y + height / 2;
+	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
+	const char *file = get_item_file(item, state);
+	const char *locale_code = state->locale->code;
+	const int reverse = state->locale->rtl;
+
+	if (!file) {
+		UI_ERROR("No dropdown image filename\n");
+		return VB2_ERROR_UI_DRAW_FAILURE;
+	}
+
+	/* Calculate text width */
+	VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
+	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
+				    &text_width));
+
+	width = UI_DROPDOWN_PADDING_H + text_width +
+		UI_DROPDOWN_ARROW_MARGIN_H + UI_DROPDOWN_ARROW_SIZE +
+		UI_DROPDOWN_PADDING_H;
+
+	/* TODO: Revise dropdown colors */
+	const struct rgb_color *bg_color = &ui_color_link_bg;
+	const struct rgb_color *fg_color = &ui_color_button;
+
+	/* Clear button area with dropdown container background */
+	VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
+				    bg_color, 0,
+				    UI_BUTTON_BORDER_RADIUS, reverse));
+
+	/* Draw button text */
+	x += UI_DROPDOWN_PADDING_H;
+	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
+				      UI_SIZE_AUTO,
+				      UI_BUTTON_TEXT_HEIGHT,
+				      bg_color,
+				      fg_color,
+				      flags, reverse));
+	x += text_width;
+
+	/* Draw dropdown arrow */
+	x += UI_DROPDOWN_ARROW_MARGIN_H;
+	VB2_TRY(ui_get_bitmap("ic_dropdown.bmp", NULL, 0, &bitmap));
+	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
+				      UI_DROPDOWN_ARROW_SIZE,
+				      UI_DROPDOWN_ARROW_SIZE,
+				      bg_color,
+				      fg_color,
+				      flags, reverse));
+
+	/* Draw focus ring */
+	if (focused)
+		VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
+					    &ui_color_button_focus_ring,
+					    UI_DROPDOWN_FOCUS_RING_THICKNESS,
+					    UI_BUTTON_BORDER_RADIUS, reverse));
+
+	return VB2_SUCCESS;
+}
+
+/*
  * Draw a link button, where the style is different from a primary button.
  *
  * @param item		Menu item.
@@ -931,7 +1010,8 @@ static vb2_error_t ui_draw_dev_signed_warning(void)
 vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 			       const struct ui_state *state,
 			       const struct ui_state *prev_state,
-			       int32_t y)
+			       int32_t y,
+			       int32_t *out_focused_item_y)
 {
 	int i;
 	int32_t x;
@@ -941,26 +1021,46 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 	const struct ui_menu_state *prev_ms = prev_state ?
 		&prev_state->menu_state : NULL;
 
-	/* Primary buttons */
+	*out_focused_item_y = 0;
+
+	/* Primary and dropdown trigger buttons */
 	x = UI_MARGIN_H;
 	VB2_TRY(ui_get_button_width(menu, state, &button_width));
 	for (i = 0; i < menu->num_items; i++) {
-		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
-			continue;
 		if (UI_GET_BIT(ms->hidden_item_mask, i))
 			continue;
-		clear_help = prev_ms &&
-			     prev_ms->focused_item == i &&
-			     UI_GET_BIT(prev_ms->disabled_item_mask, i);
-		VB2_TRY(ui_draw_button(&menu->items[i], state, x, y,
-				       button_width, UI_BUTTON_HEIGHT,
-				       ms->focused_item == i,
-				       UI_GET_BIT(ms->disabled_item_mask, i),
-				       clear_help));
+
+		const struct ui_menu_item *item = &menu->items[i];
+		if (item->type != UI_MENU_ITEM_TYPE_PRIMARY &&
+		    item->type != UI_MENU_ITEM_TYPE_DROPDOWN)
+			continue;
+
+		if (i == ms->focused_item)
+			*out_focused_item_y = y;
+
+		bool is_focused = (i == ms->focused_item);
+
+		if (item->type == UI_MENU_ITEM_TYPE_PRIMARY) {
+			clear_help = prev_ms &&
+				     prev_ms->focused_item == i &&
+				     UI_GET_BIT(prev_ms->disabled_item_mask, i);
+			VB2_TRY(ui_draw_button(item, state, x, y,
+					       button_width, UI_BUTTON_HEIGHT,
+					       is_focused,
+					       UI_GET_BIT(ms->disabled_item_mask, i),
+					       clear_help));
+		} else {
+			if (is_focused && state->is_sub_menu_active)
+				is_focused = state->sub_menu_state.trigger_focused;
+			VB2_TRY(ui_draw_dropdown(item, state, x, y,
+						 UI_BUTTON_HEIGHT,
+						 is_focused));
+		}
+
 		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
 	}
 
-	/* Secondary (link) buttons */
+	/* Secondary (link) buttons (anchored to bottom) */
 	x = UI_MARGIN_H - UI_LINK_TEXT_PADDING_LEFT;
 	y = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT -
 		UI_FOOTER_MARGIN_TOP - UI_BUTTON_HEIGHT;
@@ -969,10 +1069,145 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 			continue;
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_SECONDARY)
 			continue;
+		if (i == ms->focused_item)
+			*out_focused_item_y = y;
 		VB2_TRY(ui_draw_link(&menu->items[i], state,
 				     x, y, UI_BUTTON_HEIGHT,
 				     ms->focused_item == i));
 		y -= UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
+	}
+
+	return VB2_SUCCESS;
+}
+
+/*
+ * Draw a focus border for a sub-menu item.
+ *
+ * @param x		x-coordinate of the box.
+ * @param y		y-coordinate of the box.
+ * @param width		Width of the box.
+ * @param height	Height of the box.
+ * @param is_first	True if this is the first item.
+ * @param is_last	True if this is the last item.
+ * @param reverse	RTL flag.
+ */
+static vb2_error_t ui_draw_sub_menu_item_focus(int32_t x, int32_t y,
+					       int32_t width, int32_t height,
+					       bool is_first, bool is_last,
+					       int reverse)
+{
+	const uint32_t radius = UI_SUB_MENU_BORDER_RADIUS;
+	const uint32_t thickness = UI_DROPDOWN_FOCUS_RING_THICKNESS;
+	const struct rgb_color *border_color = &ui_color_button_focus_ring;
+	const struct rgb_color *bg_color = &ui_color_lang_menu_bg;
+	/* Single/first/last items use radius; middle items have square corners (0). */
+	uint32_t r = (is_first || is_last) ? radius : 0;
+
+	VB2_TRY(ui_draw_rounded_box(x, y, width, height, border_color,
+				    thickness, r, reverse));
+
+	/* If both ends (single item) or neither (middle item), we are done. */
+	if (is_first == is_last)
+		return VB2_SUCCESS;
+
+	/* Square off bottom corners (if first item) or top corners (if last item). */
+	int32_t corner_y = is_first ? (y + height - radius) : y;
+	int32_t h_border_y = is_first ? (y + height - thickness) : y;
+
+	/* Left corner */
+	VB2_TRY(ui_draw_box(x, corner_y, radius, radius, bg_color, reverse));
+	VB2_TRY(ui_draw_box(x, corner_y, thickness, radius,
+			    border_color, reverse));
+	VB2_TRY(ui_draw_box(x, h_border_y, radius, thickness,
+			    border_color, reverse));
+
+	/* Right corner */
+	VB2_TRY(ui_draw_box(x + width - radius, corner_y, radius, radius,
+			    bg_color, reverse));
+	VB2_TRY(ui_draw_box(x + width - thickness, corner_y, thickness, radius,
+			    border_color, reverse));
+	VB2_TRY(ui_draw_box(x + width - radius, h_border_y, radius, thickness,
+			    border_color, reverse));
+
+	return VB2_SUCCESS;
+}
+
+/* TODO: Add scrollbar support for sub-menu overflow. */
+static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
+				    const struct ui_menu_state *menu_state,
+				    int32_t focused_item_y)
+{
+	if (!menu_state || !menu_state->menu || menu_state->menu->num_items == 0) {
+		UI_WARN("Sub-menu is empty or uninitialized\n");
+		return VB2_SUCCESS;
+	}
+
+	const struct ui_menu *sub_menu = menu_state->menu;
+	const struct ui_state *state = ui->state;
+	const char *locale_code = state->locale->code;
+	const int reverse = state->locale->rtl;
+	size_t count = sub_menu->num_items;
+	uint32_t visible_indices[32];
+	size_t visible_count = 0;
+	for (size_t i = 0; i < count && visible_count < ARRAY_SIZE(visible_indices); i++) {
+		if (!UI_GET_BIT(menu_state->hidden_item_mask, i))
+			visible_indices[visible_count++] = i;
+	}
+	if (visible_count == 0)
+		return VB2_SUCCESS;
+
+	int32_t box_x = UI_MARGIN_H;
+	int32_t item_h = UI_SUB_MENU_ITEM_HEIGHT;
+	int32_t box_w = UI_SUB_MENU_WIDTH;
+	int32_t box_y = focused_item_y + UI_BUTTON_HEIGHT + UI_SUB_MENU_PADDING_V;
+	int32_t box_h = item_h * visible_count;
+
+	/* Background container card */
+	VB2_TRY(ui_draw_rounded_box(box_x, box_y, box_w, box_h,
+				    &ui_color_lang_menu_bg, 0,
+				    UI_SUB_MENU_BORDER_RADIUS, reverse));
+	VB2_TRY(ui_draw_rounded_box(box_x, box_y, box_w, box_h,
+				    &ui_color_lang_menu_border,
+				    UI_SUB_MENU_BORDER_THICKNESS,
+				    UI_SUB_MENU_BORDER_RADIUS, reverse));
+
+	for (size_t pos = 0; pos < visible_count; pos++) {
+		size_t i = visible_indices[pos];
+		const struct ui_menu_item *item = &sub_menu->items[i];
+		bool is_focused = !menu_state->trigger_focused &&
+				  (i == menu_state->focused_item);
+		int32_t item_y = box_y + item_h * pos;
+
+		if (is_focused) {
+			VB2_TRY(ui_draw_sub_menu_item_focus(
+				box_x, item_y, box_w, item_h,
+				pos == 0,
+				pos == visible_count - 1,
+				reverse));
+		}
+
+		/* Draw item text */
+		int32_t text_x = box_x + UI_SUB_MENU_PADDING_H + 4;
+		int32_t text_y = item_y + item_h / 2;
+		const char *file = get_item_file(item, state);
+		if (file) {
+			struct ui_bitmap bitmap;
+			VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
+			VB2_TRY(ui_draw_mapped_bitmap(&bitmap, text_x, text_y,
+						      UI_SIZE_AUTO,
+						      UI_SUB_MENU_ITEM_TEXT_HEIGHT,
+						      &ui_color_lang_menu_bg,
+						      &ui_color_fg,
+						      PIVOT_H_LEFT | PIVOT_V_CENTER,
+						      reverse));
+		} else if (item->name) {
+			VB2_TRY(ui_draw_text(item->name, text_x, text_y,
+					     UI_SUB_MENU_ITEM_TEXT_HEIGHT,
+					     &ui_color_lang_menu_bg,
+					     &ui_color_fg,
+					     PIVOT_H_LEFT | PIVOT_V_CENTER,
+					     reverse));
+		}
 	}
 
 	return VB2_SUCCESS;
@@ -987,6 +1222,10 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	const struct ui_menu_state *ms = &state->menu_state;
 	const struct ui_menu_state *prev_ms = prev_state ?
 		&prev_state->menu_state : NULL;
+	const bool closing_sub_menu = prev_state &&
+				      prev_state->is_sub_menu_active &&
+				      !state->is_sub_menu_active;
+
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
 	int focused;
@@ -1019,6 +1258,18 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 			VB2_TRY(ui_draw_box(0, 0, UI_SCALE, box_height,
 					    &ui_color_bg, 0));
 		}
+	} else if (closing_sub_menu) {
+		/*
+		 * Clear everything below the language dropdown header. The
+		 * sub-menu only expands downwards and may overlap
+		 * with secondary buttons and the footer, while the language
+		 * dropdown at the top remains untouched and does not need to
+		 * be redrawn.
+		 */
+		const int32_t clear_y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT +
+			UI_LANG_MARGIN_BOTTOM;
+		VB2_TRY(ui_draw_box(0, clear_y, UI_SCALE, UI_SCALE - clear_y,
+				    &ui_color_bg, 0));
 	}
 
 	/* Warning if we are in recovery and using dev signed keys. */
@@ -1042,13 +1293,14 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 
 	/*
 	 * Draw the footer if previous screen doesn't have a footer, or if
-	 * locale changed.
+	 * locale changed, or if a sub-menu was closed.
 	 */
 	if (!screen->no_footer &&
 	    (!prev_state ||
 	     prev_state->screen->no_footer ||
 	     prev_state->locale != state->locale ||
-	     prev_state->error_code != state->error_code))
+	     prev_state->error_code != state->error_code ||
+	     closing_sub_menu))
 		VB2_TRY(draw_footer(state));
 	else if (screen->is_fullview)
 		VB2_TRY(draw_navigation_bar(state));
@@ -1117,10 +1369,18 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	y += UI_DESC_MARGIN_BOTTOM;
 
 	/* Primary and secondary buttons */
-	if (screen->draw_menu_items)
+	if (screen->draw_menu_items) {
 		VB2_TRY(screen->draw_menu_items(ui, prev_state));
-	else
-		VB2_TRY(ui_draw_menu_items(menu, state, prev_state, y));
+	} else {
+		int32_t focused_item_y = 0;
+		VB2_TRY(ui_draw_menu_items(menu, state, prev_state, y,
+					   &focused_item_y));
+
+		/* Sub-menu */
+		if (state->is_sub_menu_active)
+			VB2_TRY(ui_draw_sub_menu(ui, &state->sub_menu_state,
+						 focused_item_y));
+	}
 
 	return VB2_SUCCESS;
 }

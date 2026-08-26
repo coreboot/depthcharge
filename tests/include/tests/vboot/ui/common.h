@@ -9,6 +9,8 @@
 
 /* Fixed value for ignoring some checks. */
 #define MOCK_IGNORE 0xffffu
+/* Sentinel value when no sub-menu is active. */
+#define UI_NO_SUBMENU 0xfffeu
 
 /* Add return value to ui_is_physical_presence_pressed. */
 #define WILL_PRESS_PHYSICAL_PRESENCE(pressed) \
@@ -45,13 +47,14 @@
 void ui_display_side_effect(void);
 
 vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
-			uint32_t focused_item, uint32_t disabled_item_mask,
-			uint32_t hidden_item_mask, int timer_disabled,
-			uint32_t current_page, enum ui_error error_code);
+			uint32_t focused_item, uint32_t sub_focused_item,
+			uint32_t disabled_item_mask, uint32_t hidden_item_mask,
+			int timer_disabled, uint32_t current_page,
+			enum ui_error error_code);
 
 #define _EXPECT_UI_DISPLAY(_screen, _locale_id, _focused_item, \
-			   _disabled_item_mask, _hidden_item_mask, \
-			   _current_page, _error_code, ...) \
+			   _sub_focused_item, _disabled_item_mask, \
+			   _hidden_item_mask, _current_page, _error_code, ...) \
 	do { \
 		if ((_screen) == MOCK_IGNORE) \
 			expect_any(_ui_display, screen); \
@@ -67,6 +70,11 @@ vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
 		else \
 			expect_value(_ui_display, focused_item, \
 				     (_focused_item)); \
+		if ((_sub_focused_item) == MOCK_IGNORE) \
+			expect_any(_ui_display, sub_focused_item); \
+		else \
+			expect_value(_ui_display, sub_focused_item, \
+				     (_sub_focused_item)); \
 		if ((_disabled_item_mask) == MOCK_IGNORE) \
 			expect_any(_ui_display, disabled_item_mask); \
 		else \
@@ -88,20 +96,47 @@ vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
 			expect_value(_ui_display, error_code, (_error_code)); \
 	} while (0)
 
+#define _EXPECT_UI_DISPLAY_BASE(_screen, _locale_id, _focused_item, \
+				_disabled_item_mask, _hidden_item_mask, \
+				_current_page, _error_code, ...) \
+	_EXPECT_UI_DISPLAY(_screen, _locale_id, _focused_item, UI_NO_SUBMENU, \
+			   _disabled_item_mask, _hidden_item_mask, \
+			   _current_page, _error_code)
+
 /*
  * Add events to check the parameters of _ui_display(). Pass MOCK_IGNORE to
  * ignore the value of the parameter. This macro supports variable length of
  * parameters, and will fill the rest of missing parameters with MOCK_IGNORE.
  */
 #define EXPECT_UI_DISPLAY(...) \
-	_EXPECT_UI_DISPLAY(__VA_ARGS__, MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, \
-			   MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE)
+	_EXPECT_UI_DISPLAY_BASE(__VA_ARGS__, MOCK_IGNORE, MOCK_IGNORE, \
+				MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, \
+				MOCK_IGNORE, MOCK_IGNORE)
+
+#define _EXPECT_UI_DISPLAY_SUB_MENU(_screen, _locale_id, _focused_item, \
+				   _sub_focused_item, _disabled_item_mask, \
+				   _hidden_item_mask, _current_page, _error_code, ...) \
+	_EXPECT_UI_DISPLAY(_screen, _locale_id, _focused_item, \
+			   _sub_focused_item, _disabled_item_mask, \
+			   _hidden_item_mask, _current_page, _error_code)
+
+/*
+ * Add events to check the parameters of _ui_display() when a sub-menu is active.
+ * Pass MOCK_IGNORE to ignore the value of a parameter.
+ */
+#define EXPECT_UI_DISPLAY_SUB_MENU(_screen, _focused_item, _sub_focused_item, ...) \
+	_EXPECT_UI_DISPLAY_SUB_MENU((_screen), MOCK_IGNORE, (_focused_item), \
+				   (_sub_focused_item), ##__VA_ARGS__, \
+				   MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, \
+				   MOCK_IGNORE)
 
 /*
  * Add events to check if _ui_display() has been called by using expect_any
  * to all checked parameters.
  */
-#define EXPECT_UI_DISPLAY_ANY() EXPECT_UI_DISPLAY(MOCK_IGNORE)
+#define EXPECT_UI_DISPLAY_ANY() \
+	_EXPECT_UI_DISPLAY(MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, \
+			   MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE)
 
 /*
  * Add expect_any_count with count -1 (which means to expect any always in
@@ -112,6 +147,7 @@ vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
 		expect_any_always(_ui_display, screen); \
 		expect_any_always(_ui_display, locale_id); \
 		expect_any_always(_ui_display, focused_item); \
+		expect_any_always(_ui_display, sub_focused_item); \
 		expect_any_always(_ui_display, disabled_item_mask); \
 		expect_any_always(_ui_display, hidden_item_mask); \
 		expect_any_always(_ui_display, current_page); \

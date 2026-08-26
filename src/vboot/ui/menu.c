@@ -19,9 +19,48 @@ const struct ui_menu *ui_get_menu(struct ui_context *ui)
 	}
 }
 
+vb2_error_t ui_menu_state_init(struct ui_context *ui,
+			       struct ui_menu_state *ms,
+			       const struct ui_menu *menu)
+{
+	memset(ms, 0, sizeof(*ms));
+	ms->menu = menu;
+
+	if (menu && menu->init)
+		return menu->init(ui);
+
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t ui_menu_open_sub_menu(struct ui_context *ui,
+					 const struct ui_menu *sub_menu)
+{
+	if (!sub_menu || sub_menu->num_items == 0)
+		return VB2_SUCCESS;
+
+	if (ui->state->is_sub_menu_active) {
+		UI_WARN("Sub-menu already active; cannot open sub-menu\n");
+		return VB2_SUCCESS;
+	}
+
+	ui->state->is_sub_menu_active = true;
+	return ui_menu_state_init(ui, &ui->state->sub_menu_state, sub_menu);
+}
+
+vb2_error_t ui_menu_close_sub_menu(struct ui_context *ui)
+{
+	if (!ui->state->is_sub_menu_active) {
+		UI_WARN("Sub-menu not active; cannot close sub-menu\n");
+		return VB2_SUCCESS;
+	}
+
+	ui->state->is_sub_menu_active = false;
+	return VB2_SUCCESS;
+}
+
 vb2_error_t ui_menu_prev(struct ui_context *ui)
 {
-	struct ui_menu_state *ms = &ui->state->menu_state;
+	struct ui_menu_state *ms = ui_active_menu_state(ui->state);
 	int item;
 
 	item = (int)ms->focused_item - 1;
@@ -36,11 +75,10 @@ vb2_error_t ui_menu_prev(struct ui_context *ui)
 
 vb2_error_t ui_menu_next(struct ui_context *ui)
 {
-	struct ui_menu_state *ms = &ui->state->menu_state;
+	struct ui_menu_state *ms = ui_active_menu_state(ui->state);
+	const struct ui_menu *menu = ms->menu;
 	int item;
-	const struct ui_menu *menu;
 
-	menu = ui_get_menu(ui);
 	item = (int)ms->focused_item + 1;
 	while (item < menu->num_items &&
 	       UI_GET_BIT(ms->hidden_item_mask, item))
@@ -54,11 +92,10 @@ vb2_error_t ui_menu_next(struct ui_context *ui)
 
 vb2_error_t ui_menu_select(struct ui_context *ui)
 {
-	struct ui_menu_state *ms = &ui->state->menu_state;
-	const struct ui_menu *menu;
+	struct ui_menu_state *ms = ui_active_menu_state(ui->state);
+	const struct ui_menu *menu = ms->menu;
 	const struct ui_menu_item *menu_item;
 
-	menu = ui_get_menu(ui);
 	if (menu->num_items == 0)
 		return VB2_SUCCESS;
 
@@ -70,6 +107,11 @@ vb2_error_t ui_menu_select(struct ui_context *ui)
 		UI_WARN("Menu item <%s> disabled; ignoring\n",
 			menu_item->name);
 		return VB2_SUCCESS;
+	}
+
+	if (menu_item->sub_menu) {
+		UI_INFO("Menu item <%s> open sub-menu\n", menu_item->name);
+		return ui_menu_open_sub_menu(ui, menu_item->sub_menu);
 	}
 
 	if (menu_item->action) {

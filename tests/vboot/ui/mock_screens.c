@@ -42,6 +42,33 @@ const struct ui_screen_info mock_screen_menu = {
 		.items = mock_screen_menu_items,
 	},
 };
+static const struct ui_menu_item mock_sub_menu_items[] = {
+	{
+		.name = "sub 0",
+	},
+	{
+		.name = "sub 1",
+		.action = mock_action_base,
+	},
+};
+const struct ui_menu mock_sub_menu = {
+	.num_items = ARRAY_SIZE(mock_sub_menu_items),
+	.items = mock_sub_menu_items,
+};
+static const struct ui_menu_item mock_screen_sub_menu_items[] = {
+	{
+		.name = "item 0",
+		.sub_menu = &mock_sub_menu,
+	},
+};
+const struct ui_screen_info mock_screen_sub_menu = {
+	.id = MOCK_SCREEN_SUB_MENU,
+	.name = "mock_screen_sub_menu: screen with sub-menu",
+	.menu = {
+		.num_items = ARRAY_SIZE(mock_screen_sub_menu_items),
+		.items = mock_screen_sub_menu_items,
+	},
+};
 const struct ui_screen_info mock_screen_target0 = {
 	.id = MOCK_SCREEN_TARGET0,
 	.name = "mock_screen_target0",

@@ -4,13 +4,15 @@
 
 vb2_error_t ui_screen_init(struct ui_context *ui)
 {
+	const struct ui_menu *menu = ui_get_menu(ui);
+	struct ui_menu_state *ms = &ui->state->menu_state;
+
+	VB2_TRY(ui_menu_state_init(ui, ms, menu));
+
 	if (ui->state->screen->init)
 		return ui->state->screen->init(ui);
 
 	/* Default screen init. */
-	const struct ui_menu *menu = ui_get_menu(ui);
-	struct ui_menu_state *ms = &ui->state->menu_state;
-	ms->focused_item = 0;
 	if (menu->num_items > 1 &&
 	    menu->items[0].type == UI_MENU_ITEM_TYPE_LANGUAGE)
 		ms->focused_item = 1;
