@@ -24,7 +24,13 @@ static const struct pdc_fw_map {
 	{ "GOOG0901", "rts5453_GOOG0901.bin", "rts5453_GOOG0901.hash" },
 	{ "GOOG0F00", "rts5453_GOOG0F00.bin", "rts5453_GOOG0F00.hash" },
 	{ "GOOG0N01", "rts5453vb_GOOG0N01.bin", "rts5453vb_GOOG0N01.hash" },
-	{ "GOOG0O01", "rts5453vb_GOOG0O01.bin", "rts5453vb_GOOG0O01.hash" },
+	{ "GOOG0O00", "rts5453vb_GOOG0O00.bin", "rts5453vb_GOOG0O00.hash" },
+	/*
+	* Some machines are already using GOOG0O01 firmware. Map GOOG0O01
+	* to the GOOG0O00 firmware so these machines can be upgraded to
+	* GOOG0O00.
+	*/
+	{ "GOOG0O01", "rts5453vb_GOOG0O00.bin", "rts5453vb_GOOG0O00.hash" },
 };
 
 /* Override of func in src/drivers/ec/rts5453/rts5453.c */
