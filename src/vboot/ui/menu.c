@@ -61,14 +61,26 @@ vb2_error_t ui_menu_close_sub_menu(struct ui_context *ui)
 vb2_error_t ui_menu_prev(struct ui_context *ui)
 {
 	struct ui_menu_state *ms = ui_active_menu_state(ui->state);
-	int item;
+	const struct ui_menu *menu = ms->menu;
+	int start, item;
 
-	item = (int)ms->focused_item - 1;
-	while (item >= 0 && UI_GET_BIT(ms->hidden_item_mask, item))
-		item--;
-	/* Only update if item is valid */
-	if (item >= 0)
-		ms->focused_item = item;
+	if (!menu || menu->num_items == 0)
+		return VB2_SUCCESS;
+
+	start = (ui->state->is_sub_menu_active && ms->trigger_focused) ?
+		(int)menu->num_items - 1 : (int)ms->focused_item - 1;
+
+	for (item = start; item >= 0; item--) {
+		if (!UI_GET_BIT(ms->hidden_item_mask, item)) {
+			ms->trigger_focused = false;
+			ms->focused_item = item;
+			return VB2_SUCCESS;
+		}
+	}
+
+	/* In a sub-menu, moving before the first item focuses the trigger. */
+	if (ui->state->is_sub_menu_active)
+		ms->trigger_focused = true;
 
 	return VB2_SUCCESS;
 }
@@ -77,15 +89,25 @@ vb2_error_t ui_menu_next(struct ui_context *ui)
 {
 	struct ui_menu_state *ms = ui_active_menu_state(ui->state);
 	const struct ui_menu *menu = ms->menu;
-	int item;
+	int start, item;
 
-	item = (int)ms->focused_item + 1;
-	while (item < menu->num_items &&
-	       UI_GET_BIT(ms->hidden_item_mask, item))
-		item++;
-	/* Only update if item is valid */
-	if (item < menu->num_items)
-		ms->focused_item = item;
+	if (!menu || menu->num_items == 0)
+		return VB2_SUCCESS;
+
+	start = (ui->state->is_sub_menu_active && ms->trigger_focused) ?
+		0 : (int)ms->focused_item + 1;
+
+	for (item = start; item < menu->num_items; item++) {
+		if (!UI_GET_BIT(ms->hidden_item_mask, item)) {
+			ms->trigger_focused = false;
+			ms->focused_item = item;
+			return VB2_SUCCESS;
+		}
+	}
+
+	/* In a sub-menu, moving past the last item focuses the trigger. */
+	if (ui->state->is_sub_menu_active)
+		ms->trigger_focused = true;
 
 	return VB2_SUCCESS;
 }
@@ -95,6 +117,11 @@ vb2_error_t ui_menu_select(struct ui_context *ui)
 	struct ui_menu_state *ms = ui_active_menu_state(ui->state);
 	const struct ui_menu *menu = ms->menu;
 	const struct ui_menu_item *menu_item;
+
+	if (ui->state->is_sub_menu_active && ms->trigger_focused) {
+		UI_INFO("Sub-menu trigger selected; closing sub-menu\n");
+		return ui_menu_close_sub_menu(ui);
+	}
 
 	if (menu->num_items == 0)
 		return VB2_SUCCESS;

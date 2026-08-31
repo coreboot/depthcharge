@@ -207,16 +207,48 @@ static void test_select_item_with_sub_menu(void **state)
 	ui->state->menu_state.focused_item = 0;
 	ui->key = UI_KEY_ENTER;
 
+	/* Open sub-menu: sub 0 under focus */
 	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
 	assert_true(ui->state->is_sub_menu_active);
+	assert_false(ui_active_menu_state(ui->state)->trigger_focused);
 	assert_ptr_equal(ui_active_menu_state(ui->state)->menu, &mock_sub_menu);
 	assert_int_equal(ui_active_menu_state(ui->state)->focused_item, 0);
 
-	/* Test closing sub-menu */
-	ASSERT_VB2_SUCCESS(ui_menu_close_sub_menu(ui));
+	/* Press down: sub 1 under focus */
+	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
+	assert_false(ui_active_menu_state(ui->state)->trigger_focused);
+	assert_int_equal(ui_active_menu_state(ui->state)->focused_item, 1);
+
+	/* Press down: trigger under focus */
+	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
+	assert_true(ui_active_menu_state(ui->state)->trigger_focused);
+
+	/* Press enter: close dropdown */
+	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
 	assert_false(ui->state->is_sub_menu_active);
 	assert_ptr_equal(ui_active_menu_state(ui->state)->menu,
 			 &mock_screen_sub_menu.menu);
+	assert_int_equal(ui_active_menu_state(ui->state)->focused_item, 0);
+
+	/* Press enter: open dropdown */
+	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
+	assert_true(ui->state->is_sub_menu_active);
+	assert_false(ui_active_menu_state(ui->state)->trigger_focused);
+	assert_ptr_equal(ui_active_menu_state(ui->state)->menu, &mock_sub_menu);
+	assert_int_equal(ui_active_menu_state(ui->state)->focused_item, 0);
+
+	/* Press up: trigger under focus */
+	ASSERT_VB2_SUCCESS(ui_menu_prev(ui));
+	assert_true(ui_active_menu_state(ui->state)->trigger_focused);
+
+	/* Press up: sub 1 under focus */
+	ASSERT_VB2_SUCCESS(ui_menu_prev(ui));
+	assert_false(ui_active_menu_state(ui->state)->trigger_focused);
+	assert_int_equal(ui_active_menu_state(ui->state)->focused_item, 1);
+
+	/* Press enter: select sub 1 */
+	expect_function_call(mock_action_base);
+	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
 }
 
 #define UI_TEST_SCREEN(test_function_name, screen) \
