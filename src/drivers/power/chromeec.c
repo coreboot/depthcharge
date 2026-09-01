@@ -20,17 +20,13 @@
 #include "drivers/ec/cros/ec.h"
 #include "drivers/power/chromeec.h"
 
-/* Reboot AP via EC */
 static int chromeec_reset(PowerOps *me)
 {
-	cros_ec_ap_reset();
-	halt();
-}
+	if (CONFIG(DRIVER_POWER_CHROMEEC_COLD_RESET))
+		cros_ec_reboot(EC_REBOOT_FLAG_IMMEDIATE); /* Reboot EC */
+	else
+		cros_ec_ap_reset(); /* Reboot AP via EC */
 
-/* Reboot EC */
-static int chromeec_reset2(PowerOps *me)
-{
-	cros_ec_reboot(EC_REBOOT_FLAG_IMMEDIATE);
 	halt();
 }
 
@@ -41,14 +37,8 @@ static int chromeec_off(PowerOps *me)
 	halt();
 }
 
-/* Standard ops to reboot/poweroff AP via EC */
+/* Power ops to reboot/poweroff AP via EC */
 PowerOps chromec_power_ops = {
 	.reboot = &chromeec_reset,
-	.power_off = &chromeec_off,
-};
-
-/* Custom ops to reboot/poweroff AP via EC */
-PowerOps chromec_power2_ops = {
-	.reboot = &chromeec_reset2,
 	.power_off = &chromeec_off,
 };

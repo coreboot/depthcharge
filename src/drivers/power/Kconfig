@@ -22,6 +22,14 @@ config DRIVER_POWER_CHROMEEC
 	help
 	  Reboot or power off using the Chrome EC.
 
+config DRIVER_POWER_CHROMEEC_COLD_RESET
+	bool "Chrome EC cold reset"
+	default n
+	depends on DRIVER_POWER_CHROMEEC
+	help
+	  Use the Chrome EC to perform a cold reset (power cycles the
+	  system power rails to reset the AP and peripherals).
+
 config DRIVER_POWER_EXYNOS
 	bool "Exynos SOC power management"
 	default n

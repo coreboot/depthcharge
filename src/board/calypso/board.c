@@ -155,7 +155,7 @@ static int board_setup(void)
 	flag_replace(FLAG_PWRSW, new_gpio_low());
 
 	if (CONFIG(DRIVER_POWER_CHROMEEC))
-		power_set_ops(&chromec_power2_ops);
+		power_set_ops(&chromec_power_ops);
 	else
 		power_set_ops(&psci_power_ops);
 
