@@ -56,6 +56,7 @@ log-test-srcs += src/fastboot/log.c
 $(call copy-test,fastboot-test-common,vars-test)
 vars-test-config += CONFIG_DRIVER_EC_CROS=1
 vars-test-srcs += tests/fastboot/vars-test.c
+vars-test-srcs += tests/mocks/fmap_area.c
 vars-test-srcs += src/fastboot/vars.c
 vars-test-mocks += GptGetEntrySizeBytes
 vars-test-mocks += GetEntryTries

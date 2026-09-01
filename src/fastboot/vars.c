@@ -22,12 +22,13 @@
 
 #include "base/android_misc.h"
 #include "base/gpt.h"
+#include "base/vpd_util.h"
+#include "drivers/ec/cros/ec.h"
 #include "fastboot/disk.h"
 #include "fastboot/fastboot.h"
 #include "fastboot/vars.h"
-#include "base/vpd_util.h"
+#include "image/fmap.h"
 #include "vboot/firmware_id.h"
-#include "drivers/ec/cros/ec.h"
 
 #define VAR_ARGS(_name, _sep, _var)                                            \
 	{                                                                      \
@@ -42,6 +43,8 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 	VAR_NO_ARGS("Total-block-count", VAR_TOTAL_BLOCK_COUNT),
 	VAR_NO_ARGS("max-download-size", VAR_DOWNLOAD_SIZE),
 	VAR_NO_ARGS("is-userspace", VAR_IS_USERSPACE),
+	VAR_ARGS("partition-size:spi-nor", ':', VAR_PARTITION_SIZE_SPI_NOR),
+	VAR_ARGS("partition-type:spi-nor", ':', VAR_PARTITION_TYPE_SPI_NOR),
 	VAR_ARGS("partition-size", ':', VAR_PARTITION_SIZE),
 	VAR_ARGS("partition-type", ':', VAR_PARTITION_TYPE),
 	VAR_NO_ARGS("product", VAR_PRODUCT),
@@ -274,6 +277,37 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 	case VAR_IS_USERSPACE:
 		used_len = snprintf(outbuf, outbuf_len, "no");
 		break;
+	case VAR_PARTITION_SIZE_SPI_NOR:
+	case VAR_PARTITION_TYPE_SPI_NOR: {
+		FmapArea area_data;
+		const FmapArea *area = NULL;
+		if (arg != NULL) {
+			if (strlen(arg) > sizeof(area->name))
+				return STATE_UNKNOWN_VAR;
+			if (fmap_find_area(arg, &area_data))
+				return STATE_UNKNOWN_VAR;
+			area = &area_data;
+		} else {
+			const Fmap *fmap = fmap_base();
+			if (index >= fmap->nareas)
+				return STATE_LAST;
+			area = &fmap->areas[index];
+			used_len = snprintf(outbuf, outbuf_len, "%.*s:",
+					    (int)sizeof(area->name), (const char *)area->name);
+			if (used_len < 0 || used_len >= outbuf_len)
+				break;
+			outbuf += used_len;
+		}
+		if (var == VAR_PARTITION_SIZE_SPI_NOR)
+			ret = snprintf(outbuf, outbuf_len - used_len, "0x%x", area->size);
+		else
+			ret = snprintf(outbuf, outbuf_len - used_len, "raw");
+		if (ret < 0)
+			used_len = ret;
+		else
+			used_len += ret;
+		break;
+	}
 	case VAR_PARTITION_SIZE:
 	case VAR_PARTITION_TYPE:
 		if (fastboot_disk_gpt_init_no_fail(fb))

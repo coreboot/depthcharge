@@ -5,6 +5,7 @@
 
 #include "fastboot/fastboot.h"
 #include "fastboot/vars.h"
+#include "mocks/fmap_area.h"
 #include "tests/fastboot/fastboot_common_mocks.h"
 #include "tests/test.h"
 
@@ -148,6 +149,26 @@ char android_misc_get_active_slot(GptData *gpt)
 
 /* Setup for android_misc_get_active_slot mock */
 #define WILL_GET_ACTIVE_SLOT(slot) will_return(android_misc_get_active_slot, slot)
+
+struct {
+	Fmap head;
+	FmapArea areas[3];
+} __attribute__ ((packed)) mock_fmap = {
+	.head.nareas = 3,
+	.areas = {
+		{ .size = 0x100, .name = {'W', 'P', '_', 'R', 'O', }, },
+		{ .size = 0x3000, .name = {'M', 'A', 'X', '_', 'N', 'A', 'M', 'E',
+					   '_', 'L', 'E', 'N', 'G', 'T', 'H', '_',
+					   '1', '2', '3', '4', '5', '6', '7', '8',
+					   'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', }, },
+		{ .size = 0x250, .name = {'G', 'B', 'B', }, },
+	},
+};
+
+const Fmap *fmap_base(void)
+{
+	return &mock_fmap.head;
+}
 
 /* Reset mock data (for use before each test) */
 static int setup(void **state)
@@ -433,6 +454,62 @@ static void test_fb_getvar_product(void **state)
 	memcpy(mainboard.info.strings, product, sizeof(product));
 
 	TEST_FASTBOOT_GETVAR_OK(VAR_PRODUCT, "", product);
+}
+
+static void test_fb_getvar_partition_size_spi_nor(void **state)
+{
+	uint8_t unused_buf[1];
+
+	set_mock_fmap_area(&mock_fmap.areas[0], unused_buf);
+	will_return(fmap_find_area, 0);
+	expect_string(fmap_find_area, name, "WP_RO");
+
+	TEST_FASTBOOT_GETVAR_OK(VAR_PARTITION_SIZE_SPI_NOR, "WP_RO", "0x100");
+}
+
+static void test_fb_getvar_partition_size_spi_nor_no_area(void **state)
+{
+	uint8_t unused_buf[1];
+
+	set_mock_fmap_area(&mock_fmap.areas[0], unused_buf);
+	will_return(fmap_find_area, 1);
+	expect_string(fmap_find_area, name, "WP_RO");
+
+	TEST_FASTBOOT_GETVAR_ERR(VAR_PARTITION_SIZE_SPI_NOR, "WP_RO", STATE_UNKNOWN_VAR);
+}
+
+static void test_fb_getvar_partition_size_spi_nor_too_long_name(void **state)
+{
+	TEST_FASTBOOT_GETVAR_ERR(VAR_PARTITION_SIZE_SPI_NOR,
+				 "MAX_NAME_LENGTH_12345678123456789", STATE_UNKNOWN_VAR);
+}
+
+static void test_fb_getvar_partition_type_spi_nor(void **state)
+{
+	uint8_t unused_buf[1];
+
+	set_mock_fmap_area(&mock_fmap.areas[0], unused_buf);
+	will_return(fmap_find_area, 0);
+	expect_string(fmap_find_area, name, "WP_RO");
+
+	TEST_FASTBOOT_GETVAR_OK(VAR_PARTITION_TYPE_SPI_NOR, "WP_RO", "raw");
+}
+
+static void test_fb_getvar_partition_type_spi_nor_no_area(void **state)
+{
+	uint8_t unused_buf[1];
+
+	set_mock_fmap_area(&mock_fmap.areas[0], unused_buf);
+	will_return(fmap_find_area, 1);
+	expect_string(fmap_find_area, name, "WP_RO");
+
+	TEST_FASTBOOT_GETVAR_ERR(VAR_PARTITION_TYPE_SPI_NOR, "WP_RO", STATE_UNKNOWN_VAR);
+}
+
+static void test_fb_getvar_partition_type_spi_nor_too_long_name(void **state)
+{
+	TEST_FASTBOOT_GETVAR_ERR(VAR_PARTITION_TYPE_SPI_NOR,
+				 "MAX_NAME_LENGTH_12345678123456789", STATE_UNKNOWN_VAR);
 }
 
 static void test_fb_getvar_partition_size(void **state)
@@ -1069,6 +1146,34 @@ static void test_fb_cmd_getvar_is_userspace(void **state)
 	fastboot_cmd_getvar(fb, "is-userspace");
 }
 
+static void test_fb_cmd_getvar_partition_size_spi_nor(void **state)
+{
+	struct FastbootOps *fb = *state;
+	uint8_t unused_buf[1];
+
+	set_mock_fmap_area(&mock_fmap.areas[0], unused_buf);
+	will_return(fmap_find_area, 0);
+	expect_string(fmap_find_area, name, "WP_RO");
+
+	WILL_SEND_EXACT(fb, "OKAY0x100");
+
+	fastboot_cmd_getvar(fb, "partition-size:spi-nor:WP_RO");
+}
+
+static void test_fb_cmd_getvar_partition_type_spi_nor(void **state)
+{
+	struct FastbootOps *fb = *state;
+	uint8_t unused_buf[1];
+
+	set_mock_fmap_area(&mock_fmap.areas[0], unused_buf);
+	will_return(fmap_find_area, 0);
+	expect_string(fmap_find_area, name, "WP_RO");
+
+	WILL_SEND_EXACT(fb, "OKAYraw");
+
+	fastboot_cmd_getvar(fb, "partition-type:spi-nor:WP_RO");
+}
+
 static void test_fb_cmd_getvar_partition_size(void **state)
 {
 	struct FastbootOps *fb = *state;
@@ -1436,6 +1541,14 @@ static void test_fb_cmd_getvar_all(void **state)
 	check_fb_cmd_getvar_all_contains(expected_max_download_size);
 	check_fb_cmd_getvar_all_contains(expected_max_fetch_size);
 	check_fb_cmd_getvar_all_contains("INFOis-userspace:no");
+	check_fb_cmd_getvar_all_contains("INFOpartition-size:spi-nor:WP_RO:0x100");
+	check_fb_cmd_getvar_all_contains(
+			"INFOpartition-size:spi-nor:MAX_NAME_LENGTH_12345678abcdefgh:0x3000");
+	check_fb_cmd_getvar_all_contains("INFOpartition-size:spi-nor:GBB:0x250");
+	check_fb_cmd_getvar_all_contains("INFOpartition-type:spi-nor:WP_RO:raw");
+	check_fb_cmd_getvar_all_contains(
+			"INFOpartition-type:spi-nor:MAX_NAME_LENGTH_12345678abcdefgh:raw");
+	check_fb_cmd_getvar_all_contains("INFOpartition-type:spi-nor:GBB:raw");
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:vbmeta_a:0x100");
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:boot_a:0x300");
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:super:0x1000");
@@ -1579,6 +1692,14 @@ static void test_fb_cmd_getvar_all_fail_get_var(void **state)
 	check_fb_cmd_getvar_all_contains(expected_max_download_size);
 	check_fb_cmd_getvar_all_contains(expected_max_fetch_size);
 	check_fb_cmd_getvar_all_contains("INFOis-userspace:no");
+	check_fb_cmd_getvar_all_contains("INFOpartition-size:spi-nor:WP_RO:0x100");
+	check_fb_cmd_getvar_all_contains(
+			"INFOpartition-size:spi-nor:MAX_NAME_LENGTH_12345678abcdefgh:0x3000");
+	check_fb_cmd_getvar_all_contains("INFOpartition-size:spi-nor:GBB:0x250");
+	check_fb_cmd_getvar_all_contains("INFOpartition-type:spi-nor:WP_RO:raw");
+	check_fb_cmd_getvar_all_contains(
+			"INFOpartition-type:spi-nor:MAX_NAME_LENGTH_12345678abcdefgh:raw");
+	check_fb_cmd_getvar_all_contains("INFOpartition-type:spi-nor:GBB:raw");
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:vbmeta_a:0x100");
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:boot_a:0x300");
 	check_fb_cmd_getvar_all_contains("INFOpartition-size:super:0x1000");
@@ -1627,6 +1748,12 @@ int main(void)
 		TEST(test_fb_getvar_secure),
 		TEST(test_fb_getvar_slot_count),
 		TEST(test_fb_getvar_product),
+		TEST(test_fb_getvar_partition_size_spi_nor),
+		TEST(test_fb_getvar_partition_size_spi_nor_no_area),
+		TEST(test_fb_getvar_partition_size_spi_nor_too_long_name),
+		TEST(test_fb_getvar_partition_type_spi_nor),
+		TEST(test_fb_getvar_partition_type_spi_nor_no_area),
+		TEST(test_fb_getvar_partition_type_spi_nor_too_long_name),
 		TEST(test_fb_getvar_partition_size),
 		TEST(test_fb_getvar_partition_size_no_entry),
 		TEST(test_fb_getvar_partition_size_at_index),
@@ -1699,6 +1826,8 @@ int main(void)
 		TEST(test_fb_cmd_getvar_download_size),
 		TEST(test_fb_cmd_getvar_max_fetch_size),
 		TEST(test_fb_cmd_getvar_is_userspace),
+		TEST(test_fb_cmd_getvar_partition_size_spi_nor),
+		TEST(test_fb_cmd_getvar_partition_type_spi_nor),
 		TEST(test_fb_cmd_getvar_partition_size),
 		TEST(test_fb_cmd_getvar_partition_type),
 		TEST(test_fb_cmd_getvar_product),
