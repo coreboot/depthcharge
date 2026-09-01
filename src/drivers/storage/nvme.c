@@ -488,9 +488,8 @@ static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
 	NvmeDrive *drive = container_of(me, NvmeDrive, dev.ops);
 	NvmeCtrlr *ctrlr = drive->ctrlr;
 	uint64_t max_transfer_blocks = 0;
-	uint32_t block_size = drive->dev.block_size;
-	lba_t orig_count = count;
-	lba_t blocks;
+	const uint32_t block_size = drive->dev.block_size;
+	const lba_t orig_count = count;
 	int status = NVME_SUCCESS;
 	bool needs_sync = false;
 
@@ -510,25 +509,29 @@ static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
 
 	const char *op = read ? "read" : "write";
 	while (count > 0) {
-		blocks = MIN(count, max_transfer_blocks);
+		lba_t buf_blocks = MIN(count, NVME_MAX_BOUNCE_BUFFER_BYTES / block_size);
 
 		needs_sync = true;
-		const int ret = bounce_buffer_start(&bbstate, buffer,
-					blocks * drive->dev.block_size,
-					bbflags);
+		const int ret = bounce_buffer_start(
+			&bbstate, buffer, buf_blocks * block_size, bbflags);
 		if (ret) {
-			printf("%s: error: Failed to allocate bounce buffer.\n",
-				__func__);
+			printf("%s: error: Failed to allocate bounce buffer.\n", __func__);
 			return 0;
 		}
 
-		DEBUG("%s: %s %s of %llu blocks\n",
-			__func__, (count > blocks) ? "partial" : "final", op, blocks);
-		status = nvme_block_rw(drive, bbstate.bounce_buffer, start,
-					blocks, read);
-		count -= blocks;
-		buffer += blocks * block_size;
-		start += blocks;
+		void *loop_buffer = bbstate.bounce_buffer;
+		for (lba_t a = 0; a < buf_blocks;) {
+			lba_t loop_blocks = MIN(buf_blocks - a, max_transfer_blocks);
+			DEBUG("%s: %s %s of %llu blocks\n", __func__,
+			      (count > loop_blocks) ? "partial" : "final", op, loop_blocks);
+
+			status = nvme_block_rw(drive, loop_buffer, start, loop_blocks, read);
+			count -= loop_blocks;
+			buffer += loop_blocks * block_size;
+			loop_buffer += loop_blocks * block_size;
+			start += loop_blocks;
+			a += loop_blocks;
+		}
 
 		if (!NVME_ERROR(status) && bounce_buffer_did_bounce(&bbstate)) {
 			status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX,
@@ -550,8 +553,7 @@ static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
 				       ctrlr->iosq_sz, NVME_CCQ_SIZE,
 				       NVME_GENERIC_TIMEOUT);
 		if (NVME_ERROR(status))
-			printf("%s: error %d failed to sync command\n",
-			__func__, status);
+			printf("%s: error %d failed to sync command\n", __func__, status);
 	}
 
 out:

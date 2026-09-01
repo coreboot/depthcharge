@@ -99,6 +99,9 @@ typedef int NVME_STATUS;
 #define NVME_ADMIN_QUEUE_INDEX	0	/* Admin queu index must be 0 */
 #define NVME_IO_QUEUE_INDEX		1	/* IO queue */
 
+// Maximum number of bytes allocated in the bounce buffer
+#define NVME_MAX_BOUNCE_BUFFER_BYTES	(16 * MiB)
+
 /*
  * NVMe Controller Registers
  */
