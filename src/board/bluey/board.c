@@ -59,22 +59,31 @@ static void usb_setup(void)
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 }
 
+__weak bool variant_nvme_supported(void)
+{
+	return true;
+}
+
+__weak bool variant_ufs_supported(void)
+{
+	return true;
+}
+
 static void storage_setup(void)
 {
 	/* UFS */
-	if (CONFIG(DRIVER_STORAGE_UFS_QCOM)) {
+	if (CONFIG(DRIVER_STORAGE_UFS_QCOM) && variant_ufs_supported()) {
 		struct qcom_ufs_ctlr *ufs_host = new_qcom_ufs_ctlr(QCOM_UFS_HCI_BASE);
 		list_insert_after(&ufs_host->ufs.bctlr.list_node,
 				  &fixed_block_dev_controllers);
 	}
 
 	/* NVMe */
-	if (CONFIG(DRIVER_STORAGE_NVME)) {
+	if (CONFIG(DRIVER_STORAGE_NVME) && variant_nvme_supported()) {
 		NvmeCtrlr *nvme = new_nvme_ctrlr(variant_get_nvme_pcidev());
 		list_insert_after(&nvme->ctrlr.list_node,
 				  &fixed_block_dev_controllers);
 	}
-
 }
 
 static void flash_setup(void)

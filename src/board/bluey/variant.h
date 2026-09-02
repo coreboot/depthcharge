@@ -22,5 +22,7 @@ uintptr_t variant_get_ec_spi_base(void);
 
 uintptr_t variant_get_gsc_i2c_base(void);
 
-#endif // _BOARD_BLUEY_VARIANT_H_
+bool variant_nvme_supported(void);
+bool variant_ufs_supported(void);
 
+#endif // _BOARD_BLUEY_VARIANT_H_
