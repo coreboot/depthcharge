@@ -827,6 +827,138 @@ static void fastboot_cmd_snapshot_update(struct FastbootOps *fb, char *arg)
 	fastboot_succeed(fb);
 }
 
+static void fastboot_cmd_fetch(struct FastbootOps *fb, char *arg)
+{
+	const char *part_name = strsep(&arg, ":");
+	const char *offset_str = strsep(&arg, ":"); /* optional */
+	const char *size_str = strsep(&arg, ":"); /* optional */
+	uint64_t size = 0, offset = 0;
+	uint32_t size_remaining;
+	bool size_given = true;
+	char *offset_end = NULL;
+	char *size_end = NULL;
+
+	if (!part_name || strlen(part_name) == 0) {
+		fastboot_fail(fb, "No existent partition name");
+		return;
+	}
+
+	if (arg != NULL) {
+		fastboot_fail(fb, "Bad args");
+		return;
+	}
+
+	/* Process size */
+	if (size_str) {
+		int64_t s = strtol(size_str, &size_end, 0);
+		if (s < 0) {
+			fastboot_fail(fb, "Negative sizes are not allowed.");
+			return;
+		}
+		size = (uint64_t)s;
+	}
+
+	if (size_end == size_str) {
+		printf("No size given, defaulting to fetching as much as possible.");
+		size_given = false;
+	}
+
+	if (size_end && *size_end != '\0') {
+		fastboot_fail(fb, "Size arg must be a number.");
+		return;
+	}
+
+
+	/* Process offset */
+	if (offset_str) {
+		int64_t off = strtoll(offset_str, &offset_end, 0);
+		if (off < 0) {
+			fastboot_fail(fb, "Negative offsets are not allowed.");
+			return;
+		}
+		offset = (uint64_t)off;
+	}
+
+	if (offset_end == offset_str)
+		printf("No offset given, defaulting to 0");
+
+	if (offset_end && *offset_end != '\0') {
+		fastboot_fail(fb, "Offset arg must be a number.");
+		return;
+	}
+
+	/* Process partition name */
+	if (fastboot_disk_gpt_init(fb)) {
+		fastboot_fail(fb, "Failed to init gpt");
+		return;
+	}
+
+	uint64_t part_chunk_size;
+	StreamOps *stream;
+	if (gpt_open_partition_stream(fb->disk, fb->gpt, part_name, offset, &stream,
+				      &part_chunk_size) != GPT_IO_SUCCESS) {
+		fastboot_fail(fb, "Failed to open partition read stream");
+		return;
+	}
+
+	/* Validate/set size */
+
+	if(size_given && size > part_chunk_size) {
+		stream->close(stream);
+		fastboot_fail(fb, "At offset=%llu: Attempting to get %llu bytes from "
+			      "parition which only has %llu bytes", offset, size,
+			      part_chunk_size);
+		return;
+	} else if (!size_given) {
+		size = part_chunk_size;
+	}
+
+	if (size > FASTBOOT_MAX_FETCH_SIZE) {
+		stream->close(stream);
+		fastboot_fail(fb, "Size request %llu is larger than max fetch size %u.",
+			      size, FASTBOOT_MAX_FETCH_SIZE);
+		return;
+	}
+
+	/* Downcast */
+	const uint32_t size_to_get = size;
+	size_remaining = size;
+	fastboot_reset_staging(fb);
+	void *buf = fastboot_get_memory_buffer(fb, NULL);
+	int display_at = 10;
+
+	fastboot_data(fb, size_to_get);
+
+	while (size_remaining > 0) {
+		/* FB protocol is ambiguous about packet size of the data phase
+		 * So keep to standard FB packet size (<=256) for consistency.
+		 */
+		uint32_t chunk_len = MIN(size_remaining, FASTBOOT_MSG_MAX);
+
+		if (stream->read(stream, chunk_len, buf) != chunk_len) {
+			stream->close(stream);
+			printf("Failed to read %s partition stream.", part_name);
+			/* Halt. Host will timeout ending exchange. */
+			fastboot_reset_staging(fb);
+			return;
+		}
+
+		fb->send_packet(fb, buf, chunk_len);
+		size_remaining -= chunk_len;
+
+		/* Report progress */
+		uint64_t per = ((100 * (size_to_get - size_remaining)) / size_to_get);
+		if (per >= display_at) {
+			printf("Transfer Status: %lld%%\n", per);
+			display_at += 10;
+		}
+	}
+	printf("Transfer Complete.\n");
+	stream->close(stream);
+	fastboot_reset_staging(fb);
+	fastboot_succeed(fb);
+}
+
 #define CMD_ARGS(_name, _sep, _fn)                                             \
 	{                                                                      \
 		.name = _name, .has_args = true, .sep = _sep, .fn = _fn        \
@@ -860,6 +992,7 @@ struct fastboot_cmd fastboot_cmds[] = {
 	CMD_NO_ARGS("reboot", fastboot_cmd_reboot),
 	CMD_ARGS("set_active", ':', fastboot_cmd_set_active),
 	CMD_ARGS("snapshot-update", ':', fastboot_cmd_snapshot_update),
+	CMD_ARGS("fetch", ':', fastboot_cmd_fetch),
 	{
 		.name = NULL,
 	},
