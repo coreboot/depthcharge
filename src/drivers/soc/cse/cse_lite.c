@@ -630,13 +630,36 @@ static enum cb_err cse_get_target_region(struct region *target_region)
 {
 	struct region cse_region_all;
 	size_t size;
-	uint32_t start_offset;
-	uint32_t end_offset;
+	uint32_t start_offset, ro_start;
+	uint32_t end_offset, ro_end;
 
 	if (cse_get_rw_region(&cse_region_all) != CB_SUCCESS)
 		return CB_ERR;
 
 	cse_get_bp_entry_range(RW, &start_offset, &end_offset);
+	cse_get_bp_entry_range(RO, &ro_start, &ro_end);
+
+	/*
+	 * Sanity check boot partition boundaries:
+	 * 1. Validate non-inverted offsets within RW (start_offset < end_offset)
+	 *    and RO (ro_start < ro_end).
+	 * 2. Ensure RW partition is strictly placed above RO (ro_end < start_offset)
+	 *    to prevent memory overlap or corrupt flash layout execution.
+	 */
+	if (end_offset <= start_offset || start_offset <= ro_end || ro_end <= ro_start) {
+		printk(BIOS_ERR, "cse_lite: bp_info RW window 0x%x..0x%x is not "
+		       "strictly above RO 0x%x..0x%x -- refusing\n", start_offset, end_offset,
+		       ro_start, ro_end);
+		return CB_ERR;
+	}
+
+	if (end_offset <= start_offset || start_offset <= ro_end || ro_end <= ro_start) {
+		printk(BIOS_ERR, "cse_lite: bp_info RW window 0x%x..0x%x is not "
+		     "strictly above RO 0x%x..0x%x -- refusing\n", start_offset, end_offset,
+		     ro_start, ro_end);
+		return CB_ERR;
+	}
+
 	size = end_offset + 1 - start_offset;
 	struct region sub_region = {.offset = start_offset, .size = size};
 	if(cse_get_effective_region(&cse_region_all, &sub_region, target_region))
