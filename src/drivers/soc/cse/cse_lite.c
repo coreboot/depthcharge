@@ -58,13 +58,14 @@ static uint32_t crc32_byte(uint32_t prev_crc, uint8_t data)
 static int cse_is_subregion(const struct region *parent, size_t child_offset,
 	size_t child_size)
 {
-	if (parent == NULL)
+	if (parent == NULL || child_size == 0)
 		return -1;
 	size_t end = parent->offset + parent->size - 1;
 	size_t child_start = parent->offset + child_offset;
 	size_t child_end = child_start + child_size - 1;
-	if (end < child_end)
+	if (child_start < parent->offset || child_end < child_start || end < child_end)
 		return -1;
+
 	return 0;
 }
 
