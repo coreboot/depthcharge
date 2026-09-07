@@ -1026,6 +1026,7 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 	/* Primary and dropdown trigger buttons */
 	x = UI_MARGIN_H;
 	VB2_TRY(ui_get_button_width(menu, state, &button_width));
+	bool prev_is_primary = false;
 	for (i = 0; i < menu->num_items; i++) {
 		if (UI_GET_BIT(ms->hidden_item_mask, i))
 			continue;
@@ -1034,6 +1035,9 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 		if (item->type != UI_MENU_ITEM_TYPE_PRIMARY &&
 		    item->type != UI_MENU_ITEM_TYPE_DROPDOWN)
 			continue;
+
+		if (item->type == UI_MENU_ITEM_TYPE_DROPDOWN && prev_is_primary)
+			y += UI_DROPDOWN_MARGIN_TOP;
 
 		if (i == ms->focused_item)
 			*out_focused_item_y = y;
@@ -1057,6 +1061,7 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 						 is_focused));
 		}
 
+		prev_is_primary = (item->type == UI_MENU_ITEM_TYPE_PRIMARY);
 		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
 	}
 

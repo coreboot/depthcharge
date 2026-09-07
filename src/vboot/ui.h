@@ -73,7 +73,7 @@
 #define UI_LANG_ICON_ARROW_SIZE			24
 #define UI_LANG_BORDER_THICKNESS		3
 #define UI_LANG_BORDER_RADIUS			8
-#define UI_LANG_MARGIN_BOTTOM			110
+#define UI_LANG_MARGIN_BOTTOM			36
 
 /* For language dropdown menu content */
 #define UI_LANG_MENU_MARGIN_TOP			15
@@ -101,7 +101,7 @@
 #define UI_TITLE_MARGIN_BOTTOM			30
 #define UI_DESC_TEXT_HEIGHT			24
 #define UI_DESC_TEXT_LINE_SPACING		12
-#define UI_DESC_MARGIN_BOTTOM			44
+#define UI_DESC_MARGIN_BOTTOM			48
 
 /* For primary buttons */
 #define UI_BUTTON_HEIGHT			40
@@ -110,7 +110,7 @@
 #define UI_BUTTON_BORDER_THICKNESS		2
 #define UI_BUTTON_FOCUS_RING_THICKNESS		3
 #define UI_BUTTON_BORDER_RADIUS			8
-#define UI_BUTTON_MARGIN_V			10
+#define UI_BUTTON_MARGIN_V			14
 #define UI_BUTTON_HELP_TEXT_MARGIN_L		30
 
 /* For dropdown trigger */
@@ -118,6 +118,7 @@
 #define UI_DROPDOWN_ARROW_SIZE			20
 #define UI_DROPDOWN_ARROW_MARGIN_H		12
 #define UI_DROPDOWN_FOCUS_RING_THICKNESS	3
+#define UI_DROPDOWN_MARGIN_TOP			24
 
 /* For sub-menu */
 #define UI_SUB_MENU_WIDTH			380
