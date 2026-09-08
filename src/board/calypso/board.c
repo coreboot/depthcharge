@@ -180,8 +180,6 @@ static int board_setup(void)
 	display_setup();
 
 	/* TODO: Need to drop kernel cmdline */
-	commandline_append("reboot=warm");
-	printf("Calypso: adding `reboot=warm` to kernel cmdline\n");
 	commandline_append("earlycon console=ttyMSM0,115200");
 	printf("Calypso: adding `earlycon console=ttyMSM0,115200` to kernel cmdline\n");
 
