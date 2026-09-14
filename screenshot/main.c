@@ -50,6 +50,36 @@ int main(int argc, char *argv[])
 	state->error_code = __ERROR_CODE__;
 	state->current_page = __PAGE__;
 
+	if (__SUB_MENU_OPEN__) {
+		const struct ui_menu *menu = ui_get_menu(&ui);
+		if (state->menu_state.focused_item >= menu->num_items) {
+			printf("ERROR: ITEM %u out of range (%zu items)\n",
+			       state->menu_state.focused_item,
+			       menu->num_items);
+			return -1;
+		}
+
+		VB2_TRY(ui_menu_select(&ui));
+		if (!state->is_sub_menu_active) {
+			const struct ui_menu_item *menu_item =
+				&menu->items[state->menu_state.focused_item];
+			printf("ERROR: Failed to open sub-menu of item <%s>\n",
+			       menu_item->name);
+			return -1;
+		}
+
+		const struct ui_menu *sub_menu = state->sub_menu_state.menu;
+		uint32_t sub_item = __SUB_ITEM__;
+		if (sub_item >= sub_menu->num_items) {
+			printf("ERROR: SUB_ITEM %u out of range (%zu items)\n",
+			       sub_item, sub_menu->num_items);
+			return -1;
+		}
+
+		state->sub_menu_state.focused_item = sub_item;
+		state->sub_menu_state.trigger_focused = __SUB_TRIGGER_FOCUSED__;
+	}
+
 	/*
 	 * ui_log_init() will be called once from ui_init_context(). Another
 	 * call below will replace the mock log string with the provided one.
