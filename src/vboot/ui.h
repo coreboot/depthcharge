@@ -85,7 +85,14 @@
 /* For scrollbar */
 #define UI_SCROLLBAR_WIDTH			10
 #define UI_SCROLLBAR_MIN_HEIGHT			20
-#define UI_SCROLLBAR_CORNER_RADIUS		2
+/* Form a pill/capsule shape with semicircular rounded ends */
+#define UI_SCROLLBAR_CORNER_RADIUS		(UI_SCROLLBAR_WIDTH / 2)
+#define UI_SCROLLBAR_MARGIN_RIGHT		4
+/*
+ * Vertical padding between the scrollbar and container card top/bottom edges
+ * to keep the scrollbar within the card's rounded corners.
+ */
+#define UI_SCROLLBAR_PADDING_V			4
 
 /* For screen icon */
 #define UI_ICON_HEIGHT				45

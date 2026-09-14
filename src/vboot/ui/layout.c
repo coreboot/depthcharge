@@ -1138,7 +1138,6 @@ static vb2_error_t ui_draw_sub_menu_item_focus(int32_t x, int32_t y,
 	return VB2_SUCCESS;
 }
 
-/* TODO: Add scrollbar support for sub-menu overflow. */
 static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 				    const struct ui_menu_state *menu_state,
 				    int32_t focused_item_y)
@@ -1152,21 +1151,48 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 	const struct ui_state *state = ui->state;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
-	size_t count = sub_menu->num_items;
-	uint32_t visible_indices[32];
-	size_t visible_count = 0;
-	for (size_t i = 0; i < count && visible_count < ARRAY_SIZE(visible_indices); i++) {
-		if (!UI_GET_BIT(menu_state->hidden_item_mask, i))
-			visible_indices[visible_count++] = i;
+	size_t total_items = 0;
+	size_t focused_pos = 0;
+
+	for (size_t i = 0; i < sub_menu->num_items; i++) {
+		if (UI_GET_BIT(menu_state->hidden_item_mask, i))
+			continue;
+		if (i == menu_state->focused_item)
+			focused_pos = total_items;
+		total_items++;
 	}
-	if (visible_count == 0)
+	if (total_items == 0)
 		return VB2_SUCCESS;
 
 	int32_t box_x = UI_MARGIN_H;
 	int32_t item_h = UI_SUB_MENU_ITEM_HEIGHT;
 	int32_t box_w = UI_SUB_MENU_WIDTH;
 	int32_t box_y = focused_item_y + UI_BUTTON_HEIGHT + UI_SUB_MENU_PADDING_V;
-	int32_t box_h = item_h * visible_count;
+
+	int32_t max_y = UI_SCALE - UI_MARGIN_BOTTOM;
+	int32_t max_available_h = max_y - box_y;
+	if (max_available_h < item_h) {
+		UI_ERROR("No vertical space available for sub-menu (%d < %d)\n",
+			 max_available_h, item_h);
+		return VB2_ERROR_UI_DRAW_FAILURE;
+	}
+
+	size_t max_items = (size_t)(max_available_h / item_h);
+	size_t items_per_page = MIN(total_items, max_items);
+	int32_t box_h = item_h * items_per_page;
+
+	/*
+	 * Calculate the visible window [id_begin, id_begin + items_per_page)
+	 * of items to display. The focused item is kept in view and placed
+	 * at the center if possible.
+	 */
+	size_t id_begin = 0;
+	if (total_items > items_per_page) {
+		size_t target_pos = (items_per_page - 1) / 2;
+		if (focused_pos > target_pos)
+			id_begin = MIN(focused_pos - target_pos,
+				       total_items - items_per_page);
+	}
 
 	/* Background container card */
 	VB2_TRY(ui_draw_rounded_box(box_x, box_y, box_w, box_h,
@@ -1177,18 +1203,26 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 				    UI_SUB_MENU_BORDER_THICKNESS,
 				    UI_SUB_MENU_BORDER_RADIUS, reverse));
 
-	for (size_t pos = 0; pos < visible_count; pos++) {
-		size_t i = visible_indices[pos];
+	size_t pos = 0, slot = 0;
+	for (size_t i = 0; i < sub_menu->num_items; i++) {
+		if (UI_GET_BIT(menu_state->hidden_item_mask, i))
+			continue;
+
+		if (pos++ < id_begin)
+			continue;
+		if (slot >= items_per_page)
+			break;
+
+		int32_t item_y = box_y + item_h * slot;
 		const struct ui_menu_item *item = &sub_menu->items[i];
 		bool is_focused = !menu_state->trigger_focused &&
 				  (i == menu_state->focused_item);
-		int32_t item_y = box_y + item_h * pos;
 
 		if (is_focused) {
 			VB2_TRY(ui_draw_sub_menu_item_focus(
 				box_x, item_y, box_w, item_h,
-				pos == 0,
-				pos == visible_count - 1,
+				slot == 0,
+				slot == items_per_page - 1,
 				reverse));
 		}
 
@@ -1214,6 +1248,25 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 					     PIVOT_H_LEFT | PIVOT_V_CENTER,
 					     reverse));
 		}
+
+		slot++;
+	}
+
+	/* Draw scrollbar if there are more items than fit on the page */
+	if (total_items > items_per_page) {
+		int32_t scrollbar_end_x = box_x + box_w -
+					  UI_SCROLLBAR_MARGIN_RIGHT;
+		/*
+		 * Inset the scrollbar vertically from the top and bottom of the
+		 * card so it stays within the card's rounded corners.
+		 */
+		int32_t scrollbar_y = box_y + UI_SCROLLBAR_PADDING_V;
+		int32_t scrollbar_h = box_h - UI_SCROLLBAR_PADDING_V * 2;
+
+		VB2_TRY(ui_draw_scrollbar(scrollbar_end_x, scrollbar_y,
+					  scrollbar_h, id_begin,
+					  total_items, items_per_page,
+					  reverse));
 	}
 
 	return VB2_SUCCESS;
