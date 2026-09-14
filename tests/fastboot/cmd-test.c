@@ -5,6 +5,7 @@
 #include "base/android_misc.h"
 #include "drivers/storage/ufs.h"
 #include "fastboot/fastboot.h"
+#include "mocks/fmap_area.h"
 #include "tests/fastboot/fastboot_common_mocks.h"
 #include "tests/test.h"
 
@@ -29,6 +30,22 @@ StreamOps test_stream = {
  * commands
  */
 const uint32_t test_sha256_context_magic = 0xafa;
+
+/* Fmap area used by tests */
+FmapArea mock_fmap_area = {
+	.offset = 0x10,
+	.size = 0x20,
+	.name = {'W', 'P', '_', 'R', 'O', },
+};
+
+/* Mocked flash buffer */
+uint8_t mock_fmap_area_buf[0x20];
+
+#define WILL_FIND_FMAP_WP_RO_AREA(ret) do { \
+	set_mock_fmap_area(&mock_fmap_area, mock_fmap_area_buf); \
+	will_return(fmap_find_area, ret); \
+	expect_string(fmap_find_area, name, "WP_RO"); \
+} while (0)
 
 /* Mocked functions */
 int android_misc_bcb_write(BlockDev *disk, GptData *gpt, struct bootloader_message *bcb)
@@ -792,6 +809,94 @@ static void test_fb_cmd_flash_raw_sector_bad_arg(void **state)
 	WILL_SEND_FAIL(fb);
 
 	fastboot_handle_packet(fb, cmd3, sizeof(cmd3) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_flash_spi_nor(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "flash:spi-nor:WP_RO";
+	const size_t data_len = mock_fmap_area.size;
+
+	fb->has_staged_data = true;
+	fb->memory_buffer_len = data_len;
+	for (size_t i = 0; i < data_len; i++)
+		_kernel_start[i] = 'a' + i % 26;
+
+	WILL_FIND_FMAP_WP_RO_AREA(0);
+	will_return(flash_rewrite, MOCK_FLASH_SUCCESS);
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+	assert_memory_equal(_kernel_start, mock_fmap_area_buf, data_len);
+}
+
+static void test_fb_cmd_flash_spi_nor_img_smaller_than_area(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "flash:spi-nor:WP_RO";
+	const char padding[] = {0xff, 0xff, 0xff, 0xff, 0xff, };
+	const size_t data_len = mock_fmap_area.size - sizeof(padding);
+
+	fb->has_staged_data = true;
+	fb->memory_buffer_len = data_len;
+	for (size_t i = 0; i < mock_fmap_area.size; i++)
+		_kernel_start[i] = 'a' + i % 26;
+
+	WILL_FIND_FMAP_WP_RO_AREA(0);
+	will_return(flash_rewrite, MOCK_FLASH_SUCCESS);
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+	assert_memory_equal(_kernel_start, mock_fmap_area_buf, data_len);
+	assert_memory_equal(padding, mock_fmap_area_buf + data_len, sizeof(padding));
+}
+
+static void test_fb_cmd_flash_spi_nor_no_area(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "flash:spi-nor:WP_RO";
+
+	fb->has_staged_data = true;
+	fb->memory_buffer_len = mock_fmap_area.size;
+
+	WILL_FIND_FMAP_WP_RO_AREA(1);
+	WILL_SEND_FAIL_WITH_LOGS(fb);
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_flash_spi_nor_img_bigger_than_area(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "flash:spi-nor:WP_RO";
+
+	fb->has_staged_data = true;
+	fb->memory_buffer_len = mock_fmap_area.size + 0x3;
+
+	WILL_FIND_FMAP_WP_RO_AREA(0);
+	WILL_SEND_FAIL(fb);
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_flash_spi_nor_rewrite_fail(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "flash:spi-nor:WP_RO";
+
+	fb->has_staged_data = true;
+	fb->memory_buffer_len = mock_fmap_area.size;
+
+	WILL_FIND_FMAP_WP_RO_AREA(0);
+	will_return(flash_rewrite, MOCK_FLASH_FAIL);
+	WILL_SEND_FAIL_WITH_LOGS(fb);
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
 }
 
@@ -2525,6 +2630,11 @@ int main(void)
 		TEST(test_fb_cmd_flash_raw_sector),
 		TEST(test_fb_cmd_flash_raw_sector_0),
 		TEST(test_fb_cmd_flash_raw_sector_bad_arg),
+		TEST(test_fb_cmd_flash_spi_nor),
+		TEST(test_fb_cmd_flash_spi_nor_img_smaller_than_area),
+		TEST(test_fb_cmd_flash_spi_nor_no_area),
+		TEST(test_fb_cmd_flash_spi_nor_img_bigger_than_area),
+		TEST(test_fb_cmd_flash_spi_nor_rewrite_fail),
 		TEST(test_fb_cmd_getvar),
 		TEST(test_fb_cmd_set_active_no_slot),
 		TEST(test_fb_cmd_set_active),

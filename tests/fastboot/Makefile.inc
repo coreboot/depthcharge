@@ -29,6 +29,7 @@ fastboot-test-common-mocks += cbmem_console_snapshot
 $(call copy-test,fastboot-test-common,cmd-test)
 cmd-test-config += CONFIG_DRIVER_STORAGE_UFS=1
 cmd-test-srcs += tests/fastboot/cmd-test.c
+cmd-test-srcs += tests/mocks/fmap_area.c
 cmd-test-srcs += src/base/android_misc.c
 cmd-test-srcs += src/fastboot/cmd.c
 cmd-test-mocks += GptModified

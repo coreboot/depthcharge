@@ -22,11 +22,13 @@
 
 #include "base/android_misc.h"
 #include "base/gpt.h"
+#include "drivers/flash/flash.h"
 #include "drivers/storage/ufs.h"
 #include "fastboot/cmd.h"
 #include "fastboot/disk.h"
 #include "fastboot/fastboot.h"
 #include "fastboot/vars.h"
+#include "image/fmap.h"
 #include "net/uip.h"
 
 static void fastboot_cmd_continue(struct FastbootOps *fb, char *arg)
@@ -83,6 +85,9 @@ static void fastboot_cmd_download(struct FastbootOps *fb, char *arg)
 #define FASTBOOT_RAW_WRITE_ARG "raw-sector:"
 #define FASTBOOT_RAW_WRITE_ARG_LEN (sizeof(FASTBOOT_RAW_WRITE_ARG) - 1)
 
+#define FASTBOOT_SPI_WRITE_ARG "spi-nor:"
+#define FASTBOOT_SPI_WRITE_ARG_LEN (sizeof(FASTBOOT_SPI_WRITE_ARG) - 1)
+
 static void fastboot_cmd_flash(struct FastbootOps *fb, char *arg)
 {
 	if (!fb->has_staged_data) {
@@ -105,6 +110,31 @@ static void fastboot_cmd_flash(struct FastbootOps *fb, char *arg)
 			return;
 		}
 		fastboot_write_raw(fb, start_block, data, data_len);
+		return;
+	} else if (!strncmp(arg, FASTBOOT_SPI_WRITE_ARG, FASTBOOT_SPI_WRITE_ARG_LEN)) {
+		const char *section_name = arg + FASTBOOT_SPI_WRITE_ARG_LEN;
+		FmapArea area_data;
+
+		if (fmap_find_area(section_name, &area_data)) {
+			fastboot_fail_with_logs(fb, "Failed to get fmap section \"%s\"",
+						section_name);
+			return;
+		}
+		if (data_len > area_data.size) {
+			fastboot_fail(fb, "Image too big (%" PRIu64 " > %" PRIu32 ")",
+				      data_len, area_data.size);
+			return;
+		}
+		if (area_data.size > FASTBOOT_MAX_DOWNLOAD_SIZE) {
+			fastboot_fail(fb, "fmap section too big (%" PRIu32 ")", area_data.size);
+			return;
+		}
+		if (data_len < area_data.size)
+			memset(data + data_len, 0xff, area_data.size - data_len);
+		if (flash_rewrite(data, area_data.offset, area_data.size) != area_data.size)
+			fastboot_fail_with_logs(fb, "Failed to write flash");
+		else
+			fastboot_succeed(fb);
 		return;
 	}
 

@@ -68,3 +68,17 @@ int __must_check flash_write(const void *buffer, uint32_t offset, uint32_t size)
 		return 0;
 	return size;
 }
+
+int __must_check flash_rewrite(const void *buffer, uint32_t offset, uint32_t size)
+{
+	CHECK_FMAP_AREA_SET();
+	assert_non_null(buffer);
+	CHECK_REGION(offset, size);
+
+	uint8_t *dest = (uint8_t *)mock_flash_buf + offset - mock_area->offset;
+	memcpy(dest, buffer, size);
+
+	if (mock() == MOCK_FLASH_FAIL)
+		return 0;
+	return size;
+}
