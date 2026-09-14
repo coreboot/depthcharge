@@ -9,6 +9,7 @@
 #include <pci/pci.h>
 
 #include "base/init_funcs.h"
+#include "base/late_init_funcs.h"
 #include "board/ocelot/include/variant.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
@@ -21,13 +22,16 @@
 #include "drivers/gpio/pantherlake.h"
 #include "drivers/power/pch.h"
 #include "drivers/soc/pantherlake.h"
+#include "drivers/storage/blockdev.h"
 #include "drivers/storage/storage_common.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/google/switches.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <sysinfo.h>
+#include <vb2_api.h>
 
 #if CONFIG(CROS_EC_ENABLE_MEC) || CONFIG(CROS_EC_ENABLE_RTK)
 #define EC_SOC_INT_ODL	0 /* Not Connected */
@@ -148,3 +152,18 @@ static int board_setup(void)
 }
 
 INIT_FUNC(board_setup);
+
+/*
+ * Probe fixed storage before the recovery UI starts.
+ * TODO (b/561302267): Remove this when recovery image supports UFS probing
+ */
+static int recovery_init_fixed_storage(LateInitFunc *init)
+{
+	if (vboot_get_context()->boot_mode != VB2_BOOT_MODE_MANUAL_RECOVERY)
+		return 0;
+
+	get_all_bdevs(BLOCKDEV_FIXED, NULL);
+
+	return 0;
+}
+LATE_INIT_FUNC(recovery_init_fixed_storage);
