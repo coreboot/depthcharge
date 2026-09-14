@@ -56,9 +56,11 @@
 
 #define LANGUAGE_SELECT_ITEM ((struct ui_menu_item){	\
 	.name = "Language selection",			\
-	.file = NULL,					\
+	.get_file = get_language_file,			\
+	.icon_file = "ic_globe.bmp",			\
 	.type = UI_MENU_ITEM_TYPE_LANGUAGE,		\
-	.target = UI_SCREEN_LANGUAGE_SELECT,		\
+	.flags = UI_MENU_ITEM_FLAG_GENERIC_ARCHIVE,	\
+	.get_sub_menu = get_language_menu,		\
 })
 
 #define PAGE_UP_ITEM ((struct ui_menu_item){			\
@@ -459,19 +461,18 @@ static const struct ui_screen_info firmware_sync_screen = {
 };
 
 /******************************************************************************/
-/* UI_SCREEN_LANGUAGE_SELECT */
+/* Language sub-menu */
 
-static vb2_error_t language_select_init(struct ui_context *ui)
+static vb2_error_t language_menu_init(struct ui_context *ui)
 {
-	const struct ui_menu *menu = ui_get_menu(ui);
-	struct ui_menu_state *ms = &ui->state->menu_state;
+	struct ui_menu_state *ms = &ui->state->sub_menu_state;
+	const struct ui_menu *menu = ms->menu;
 
-	if (menu->num_items == 0) {
-		UI_ERROR("ERROR: No menu items found; "
-			 "rejecting entering language selection screen\n");
-		return ui_screen_back(ui);
+	if (!menu || menu->num_items == 0) {
+		UI_ERROR("ERROR: No language menu items found\n");
+		return VB2_REQUEST_UI_CONTINUE;
 	}
-	if (ui->state->locale->id < menu->num_items) {
+	if (ui->state->locale && ui->state->locale->id < menu->num_items) {
 		ms->focused_item = ui->state->locale->id;
 	} else {
 		UI_WARN("WARNING: Current locale not found in menu items; "
@@ -481,126 +482,17 @@ static vb2_error_t language_select_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t draw_language_select_menu(struct ui_context *ui,
-					     const struct ui_state *prev_state)
-{
-	int id;
-	const struct ui_state *state = ui->state;
-	const struct ui_menu_state *ms = &ui->state->menu_state;
-	const int reverse = state->locale->rtl;
-	uint32_t num_lang;
-	uint32_t locale_id;
-	int32_t x, x_begin, x_end, y, y_begin, y_end, y_center, menu_height;
-	int num_lang_per_page, target_pos, id_begin, id_end;
-	int32_t box_width, box_height;
-	const int32_t border_thickness = UI_LANG_MENU_BORDER_THICKNESS;
-	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
-	int focused;
-	const struct ui_locale *locale;
-	const struct rgb_color *bg_color, *fg_color;
-	struct ui_bitmap bitmap;
-
-	num_lang = ui_get_locale_count();
-	if (num_lang == 0) {
-		UI_ERROR("Locale count is 0\n");
-		return VB2_ERROR_UI_INVALID_ARCHIVE;
-	}
-
-	x_begin = UI_MARGIN_H;
-	x_end = UI_SCALE - UI_MARGIN_H;
-	box_width = x_end - x_begin;
-	box_height = UI_LANG_MENU_BOX_HEIGHT;
-
-	y_begin = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT + UI_LANG_MENU_MARGIN_TOP;
-	y_end = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT -
-		UI_FOOTER_MARGIN_TOP;
-	num_lang_per_page = (y_end - y_begin) / box_height;
-	menu_height = box_height * MIN(num_lang_per_page, num_lang);
-	y_end = y_begin + menu_height;  /* Correct for integer division error */
-
-	/* Get current locale_id */
-	locale_id = ms->focused_item;
-	if (locale_id >= num_lang) {
-		UI_WARN("focused_item (%u) exceeds number of locales (%u); "
-			"falling back to locale 0\n",
-			locale_id, num_lang);
-		locale_id = 0;
-	}
-
-	/* Draw language dropdown */
-	VB2_TRY(ui_get_locale_info(locale_id, &locale));
-	VB2_TRY(ui_draw_language_header(locale, state, 1));
-
-	/*
-	 * Calculate the list of languages to display, from id_begin
-	 * (inclusive) to id_end (exclusive). The focused one is placed at the
-	 * center of the list if possible.
-	 */
-	target_pos = (num_lang_per_page - 1) / 2;
-	if (locale_id < target_pos || num_lang < num_lang_per_page) {
-		/* locale_id is too small to put at the center, or
-		   all languages fit in the screen */
-		id_begin = 0;
-		id_end = MIN(num_lang_per_page, num_lang);
-	} else if (locale_id > num_lang - num_lang_per_page + target_pos) {
-		/* locale_id is too large to put at the center */
-		id_begin = num_lang - num_lang_per_page;
-		id_end = num_lang;
-	} else {
-		/* Place locale_id at the center. It's guaranteed that
-		   (id_begin >= 0) and (id_end <= num_lang). */
-		id_begin = locale_id - target_pos;
-		id_end = locale_id + num_lang_per_page - target_pos;
-	}
-
-	/* Draw dropdown menu */
-	x = x_begin + UI_LANG_ICON_GLOBE_SIZE + UI_LANG_ICON_MARGIN_H * 2;
-	y = y_begin;
-	for (id = id_begin; id < id_end; id++) {
-		focused = id == locale_id;
-		bg_color = focused ? &ui_color_button : &ui_color_lang_menu_bg;
-		fg_color = focused ? &ui_color_lang_menu_bg : &ui_color_fg;
-		/* Solid box */
-		VB2_TRY(ui_draw_rounded_box(x_begin, y, box_width, box_height,
-					    bg_color, 0, 0, reverse));
-		/* Separator between languages */
-		if (id > id_begin)
-			VB2_TRY(ui_draw_h_line(x_begin, y, box_width,
-					       border_thickness,
-					       &ui_color_lang_menu_border));
-		/* Text */
-		y_center = y + box_height / 2;
-		VB2_TRY(ui_get_locale_info(id, &locale));
-		VB2_TRY(ui_get_language_name_bitmap(locale->code, &bitmap));
-		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
-					      UI_SIZE_AUTO,
-					      UI_LANG_MENU_TEXT_HEIGHT,
-					      bg_color, fg_color,
-					      flags, reverse));
-		y += box_height;
-	}
-
-	/* Draw outer borders */
-	VB2_TRY(ui_draw_rounded_box(x_begin, y_begin, box_width, menu_height,
-				    &ui_color_lang_menu_border,
-				    border_thickness, 0, reverse));
-
-	if (num_lang <= num_lang_per_page)
-		return VB2_SUCCESS;
-
-	/* Draw scrollbar */
-	x = x_end - UI_LANG_MENU_SCROLLBAR_MARGIN_RIGHT;
-	VB2_TRY(ui_draw_scrollbar(x, y_begin, menu_height, id_begin, num_lang,
-				  num_lang_per_page, reverse));
-
-	return VB2_SUCCESS;
-}
-
 static vb2_error_t language_select_action(struct ui_context *ui)
 {
 	vb2_error_t rv;
-	const struct ui_menu_state *ms = &ui->state->menu_state;
+	const struct ui_menu_state *ms = &ui->state->sub_menu_state;
 	uint32_t locale_id = ms->focused_item;
+
+	if (!ui->state->is_sub_menu_active) {
+		UI_ERROR("ERROR: Language sub-menu is not active; ignoring\n");
+		return VB2_REQUEST_UI_CONTINUE;
+	}
+
 	VB2_TRY(ui_get_locale_info(locale_id, &ui->state->locale));
 	UI_INFO("Locale changed to %u\n", locale_id);
 
@@ -613,10 +505,19 @@ static vb2_error_t language_select_action(struct ui_context *ui)
 	if (rv && !(ui->ctx->flags & VB2_CONTEXT_RECOVERY_MODE))
 		return rv;
 
-	return ui_screen_back(ui);
+	return ui_menu_close_sub_menu(ui);
 }
 
-const struct ui_menu *get_language_menu(struct ui_context *ui)
+#define LANGUAGE_FILE_FORMAT "language_%s.bmp"
+
+static const char *get_language_file(const struct ui_state *state)
+{
+	static char file[UI_BITMAP_FILENAME_MAX_LEN + 1];
+	snprintf(file, sizeof(file), LANGUAGE_FILE_FORMAT, state->locale->code);
+	return file;
+}
+
+static const struct ui_menu *get_language_menu(struct ui_context *ui)
 {
 	int i;
 	uint32_t num_locales;
@@ -642,23 +543,29 @@ const struct ui_menu *get_language_menu(struct ui_context *ui)
 	memset(items, 0, size);
 
 	for (i = 0; i < num_locales; i++) {
-		items[i].name = "Some language";
+		const struct ui_locale *locale;
+		if (ui_get_locale_info(i, &locale) != VB2_SUCCESS) {
+			UI_ERROR("ERROR: Failed to get locale info for %d\n", i);
+			return NULL;
+		}
+		char *file = malloc(UI_BITMAP_FILENAME_MAX_LEN + 1);
+		if (!file) {
+			UI_ERROR("ERROR: malloc failed for language file %d\n", i);
+			return NULL;
+		}
+		snprintf(file, UI_BITMAP_FILENAME_MAX_LEN + 1,
+			 LANGUAGE_FILE_FORMAT, locale->code);
+		items[i].file = file;
+		items[i].name = locale->code;
 		items[i].action = language_select_action;
+		items[i].flags = UI_MENU_ITEM_FLAG_GENERIC_ARCHIVE;
 	}
 
 	ui->language_menu.num_items = num_locales;
 	ui->language_menu.items = items;
+	ui->language_menu.init = language_menu_init;
 	return &ui->language_menu;
 }
-
-static const struct ui_screen_info language_select_screen = {
-	.id = UI_SCREEN_LANGUAGE_SELECT,
-	.name = "Language selection screen",
-	.init = language_select_init,
-	.draw_menu_items = draw_language_select_menu,
-	.mesg = "Language selection",
-	.get_menu = get_language_menu,
-};
 
 /******************************************************************************/
 /* Advanced options sub-menu */
@@ -2665,7 +2572,6 @@ static const struct ui_screen_info diagnostics_memory_full_screen = {
 /******************************************************************************/
 static const struct ui_screen_info *const screens[] = {
 	&firmware_sync_screen,
-	&language_select_screen,
 	&broken_screen,
 	&debug_info_screen,
 	&firmware_log_screen,

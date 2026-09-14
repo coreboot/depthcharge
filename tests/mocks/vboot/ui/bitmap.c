@@ -10,11 +10,6 @@ vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
 	return mock_type(vb2_error_t);
 }
 
-vb2_error_t ui_get_language_name_bitmap(const char *locale_code,
-					struct ui_bitmap *bitmap)
-{
-	return mock_type(vb2_error_t);
-}
 
 vb2_error_t ui_get_char_bitmap(const char c, struct ui_bitmap *bitmap)
 {

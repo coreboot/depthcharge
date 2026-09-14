@@ -74,22 +74,7 @@
 #define UI_MARGIN_H				50
 
 /* For language dropdown header */
-#define UI_LANG_BOX_HEIGHT			40
-#define UI_LANG_ICON_MARGIN_H			15
-#define UI_LANG_ICON_GLOBE_SIZE			20
-#define UI_LANG_TEXT_WIDTH			240
-#define UI_LANG_TEXT_HEIGHT			24
-#define UI_LANG_ICON_ARROW_SIZE			24
-#define UI_LANG_BORDER_THICKNESS		3
-#define UI_LANG_BORDER_RADIUS			8
 #define UI_LANG_MARGIN_BOTTOM			36
-
-/* For language dropdown menu content */
-#define UI_LANG_MENU_MARGIN_TOP			15
-#define UI_LANG_MENU_BOX_HEIGHT			48
-#define UI_LANG_MENU_TEXT_HEIGHT		26
-#define UI_LANG_MENU_BORDER_THICKNESS		2
-#define UI_LANG_MENU_SCROLLBAR_MARGIN_RIGHT	2
 
 /* For scrollbar */
 #define UI_SCROLLBAR_WIDTH			10
@@ -254,8 +239,8 @@ enum ui_screen {
 	UI_SCREEN_RECOVERY_BROKEN			= 0x110,
 	/* Advanced options; deprecated in b/551743258 */
 	UI_SCREEN_DEPRECATED_ADVANCED_OPTIONS		= 0x120,
-	/* Language selection screen */
-	UI_SCREEN_LANGUAGE_SELECT			= 0x130,
+	/* Language selection; deprecated in b/551743258 */
+	UI_SCREEN_DEPRECATED_LANGUAGE_SELECT		= 0x130,
 	/* Debug info */
 	UI_SCREEN_DEBUG_INFO				= 0x140,
 	/* Firmware log */
@@ -334,9 +319,6 @@ enum ui_error {
 static const struct rgb_color ui_color_bg		= { 0x20, 0x21, 0x24 };
 static const struct rgb_color ui_color_fg		= { 0xe8, 0xea, 0xed };
 static const struct rgb_color ui_color_footer_fg	= { 0x9a, 0xa0, 0xa6 };
-static const struct rgb_color ui_color_lang_header_bg	= { 0x16, 0x17, 0x19 };
-static const struct rgb_color ui_color_lang_header_border
-	= { 0x52, 0x68, 0x8a };
 static const struct rgb_color ui_color_lang_menu_bg	= { 0x2d, 0x2e, 0x30 };
 static const struct rgb_color ui_color_lang_menu_border	= { 0x49, 0x57, 0x70 };
 static const struct rgb_color ui_color_lang_scrollbar	= { 0x6c, 0x6d, 0x6e };
@@ -447,18 +429,14 @@ struct ui_menu_item {
 	 * of the active bitmap (either from 'get_file' or 'file') will be used.
 	 */
 	vb2_error_t (*get_width)(const struct ui_state *state, int32_t *width);
-	/*
-	 * If UI_MENU_ITEM_TYPE_LANGUAGE, the 'file', 'get_file' and 'get_width'
-	 * fields will not be used.
-	 */
 	enum ui_menu_item_type type;
 	/* Sub-menu opened when selecting this item. */
 	const struct ui_menu *sub_menu;
 	/* Sub-menu getter callback. Takes precedence over sub_menu. */
 	const struct ui_menu *(*get_sub_menu)(struct ui_context *ui);
 	/*
-	 * Icon file for UI_MENU_ITEM_TYPE_SECONDARY and
-	 * UI_MENU_ITEM_TYPE_DROPDOWN.
+	 * Icon file for UI_MENU_ITEM_TYPE_SECONDARY,
+	 * UI_MENU_ITEM_TYPE_DROPDOWN, and UI_MENU_ITEM_TYPE_LANGUAGE.
 	 */
 	const char *icon_file;
 	/*
@@ -852,16 +830,6 @@ vb2_error_t ui_load_bitmap(enum ui_archive_type type, const char *file,
 vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
 			  int focused, struct ui_bitmap *bitmap);
 
-/*
- * Get bitmap of language name.
- *
- * @param locale_code	Language code of locale.
- * @param bitmap	Bitmap struct to be filled.
- *
- * @return VB2_SUCCESS on success, non-zero on error.
- */
-vb2_error_t ui_get_language_name_bitmap(const char *locale_code,
-					struct ui_bitmap *bitmap);
 
 /*
  * Get character bitmap.
@@ -1087,18 +1055,6 @@ vb2_error_t ui_draw_h_line(int32_t x, int32_t y,
 
 /******************************************************************************/
 /* layout.c */
-
-/*
- * Draw language dropdown header.
- *
- * @param locale	Locale of which name to be drawn.
- * @param state		UI state.
- * @param focused	1 for focused and 0 for non-focused.
- *
- * @return VB2_SUCCESS on success, non-zero on error.
- */
-vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
-				    const struct ui_state *state, int focused);
 
 /*
  * Get button width, based on the longest text of all the visible buttons.

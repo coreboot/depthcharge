@@ -11,14 +11,22 @@
 #include <vboot/ui.c>
 #include <vboot/ui.h>
 
-/* Mock functions */
+#define MOCK_MAX_LOCALES 256
+static struct ui_locale stub_locales[MOCK_MAX_LOCALES];
+
 vb2_error_t ui_get_locale_info(uint32_t locale_id,
 			       struct ui_locale const **locale)
 {
-	static struct ui_locale stub_locale;
+	static struct ui_locale fallback_locale = { .code = "en" };
 
-	stub_locale.id = locale_id;
-	*locale = &stub_locale;
+	if (locale_id < MOCK_MAX_LOCALES) {
+		stub_locales[locale_id].id = locale_id;
+		stub_locales[locale_id].code = "en";
+		*locale = &stub_locales[locale_id];
+	} else {
+		fallback_locale.id = locale_id;
+		*locale = &fallback_locale;
+	}
 	return mock_type(vb2_error_t);
 }
 
@@ -655,7 +663,7 @@ static void test_recovery_select_screen(void **state)
 	WILL_PRESS_KEY(UI_KEY_UP, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_LANGUAGE_SELECT);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_SELECT, 0, MOCK_IGNORE);
 	/* #1: External disk recovery */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -770,8 +778,8 @@ static void test_language_ui_change_language(void **state)
 	WILL_HAVE_NO_EXTERNAL();
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, 23);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, 23, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_LANGUAGE_SELECT, 23, 23);
-	EXPECT_UI_DISPLAY(UI_SCREEN_LANGUAGE_SELECT, 23, 24);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_SELECT, 0, 23);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_SELECT, 0, 24);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, 24);
 	mock_locale_id = 23;
 
@@ -795,7 +803,7 @@ static void test_language_ui_locale_count_0(void **state)
 	WILL_HAVE_NO_EXTERNAL();
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, 23);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, 23, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_LANGUAGE_SELECT, 23, 0);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_SELECT, 0, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, 0);
 	mock_locale_id = 23;
 

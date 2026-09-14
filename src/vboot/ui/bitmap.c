@@ -32,15 +32,6 @@ vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
 		file, locale_code, bitmap);
 }
 
-vb2_error_t ui_get_language_name_bitmap(const char *locale_code,
-					struct ui_bitmap *bitmap)
-{
-	char file[UI_BITMAP_FILENAME_MAX_LEN + 1];
-	const char pattern[] = "language_%s.bmp";
-
-	snprintf(file, sizeof(file), pattern, locale_code);
-	return ui_get_bitmap(file, NULL, 0, bitmap);
-}
 
 vb2_error_t ui_get_char_bitmap(const char c, struct ui_bitmap *bitmap)
 {

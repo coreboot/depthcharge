@@ -4,12 +4,6 @@
 #include <vb2_api.h>
 #include <vboot/ui.h>
 
-vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
-				    const struct ui_state *state, int focused)
-{
-	return VB2_SUCCESS;
-}
-
 vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 			       const struct ui_state *state,
 			       const struct ui_state *prev_state,

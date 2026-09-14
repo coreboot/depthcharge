@@ -23,60 +23,6 @@
 #include "boot/android_vpd.h"
 #include "vboot/ui.h"
 
-vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
-				    const struct ui_state *state, int focused)
-{
-	int32_t x, y, y_center, w;
-	const int reverse = state->locale->rtl;
-	const int32_t box_width = UI_LANG_ICON_GLOBE_SIZE +
-		UI_LANG_ICON_MARGIN_H * 2 + UI_LANG_TEXT_WIDTH +
-		UI_LANG_ICON_ARROW_SIZE + UI_LANG_ICON_MARGIN_H;
-	const int32_t box_height = UI_LANG_BOX_HEIGHT;
-	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
-	struct ui_bitmap bitmap;
-
-	x = UI_MARGIN_H;
-	y = UI_MARGIN_TOP;
-	y_center = y + box_height / 2;
-
-	VB2_TRY(ui_draw_rounded_box(x, y, box_width, box_height,
-				    &ui_color_lang_header_bg,
-				    0, UI_LANG_BORDER_RADIUS, reverse));
-
-	/* Draw globe */
-	x += UI_LANG_ICON_MARGIN_H;
-	w = UI_LANG_ICON_GLOBE_SIZE;
-	VB2_TRY(ui_get_bitmap("ic_globe.bmp", NULL, 0, &bitmap));
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center, w, w, flags, reverse));
-	x += w + UI_LANG_ICON_MARGIN_H;
-
-	/* Draw language text */
-	VB2_TRY(ui_get_language_name_bitmap(locale->code, &bitmap));
-	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
-				      UI_SIZE_AUTO, UI_LANG_TEXT_HEIGHT,
-				      &ui_color_lang_header_bg, &ui_color_fg,
-				      flags, reverse));
-	x += UI_LANG_TEXT_WIDTH;
-
-	/* Draw dropdown arrow */
-	w = UI_LANG_ICON_ARROW_SIZE;
-	VB2_TRY(ui_get_bitmap("ic_dropdown.bmp", NULL, 0, &bitmap));
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center, w, w, flags, reverse));
-
-	if (!focused)
-		return VB2_SUCCESS;
-
-	/* Draw box border */
-	x = UI_MARGIN_H;
-	y = UI_MARGIN_TOP;
-	VB2_TRY(ui_draw_rounded_box(x, y, box_width, box_height,
-				    &ui_color_lang_header_border,
-				    UI_LANG_BORDER_THICKNESS,
-				    UI_LANG_BORDER_RADIUS, reverse));
-
-	return VB2_SUCCESS;
-}
-
 /*
  * Draw step icons.
  *
@@ -95,7 +41,7 @@ static vb2_error_t ui_draw_step_icons(const struct ui_state *state,
 	const int num_steps = screen->num_steps;
 	int step;
 	int32_t x = UI_MARGIN_H;
-	const int32_t y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT +
+	const int32_t y = UI_MARGIN_TOP + UI_BUTTON_HEIGHT +
 		UI_LANG_MARGIN_BOTTOM;
 	const int32_t y_center = y + UI_ICON_HEIGHT / 2;
 	const int32_t icon_size = UI_STEP_ICON_HEIGHT;
@@ -338,6 +284,17 @@ static const char *get_item_locale_code(const struct ui_menu_item *item,
 	if (item->flags & UI_MENU_ITEM_FLAG_GENERIC_ARCHIVE)
 		return NULL;
 	return state->locale->code;
+}
+
+static bool is_menu_item_focused(const struct ui_state *state, size_t item_index)
+{
+	if (!state || state->menu_state.focused_item != item_index)
+		return false;
+
+	if (state->is_sub_menu_active)
+		return state->sub_menu_state.trigger_focused;
+
+	return true;
 }
 
 vb2_error_t ui_get_button_width(const struct ui_menu *menu,
@@ -939,7 +896,7 @@ vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
 		title_height = UI_TITLE_TEXT_HEIGHT *
 				ui_get_bitmap_num_lines(&bitmap);
 		above_textbox_height = UI_MARGIN_TOP +
-			UI_LANG_BOX_HEIGHT + UI_LANG_MARGIN_BOTTOM +
+			UI_BUTTON_HEIGHT + UI_LANG_MARGIN_BOTTOM +
 			title_height + UI_TITLE_MARGIN_BOTTOM;
 	}
 
@@ -1034,7 +991,7 @@ static vb2_error_t ui_draw_dev_signed_warning(void)
 		return VB2_SUCCESS;
 
 	const int32_t x = UI_MARGIN_H;
-	const int32_t y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT +
+	const int32_t y = UI_MARGIN_TOP + UI_BUTTON_HEIGHT +
 		UI_LANG_MARGIN_BOTTOM / 2;
 
 	VB2_TRY(ui_draw_text("This firmware is developer-signed. "
@@ -1083,7 +1040,7 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 		if (i == ms->focused_item)
 			*out_focused_item_y = y;
 
-		bool is_focused = (i == ms->focused_item);
+		bool is_focused = is_menu_item_focused(state, i);
 
 		if (item->type == UI_MENU_ITEM_TYPE_PRIMARY) {
 			clear_help = prev_ms &&
@@ -1095,8 +1052,6 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 					       UI_GET_BIT(ms->disabled_item_mask, i),
 					       clear_help));
 		} else {
-			if (is_focused && state->is_sub_menu_active)
-				is_focused = state->sub_menu_state.trigger_focused;
 			VB2_TRY(ui_draw_dropdown(item, state, x, y,
 						 UI_BUTTON_HEIGHT,
 						 is_focused));
@@ -1380,8 +1335,6 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	const struct ui_screen_info *screen = state->screen;
 	const struct ui_menu *menu = ui_get_menu(ui);
 	const struct ui_menu_state *ms = &state->menu_state;
-	const struct ui_menu_state *prev_ms = prev_state ?
-		&prev_state->menu_state : NULL;
 	const bool closing_sub_menu = prev_state &&
 				      prev_state->is_sub_menu_active &&
 				      !state->is_sub_menu_active;
@@ -1426,28 +1379,29 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 		 * dropdown at the top remains untouched and does not need to
 		 * be redrawn.
 		 */
-		const int32_t clear_y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT +
-			UI_LANG_MARGIN_BOTTOM;
+		const int32_t clear_y = UI_MARGIN_TOP + UI_BUTTON_HEIGHT;
 		VB2_TRY(ui_draw_box(0, clear_y, UI_SCALE, UI_SCALE - clear_y,
 				    &ui_color_bg, 0));
 	}
 
 	/* Warning if we are in recovery and using dev signed keys. */
-	if (screen->id != UI_SCREEN_LANGUAGE_SELECT && !screen->is_fullview)
+	if (!screen->is_fullview)
 		VB2_TRY(ui_draw_dev_signed_warning());
 
 	/* Language dropdown header */
 	if (menu->num_items > 0 &&
 	    menu->items[0].type == UI_MENU_ITEM_TYPE_LANGUAGE) {
-		focused = ms->focused_item == 0;
+		focused = is_menu_item_focused(state, 0);
+		bool prev_focused = is_menu_item_focused(prev_state, 0);
+
 		if (!prev_state ||
 		    prev_state->screen != state->screen ||
 		    prev_state->locale != state->locale ||
 		    prev_state->error_code != state->error_code ||
-		    !prev_ms ||
-		    (prev_ms->focused_item == 0) != focused) {
-			VB2_TRY(ui_draw_language_header(state->locale, state,
-							focused));
+		    prev_focused != focused) {
+			VB2_TRY(ui_draw_dropdown(&menu->items[0], state,
+						 UI_MARGIN_H, UI_MARGIN_TOP,
+						 UI_BUTTON_HEIGHT, focused));
 		}
 	}
 
@@ -1469,7 +1423,7 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	if (screen->is_fullview)
 		y = UI_FULLVIEW_TITLE_MARGIN;
 	else
-		y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT + UI_LANG_MARGIN_BOTTOM;
+		y = UI_MARGIN_TOP + UI_BUTTON_HEIGHT + UI_LANG_MARGIN_BOTTOM;
 
 	/* Icon */
 	if (screen->icon != UI_ICON_TYPE_NONE) {
@@ -1535,6 +1489,11 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 		int32_t focused_item_y = 0;
 		VB2_TRY(ui_draw_menu_items(menu, state, prev_state, y,
 					   &focused_item_y));
+
+		if (menu->num_items > 0 &&
+		    menu->items[0].type == UI_MENU_ITEM_TYPE_LANGUAGE &&
+		    ms->focused_item == 0)
+			focused_item_y = UI_MARGIN_TOP;
 
 		/* Sub-menu */
 		if (state->is_sub_menu_active)
