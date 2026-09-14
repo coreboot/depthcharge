@@ -508,6 +508,8 @@ static vb2_error_t ui_draw_dropdown(const struct ui_menu_item *item,
 	width = UI_DROPDOWN_PADDING_H + text_width +
 		UI_DROPDOWN_ARROW_MARGIN_H + UI_DROPDOWN_ARROW_SIZE +
 		UI_DROPDOWN_PADDING_H;
+	if (item->icon_file)
+		width += UI_DROPDOWN_ICON_SIZE + UI_DROPDOWN_ARROW_MARGIN_H;
 
 	/* TODO: Revise dropdown colors */
 	const struct rgb_color *bg_color = &ui_color_link_bg;
@@ -518,8 +520,21 @@ static vb2_error_t ui_draw_dropdown(const struct ui_menu_item *item,
 				    bg_color, 0,
 				    UI_BUTTON_BORDER_RADIUS, reverse));
 
-	/* Draw button text */
 	x += UI_DROPDOWN_PADDING_H;
+
+	/* Draw optional icon */
+	if (item->icon_file) {
+		int32_t icon_size = UI_DROPDOWN_ICON_SIZE;
+		struct ui_bitmap icon_bmp;
+		VB2_TRY(ui_get_bitmap(item->icon_file, NULL, 0, &icon_bmp));
+		VB2_TRY(ui_draw_mapped_bitmap(&icon_bmp, x, y_center,
+					      icon_size, icon_size,
+					      bg_color, fg_color,
+					      flags, reverse));
+		x += icon_size + UI_DROPDOWN_ARROW_MARGIN_H;
+	}
+
+	/* Draw button text */
 	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
 				      UI_SIZE_AUTO,
 				      UI_BUTTON_TEXT_HEIGHT,

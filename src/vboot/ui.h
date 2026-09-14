@@ -122,6 +122,7 @@
 
 /* For dropdown trigger */
 #define UI_DROPDOWN_PADDING_H			16
+#define UI_DROPDOWN_ICON_SIZE			20
 #define UI_DROPDOWN_ARROW_SIZE			20
 #define UI_DROPDOWN_ARROW_MARGIN_H		12
 #define UI_DROPDOWN_FOCUS_RING_THICKNESS	3
@@ -442,7 +443,10 @@ struct ui_menu_item {
 	enum ui_menu_item_type type;
 	/* Sub-menu opened when selecting this item. */
 	const struct ui_menu *sub_menu;
-	/* Icon file for UI_MENU_ITEM_TYPE_SECONDARY only. */
+	/*
+	 * Icon file for UI_MENU_ITEM_TYPE_SECONDARY and
+	 * UI_MENU_ITEM_TYPE_DROPDOWN.
+	 */
 	const char *icon_file;
 	/*
 	 * Bitmap file of the help text displayed next to the button.
