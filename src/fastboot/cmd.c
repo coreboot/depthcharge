@@ -827,9 +827,14 @@ static void fastboot_cmd_snapshot_update(struct FastbootOps *fb, char *arg)
 	fastboot_succeed(fb);
 }
 
+#define FASTBOOT_SPI_FETCH_ARG "spi-nor"
+#define FASTBOOT_SPI_FETCH_ARG_LEN (sizeof(FASTBOOT_SPI_FETCH_ARG) - 1)
+
 static void fastboot_cmd_fetch(struct FastbootOps *fb, char *arg)
 {
 	const char *part_name = strsep(&arg, ":");
+	const char *spi_area = !strncmp(part_name, FASTBOOT_SPI_FETCH_ARG,
+					FASTBOOT_SPI_FETCH_ARG_LEN) ? strsep(&arg, ":") : NULL;
 	const char *offset_str = strsep(&arg, ":"); /* optional */
 	const char *size_str = strsep(&arg, ":"); /* optional */
 	uint64_t size = 0, offset = 0;
@@ -888,17 +893,40 @@ static void fastboot_cmd_fetch(struct FastbootOps *fb, char *arg)
 	}
 
 	/* Process partition name */
-	if (fastboot_disk_gpt_init(fb)) {
-		fastboot_fail(fb, "Failed to init gpt");
-		return;
-	}
-
 	uint64_t part_chunk_size;
-	StreamOps *stream;
-	if (gpt_open_partition_stream(fb->disk, fb->gpt, part_name, offset, &stream,
-				      &part_chunk_size) != GPT_IO_SUCCESS) {
-		fastboot_fail(fb, "Failed to open partition read stream");
-		return;
+	StreamOps *stream = NULL;
+	if (spi_area) {
+		FmapArea area_data;
+
+		if (fmap_find_area(spi_area, &area_data)) {
+			fastboot_fail(fb, "Failed to get fmap section \"%s\"", spi_area);
+			return;
+		}
+		if (offset >= area_data.size) {
+			fastboot_fail(fb, "Offset too big");
+			return;
+		}
+
+		stream = flash_get_new_stream(area_data.offset, area_data.size);
+		if (!stream) {
+			fastboot_fail_with_logs(fb, "Failed to get flash stream for section");
+			return;
+		}
+		if (stream->skip(stream, offset) != offset) {
+			fastboot_fail(fb, "Failed to skip %llu bytes from section", offset);
+			stream->close(stream);
+			return;
+		}
+		part_chunk_size = area_data.size - offset;
+	} else {
+		if (fastboot_disk_gpt_init(fb))
+			return;
+
+		if (gpt_open_partition_stream(fb->disk, fb->gpt, part_name, offset, &stream,
+					      &part_chunk_size) != GPT_IO_SUCCESS) {
+			fastboot_fail(fb, "Failed to open partition read stream");
+			return;
+		}
 	}
 
 	/* Validate/set size */

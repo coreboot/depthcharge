@@ -11,6 +11,7 @@
 
 /* Forward declaration of functions used by mock data */
 static uint64_t test_stream_read(struct StreamOps *me, uint64_t count, void *buffer);
+static uint64_t test_stream_skip(struct StreamOps *me, uint64_t count);
 static void test_stream_close(struct StreamOps *me);
 
 /* Mock data */
@@ -23,6 +24,7 @@ char _kernel_start[0x100];
 const int test_cmd_magic = 0x123;
 StreamOps test_stream = {
 	.read = test_stream_read,
+	.skip = test_stream_skip,
 	.close = test_stream_close,
 };
 /*
@@ -465,6 +467,27 @@ enum gpt_io_ret gpt_open_partition_stream(BlockDev *disk, GptData *gpt,
 	WILL_OPEN_STREAM(off, len, ret); \
 } while (0)
 
+struct StreamOps *flash_get_new_stream(uint64_t offset, uint64_t size)
+{
+	check_expected(offset);
+	check_expected(size);
+
+	return mock_ptr_type(struct StreamOps *);
+}
+
+/* Setup for flash_get_new_stream mock */
+#define WILL_GET_FLASH_STREAM_RET(off, len, ret) do { \
+	expect_value(flash_get_new_stream, offset, off); \
+	expect_value(flash_get_new_stream, size, len); \
+	will_return(flash_get_new_stream, ret); \
+} while (0)
+
+#define WILL_GET_FLASH_STREAM(off, len) \
+	WILL_GET_FLASH_STREAM_RET(off, len, &test_stream)
+
+#define WILL_GET_FLASH_STREAM_FAIL(off, len) \
+	WILL_GET_FLASH_STREAM_RET(off, len, NULL)
+
 void vb2_sha256_init(struct vb2_sha256_context *ctx, enum vb2_hash_algorithm algo)
 {
 	function_called();
@@ -518,6 +541,22 @@ static uint64_t test_stream_read(struct StreamOps *me, uint64_t count, void *buf
 } while (0)
 
 #define WILL_READ_STREAM(len) WILL_READ_STREAM_FAIL(len, len)
+
+static uint64_t test_stream_skip(struct StreamOps *me, uint64_t count)
+{
+	assert_ptr_equal(me, &test_stream);
+	check_expected(count);
+
+	return mock();
+}
+
+/* Setup for test_stream_skip mock */
+#define WILL_SKIP_STREAM_FAIL(len, ret) do { \
+	expect_value(test_stream_skip, count, len); \
+	will_return(test_stream_skip, ret); \
+} while (0)
+
+#define WILL_SKIP_STREAM(len) WILL_SKIP_STREAM_FAIL(len, len)
 
 static void test_stream_close(struct StreamOps *me)
 {
@@ -2960,6 +2999,165 @@ static void test_fb_cmd_fetch_size_too_big(void **state)
 	assert_int_equal(fb->state, COMMAND);
 }
 
+static void test_fb_cmd_fetch_spi_nor_all(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "fetch:spi-nor:WP_RO";
+	const size_t data_len = mock_fmap_area.size;
+
+	for (size_t i = 0; i < data_len; i++)
+		_kernel_start[i] = i & 0xff;
+
+	WILL_FIND_FMAP_WP_RO_AREA(0);
+	WILL_GET_FLASH_STREAM(mock_fmap_area.offset, mock_fmap_area.size);
+	WILL_SKIP_STREAM(0);
+	WILL_SEND_EXACT(fb, "DATA00000020");
+	WILL_READ_STREAM(data_len);
+	WILL_SEND_BYTES(fb, _kernel_start, data_len);
+	WILL_CLOSE_STREAM;
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_spi_nor_single_offset(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "fetch:spi-nor:WP_RO:0x8:0x10";
+	const size_t offset = 0x8;
+	const size_t data_len = 0x10;
+
+	for (size_t i = 0; i < data_len; i++)
+		_kernel_start[i] = i & 0xff;
+
+	WILL_FIND_FMAP_WP_RO_AREA(0);
+	WILL_GET_FLASH_STREAM(mock_fmap_area.offset, mock_fmap_area.size);
+	WILL_SKIP_STREAM(offset);
+	WILL_SEND_EXACT(fb, "DATA00000010");
+	WILL_READ_STREAM(data_len);
+	WILL_SEND_BYTES(fb, _kernel_start, data_len);
+	WILL_CLOSE_STREAM;
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_spi_nor_all_offset(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "fetch:spi-nor:WP_RO:0x8";
+	const size_t offset = 0x8;
+	const size_t data_len = mock_fmap_area.size - offset;
+
+	for (size_t i = 0; i < data_len; i++)
+		_kernel_start[i] = i & 0xff;
+
+	WILL_FIND_FMAP_WP_RO_AREA(0);
+	WILL_GET_FLASH_STREAM(mock_fmap_area.offset, mock_fmap_area.size);
+	WILL_SKIP_STREAM(offset);
+	WILL_SEND_EXACT(fb, "DATA00000018");
+	WILL_READ_STREAM(data_len);
+	WILL_SEND_BYTES(fb, _kernel_start, data_len);
+	WILL_CLOSE_STREAM;
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_spi_nor_missing_area(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "fetch:spi-nor:0x8:0x10";
+	FmapArea mock_0x8_area = { .name = {'0', 'x', '8', }, };
+	uint8_t unused_buf[1];
+
+	set_mock_fmap_area(&mock_0x8_area, unused_buf);
+	will_return(fmap_find_area, 1);
+	expect_string(fmap_find_area, name, "0x8");
+
+	WILL_SEND_FAIL(fb);
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_spi_nor_no_area(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "fetch:spi-nor:WP_RO";
+
+	WILL_FIND_FMAP_WP_RO_AREA(1);
+	WILL_SEND_FAIL(fb);
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_spi_nor_offset_too_big(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd_eq[] = "fetch:spi-nor:WP_RO:0x20";
+	char cmd_gt[] = "fetch:spi-nor:WP_RO:0x30";
+
+	WILL_FIND_FMAP_WP_RO_AREA(0);
+	WILL_SEND_FAIL(fb);
+
+	fastboot_handle_packet(fb, cmd_eq, sizeof(cmd_eq) - 1);
+	assert_int_equal(fb->state, COMMAND);
+
+	WILL_FIND_FMAP_WP_RO_AREA(0);
+	WILL_SEND_FAIL(fb);
+
+	fastboot_handle_packet(fb, cmd_gt, sizeof(cmd_gt) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_spi_nor_stream_fail(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "fetch:spi-nor:WP_RO";
+
+	WILL_FIND_FMAP_WP_RO_AREA(0);
+	WILL_GET_FLASH_STREAM_FAIL(mock_fmap_area.offset, mock_fmap_area.size);
+	WILL_SEND_FAIL_WITH_LOGS(fb);
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_spi_nor_skip_fail(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "fetch:spi-nor:WP_RO:0x8:0x10";
+
+	WILL_FIND_FMAP_WP_RO_AREA(0);
+	WILL_GET_FLASH_STREAM(mock_fmap_area.offset, mock_fmap_area.size);
+	WILL_SKIP_STREAM_FAIL(0x8, 0x4);
+	WILL_SEND_FAIL(fb);
+	WILL_CLOSE_STREAM;
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_spi_nor_overrun(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "fetch:spi-nor:WP_RO:0x10:0x18";
+
+	WILL_FIND_FMAP_WP_RO_AREA(0);
+	WILL_GET_FLASH_STREAM(mock_fmap_area.offset, mock_fmap_area.size);
+	WILL_SKIP_STREAM(0x10);
+	WILL_CLOSE_STREAM;
+	WILL_SEND_FAIL(fb);
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
 #define TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup)
 
@@ -3095,6 +3293,15 @@ int main(void)
 		TEST(test_fb_cmd_fetch_part_bad_range),
 		TEST(test_fb_cmd_fetch_part_overrun),
 		TEST(test_fb_cmd_fetch_size_too_big),
+		TEST(test_fb_cmd_fetch_spi_nor_all),
+		TEST(test_fb_cmd_fetch_spi_nor_single_offset),
+		TEST(test_fb_cmd_fetch_spi_nor_all_offset),
+		TEST(test_fb_cmd_fetch_spi_nor_missing_area),
+		TEST(test_fb_cmd_fetch_spi_nor_no_area),
+		TEST(test_fb_cmd_fetch_spi_nor_offset_too_big),
+		TEST(test_fb_cmd_fetch_spi_nor_stream_fail),
+		TEST(test_fb_cmd_fetch_spi_nor_skip_fail),
+		TEST(test_fb_cmd_fetch_spi_nor_overrun),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }
