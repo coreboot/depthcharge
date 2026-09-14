@@ -589,12 +589,9 @@ static vb2_error_t draw_language_select_menu(struct ui_context *ui,
 		return VB2_SUCCESS;
 
 	/* Draw scrollbar */
-	x = x_end - UI_LANG_MENU_SCROLLBAR_MARGIN_RIGHT - UI_SCROLLBAR_WIDTH;
-	if (reverse)
-		x = UI_SCALE - x - UI_SCROLLBAR_WIDTH +
-		    UI_LANG_MENU_SCROLLBAR_MARGIN_RIGHT;
+	x = x_end - UI_LANG_MENU_SCROLLBAR_MARGIN_RIGHT;
 	VB2_TRY(ui_draw_scrollbar(x, y_begin, menu_height, id_begin, num_lang,
-				  num_lang_per_page));
+				  num_lang_per_page, reverse));
 
 	return VB2_SUCCESS;
 }

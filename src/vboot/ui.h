@@ -1226,7 +1226,7 @@ vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
  * Draw a scrollbar based on given current_page and page_count. The height of
  * the scrollbar will be auto calculated.
  *
- * @param begin_x		The left-most x-coordinate of the scrollbar.
+ * @param end_x			The right-most x-coordinate of the scrollbar.
  * @param begin_y		The top-most y-coordinate of the scrollbar.
  * @param total_h		The total vertical space the scrollbar can move.
  * @param first_item_index	The index of the first item in the page,
@@ -1234,11 +1234,12 @@ vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
  * @param items_count		Number of the items.
  * @param items_per_page	Number of items in the same page, used when
  *				calculating the height of the scrollbar.
+ * @param reverse		RTL flag.
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
+vb2_error_t ui_draw_scrollbar(int32_t end_x, int32_t begin_y, int32_t total_h,
 			      int32_t first_item_index, size_t items_count,
-			      size_t items_per_page);
+			      size_t items_per_page, int reverse);
 
 /*
  * Draw primary and secondary buttons; ignore the language dropdown header.

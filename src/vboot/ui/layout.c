@@ -918,8 +918,8 @@ vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
 	const int32_t y_base = *y;
 	int32_t log_box_inside_height;
 	const int32_t log_box_width = UI_SCALE - UI_MARGIN_H * 2;
-	const int32_t scrollbar_x = UI_MARGIN_H + log_box_width
-		- UI_BOX_BORDER_THICKNESS - UI_SCROLLBAR_WIDTH;
+	const int32_t scrollbar_end_x = UI_MARGIN_H + log_box_width
+		- UI_BOX_BORDER_THICKNESS;
 
 	VB2_TRY(ui_get_textbox_lines_per_page(state->screen->id, *y, &lines_per_page));
 	VB2_TRY(ui_get_textbox_chars_per_line(&chars_per_line));
@@ -933,9 +933,9 @@ vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
 		return VB2_SUCCESS;
 
 	log_box_inside_height = *y - y_base - UI_BOX_BORDER_THICKNESS * 2;
-	return ui_draw_scrollbar(scrollbar_x, y_base + UI_BOX_BORDER_THICKNESS,
+	return ui_draw_scrollbar(scrollbar_end_x, y_base + UI_BOX_BORDER_THICKNESS,
 				 log_box_inside_height, first_item, total_items,
-				 items_per_page);
+				 items_per_page, 0);
 }
 
 vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
@@ -945,11 +945,11 @@ vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
 					      state->log.impl.static_log.page_count, 1, false);
 }
 
-vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
+vb2_error_t ui_draw_scrollbar(int32_t end_x, int32_t begin_y, int32_t total_h,
 			      int32_t first_item_index, size_t items_count,
-			      size_t items_per_page)
+			      size_t items_per_page, int reverse)
 {
-	int32_t h, y, movable_height;
+	int32_t begin_x, h, y, movable_height;
 	if (items_count <= 1)
 		return VB2_SUCCESS;
 
@@ -975,9 +975,10 @@ vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
 	y = begin_y +
 	    movable_height * first_item_index / (items_count - items_per_page);
 
+	begin_x = end_x - UI_SCROLLBAR_WIDTH;
 	VB2_TRY(ui_draw_rounded_box(begin_x, y, UI_SCROLLBAR_WIDTH, h,
 				    &ui_color_lang_scrollbar, 0,
-				    UI_SCROLLBAR_CORNER_RADIUS, 0));
+				    UI_SCROLLBAR_CORNER_RADIUS, reverse));
 
 	return VB2_SUCCESS;
 }
