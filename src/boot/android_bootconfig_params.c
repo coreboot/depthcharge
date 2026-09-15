@@ -29,6 +29,8 @@ static int append_vpd(struct bootconfig *bc, const char *vpd_key,
 }
 
 #define HW_DESCR_CONFIG_KEY "androidboot.product.hardware.id"
+#define PRODUCT_NAME_CONFIG_KEY "androidboot.product.name"
+#define PRODUCT_MODEL_CONFIG_KEY "androidboot.product.model"
 
 static int append_hw_descr(struct bootconfig *bc)
 {
@@ -251,6 +253,8 @@ int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_pa
 	       append_hw_descr(bc) |
 	       append_vpd(bc, ANDROID_VPD_KEY_MFG_SKU_ID, MFG_SKU_ID_CONFIG_KEY) |
 	       append_vpd(bc, ANDROID_VPD_KEY_SERIAL_NUM, SERIAL_NUM_CONFIG_KEY) |
+	       append_vpd(bc, ANDROID_VPD_KEY_PRODUCT, PRODUCT_NAME_CONFIG_KEY) |
+	       append_vpd(bc, ANDROID_VPD_KEY_MODEL, PRODUCT_MODEL_CONFIG_KEY) |
 	       append_display_orientation(bc, kp) |
 	       append_skuid(bc) |
 	       append_hw_revision(bc) |
