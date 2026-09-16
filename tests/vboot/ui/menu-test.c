@@ -203,6 +203,9 @@ static void test_select_item_disabled(void **state)
 static void test_select_item_with_sub_menu(void **state)
 {
 	struct ui_context *ui = *state;
+	const struct ui_screen_info *screen = ui->state->screen;
+
+	assert_non_null(screen);
 
 	ui->state->menu_state.focused_item = 0;
 	ui->key = UI_KEY_ENTER;
@@ -227,7 +230,7 @@ static void test_select_item_with_sub_menu(void **state)
 	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
 	assert_false(ui->state->is_sub_menu_active);
 	assert_ptr_equal(ui_active_menu_state(ui->state)->menu,
-			 &mock_screen_sub_menu.menu);
+			 &screen->menu);
 	assert_int_equal(ui_active_menu_state(ui->state)->focused_item, 0);
 
 	/* Press enter: open dropdown */
@@ -279,6 +282,8 @@ int main(void)
 		UI_TEST(test_select_item_with_no_target_and_action),
 		UI_TEST(test_select_item_disabled),
 		UI_TEST_SCREEN(test_select_item_with_sub_menu, &mock_screen_sub_menu),
+		UI_TEST_SCREEN(test_select_item_with_sub_menu,
+			       &mock_screen_dynamic_sub_menu),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }

@@ -443,6 +443,8 @@ struct ui_menu_item {
 	enum ui_menu_item_type type;
 	/* Sub-menu opened when selecting this item. */
 	const struct ui_menu *sub_menu;
+	/* Sub-menu getter callback. Takes precedence over sub_menu. */
+	const struct ui_menu *(*get_sub_menu)(struct ui_context *ui);
 	/*
 	 * Icon file for UI_MENU_ITEM_TYPE_SECONDARY and
 	 * UI_MENU_ITEM_TYPE_DROPDOWN.

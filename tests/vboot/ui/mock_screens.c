@@ -69,6 +69,24 @@ const struct ui_screen_info mock_screen_sub_menu = {
 		.items = mock_screen_sub_menu_items,
 	},
 };
+static const struct ui_menu *mock_get_sub_menu(struct ui_context *ui)
+{
+	return &mock_sub_menu;
+}
+static const struct ui_menu_item mock_screen_dynamic_sub_menu_items[] = {
+	{
+		.name = "item 0",
+		.get_sub_menu = mock_get_sub_menu,
+	},
+};
+const struct ui_screen_info mock_screen_dynamic_sub_menu = {
+	.id = MOCK_SCREEN_DYNAMIC_SUB_MENU,
+	.name = "mock_screen_dynamic_sub_menu: screen with dynamic sub-menu",
+	.menu = {
+		.num_items = ARRAY_SIZE(mock_screen_dynamic_sub_menu_items),
+		.items = mock_screen_dynamic_sub_menu_items,
+	},
+};
 const struct ui_screen_info mock_screen_target0 = {
 	.id = MOCK_SCREEN_TARGET0,
 	.name = "mock_screen_target0",
