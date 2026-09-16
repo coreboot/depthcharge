@@ -324,6 +324,14 @@ static const char *get_item_file(const struct ui_menu_item *item,
 		return item->file;
 }
 
+static const char *get_item_locale_code(const struct ui_menu_item *item,
+					const struct ui_state *state)
+{
+	if (item->flags & UI_MENU_ITEM_FLAG_GENERIC_ARCHIVE)
+		return NULL;
+	return state->locale->code;
+}
+
 vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 				const struct ui_state *state,
 				int32_t *button_width)
@@ -492,7 +500,7 @@ static vb2_error_t ui_draw_dropdown(const struct ui_menu_item *item,
 	const int32_t y_center = y + height / 2;
 	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
 	const char *file = get_item_file(item, state);
-	const char *locale_code = state->locale->code;
+	const char *locale_code = get_item_locale_code(item, state);
 	const int reverse = state->locale->rtl;
 
 	if (!file) {
@@ -1164,7 +1172,6 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 
 	const struct ui_menu *sub_menu = menu_state->menu;
 	const struct ui_state *state = ui->state;
-	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
 	size_t total_items = 0;
 	size_t focused_pos = 0;
@@ -1247,6 +1254,7 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 		const char *file = get_item_file(item, state);
 		if (file) {
 			struct ui_bitmap bitmap;
+			const char *locale_code = get_item_locale_code(item, state);
 			VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
 			VB2_TRY(ui_draw_mapped_bitmap(&bitmap, text_x, text_y,
 						      UI_SIZE_AUTO,

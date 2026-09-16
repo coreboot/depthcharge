@@ -412,6 +412,8 @@ enum ui_menu_item_type {
 enum ui_menu_item_flag {
 	/* No arrow; valid for UI_MENU_ITEM_TYPE_SECONDARY only. */
 	UI_MENU_ITEM_FLAG_NO_ARROW		= 1 << 0,
+	/* Bitmap is stored in generic archive (UI_ARCHIVE_GENERIC). */
+	UI_MENU_ITEM_FLAG_GENERIC_ARCHIVE	= 1 << 1,
 };
 
 /* Menu item. */
