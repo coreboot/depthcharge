@@ -44,9 +44,18 @@
 #define UI_ERROR(...) _UI_PRINT(__VA_ARGS__)
 
 /* Helpers for bitmask operations */
-#define UI_SET_BIT(mask, index) ((mask) |= BIT(index))
-#define UI_CLR_BIT(mask, index) ((mask) &= ~BIT(index))
-#define UI_GET_BIT(mask, index) ((mask) & BIT(index))
+#define UI_SET_BIT(mask, index) \
+	do { \
+		if ((size_t)(index) < sizeof(mask) * 8) \
+			(mask) |= BIT(index); \
+	} while (0)
+#define UI_CLR_BIT(mask, index) \
+	do { \
+		if ((size_t)(index) < sizeof(mask) * 8) \
+			(mask) &= ~BIT(index); \
+	} while (0)
+#define UI_GET_BIT(mask, index) \
+	((size_t)(index) < sizeof(mask) * 8 && ((mask) & BIT(index)))
 
 /* Maximum lengths */
 #define UI_LOCALE_CODE_MAX_LEN 8
@@ -129,10 +138,10 @@
 #define UI_DROPDOWN_MARGIN_TOP			24
 
 /* For sub-menu */
-#define UI_SUB_MENU_WIDTH			380
+#define UI_SUB_MENU_MIN_WIDTH			380
 #define UI_SUB_MENU_ITEM_HEIGHT			48
 #define UI_SUB_MENU_ITEM_TEXT_HEIGHT		20
-#define UI_SUB_MENU_PADDING_H			16
+#define UI_SUB_MENU_PADDING_H			20
 #define UI_SUB_MENU_PADDING_V			8
 #define UI_SUB_MENU_BORDER_RADIUS		12
 #define UI_SUB_MENU_BORDER_THICKNESS		1

@@ -1178,6 +1178,66 @@ static vb2_error_t ui_draw_sub_menu_item_focus(int32_t x, int32_t y,
 	return VB2_SUCCESS;
 }
 
+/*
+ * Calculate the required width of a sub-menu based on its items.
+ *
+ * @param menu		Sub-menu.
+ * @param menu_state	Sub-menu state (for hidden items).
+ * @param state		UI state.
+ * @param has_scrollbar	Whether the sub-menu will display a scrollbar.
+ * @param out_width	Calculated width.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+static vb2_error_t ui_get_sub_menu_width(const struct ui_menu *menu,
+					 const struct ui_menu_state *menu_state,
+					 const struct ui_state *state,
+					 bool has_scrollbar,
+					 int32_t *out_width)
+{
+	int32_t max_item_width = 0;
+
+	for (size_t i = 0; i < menu->num_items; i++) {
+		if (UI_GET_BIT(menu_state->hidden_item_mask, i))
+			continue;
+
+		const struct ui_menu_item *item = &menu->items[i];
+		const char *file;
+		struct ui_bitmap bitmap;
+		const char *locale_code = get_item_locale_code(item, state);
+		int32_t text_width;
+
+		VB2_TRY(get_item_file(item, state, &file));
+		if (!file) {
+			UI_ERROR("Sub-menu item #%zu: no .file\n", i);
+			return VB2_ERROR_UI_DRAW_FAILURE;
+		}
+
+		VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
+		VB2_TRY(ui_get_bitmap_width(&bitmap,
+					    UI_SUB_MENU_ITEM_TEXT_HEIGHT,
+					    &text_width));
+		max_item_width = MAX(max_item_width, text_width);
+	}
+
+	int32_t padding = UI_SUB_MENU_PADDING_H * 2;
+	if (has_scrollbar)
+		padding += UI_SCROLLBAR_WIDTH + UI_SCROLLBAR_MARGIN_RIGHT;
+
+	int32_t width = max_item_width + padding;
+	width = MAX(width, UI_SUB_MENU_MIN_WIDTH);
+
+	const int32_t max_width = UI_SCALE - UI_MARGIN_H * 2;
+	if (width > max_width) {
+		UI_ERROR("Sub-menu width %d exceeds max width %d\n",
+			 width, max_width);
+		return VB2_ERROR_UI_DRAW_FAILURE;
+	}
+
+	*out_width = width;
+	return VB2_SUCCESS;
+}
+
 static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 				    const struct ui_menu_state *menu_state,
 				    int32_t focused_item_y)
@@ -1205,7 +1265,6 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 
 	int32_t box_x = UI_MARGIN_H;
 	int32_t item_h = UI_SUB_MENU_ITEM_HEIGHT;
-	int32_t box_w = UI_SUB_MENU_WIDTH;
 	int32_t box_y = focused_item_y + UI_BUTTON_HEIGHT + UI_SUB_MENU_PADDING_V;
 
 	int32_t max_y = UI_SCALE - UI_MARGIN_BOTTOM;
@@ -1219,6 +1278,11 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 	size_t max_items = (size_t)(max_available_h / item_h);
 	size_t items_per_page = MIN(total_items, max_items);
 	int32_t box_h = item_h * items_per_page;
+	bool has_scrollbar = total_items > items_per_page;
+
+	int32_t box_w;
+	VB2_TRY(ui_get_sub_menu_width(sub_menu, menu_state, state,
+				      has_scrollbar, &box_w));
 
 	/*
 	 * Calculate the visible window [id_begin, id_begin + items_per_page)
@@ -1266,7 +1330,7 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 		}
 
 		/* Draw item text */
-		int32_t text_x = box_x + UI_SUB_MENU_PADDING_H + 4;
+		int32_t text_x = box_x + UI_SUB_MENU_PADDING_H;
 		int32_t text_y = item_y + item_h / 2;
 		const char *file;
 		struct ui_bitmap bitmap;
