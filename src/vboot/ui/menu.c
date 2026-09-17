@@ -136,8 +136,15 @@ vb2_error_t ui_menu_select(struct ui_context *ui)
 		return VB2_SUCCESS;
 	}
 
-	const struct ui_menu *sub_menu = menu_item->get_sub_menu ?
-		menu_item->get_sub_menu(ui) : menu_item->sub_menu;
+	const struct ui_menu *sub_menu = menu_item->sub_menu;
+	if (menu_item->get_sub_menu) {
+		sub_menu = menu_item->get_sub_menu(ui);
+		if (!sub_menu) {
+			UI_WARN("Menu item <%s> failed to get sub-menu; ignoring\n",
+				menu_item->name);
+			return VB2_SUCCESS;
+		}
+	}
 
 	if (sub_menu) {
 		UI_INFO("Menu item <%s> open sub-menu\n", menu_item->name);
