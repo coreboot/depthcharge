@@ -242,23 +242,27 @@ static void backspace(char *buffer, int *np, int *cp)
  *
  * Some of the keys are processed but ignored.
  */
-/* Map an escape sequence into a single byte ensuring the same action */
+/* Map an escape sequence into a single keystroke ensuring the same action */
 typedef struct {
 	const char *chars;  /* symbols of the sequence (escape not included */
-	char map_to;	    /* keystroke the sequence maps to (if any) */
+	int map_to;	    /* keystroke the sequence maps to (if any) */
 } escaped_key;
 
 static const escaped_key  escaped_keys [] = {
 	{ "OF", CHAR_EOL},
+	{ "OH", CHAR_HOME},
 	{ "[1~", CHAR_HOME},
 	{ "[2~"}, /* insert */
 	{ "[3~", CHAR_DEL},
+	{ "[4~", CHAR_EOL},
 	{ "[5~"}, /* page up */
 	{ "[6~"}, /* page down */
 	{ "[A", CHAR_UP},
 	{ "[B", CHAR_DOWN},
 	{ "[C", CHAR_RIGHT},
 	{ "[D", CHAR_LEFT},
+	{ "[F", CHAR_EOL},
+	{ "[H", CHAR_HOME},
 	{}, /* End of array */
 };
 
@@ -312,12 +316,11 @@ static int escape_handled(int *cp)
 		 * sequence we can proceed only if the previous characters in
 		 * this and the next rows are the same.
 		 */
-		while ((!escape_sn) ||
-		       (this_key[0].chars[escape_sn - 1] ==
-			this_key[1].chars[escape_sn - 1])) {
+		while (this_key[1].chars &&
+		       ((!escape_sn) ||
+			(this_key[0].chars[escape_sn - 1] ==
+			 this_key[1].chars[escape_sn - 1]))) {
 			this_key++;
-			if (!this_key->chars)
-				break;
 			if (this_key->chars[escape_sn] == c) {
 				on_track = 1;
 				break;
