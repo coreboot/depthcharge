@@ -34,11 +34,7 @@ char console_buffer[MAX_CONSOLE_LINE + 1]; /* console I/O buffer */
 
 /* Cursor movement commands characters. */
 #define CHAR_HOME	   1 /* ^A */
-#define CHAR_OBKB_DOWN	   2 /* On-board keyboard down */
-#define CHAR_CTL	   3 /* ^C same as on-board up*/
-#define CHAR_OBKB_UP	   3 /* On-board keyboard up */
-#define CHAR_OBKB_LEFT	   4 /* On-board Keyboard left */
-#define CHAR_OBKB_RIGHT	   5 /* On-board Keyboard right */
+#define CHAR_CTL	   3 /* ^C */
 #define CHAR_RIGHT	  12 /* ^L */
 #define CHAR_DEL	0x7f
 #define CHAR_LEFT	0x81 /* here and below: ficticious */
@@ -450,27 +446,29 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 			break;
 
 		case CHAR_HOME:
+		case KEY_HOME:
 			move_cursor_left(cursor);
 			cursor = 0;
 			break;
 
-		case CHAR_OBKB_DOWN:
+		case KEY_DOWN:
 			c = CHAR_DOWN;
 			history_case(c, p_buf, &n, &cursor);
 			break;
 
-		case CHAR_OBKB_UP:
+		case KEY_UP:
 			c = CHAR_UP;
 			history_case(c, p_buf, &n, &cursor);
 			break;
 
 		case CHAR_EOL:
+		case KEY_END:
 			move_cursor_right(n - cursor);
 			cursor = n;
 			break;
 
 		case CHAR_RIGHT:
-		case CHAR_OBKB_RIGHT:
+		case KEY_RIGHT:
 			if (cursor < n) {
 				cursor++;
 				move_cursor_right(1);
@@ -505,6 +503,7 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 			break;
 
 		case CHAR_DEL:
+		case KEY_DC:
 			if (cursor < n) {
 				cursor++;
 				move_cursor_right(1);
@@ -513,7 +512,7 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 			break;
 
 		case CHAR_LEFT:
-		case CHAR_OBKB_LEFT:
+		case KEY_LEFT:
 			if (cursor > 0) {
 				cursor--;
 				move_cursor_left(1);
