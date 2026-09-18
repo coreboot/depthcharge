@@ -10,20 +10,6 @@
 #define MOCK_TEXT_BOX_ROW	4
 #define MOCK_TEXT_BOX_COL	10
 
-vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
-					  const char *locale_code,
-					  uint32_t *lines_per_page,
-					  uint32_t *chars_per_line)
-{
-	check_expected(screen);
-	check_expected_ptr(locale_code);
-
-	*lines_per_page = MOCK_TEXT_BOX_ROW;
-	*chars_per_line = MOCK_TEXT_BOX_COL;
-
-	return VB2_SUCCESS;
-}
-
 struct fastboot_log {
 	const char *buf;
 	uint64_t oldest;
@@ -77,12 +63,13 @@ static void test_fastboot_log_init(void **state)
 {
 	struct ui_log_info log = { 0 };
 
-	expect_value(ui_get_log_textbox_dimensions, screen, UI_SCREEN_FASTBOOT);
-	expect_string(ui_get_log_textbox_dimensions, locale_code, "en");
-
-	ASSERT_VB2_SUCCESS(ui_fb_log_init(UI_SCREEN_FASTBOOT, "en", &log));
+	ui_fb_log_init(&log);
 	assert_int_equal(log.type, UI_LOG_TYPE_FASTBOOT);
 	assert_int_equal(log.impl.fastboot_log.bytes_on_screen, 0);
+	/* No page selected, and the geometry is left to the draw function. */
+	assert_true(log.impl.fastboot_log.top_of_screen_byte_anchor == UINT64_MAX);
+	assert_int_equal(log.lines_per_page, 0);
+	assert_int_equal(log.chars_per_line, 0);
 }
 
 static const char buf[] = "PAGE0..abc"	/* First page */
@@ -115,6 +102,34 @@ static void init_mock_fastboot_log(struct fastboot_log *fb_log, uint64_t oldest)
 	fb_log->total = oldest + sizeof(buf) - 1;
 }
 
+/* Initialize the log with a known geometry and no page selected. */
+static void init_mock_ui_log(struct ui_log_info *log)
+{
+	ui_fb_log_init(log);
+	ui_fb_log_set_geometry(log, NULL, MOCK_TEXT_BOX_ROW, MOCK_TEXT_BOX_COL);
+}
+
+static void test_fastboot_log_no_geometry(void **state)
+{
+	struct fastboot_log fb_log;
+	struct ui_log_info log = { 0 };
+
+	init_mock_fastboot_log(&fb_log, 3);
+	ui_fb_log_init(&log);
+
+	ui_fb_log_set_first_page(&log, &fb_log);
+	assert_int_equal(log.impl.fastboot_log.bytes_on_screen, 0);
+
+	ui_fb_log_set_last_page(&log, &fb_log);
+	assert_int_equal(log.impl.fastboot_log.bytes_on_screen, 0);
+
+	/* Once the geometry is known, a page is selected. */
+	ui_fb_log_set_geometry(&log, &fb_log, MOCK_TEXT_BOX_ROW, MOCK_TEXT_BOX_COL);
+	assert_true(log.impl.fastboot_log.top_of_screen_byte_anchor >= fb_log.oldest);
+	assert_true(log.impl.fastboot_log.top_of_screen_byte_anchor < fb_log.total);
+	assert_int_not_equal(log.impl.fastboot_log.bytes_on_screen, 0);
+}
+
 static void test_fastboot_log_last_page(void **state)
 {
 	struct fastboot_log fb_log;
@@ -124,10 +139,7 @@ static void test_fastboot_log_last_page(void **state)
 
 	init_mock_fastboot_log(&fb_log, 3);
 
-	expect_value(ui_get_log_textbox_dimensions, screen, UI_SCREEN_FASTBOOT);
-	expect_string(ui_get_log_textbox_dimensions, locale_code, "en");
-
-	ASSERT_VB2_SUCCESS(ui_fb_log_init(UI_SCREEN_FASTBOOT, "en", &log));
+	init_mock_ui_log(&log);
 	assert_int_equal(log.type, UI_LOG_TYPE_FASTBOOT);
 
 	ui_fb_log_set_last_page(&log, &fb_log);
@@ -147,10 +159,7 @@ static void test_fastboot_log_first_page(void **state)
 
 	init_mock_fastboot_log(&fb_log, 3);
 
-	expect_value(ui_get_log_textbox_dimensions, screen, UI_SCREEN_FASTBOOT);
-	expect_string(ui_get_log_textbox_dimensions, locale_code, "en");
-
-	ASSERT_VB2_SUCCESS(ui_fb_log_init(UI_SCREEN_FASTBOOT, "en", &log));
+	init_mock_ui_log(&log);
 	assert_int_equal(log.type, UI_LOG_TYPE_FASTBOOT);
 
 	ui_fb_log_set_first_page(&log, &fb_log);
@@ -179,10 +188,7 @@ static void test_fastboot_log_first_to_last_page(void **state)
 
 	init_mock_fastboot_log(&fb_log, 3);
 
-	expect_value(ui_get_log_textbox_dimensions, screen, UI_SCREEN_FASTBOOT);
-	expect_string(ui_get_log_textbox_dimensions, locale_code, "en");
-
-	ASSERT_VB2_SUCCESS(ui_fb_log_init(UI_SCREEN_FASTBOOT, "en", &log));
+	init_mock_ui_log(&log);
 	assert_int_equal(log.type, UI_LOG_TYPE_FASTBOOT);
 
 	page_len = strlen(page_content[0]);
@@ -230,10 +236,7 @@ static void test_fastboot_log_last_to_first_page(void **state)
 
 	init_mock_fastboot_log(&fb_log, 3);
 
-	expect_value(ui_get_log_textbox_dimensions, screen, UI_SCREEN_FASTBOOT);
-	expect_string(ui_get_log_textbox_dimensions, locale_code, "en");
-
-	ASSERT_VB2_SUCCESS(ui_fb_log_init(UI_SCREEN_FASTBOOT, "en", &log));
+	init_mock_ui_log(&log);
 	assert_int_equal(log.type, UI_LOG_TYPE_FASTBOOT);
 
 	page_len = strlen(page_content[0]);
@@ -268,6 +271,7 @@ int main(void)
 {
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test(test_fastboot_log_init),
+		cmocka_unit_test(test_fastboot_log_no_geometry),
 		cmocka_unit_test(test_fastboot_log_last_page),
 		cmocka_unit_test(test_fastboot_log_first_page),
 		cmocka_unit_test(test_fastboot_log_first_to_last_page),

@@ -1364,17 +1364,35 @@ char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page);
 /*
  * Initialize fastboot log info struct.
  *
- * @param screen	Screen to display the log.
- * @param locale_code	Language code of locale.
- * @param log		Log info struct to be initialized.
+ * Unlike ui_log_init(), this does not depend on the display: the textbox
+ * geometry (lines_per_page and chars_per_line) is refreshed by the draw
+ * function on every frame. Therefore this function cannot fail, and the
+ * fastboot session stays usable even when the screen cannot be drawn.
  *
- * @return VB2_SUCCESS on success, non-zero on error.
+ * @param log		Log info struct to be initialized.
  */
-vb2_error_t ui_fb_log_init(enum ui_screen screen, const char *locale_code,
-			   struct ui_log_info *log);
+void ui_fb_log_init(struct ui_log_info *log);
+
+/*
+ * Report the size of the textbox the log is rendered into.
+ *
+ * To be called by the draw function, which is the only place that knows the
+ * screen layout. Selects a page to display if none has been selected yet.
+ *
+ * @param ui_log		Log info.
+ * @param log			Fastboot log instance, or NULL if there is no
+ *				session yet.
+ * @param lines_per_page	Number of text lines fitting in the textbox.
+ * @param chars_per_line	Number of characters fitting in a line.
+ */
+void ui_fb_log_set_geometry(struct ui_log_info *ui_log, struct fastboot_log *log,
+			    uint32_t lines_per_page, uint32_t chars_per_line);
 
 /*
  * Set UI log info structure to point at the first available page in fastboot log.
+ *
+ * No-op if the textbox geometry is unknown, i.e. the screen has never been
+ * drawn successfully.
  *
  * @param ui_log	Log info.
  * @param log		Fastboot log instance.
@@ -1384,6 +1402,9 @@ void ui_fb_log_set_first_page(struct ui_log_info *ui_log, struct fastboot_log *l
 /*
  * Set UI log info structure to point at the last available page in fastboot log.
  *
+ * No-op if the textbox geometry is unknown, i.e. the screen has never been
+ * drawn successfully.
+ *
  * @param ui_log	Log info.
  * @param log		Fastboot log instance.
  */
@@ -1392,6 +1413,9 @@ void ui_fb_log_set_last_page(struct ui_log_info *ui_log, struct fastboot_log *lo
 /*
  * Set UI log info structure to point at the next page in fastboot log.
  *
+ * No-op if the textbox geometry is unknown, i.e. the screen has never been
+ * drawn successfully.
+ *
  * @param ui_log	Log info.
  * @param log		Fastboot log instance.
  */
@@ -1399,6 +1423,9 @@ void ui_fb_log_set_next_page(struct ui_log_info *ui_log, struct fastboot_log *lo
 
 /*
  * Set UI log info structure to point at the previous page in fastboot log.
+ *
+ * No-op if the textbox geometry is unknown, i.e. the screen has never been
+ * drawn successfully.
  *
  * @param ui_log	Log info.
  * @param log		Fastboot log instance.

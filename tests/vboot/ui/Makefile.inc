@@ -60,4 +60,3 @@ log-test-srcs += src/vboot/ui/log.c
 
 fastboot_log-test-srcs += tests/vboot/ui/fastboot_log-test.c
 fastboot_log-test-srcs += src/vboot/ui/fastboot_log.c
-fastboot_log-test-srcs += src/vboot/ui/log.c

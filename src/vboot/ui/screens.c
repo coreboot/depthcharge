@@ -1248,6 +1248,7 @@ static vb2_error_t draw_fastboot_desc(
 	const int reverse = state->locale->rtl;
 	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
 	const int32_t x = UI_MARGIN_H;
+	uint32_t lines_per_page, chars_per_line;
 	char *serial;
 
 	VB2_TRY(draw_fastboot_desc_bitmap(state, y));
@@ -1259,12 +1260,15 @@ static vb2_error_t draw_fastboot_desc(
 			     &ui_color_bg, &ui_color_fg, flags, reverse));
 	*y += UI_BOX_TEXT_HEIGHT + UI_BOX_TEXT_LINE_SPACING;
 
+	/* Report the textbox geometry to the log module */
+	VB2_TRY(ui_get_textbox_lines_per_page(state->screen->id, *y, &lines_per_page));
+	VB2_TRY(ui_get_textbox_chars_per_line(&chars_per_line));
+	ui_fb_log_set_geometry(&state->log, fb_session ? fb_session->log : NULL,
+			       lines_per_page, chars_per_line);
+
 	/* If fastboot isn't connected yet, print empty textbox */
 	if (fb_session == NULL)
 		return ui_draw_textbox_with_scrollbar("", 0, state, y, 0, 0, 1, true);
-
-	VB2_TRY(ui_get_textbox_lines_per_page(state->screen->id, *y,
-					      &state->log.lines_per_page));
 
 	return draw_fastboot_log(state, fb_session, y);
 }
@@ -1280,7 +1284,7 @@ static vb2_error_t fastboot_action(struct ui_context *ui)
 			return fullview_log_screen_action(ui);
 		/* Change the description based on new fastboot state */
 		ui->force_display = 1;
-		VB2_TRY(ui_fb_log_init(state->screen->id, state->locale->code, &state->log));
+		ui_fb_log_init(&state->log);
 	}
 
 	if (fastboot_is_finished(state->fb_session)) {

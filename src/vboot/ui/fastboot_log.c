@@ -21,6 +21,19 @@
 #include "vboot/ui.h"
 
 /*
+ * Check whether the textbox geometry is known.
+ *
+ * The geometry is refreshed by the draw function on every frame, so it stays
+ * unset as long as the screen has never been drawn successfully, e.g. when the
+ * display is unavailable or the UI assets failed to load. There is no
+ * meaningful page to compute in that case.
+ */
+static bool fb_log_geometry_ready(const struct ui_log_info *ui_log)
+{
+	return ui_log->lines_per_page && ui_log->chars_per_line;
+}
+
+/*
  * Get size of the fastboot log line which starts at character pointed by 'iter'.
  *
  * Returns number of characters in line or 0 if 'iter' is invalid. At exit, 'iter' is set
@@ -152,6 +165,9 @@ static size_t get_prev_fastboot_log_page_len(struct fastboot_log *log, uint64_t 
 
 void ui_fb_log_set_first_page(struct ui_log_info *ui_log, struct fastboot_log *log)
 {
+	if (!fb_log_geometry_ready(ui_log))
+		return;
+
 	const uint64_t oldest_byte = fastboot_log_get_oldest_available_byte(log);
 	size_t page_len = get_next_fastboot_log_page_len(log, oldest_byte,
 							 ui_log->chars_per_line,
@@ -166,6 +182,9 @@ void ui_fb_log_set_first_page(struct ui_log_info *ui_log, struct fastboot_log *l
 
 void ui_fb_log_set_last_page(struct ui_log_info *ui_log, struct fastboot_log *log)
 {
+	if (!fb_log_geometry_ready(ui_log))
+		return;
+
 	const uint64_t total_bytes = fastboot_log_get_total_bytes(log);
 	size_t page_len = get_prev_fastboot_log_page_len(log, total_bytes,
 							 ui_log->chars_per_line,
@@ -180,6 +199,9 @@ void ui_fb_log_set_last_page(struct ui_log_info *ui_log, struct fastboot_log *lo
 
 void ui_fb_log_set_next_page(struct ui_log_info *ui_log, struct fastboot_log *log)
 {
+	if (!fb_log_geometry_ready(ui_log))
+		return;
+
 	const uint64_t start = ui_log->impl.fastboot_log.top_of_screen_byte_anchor +
 			       ui_log->impl.fastboot_log.bytes_on_screen;
 
@@ -198,6 +220,9 @@ void ui_fb_log_set_next_page(struct ui_log_info *ui_log, struct fastboot_log *lo
 
 void ui_fb_log_set_prev_page(struct ui_log_info *ui_log, struct fastboot_log *log)
 {
+	if (!fb_log_geometry_ready(ui_log))
+		return;
+
 	const uint64_t end = ui_log->impl.fastboot_log.top_of_screen_byte_anchor;
 	size_t page_len = get_prev_fastboot_log_page_len(log, end, ui_log->chars_per_line,
 							 ui_log->lines_per_page);
@@ -212,14 +237,26 @@ void ui_fb_log_set_prev_page(struct ui_log_info *ui_log, struct fastboot_log *lo
 	ui_log->impl.fastboot_log.bytes_on_screen = page_len;
 }
 
-vb2_error_t ui_fb_log_init(enum ui_screen screen, const char *locale_code,
-			   struct ui_log_info *log)
+void ui_fb_log_init(struct ui_log_info *log)
 {
-	VB2_TRY(ui_log_common_init(screen, locale_code, log, UI_LOG_TYPE_FASTBOOT));
-	/* Fastboot log draw function will update this and print last page on the first run */
+	log->type = UI_LOG_TYPE_FASTBOOT;
+	/* No page selected yet; the first ui_fb_log_set_geometry() will pick one. */
 	log->impl.fastboot_log.total_bytes = UINT64_MAX;
 	log->impl.fastboot_log.top_of_screen_byte_anchor = UINT64_MAX;
 	log->impl.fastboot_log.bytes_on_screen = 0;
+}
 
-	return VB2_SUCCESS;
+void ui_fb_log_set_geometry(struct ui_log_info *ui_log, struct fastboot_log *log,
+			    uint32_t lines_per_page, uint32_t chars_per_line)
+{
+	ui_log->lines_per_page = lines_per_page;
+	ui_log->chars_per_line = chars_per_line;
+
+	/*
+	 * No page has been selected yet, either because the session has just
+	 * started, or because the geometry was unknown until now. Show the end
+	 * of the log, which is what ui_fb_log_init() asked for.
+	 */
+	if (log && ui_log->impl.fastboot_log.top_of_screen_byte_anchor == UINT64_MAX)
+		ui_fb_log_set_last_page(ui_log, log);
 }
