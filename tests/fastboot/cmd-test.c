@@ -2606,6 +2606,308 @@ static void test_fb_cmd_snapshot_update_bad_arg(void **state)
 	assert_int_equal(fb->state, COMMAND);
 }
 
+static void test_fb_cmd_fetch_single(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "fetch:part:0:0x10";
+
+	const size_t data_len = 16;
+	uint8_t data[] = {
+		0xe9, 0x88, 0x4c, 0x9c,
+		0x79, 0xba, 0x02, 0xfe,
+		0x0a, 0x08, 0x81, 0xdd,
+		0x99, 0x19, 0x4e, 0x68,
+	};
+
+	memcpy(_kernel_start, data, data_len);
+
+	/* Simulate partition that fits into buffer */
+	WILL_OPEN_PARTITION_STREAM("part", 0, data_len, GPT_IO_SUCCESS);
+	WILL_SEND_EXACT(fb, "DATA00000010");
+	WILL_READ_STREAM(data_len);
+	WILL_SEND_BYTES(fb, _kernel_start, data_len);
+	WILL_CLOSE_STREAM;
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	/* Send */
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_single_offset(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "fetch:part:0x20:0x10";
+
+	const size_t offset = 32;
+	const size_t data_len = 16;
+	uint8_t data[] = {
+		0xe9, 0x88, 0x4c, 0x9c,
+		0x79, 0xba, 0x02, 0xfe,
+		0x0a, 0x08, 0x81, 0xdd,
+		0x99, 0x19, 0x4e, 0x68,
+	};
+
+	memcpy(_kernel_start, data, data_len);
+
+	/* Simulate partition that fits into buffer */
+	WILL_OPEN_PARTITION_STREAM("part", offset, data_len, GPT_IO_SUCCESS);
+	WILL_SEND_EXACT(fb, "DATA00000010");
+	WILL_READ_STREAM(data_len);
+	WILL_SEND_BYTES(fb, _kernel_start, data_len);
+	WILL_CLOSE_STREAM;
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	/* Send */
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_multi(void **state)
+{
+	struct FastbootOps *fb = *state;
+	const size_t kernel_size = sizeof(_kernel_start);
+	char cmd[64];
+	char fb_cmd[16];
+	const size_t data_len = 0xfff0;
+	snprintf(cmd, sizeof(cmd), "fetch:part:0:0x%lx", data_len);
+	snprintf(fb_cmd, sizeof(fb_cmd), "DATA%08lx", data_len);
+
+	/* Fill buffer with data, reuse between invocations */
+	for (int i = 0; i < kernel_size; i++)
+		*(_kernel_start+i) = (i & 0xff);
+
+	/* Get number of sends / extra sends if there's unaligned lengths */
+	const size_t sends = data_len / FASTBOOT_MSG_MAX;
+	const size_t left_over = data_len % FASTBOOT_MSG_MAX;
+
+	/* Simulate partition that doesn't fit into buffer */
+	WILL_OPEN_PARTITION_STREAM("part", 0, 0xffff, GPT_IO_SUCCESS);
+	WILL_SEND_EXACT(fb, fb_cmd);
+	for (int i = 0; i < sends; i++) {
+		WILL_READ_STREAM(FASTBOOT_MSG_MAX);
+		WILL_SEND_BYTES(fb, _kernel_start, FASTBOOT_MSG_MAX);
+	}
+	if (left_over) {
+		WILL_READ_STREAM(left_over);
+		WILL_SEND_BYTES(fb, _kernel_start, left_over);
+	}
+	WILL_CLOSE_STREAM;
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	/* Send */
+	fastboot_handle_packet(fb, cmd, strlen(cmd));
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_all(void **state)
+{
+	struct FastbootOps *fb = *state;
+	const size_t kernel_size = sizeof(_kernel_start);
+	char cmd[] = "fetch:part";
+	char fb_cmd[16];
+
+	const size_t part_size = 0xffff;
+	snprintf(fb_cmd, sizeof(fb_cmd), "DATA%08lx", part_size);
+
+	/* Fill buffer with data, reuse between invocations */
+	for (int i = 0; i < kernel_size; i++)
+		*(_kernel_start+i) = (i & 0xff);
+
+	/* Get number of sends / extra sends if there's unaligned lengths */
+	const size_t sends = part_size / FASTBOOT_MSG_MAX;
+	const size_t left_over = part_size % FASTBOOT_MSG_MAX;
+
+	/* Simulate partition that doesn't fit into buffer */
+	WILL_OPEN_PARTITION_STREAM("part", 0, part_size, GPT_IO_SUCCESS);
+	WILL_SEND_EXACT(fb, fb_cmd);
+	for (int i = 0; i < sends; i++) {
+		WILL_READ_STREAM(FASTBOOT_MSG_MAX);
+		WILL_SEND_BYTES(fb, _kernel_start, FASTBOOT_MSG_MAX);
+	}
+	if (left_over) {
+		WILL_READ_STREAM(left_over);
+		WILL_SEND_BYTES(fb, _kernel_start, left_over);
+	}
+	WILL_CLOSE_STREAM;
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	/* Send */
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_all_offset(void **state)
+{
+	struct FastbootOps *fb = *state;
+	const size_t kernel_size = sizeof(_kernel_start);
+	char cmd[64];
+	char fb_cmd[16];
+	const size_t offset = 100;
+	const size_t part_size = 0xffff;
+	const size_t data_len = part_size - offset;
+
+	snprintf(cmd, sizeof(cmd), "fetch:part:%lu", offset);
+	snprintf(fb_cmd, sizeof(fb_cmd), "DATA%08lx", data_len);
+
+	/* Fill buffer with data, reuse between invocations */
+	for (int i = 0; i < kernel_size; i++)
+		*(_kernel_start+i) = (i & 0xff);
+
+	/* Get number of sends / extra sends if there's unaligned lengths */
+	const size_t sends = data_len / FASTBOOT_MSG_MAX;
+	const size_t left_over = data_len % FASTBOOT_MSG_MAX;
+
+	/* Simulate partition that doesn't fit into buffer */
+	WILL_OPEN_PARTITION_STREAM("part", offset, data_len, GPT_IO_SUCCESS);
+	WILL_SEND_EXACT(fb, fb_cmd);
+	for (int i = 0; i < sends; i++) {
+		WILL_READ_STREAM(FASTBOOT_MSG_MAX);
+		WILL_SEND_BYTES(fb, _kernel_start, FASTBOOT_MSG_MAX);
+	}
+	if (left_over) {
+		WILL_READ_STREAM(left_over);
+		WILL_SEND_BYTES(fb, _kernel_start, left_over);
+	}
+	WILL_CLOSE_STREAM;
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	/* Send */
+	fastboot_handle_packet(fb, cmd, strlen(cmd));
+	assert_int_equal(fb->state, COMMAND);
+}
+
+#define FB_TEST_BAD_FETCH_CMD(fb, bad_cmd) do { \
+	char cmd[] = bad_cmd; \
+	WILL_SEND_FAIL(fb); \
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1); \
+	assert_int_equal((fb)->state, COMMAND); \
+} while (0)
+static void test_fb_cmd_fetch_bad_arg(void **state)
+{
+	struct FastbootOps *fb = *state;
+
+	/* Arg count */
+	FB_TEST_BAD_FETCH_CMD(fb, "fetch:vbmeta_a:0:0:0");
+	FB_TEST_BAD_FETCH_CMD(fb, "fetch:vbmeta_a:0:0:");
+	FB_TEST_BAD_FETCH_CMD(fb, "fetch:vbmeta_a:0:0:more");
+
+	/* Partition arg must exist */
+	FB_TEST_BAD_FETCH_CMD(fb, "fetch:::");
+	FB_TEST_BAD_FETCH_CMD(fb, "fetch::");
+	FB_TEST_BAD_FETCH_CMD(fb, "fetch::0:");
+	FB_TEST_BAD_FETCH_CMD(fb, "fetch::0");
+
+	/* Size and offset must be clean positive integers */
+	FB_TEST_BAD_FETCH_CMD(fb, "fetch:vbmeta_a:-12:0");
+	FB_TEST_BAD_FETCH_CMD(fb, "fetch:vbmeta_a:1.2:0");
+	FB_TEST_BAD_FETCH_CMD(fb, "fetch:vbmeta_a:fb:0");
+	FB_TEST_BAD_FETCH_CMD(fb, "fetch:vbmeta_a:2ab:0");
+
+	FB_TEST_BAD_FETCH_CMD(fb, "fetch:vbmeta_a:0:-12");
+	FB_TEST_BAD_FETCH_CMD(fb, "fetch:vbmeta_a:0:1.2");
+	FB_TEST_BAD_FETCH_CMD(fb, "fetch:vbmeta_a:0:fb");
+	FB_TEST_BAD_FETCH_CMD(fb, "fetch:vbmeta_a:0:2ab");
+}
+
+static void test_fb_cmd_fetch_zero(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "fetch:part:0:0";
+
+	/* Simulate partition that fits into buffer */
+	WILL_OPEN_PARTITION_STREAM("part", 0, 0xffff, GPT_IO_SUCCESS);
+	WILL_SEND_EXACT(fb, "DATA00000000");
+	WILL_CLOSE_STREAM;
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	/* Send */
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_read_fail(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "fetch:part:0:256";
+
+	const size_t data_len = 256;
+
+	/* Simulate partition that fits into buffer */
+	WILL_OPEN_PARTITION_STREAM("part", 0, 0xffff, GPT_IO_SUCCESS);
+	WILL_SEND_EXACT(fb, "DATA00000100");
+	WILL_READ_STREAM_FAIL(data_len, data_len - 56);
+
+	WILL_CLOSE_STREAM;
+
+	/* Send */
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_part_dne(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "fetch:nopart:0:0x100";
+
+	/* Simulate partition that fits into buffer */
+	WILL_OPEN_PARTITION_STREAM("nopart", 0, 0xffff, GPT_IO_NO_PARTITION);
+	WILL_SEND_FAIL(fb);
+
+	/* Send */
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_part_bad_range(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "fetch:part:1000:0x100";
+
+	/* Simulate partition that fits into buffer */
+	WILL_OPEN_PARTITION_STREAM("part", 1000, 0xffff, GPT_IO_OUT_OF_RANGE);
+	WILL_SEND_FAIL(fb);
+
+	/* Send */
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_part_overrun(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "fetch:part:20:1024";
+
+	const size_t offset = 20;
+
+	/* Partition returns a length that is smaller than requested size */
+	WILL_OPEN_PARTITION_STREAM("part", offset, 900, GPT_IO_SUCCESS);
+	WILL_CLOSE_STREAM;
+	WILL_SEND_FAIL(fb);
+
+	/* Send */
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_fetch_size_too_big(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[64];
+	const uint64_t data_len = (uint64_t)FASTBOOT_MAX_FETCH_SIZE+1;
+
+	snprintf(cmd, sizeof(cmd), "fetch:part:0:0x%llx", data_len);
+
+	WILL_OPEN_PARTITION_STREAM("part", 0, data_len, GPT_IO_SUCCESS);
+	/* Validation after stream open determines that size is too big */
+	WILL_CLOSE_STREAM;
+	WILL_SEND_FAIL(fb);
+
+	/* Send */
+	fastboot_handle_packet(fb, cmd, strlen(cmd));
+	assert_int_equal(fb->state, COMMAND);
+}
+
 #define TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup)
 
@@ -2726,6 +3028,18 @@ int main(void)
 		TEST(test_fb_cmd_snapshot_update_cancel_no_action),
 		TEST(test_fb_cmd_snapshot_update_cancel_fail),
 		TEST(test_fb_cmd_snapshot_update_bad_arg),
+		TEST(test_fb_cmd_fetch_single),
+		TEST(test_fb_cmd_fetch_single_offset),
+		TEST(test_fb_cmd_fetch_multi),
+		TEST(test_fb_cmd_fetch_all),
+		TEST(test_fb_cmd_fetch_all_offset),
+		TEST(test_fb_cmd_fetch_zero),
+		TEST(test_fb_cmd_fetch_bad_arg),
+		TEST(test_fb_cmd_fetch_read_fail),
+		TEST(test_fb_cmd_fetch_part_dne),
+		TEST(test_fb_cmd_fetch_part_bad_range),
+		TEST(test_fb_cmd_fetch_part_overrun),
+		TEST(test_fb_cmd_fetch_size_too_big),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }

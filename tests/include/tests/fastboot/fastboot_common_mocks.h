@@ -27,6 +27,12 @@ void setup_test_fb(void);
 	expect_in_range(fb_mock_send_packet, len, strlen(data) + 1, 256); \
 } while (0)
 
+#define WILL_SEND_BYTES(fb_ptr, data, dlen) do { \
+	expect_value(fb_mock_send_packet, fb, fb_ptr); \
+	expect_memory(fb_mock_send_packet, buf, data, dlen); \
+	expect_value(fb_mock_send_packet, len, dlen); \
+} while (0)
+
 #define WILL_SEND_FAIL(fb_ptr) WILL_SEND_PREFIX(fb_ptr, "FAIL")
 
 #define WILL_SEND_FAIL_WITH_LOGS(fb_ptr) do { \
