@@ -315,13 +315,21 @@ static vb2_error_t draw_navigation_bar(const struct ui_state *state)
 	return VB2_SUCCESS;
 }
 
-static const char *get_item_file(const struct ui_menu_item *item,
-				 const struct ui_state *state)
+static vb2_error_t get_item_file(const struct ui_menu_item *item,
+				 const struct ui_state *state,
+				 const char **out_file)
 {
-	if (item->get_file)
-		return item->get_file(state);
-	else
-		return item->file;
+	if (item->get_file) {
+		*out_file = item->get_file(state);
+		if (!*out_file) {
+			UI_ERROR("Menu item <%s>: get_file() returned NULL\n",
+				 item->name ? item->name : "unnamed");
+			return VB2_ERROR_UI_DRAW_FAILURE;
+		}
+	} else {
+		*out_file = item->file;
+	}
+	return VB2_SUCCESS;
 }
 
 static const char *get_item_locale_code(const struct ui_menu_item *item,
@@ -347,7 +355,7 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 		item = &menu->items[i];
 		if (item->type != UI_MENU_ITEM_TYPE_PRIMARY)
 			continue;
-		file = get_item_file(item, state);
+		VB2_TRY(get_item_file(item, state, &file));
 		if (item->get_width) {
 			VB2_TRY(item->get_width(state, &text_width));
 		} else if (file) {
@@ -384,9 +392,11 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 	const uint32_t flags = PIVOT_H_CENTER | PIVOT_V_CENTER;
 	const struct rgb_color *bg_color, *fg_color, *border_color;
 	int32_t border_thickness;
-	const char *file = get_item_file(item, state);
+	const char *file;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
+
+	VB2_TRY(get_item_file(item, state, &file));
 
 	/* Set button styles */
 	if (focused) {
@@ -499,10 +509,11 @@ static vb2_error_t ui_draw_dropdown(const struct ui_menu_item *item,
 	const int32_t x_base = x;
 	const int32_t y_center = y + height / 2;
 	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
-	const char *file = get_item_file(item, state);
+	const char *file;
 	const char *locale_code = get_item_locale_code(item, state);
 	const int reverse = state->locale->rtl;
 
+	VB2_TRY(get_item_file(item, state, &file));
 	if (!file) {
 		UI_ERROR("No dropdown image filename\n");
 		return VB2_ERROR_UI_DRAW_FAILURE;
@@ -595,9 +606,15 @@ static vb2_error_t ui_draw_link(const struct ui_menu_item *item,
 	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
 	const char *arrow_file;
 	const struct rgb_color *bg_color;
-	const char *file = get_item_file(item, state);
+	const char *file;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
+
+	VB2_TRY(get_item_file(item, state, &file));
+	if (!file) {
+		UI_ERROR("No link image filename\n");
+		return VB2_ERROR_UI_DRAW_FAILURE;
+	}
 
 	bg_color = focused ? &ui_color_link_bg : &ui_color_bg;
 
@@ -1251,26 +1268,23 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 		/* Draw item text */
 		int32_t text_x = box_x + UI_SUB_MENU_PADDING_H + 4;
 		int32_t text_y = item_y + item_h / 2;
-		const char *file = get_item_file(item, state);
-		if (file) {
-			struct ui_bitmap bitmap;
-			const char *locale_code = get_item_locale_code(item, state);
-			VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
-			VB2_TRY(ui_draw_mapped_bitmap(&bitmap, text_x, text_y,
-						      UI_SIZE_AUTO,
-						      UI_SUB_MENU_ITEM_TEXT_HEIGHT,
-						      &ui_color_lang_menu_bg,
-						      &ui_color_fg,
-						      PIVOT_H_LEFT | PIVOT_V_CENTER,
-						      reverse));
-		} else if (item->name) {
-			VB2_TRY(ui_draw_text(item->name, text_x, text_y,
-					     UI_SUB_MENU_ITEM_TEXT_HEIGHT,
-					     &ui_color_lang_menu_bg,
-					     &ui_color_fg,
-					     PIVOT_H_LEFT | PIVOT_V_CENTER,
-					     reverse));
+		const char *file;
+		struct ui_bitmap bitmap;
+		const char *locale_code = get_item_locale_code(item, state);
+
+		VB2_TRY(get_item_file(item, state, &file));
+		if (!file) {
+			UI_ERROR("Sub-menu item #%zu: no .file\n", i);
+			return VB2_ERROR_UI_DRAW_FAILURE;
 		}
+		VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
+		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, text_x, text_y,
+					      UI_SIZE_AUTO,
+					      UI_SUB_MENU_ITEM_TEXT_HEIGHT,
+					      &ui_color_lang_menu_bg,
+					      &ui_color_fg,
+					      PIVOT_H_LEFT | PIVOT_V_CENTER,
+					      reverse));
 
 		slot++;
 	}
