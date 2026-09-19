@@ -12,6 +12,7 @@
 ##
 
 depthcharge-y += board.c
+depthcharge-$(CONFIG_DRIVER_SOC_QCOM_CHIPINFO) += cpumap_fixup.c
 depthcharge-y += charging.c
 depthcharge-y += lpass.c
 ifneq ($(CONFIG_VARIANT_NAME), "")
