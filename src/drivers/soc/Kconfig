@@ -70,6 +70,10 @@ config DRIVER_SOC_QCOM_SDTRAY
 	  You ordinarily shouldn't need this unless you need to hack voltage
 	  regulators in depthcharge to work around hardware issues.
 
+config DRIVER_SOC_QCOM_CHIPINFO
+	bool "Qualcomm chip info driver (direct QFPROM register read)"
+	default n
+
 config DRIVER_SOC_QCOM_SMEM
 	bool "Qualcomm SMEM driver"
 	default n

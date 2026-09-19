@@ -26,6 +26,7 @@ depthcharge-$(CONFIG_DRIVER_SOC_PICASSO) += picasso.c
 depthcharge-$(CONFIG_DRIVER_SOC_QCOM_QUP_SE) += qcom_qup_se.c
 depthcharge-$(CONFIG_DRIVER_SOC_QCOM_SPMI) += qcom_spmi.c
 depthcharge-$(CONFIG_DRIVER_SOC_QCOM_SDTRAY) += qcom_sd_tray.c
+depthcharge-$(CONFIG_DRIVER_SOC_QCOM_CHIPINFO) += qcom_chipinfo.c
 depthcharge-$(CONFIG_DRIVER_SOC_QCOM_SMEM) += qcom_smem.c
 depthcharge-$(CONFIG_DRIVER_SOC_QCOM_TSENS) += qcom_tsens.c
 depthcharge-$(CONFIG_DRIVER_SOC_X1P42100) += qcom_tsens_x1p42100.c
