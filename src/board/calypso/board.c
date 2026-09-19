@@ -52,6 +52,16 @@ static void usb_setup(void)
 
 	usb_host = new_usb_hc(XHCI, QCOM_XHCI_TYPE_A_BASE);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	usb_host = new_usb_hc(XHCI, QCOM_XHCI_TYPE_C0_BASE);
+	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	usb_host = new_usb_hc(XHCI, QCOM_XHCI_TYPE_C1_BASE);
+	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	usb_host = new_usb_hc(XHCI, QCOM_XHCI_TYPE_C2_BASE);
+	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
 }
 
 __weak bool variant_nvme_supported(void)

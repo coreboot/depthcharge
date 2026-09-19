@@ -17,7 +17,9 @@
 #define __DRIVERS_SOC_QCOM_CALYPSO_H__
 
 #define QCOM_XHCI_TYPE_A_BASE           0x0A400000
-
+#define QCOM_XHCI_TYPE_C0_BASE          0x0A600000
+#define QCOM_XHCI_TYPE_C1_BASE          0x0A800000
+#define QCOM_XHCI_TYPE_C2_BASE          0x0A000000
 /* Update as per actual data sheet */
 #define QSPI_BASE			0x088DC000
 #define TLMM_TILE_BASE			0x0F100000
