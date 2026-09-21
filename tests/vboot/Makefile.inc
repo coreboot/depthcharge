@@ -110,6 +110,7 @@ ui-manual-chromebox-test-config += CONFIG_PHYSICAL_PRESENCE_KEYBOARD=0
 # ui-developer-test
 $(call copy-test,ui-test-common,ui-developer-test)
 ui-developer-test-srcs := $(filter-out \
+	tests/mocks/vboot/ui/archive.c \
 	tests/stubs/base/android_misc.c \
 	tests/stubs/base/gpt.c \
 	tests/stubs/boot/payload.c \

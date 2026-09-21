@@ -52,6 +52,21 @@ int has_external_display(void)
 	return 0;
 }
 
+vb2_error_t ui_get_locale_info(uint32_t locale_id,
+			       struct ui_locale const **locale)
+{
+	static struct ui_locale stub_locale;
+
+	stub_locale.id = locale_id;
+	*locale = &stub_locale;
+	return mock_type(vb2_error_t);
+}
+
+uint32_t ui_get_locale_count(void)
+{
+	return mock_type(uint32_t);
+}
+
 bool dc_dev_firmware_shell_enabled(void)
 {
 	return true;
@@ -149,6 +164,7 @@ static int setup_context(void **state)
 
 static void setup_will_return_common_with_gbb(uint32_t gbb_flags)
 {
+	will_return_maybe(ui_get_locale_info, VB2_SUCCESS);
 	will_return_maybe(ui_get_locale_count, 10);
 	will_return_maybe(vb2api_gbb_get_flags, gbb_flags);
 }
@@ -616,6 +632,53 @@ static void test_developer_ui_select_fastboot_requested(void **state)
 	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_BEEP(250, 400);
 	EXPECT_BEEP(250, 400);
+	will_return_maybe(vb2api_get_dev_default_boot_target,
+			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
+	will_return_maybe(ui_keyboard_read, 0);
+
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_SUCCESS);
+}
+
+static void test_developer_ui_select_fastboot_broken_display(void **state)
+{
+	struct ui_context *ui = *state;
+	struct FastbootOps mock_fb_session;
+	BlockDev mock_bdev;
+	GptData mock_gpt;
+
+	will_return_maybe(ui_get_locale_info, VB2_ERROR_MOCK);
+	will_return_maybe(ui_get_locale_count, 10);
+
+	mock_fb_session.type = FASTBOOT_TCP_CONN;
+	mock_fb_session.serial = "IP: 172.16.243.254";
+
+	list_append(&mock_bdev.list_node, &mock_bdev_list);
+
+	expect_value(alloc_gpt, bdev, &mock_bdev);
+	will_return(alloc_gpt, &mock_gpt);
+	expect_value(android_misc_get_bcb_command, disk, &mock_bdev);
+	expect_value(android_misc_get_bcb_command, gpt, &mock_gpt);
+	will_return(android_misc_get_bcb_command, MISC_BCB_BOOTLOADER_BOOT);
+	expect_value(free_gpt, bdev, &mock_bdev);
+	expect_value(free_gpt, gpt, &mock_gpt);
+
+	/* Enter fastboot with broken display */
+	EXPECT_UI_DISPLAY_FAIL_ALWAYS();
+	will_return_count(fastboot_init, NULL, 2);
+	will_return(fastboot_init, &mock_fb_session);
+	/* Spend some time in fastboot */
+	will_return_count(fastboot_is_finished, false, 10);
+	expect_value_count(fastboot_poll, fb_session, &mock_fb_session, 10);
+	/* Fastboot command requested exit */
+	will_return(fastboot_is_finished, true);
+	expect_value(fastboot_release, fb_session, &mock_fb_session);
+	will_return(fastboot_release, FINISHED);
+
+	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
+	EXPECT_BEEP(250, 400);
+	EXPECT_BEEP(250, 400);
+	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -1283,6 +1346,7 @@ int main(void)
 		UI_TEST(test_developer_ui_select_external_button),
 		UI_TEST(test_developer_ui_select_fastboot_keyboard),
 		UI_TEST(test_developer_ui_select_fastboot_requested),
+		UI_TEST(test_developer_ui_select_fastboot_broken_display),
 		UI_TEST(test_developer_ui_select_altfw_keyboard),
 		UI_TEST(test_developer_ui_select_altfw_keyboard_disallowed),
 		UI_TEST(test_developer_ui_select_altfw_menu),
