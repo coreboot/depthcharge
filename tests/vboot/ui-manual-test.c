@@ -613,6 +613,20 @@ static void test_manual_ui_locale_not_found(void **state)
 	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
 }
 
+static void test_manual_ui_broken_display(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+	will_return_maybe(ui_is_lid_open, 1);
+	will_return_maybe(ui_keyboard_read, 0);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
+
+	EXPECT_UI_DISPLAY_FAIL_ALWAYS();
+
+	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
+}
+
 static void test_recovery_select_screen_disabled_and_hidden_mask(void **state)
 {
 	struct ui_context *ui = *state;
@@ -867,6 +881,7 @@ int main(void)
 		UI_TEST(test_manual_ui_pp_button_cancel_enter_again),
 		UI_TEST(test_manual_ui_enter_diagnostics),
 		UI_TEST(test_manual_ui_locale_not_found),
+		UI_TEST(test_manual_ui_broken_display),
 		/* Recovery select screen */
 		UI_TEST(test_recovery_select_screen_disabled_and_hidden_mask),
 		UI_TEST(test_recovery_select_screen),

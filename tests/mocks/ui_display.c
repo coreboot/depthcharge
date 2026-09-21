@@ -24,7 +24,7 @@ vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
 	check_expected(hidden_item_mask);
 	check_expected(current_page);
 	check_expected(error_code);
-	return VB2_SUCCESS;
+	return mock_type(vb2_error_t);
 }
 
 vb2_error_t ui_display(struct ui_context *ui,

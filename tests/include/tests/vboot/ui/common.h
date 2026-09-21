@@ -94,6 +94,7 @@ vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
 			expect_any(_ui_display, error_code); \
 		else \
 			expect_value(_ui_display, error_code, (_error_code)); \
+		will_return(_ui_display, VB2_SUCCESS); \
 	} while (0)
 
 #define _EXPECT_UI_DISPLAY_BASE(_screen, _locale_id, _focused_item, \
@@ -142,7 +143,7 @@ vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
  * Add expect_any_count with count -1 (which means to expect any always in
  * CMocka) to every parameters of _ui_display.
  */
-#define EXPECT_UI_DISPLAY_ANY_ALWAYS() \
+#define _EXPECT_UI_DISPLAY_ANY_ALWAYS(_rv) \
 	do { \
 		expect_any_always(_ui_display, screen); \
 		expect_any_always(_ui_display, locale_id); \
@@ -152,7 +153,14 @@ vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
 		expect_any_always(_ui_display, hidden_item_mask); \
 		expect_any_always(_ui_display, current_page); \
 		expect_any_always(_ui_display, error_code); \
+		will_return_always(_ui_display, (_rv)); \
 	} while (0)
+
+#define EXPECT_UI_DISPLAY_ANY_ALWAYS() \
+	_EXPECT_UI_DISPLAY_ANY_ALWAYS(VB2_SUCCESS)
+
+#define EXPECT_UI_DISPLAY_FAIL_ALWAYS() \
+	_EXPECT_UI_DISPLAY_ANY_ALWAYS(VB2_ERROR_MOCK)
 
 /*
  * Add return value to ui_keyboard_read.
