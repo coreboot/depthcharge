@@ -247,6 +247,21 @@ static int append_wifi_country_code(struct bootconfig *bc)
 	return bootconfig_append(bc, WIFI_COUNTRY_CODE_CONFIG_KEY, country_code);
 }
 
+#define BOOTREASON_KEY_STR "androidboot.bootreason"
+#define BOOTREASON_WATCHDOG_VALUE_STR "watchdog"
+
+static int append_boot_reason(struct bootconfig *bc)
+{
+	switch (lib_sysinfo.boot_reason) {
+	case CB_BOOT_REASON_WATCHDOG:
+		return bootconfig_append(bc, BOOTREASON_KEY_STR,
+					 BOOTREASON_WATCHDOG_VALUE_STR);
+	case CB_BOOT_REASON_UNKNOWN:
+	default:
+		return 0;
+	}
+}
+
 int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_params *kp)
 {
 	return append_boot_part_uuid(bc, kp) |
@@ -260,6 +275,7 @@ int append_android_bootconfig_params(struct bootconfig *bc, struct vb2_kernel_pa
 	       append_hw_revision(bc) |
 	       append_boot_source(bc, kp) |
 	       append_bootloader_version(bc) |
+	       append_boot_reason(bc) |
 	       append_ddr_size(bc) |
 	       append_dtbo_indices(bc) |
 	       append_vm_dtbo_index(bc) |
