@@ -26,6 +26,33 @@
 #define QSPI_CS				GPIO(132)
 
 /*
+ * lib_sysinfo.soc_id contains the JTAG ID in bits [31:16] and the SoC
+ * hardware device number in bits [15:0].
+ */
+#define JTAG_ID_SCP_CANIM			0x3BF
+#define TCSR_SOC_HW_VERSION_DEVICE_NUM_X1P42100	0x16
+
+#define SOC_ID_JTAG_SHIFT			16
+#define SOC_ID_HW_MASK				0xFFFF
+#define SOC_ID_COMBINE(jtag_id, hw_id) \
+	(((jtag_id) << SOC_ID_JTAG_SHIFT) | ((hw_id) & SOC_ID_HW_MASK))
+
+#define CANIM_SOC_ID \
+	SOC_ID_COMBINE(JTAG_ID_SCP_CANIM, \
+		       TCSR_SOC_HW_VERSION_DEVICE_NUM_X1P42100)
+
+/*
+ * Canim CPU disable layout in QFPROM_RAW_FEATURE_CONFIG_ROW7_LSB:
+ * CORE0 CPUs use bits [3:0] and CORE1 CPUs use bits [19:16].
+ */
+#define CANIM_QFPROM_RAW_FEAT_CFG_ROW7_LSB	0x221C0218UL
+#define CANIM_NUM_CPU_CLUSTERS			2
+#define CANIM_CORE0_CPU_DISABLE_SHIFT		0
+#define CANIM_CORE0_CPU_DISABLE_MASK		0xFU
+#define CANIM_CORE1_CPU_DISABLE_SHIFT		16
+#define CANIM_CORE1_CPU_DISABLE_MASK		0xFU
+
+/*
  * QUP SERIAL ENGINE BASE ADDRESSES
  */
 /* QUPV3_0 */
