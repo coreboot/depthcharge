@@ -834,8 +834,7 @@ vb2_error_t ui_get_textbox_chars_per_line(uint32_t *chars_per_line)
 
 	VB2_TRY(ui_get_text_width("?", UI_BOX_TEXT_HEIGHT, &char_width));
 
-	*chars_per_line = (UI_SCALE - UI_MARGIN_H * 2 - UI_BOX_PADDING_H * 2 -
-			   UI_SCROLLBAR_WIDTH) /
+	*chars_per_line = (UI_SCALE - UI_MARGIN_H * 2 - UI_BOX_PADDING_H * 2) /
 			  char_width;
 
 	return VB2_SUCCESS;
@@ -913,10 +912,8 @@ vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
 	uint32_t lines_per_page;
 	uint32_t chars_per_line;
 	const int32_t y_base = *y;
-	int32_t log_box_inside_height;
+	int32_t box_height;
 	const int32_t log_box_width = UI_SCALE - UI_MARGIN_H * 2;
-	const int32_t scrollbar_end_x = UI_MARGIN_H + log_box_width
-		- UI_BOX_BORDER_THICKNESS;
 
 	VB2_TRY(ui_get_textbox_lines_per_page(state->screen->id, *y, &lines_per_page));
 	VB2_TRY(ui_get_textbox_chars_per_line(&chars_per_line));
@@ -925,13 +922,18 @@ vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
 	else
 		VB2_TRY(ui_draw_textbox(str, y, lines_per_page));
 
-	/* No scrollbar if there is only one page. */
-	if (total_items <= items_per_page)
-		return VB2_SUCCESS;
+	box_height = *y - y_base;
 
-	log_box_inside_height = *y - y_base - UI_BOX_BORDER_THICKNESS * 2;
-	return ui_draw_scrollbar(scrollbar_end_x, y_base + UI_BOX_BORDER_THICKNESS,
-				 log_box_inside_height, first_item, total_items,
+	/* No scrollbar if there is only one page. Clear any previous scrollbar. */
+	if (total_items <= items_per_page) {
+		const int32_t scrollbar_x = UI_MARGIN_H + log_box_width +
+					    UI_SCROLLBAR_MARGIN_LEFT;
+		return ui_draw_box(scrollbar_x, y_base, UI_SCROLLBAR_WIDTH,
+				   box_height, &ui_color_bg, 0);
+	}
+
+	return ui_draw_scrollbar(UI_MARGIN_H + log_box_width, y_base,
+				 box_height, first_item, total_items,
 				 items_per_page, 0);
 }
 
@@ -942,11 +944,11 @@ vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
 					      state->log.impl.static_log.page_count, 1, false);
 }
 
-vb2_error_t ui_draw_scrollbar(int32_t end_x, int32_t begin_y, int32_t total_h,
+vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
 			      int32_t first_item_index, size_t items_count,
 			      size_t items_per_page, int reverse)
 {
-	int32_t begin_x, h, y, movable_height;
+	int32_t h, y, movable_height;
 	if (items_count <= 1)
 		return VB2_SUCCESS;
 
@@ -972,9 +974,15 @@ vb2_error_t ui_draw_scrollbar(int32_t end_x, int32_t begin_y, int32_t total_h,
 	y = begin_y +
 	    movable_height * first_item_index / (items_count - items_per_page);
 
-	begin_x = end_x - UI_SCROLLBAR_WIDTH;
-	VB2_TRY(ui_draw_rounded_box(begin_x, y, UI_SCROLLBAR_WIDTH, h,
-				    &ui_color_lang_scrollbar, 0,
+	const int32_t scrollbar_x = begin_x + UI_SCROLLBAR_MARGIN_LEFT;
+
+	/* Draw background track */
+	VB2_TRY(ui_draw_rounded_box(scrollbar_x, begin_y, UI_SCROLLBAR_WIDTH,
+				    total_h, &ui_color_scrollbar_track, 0,
+				    UI_SCROLLBAR_CORNER_RADIUS, reverse));
+	/* Draw scrollbar thumb */
+	VB2_TRY(ui_draw_rounded_box(scrollbar_x, y, UI_SCROLLBAR_WIDTH, h,
+				    &ui_color_scrollbar, 0,
 				    UI_SCROLLBAR_CORNER_RADIUS, reverse));
 
 	return VB2_SUCCESS;
@@ -1176,16 +1184,17 @@ static vb2_error_t ui_get_sub_menu_width(const struct ui_menu *menu,
 	}
 
 	int32_t padding = UI_SUB_MENU_PADDING_H * 2;
-	if (has_scrollbar)
-		padding += UI_SCROLLBAR_WIDTH + UI_SCROLLBAR_MARGIN_RIGHT;
-
 	int32_t width = max_item_width + padding;
 	width = MAX(width, UI_SUB_MENU_MIN_WIDTH);
 
+	int32_t total_width = width;
+	if (has_scrollbar)
+		total_width += UI_SCROLLBAR_MARGIN_LEFT + UI_SCROLLBAR_WIDTH;
+
 	const int32_t max_width = UI_SCALE - UI_MARGIN_H * 2;
-	if (width > max_width) {
+	if (total_width > max_width) {
 		UI_ERROR("Sub-menu width %d exceeds max width %d\n",
-			 width, max_width);
+			 total_width, max_width);
 		return VB2_ERROR_UI_DRAW_FAILURE;
 	}
 
@@ -1310,17 +1319,8 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 
 	/* Draw scrollbar if there are more items than fit on the page */
 	if (total_items > items_per_page) {
-		int32_t scrollbar_end_x = box_x + box_w -
-					  UI_SCROLLBAR_MARGIN_RIGHT;
-		/*
-		 * Inset the scrollbar vertically from the top and bottom of the
-		 * card so it stays within the card's rounded corners.
-		 */
-		int32_t scrollbar_y = box_y + UI_SCROLLBAR_PADDING_V;
-		int32_t scrollbar_h = box_h - UI_SCROLLBAR_PADDING_V * 2;
-
-		VB2_TRY(ui_draw_scrollbar(scrollbar_end_x, scrollbar_y,
-					  scrollbar_h, id_begin,
+		VB2_TRY(ui_draw_scrollbar(box_x + box_w, box_y,
+					  box_h, id_begin,
 					  total_items, items_per_page,
 					  reverse));
 	}

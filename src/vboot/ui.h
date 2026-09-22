@@ -77,16 +77,12 @@
 #define UI_LANG_MARGIN_BOTTOM			36
 
 /* For scrollbar */
-#define UI_SCROLLBAR_WIDTH			10
+#define UI_SCROLLBAR_WIDTH			4
 #define UI_SCROLLBAR_MIN_HEIGHT			20
 /* Form a pill/capsule shape with semicircular rounded ends */
 #define UI_SCROLLBAR_CORNER_RADIUS		(UI_SCROLLBAR_WIDTH / 2)
-#define UI_SCROLLBAR_MARGIN_RIGHT		4
-/*
- * Vertical padding between the scrollbar and container card top/bottom edges
- * to keep the scrollbar within the card's rounded corners.
- */
-#define UI_SCROLLBAR_PADDING_V			4
+/* Margin between the container card and the scrollbar */
+#define UI_SCROLLBAR_MARGIN_LEFT		4
 
 /* For screen icon */
 #define UI_ICON_HEIGHT				45
@@ -321,7 +317,6 @@ static const struct rgb_color ui_color_fg		= { 0xe8, 0xea, 0xed };
 static const struct rgb_color ui_color_footer_fg	= { 0x9a, 0xa0, 0xa6 };
 static const struct rgb_color ui_color_lang_menu_bg	= { 0x2d, 0x2e, 0x30 };
 static const struct rgb_color ui_color_lang_menu_border	= { 0x49, 0x57, 0x70 };
-static const struct rgb_color ui_color_lang_scrollbar	= { 0x6c, 0x6d, 0x6e };
 static const struct rgb_color ui_color_button		= { 0x8a, 0xb4, 0xf8 };
 static const struct rgb_color ui_color_button_disabled_bg
 	= { 0x3c, 0x40, 0x43 };
@@ -335,6 +330,8 @@ static const struct rgb_color ui_color_link_bg		= { 0x2a, 0x2f, 0x39 };
 static const struct rgb_color ui_color_link_border	= { 0x4a, 0x5b, 0x78 };
 static const struct rgb_color ui_color_border		= { 0x3f, 0x40, 0x42 };
 static const struct rgb_color ui_color_error_box	= { 0x20, 0x21, 0x24 };
+static const struct rgb_color ui_color_scrollbar	= { 0xa8, 0xc7, 0xfa };
+static const struct rgb_color ui_color_scrollbar_track	= { 0x37, 0x39, 0x3b };
 static const struct rgb_color ui_color_black		= { 0x00, 0x00, 0x00 };
 
 /*
@@ -1206,7 +1203,7 @@ vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
  * Draw a scrollbar based on given current_page and page_count. The height of
  * the scrollbar will be auto calculated.
  *
- * @param end_x			The right-most x-coordinate of the scrollbar.
+ * @param begin_x		Starting x-coordinate (adjacent to the container).
  * @param begin_y		The top-most y-coordinate of the scrollbar.
  * @param total_h		The total vertical space the scrollbar can move.
  * @param first_item_index	The index of the first item in the page,
@@ -1217,7 +1214,7 @@ vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
  * @param reverse		RTL flag.
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_draw_scrollbar(int32_t end_x, int32_t begin_y, int32_t total_h,
+vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
 			      int32_t first_item_index, size_t items_count,
 			      size_t items_per_page, int reverse);
 
