@@ -100,18 +100,24 @@
 #define UI_DESC_TEXT_LINE_SPACING		12
 #define UI_DESC_MARGIN_BOTTOM			48
 
-/* For primary buttons */
-#define UI_BUTTON_HEIGHT			40
-#define UI_BUTTON_TEXT_HEIGHT			20
-#define UI_BUTTON_TEXT_PADDING_H		40
+/* For buttons */
+#define UI_BUTTON_PADDING_H			16
 #define UI_BUTTON_BORDER_THICKNESS		2
 #define UI_BUTTON_FOCUS_RING_THICKNESS		3
 #define UI_BUTTON_BORDER_RADIUS			8
 #define UI_BUTTON_MARGIN_V			14
-#define UI_BUTTON_HELP_TEXT_MARGIN_L		30
+
+/* For H1 buttons */
+#define UI_H1_BUTTON_HEIGHT			40
+#define UI_H1_BUTTON_TEXT_HEIGHT		20
+#define UI_BUTTON_TEXT_PADDING_H		40
+#define UI_H1_BUTTON_HELP_TEXT_MARGIN_L		30
+
+/* For H2 buttons */
+#define UI_H2_BUTTON_HEIGHT			40
+#define UI_H2_BUTTON_TEXT_HEIGHT		20
 
 /* For dropdown trigger */
-#define UI_DROPDOWN_PADDING_H			16
 #define UI_DROPDOWN_ICON_SIZE			20
 #define UI_DROPDOWN_ARROW_SIZE			20
 #define UI_DROPDOWN_ARROW_MARGIN_H		12
@@ -127,13 +133,14 @@
 #define UI_SUB_MENU_BORDER_RADIUS		12
 #define UI_SUB_MENU_BORDER_THICKNESS		1
 
-/* For secondary (link) buttons */
-#define UI_LINK_TEXT_PADDING_LEFT		16
-#define UI_LINK_ICON_SIZE			24
-#define UI_LINK_ICON_MARGIN_R			20
-#define UI_LINK_ARROW_SIZE			20
-#define UI_LINK_ARROW_MARGIN_H			15
-#define UI_LINK_BORDER_THICKNESS		3
+/* For H3 buttons */
+#define UI_H3_BUTTON_HEIGHT			40
+#define UI_H3_BUTTON_TEXT_HEIGHT		20
+#define UI_H3_BUTTON_ICON_SIZE			24
+#define UI_H3_BUTTON_ICON_MARGIN_R		20
+#define UI_H3_BUTTON_ARROW_SIZE			20
+#define UI_H3_BUTTON_ARROW_MARGIN_H		15
+#define UI_H3_BUTTON_BORDER_THICKNESS		3
 
 /* For footer */
 #define UI_FOOTER_MARGIN_TOP			30
@@ -326,8 +333,10 @@ static const struct rgb_color ui_color_button_border	= { 0x4c, 0x4d, 0x4f };
 static const struct rgb_color ui_color_button_focus_ring
 	= { 0x4a, 0x5b, 0x78 };
 static const struct rgb_color ui_color_button_help_fg	= { 0xf2, 0x8b, 0x82 };
-static const struct rgb_color ui_color_link_bg		= { 0x2a, 0x2f, 0x39 };
-static const struct rgb_color ui_color_link_border	= { 0x4a, 0x5b, 0x78 };
+static const struct rgb_color ui_color_h2_button_bg	= { 0x2a, 0x2f, 0x39 };
+static const struct rgb_color ui_color_h2_button_fg	= { 0x8a, 0xb4, 0xf8 };
+static const struct rgb_color ui_color_h3_button_bg	= { 0x2a, 0x2f, 0x39 };
+static const struct rgb_color ui_color_h3_button_border	= { 0x4a, 0x5b, 0x78 };
 static const struct rgb_color ui_color_border		= { 0x3f, 0x40, 0x42 };
 static const struct rgb_color ui_color_error_box	= { 0x20, 0x21, 0x24 };
 static const struct rgb_color ui_color_scrollbar	= { 0xa8, 0xc7, 0xfa };
@@ -387,18 +396,18 @@ struct ui_context;
 
 /* Menu item type. */
 enum ui_menu_item_type {
-	/* Primary button. */
-	UI_MENU_ITEM_TYPE_PRIMARY = 0,
-	/* Secondary button. */
-	UI_MENU_ITEM_TYPE_SECONDARY,
+	/* H1 button. */
+	UI_MENU_ITEM_TYPE_H1 = 0,
+	/* H3 button. */
+	UI_MENU_ITEM_TYPE_H3,
 	/* Language selection. */
 	UI_MENU_ITEM_TYPE_LANGUAGE,
-	/* Dropdown menu trigger. */
-	UI_MENU_ITEM_TYPE_DROPDOWN,
+	/* H2 dropdown menu trigger. */
+	UI_MENU_ITEM_TYPE_H2_DROPDOWN,
 };
 
 enum ui_menu_item_flag {
-	/* No arrow; valid for UI_MENU_ITEM_TYPE_SECONDARY only. */
+	/* No arrow; valid for UI_MENU_ITEM_TYPE_H3 only. */
 	UI_MENU_ITEM_FLAG_NO_ARROW		= 1 << 0,
 	/* Bitmap is stored in generic archive (UI_ARCHIVE_GENERIC). */
 	UI_MENU_ITEM_FLAG_GENERIC_ARCHIVE	= 1 << 1,
@@ -432,14 +441,14 @@ struct ui_menu_item {
 	/* Sub-menu getter callback. Takes precedence over sub_menu. */
 	const struct ui_menu *(*get_sub_menu)(struct ui_context *ui);
 	/*
-	 * Icon file for UI_MENU_ITEM_TYPE_SECONDARY,
-	 * UI_MENU_ITEM_TYPE_DROPDOWN, and UI_MENU_ITEM_TYPE_LANGUAGE.
+	 * Icon file for UI_MENU_ITEM_TYPE_H3,
+	 * UI_MENU_ITEM_TYPE_H2_DROPDOWN, and UI_MENU_ITEM_TYPE_LANGUAGE.
 	 */
 	const char *icon_file;
 	/*
 	 * Bitmap file of the help text displayed next to the button.
 	 * This field is only for disabled buttons of type
-	 * UI_MENU_ITEM_TYPE_PRIMARY.
+	 * UI_MENU_ITEM_TYPE_H1.
 	 */
 	const char *disabled_help_text_file;
 	/* Flags are defined in enum ui_menu_item_flag. */
@@ -1054,7 +1063,7 @@ vb2_error_t ui_draw_h_line(int32_t x, int32_t y,
 /* layout.c */
 
 /*
- * Get button width, based on the longest text of all the visible buttons.
+ * Get H1 button width, based on the longest text of all visible H1 buttons.
  *
  * Menu items specified in hidden_item_mask are ignored.
  *
@@ -1069,9 +1078,9 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 				int32_t *button_width);
 
 /*
- * Draw a button with image.
+ * Draw an H1 button.
  *
- * Menu item should specify either .file or .text for button text.
+ * Menu item should specify either .file or .name for button text.
  *
  * @param item		Menu item.
  * @param state		UI state.
@@ -1085,12 +1094,12 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_draw_button(const struct ui_menu_item *item,
-			   const struct ui_state *state,
-			   int32_t x, int32_t y,
-			   int32_t width, int32_t height,
-			   int focused, int disabled,
-			   int clear_help);
+vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
+			      const struct ui_state *state,
+			      int32_t x, int32_t y,
+			      int32_t width, int32_t height,
+			      int focused, int disabled,
+			      int clear_help);
 
 /*
  * Draw screen descriptions.
@@ -1219,7 +1228,7 @@ vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
 			      size_t items_per_page, int reverse);
 
 /*
- * Draw primary and secondary buttons; ignore the language dropdown header.
+ * Draw H1, H2, and H3 buttons; ignore the language dropdown header.
  *
  * @param menu			Menu items.
  * @param state			UI state.

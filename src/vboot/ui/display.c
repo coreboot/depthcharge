@@ -201,7 +201,7 @@ static vb2_error_t show_error_box(const struct ui_error_message *error,
 	};
 	VB2_TRY(ui_get_bitmap(back_item.file, locale_code, 0, &bitmap));
 	int32_t text_width;
-	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
+	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_H1_BUTTON_TEXT_HEIGHT,
 				    &text_width));
 
 	button_width = text_width + (UI_BUTTON_TEXT_PADDING_H * 2);
@@ -209,13 +209,13 @@ static vb2_error_t show_error_box(const struct ui_error_message *error,
 	x = (UI_SCALE + UI_ERROR_BOX_WIDTH) / 2 -
 		UI_ERROR_BOX_PADDING - button_width;
 	y = (UI_SCALE + UI_ERROR_BOX_HEIGHT) / 2 -
-		UI_ERROR_BOX_PADDING - UI_BUTTON_HEIGHT;
-	VB2_TRY(ui_draw_button(&back_item,
-			       state,
-			       x, y,
-			       button_width,
-			       UI_BUTTON_HEIGHT,
-			       1, 0, 0));
+		UI_ERROR_BOX_PADDING - UI_H1_BUTTON_HEIGHT;
+	VB2_TRY(ui_draw_h1_button(&back_item,
+				  state,
+				  x, y,
+				  button_width,
+				  UI_H1_BUTTON_HEIGHT,
+				  1, 0, 0));
 
 	return rv;
 }

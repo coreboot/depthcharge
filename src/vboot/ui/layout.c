@@ -41,7 +41,7 @@ static vb2_error_t ui_draw_step_icons(const struct ui_state *state,
 	const int num_steps = screen->num_steps;
 	int step;
 	int32_t x = UI_MARGIN_H;
-	const int32_t y = UI_MARGIN_TOP + UI_BUTTON_HEIGHT +
+	const int32_t y = UI_MARGIN_TOP + UI_H2_BUTTON_HEIGHT +
 		UI_LANG_MARGIN_BOTTOM;
 	const int32_t y_center = y + UI_ICON_HEIGHT / 2;
 	const int32_t icon_size = UI_STEP_ICON_HEIGHT;
@@ -228,7 +228,7 @@ static vb2_error_t draw_navigation_bar(const struct ui_state *state)
 
 	int32_t icon_width;
 	const int32_t icon_height = UI_NAVIGATION_BAR_HEIGHT;
-	const int32_t text_height = UI_BUTTON_TEXT_HEIGHT;
+	const int32_t text_height = UI_H1_BUTTON_TEXT_HEIGHT;
 
 	struct navigation_tip {
 		const char *icon;
@@ -310,7 +310,7 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 
 	for (i = 0; i < menu->num_items; i++) {
 		item = &menu->items[i];
-		if (item->type != UI_MENU_ITEM_TYPE_PRIMARY)
+		if (item->type != UI_MENU_ITEM_TYPE_H1)
 			continue;
 		VB2_TRY(get_item_file(item, state, &file));
 		if (item->get_width) {
@@ -319,11 +319,11 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 			VB2_TRY(ui_get_bitmap(file, state->locale->code, 0,
 					      &bitmap));
 			VB2_TRY(ui_get_bitmap_width(&bitmap,
-						    UI_BUTTON_TEXT_HEIGHT,
+						    UI_H1_BUTTON_TEXT_HEIGHT,
 						    &text_width));
 		} else if (item->name) {
 			VB2_TRY(ui_get_text_width(item->name,
-						  UI_BUTTON_TEXT_HEIGHT,
+						  UI_H1_BUTTON_TEXT_HEIGHT,
 						  &text_width));
 		} else {
 			UI_ERROR("Menu item #%d: no .file or .name\n", i);
@@ -336,12 +336,12 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_draw_button(const struct ui_menu_item *item,
-			   const struct ui_state *state,
-			   int32_t x, int32_t y,
-			   int32_t width, int32_t height,
-			   int focused, int disabled,
-			   int clear_help)
+vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
+			      const struct ui_state *state,
+			      int32_t x, int32_t y,
+			      int32_t width, int32_t height,
+			      int focused, int disabled,
+			      int clear_help)
 {
 	struct ui_bitmap bitmap;
 	const int32_t x_center = x + width / 2;
@@ -395,12 +395,12 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 		VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
 		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x_center, y_center,
 					      UI_SIZE_AUTO,
-					      UI_BUTTON_TEXT_HEIGHT,
+					      UI_H1_BUTTON_TEXT_HEIGHT,
 					      bg_color, fg_color,
 					      flags, reverse));
 	} else if (item->name) {
 		VB2_TRY(ui_draw_text(item->name, x_center, y_center,
-				     UI_BUTTON_TEXT_HEIGHT,
+				     UI_H1_BUTTON_TEXT_HEIGHT,
 				     bg_color, fg_color,
 				     flags, reverse));
 	} else {
@@ -411,7 +411,7 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 	/* Draw disabled help text if the disabled button is on focus;
 	   clear the area only if needed. */
 	if (item->disabled_help_text_file) {
-		const int32_t x_help = x + width + UI_BUTTON_HELP_TEXT_MARGIN_L;
+		const int32_t x_help = x + width + UI_H1_BUTTON_HELP_TEXT_MARGIN_L;
 		int32_t help_text_width;
 		if (disabled && focused) {
 			VB2_TRY(ui_get_bitmap(
@@ -420,7 +420,7 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 			VB2_TRY(ui_draw_mapped_bitmap(
 					&bitmap,
 					x_help, y_center,
-					UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
+					UI_SIZE_AUTO, UI_H1_BUTTON_TEXT_HEIGHT,
 					&ui_color_bg, &ui_color_button_help_fg,
 					PIVOT_H_LEFT | PIVOT_V_CENTER,
 					reverse));
@@ -430,12 +430,12 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 					locale_code, 0, &bitmap));
 			VB2_TRY(ui_get_bitmap_width(
 					&bitmap,
-					UI_BUTTON_TEXT_HEIGHT,
+					UI_H1_BUTTON_TEXT_HEIGHT,
 					&help_text_width));
 			VB2_TRY(ui_draw_box(
 					x_help,
-					y_center - UI_BUTTON_TEXT_HEIGHT / 2,
-					help_text_width, UI_BUTTON_TEXT_HEIGHT,
+					y_center - UI_H1_BUTTON_TEXT_HEIGHT / 2,
+					help_text_width, UI_H1_BUTTON_TEXT_HEIGHT,
 					&ui_color_bg,
 					reverse));
 		}
@@ -445,7 +445,7 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 }
 
 /*
- * Draw a dropdown trigger button.
+ * Draw an H2 dropdown trigger button.
  *
  * @param item		Menu item.
  * @param state		UI state.
@@ -456,10 +456,10 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-static vb2_error_t ui_draw_dropdown(const struct ui_menu_item *item,
-				    const struct ui_state *state,
-				    int32_t x, int32_t y, int32_t height,
-				    int focused)
+static vb2_error_t ui_draw_h2_dropdown(const struct ui_menu_item *item,
+				       const struct ui_state *state,
+				       int32_t x, int32_t y, int32_t height,
+				       int focused)
 {
 	struct ui_bitmap bitmap;
 	int32_t text_width, width;
@@ -478,25 +478,25 @@ static vb2_error_t ui_draw_dropdown(const struct ui_menu_item *item,
 
 	/* Calculate text width */
 	VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
-	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
+	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_H2_BUTTON_TEXT_HEIGHT,
 				    &text_width));
 
-	width = UI_DROPDOWN_PADDING_H + text_width +
+	width = UI_BUTTON_PADDING_H + text_width +
 		UI_DROPDOWN_ARROW_MARGIN_H + UI_DROPDOWN_ARROW_SIZE +
-		UI_DROPDOWN_PADDING_H;
+		UI_BUTTON_PADDING_H;
 	if (item->icon_file)
 		width += UI_DROPDOWN_ICON_SIZE + UI_DROPDOWN_ARROW_MARGIN_H;
 
 	/* TODO: Revise dropdown colors */
-	const struct rgb_color *bg_color = &ui_color_link_bg;
-	const struct rgb_color *fg_color = &ui_color_button;
+	const struct rgb_color *bg_color = &ui_color_h2_button_bg;
+	const struct rgb_color *fg_color = &ui_color_h2_button_fg;
 
 	/* Clear button area with dropdown container background */
 	VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
 				    bg_color, 0,
 				    UI_BUTTON_BORDER_RADIUS, reverse));
 
-	x += UI_DROPDOWN_PADDING_H;
+	x += UI_BUTTON_PADDING_H;
 
 	/* Draw optional icon */
 	if (item->icon_file) {
@@ -513,7 +513,7 @@ static vb2_error_t ui_draw_dropdown(const struct ui_menu_item *item,
 	/* Draw button text */
 	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
 				      UI_SIZE_AUTO,
-				      UI_BUTTON_TEXT_HEIGHT,
+				      UI_H2_BUTTON_TEXT_HEIGHT,
 				      bg_color,
 				      fg_color,
 				      flags, reverse));
@@ -540,7 +540,7 @@ static vb2_error_t ui_draw_dropdown(const struct ui_menu_item *item,
 }
 
 /*
- * Draw a link button, where the style is different from a primary button.
+ * Draw an H3 button.
  *
  * @param item		Menu item.
  * @param state		UI state.
@@ -551,10 +551,10 @@ static vb2_error_t ui_draw_dropdown(const struct ui_menu_item *item,
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-static vb2_error_t ui_draw_link(const struct ui_menu_item *item,
-				const struct ui_state *state,
-				int32_t x, int32_t y, int32_t height,
-				int focused)
+static vb2_error_t ui_draw_h3_button(const struct ui_menu_item *item,
+				     const struct ui_state *state,
+				     int32_t x, int32_t y, int32_t height,
+				     int focused)
 {
 	struct ui_bitmap bitmap;
 	int32_t text_width, width;
@@ -569,21 +569,21 @@ static vb2_error_t ui_draw_link(const struct ui_menu_item *item,
 
 	VB2_TRY(get_item_file(item, state, &file));
 	if (!file) {
-		UI_ERROR("No link image filename\n");
+		UI_ERROR("No H3 button image filename\n");
 		return VB2_ERROR_UI_DRAW_FAILURE;
 	}
 
-	bg_color = focused ? &ui_color_link_bg : &ui_color_bg;
+	bg_color = focused ? &ui_color_h3_button_bg : &ui_color_bg;
 
 	/* Get button width */
 	VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
-	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
+	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_H3_BUTTON_TEXT_HEIGHT,
 				    &text_width));
-	width = UI_LINK_TEXT_PADDING_LEFT +
-		UI_LINK_ICON_SIZE + UI_LINK_ICON_MARGIN_R +
-		text_width + UI_LINK_ARROW_MARGIN_H;
+	width = UI_BUTTON_PADDING_H +
+		UI_H3_BUTTON_ICON_SIZE + UI_H3_BUTTON_ICON_MARGIN_R +
+		text_width + UI_H3_BUTTON_ARROW_MARGIN_H;
 	if (!(item->flags & UI_MENU_ITEM_FLAG_NO_ARROW))
-		width += UI_LINK_ARROW_SIZE + UI_LINK_ARROW_MARGIN_H;
+		width += UI_H3_BUTTON_ARROW_SIZE + UI_H3_BUTTON_ARROW_MARGIN_H;
 
 	/* Clear button area */
 	VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
@@ -591,39 +591,41 @@ static vb2_error_t ui_draw_link(const struct ui_menu_item *item,
 				    reverse));
 
 	/* Draw button icon */
-	x += UI_LINK_TEXT_PADDING_LEFT;
+	x += UI_BUTTON_PADDING_H;
 	if (item->icon_file) {
 		VB2_TRY(ui_get_bitmap(item->icon_file, NULL, focused, &bitmap));
 		VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
-				       UI_LINK_ICON_SIZE, UI_LINK_ICON_SIZE,
+				       UI_H3_BUTTON_ICON_SIZE,
+				       UI_H3_BUTTON_ICON_SIZE,
 				       flags, reverse));
 	}
-	x += UI_LINK_ICON_SIZE + UI_LINK_ICON_MARGIN_R;
+	x += UI_H3_BUTTON_ICON_SIZE + UI_H3_BUTTON_ICON_MARGIN_R;
 
 	/* Draw button text */
 	VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
-				      UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
+				      UI_SIZE_AUTO, UI_H3_BUTTON_TEXT_HEIGHT,
 				      bg_color, &ui_color_button,
 				      flags, reverse));
 	x += text_width;
 
 	/* Draw arrow */
-	x += UI_LINK_ARROW_MARGIN_H;
+	x += UI_H3_BUTTON_ARROW_MARGIN_H;
 	if (!(item->flags & UI_MENU_ITEM_FLAG_NO_ARROW)) {
 		arrow_file = reverse ? "ic_dropleft.bmp" : "ic_dropright.bmp";
 		VB2_TRY(ui_get_bitmap(arrow_file, NULL, focused, &bitmap));
 		VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
-				       UI_LINK_ARROW_SIZE, UI_LINK_ARROW_SIZE,
+				       UI_H3_BUTTON_ARROW_SIZE,
+				       UI_H3_BUTTON_ARROW_SIZE,
 				       flags, reverse));
-		x += UI_LINK_ARROW_SIZE + UI_LINK_ARROW_MARGIN_H;
+		x += UI_H3_BUTTON_ARROW_SIZE + UI_H3_BUTTON_ARROW_MARGIN_H;
 	}
 
 	/* Draw button borders */
 	if (focused)
 		VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
-					    &ui_color_link_border,
-					    UI_LINK_BORDER_THICKNESS,
+					    &ui_color_h3_button_border,
+					    UI_H3_BUTTON_BORDER_THICKNESS,
 					    UI_BUTTON_BORDER_RADIUS, reverse));
 
 	return VB2_SUCCESS;
@@ -858,7 +860,7 @@ vb2_error_t ui_get_textbox_lines_per_page(enum ui_screen screen, int32_t y,
 		/* TODO(503252263): It would be better to calculate it based on screen menu */
 		textbox_height = UI_SCALE - y -
 			/* Page up, page down, back, and power off button */
-			(UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V) * 4 -
+			(UI_H1_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V) * 4 -
 			UI_DESC_MARGIN_BOTTOM -
 			UI_FOOTER_MARGIN_TOP - UI_FOOTER_HEIGHT -
 			UI_MARGIN_BOTTOM;
@@ -895,7 +897,7 @@ vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
 		title_height = UI_TITLE_TEXT_HEIGHT *
 				ui_get_bitmap_num_lines(&bitmap);
 		above_textbox_height = UI_MARGIN_TOP +
-			UI_BUTTON_HEIGHT + UI_LANG_MARGIN_BOTTOM +
+			UI_H2_BUTTON_HEIGHT + UI_LANG_MARGIN_BOTTOM +
 			title_height + UI_TITLE_MARGIN_BOTTOM;
 	}
 
@@ -999,7 +1001,7 @@ static vb2_error_t ui_draw_dev_signed_warning(void)
 		return VB2_SUCCESS;
 
 	const int32_t x = UI_MARGIN_H;
-	const int32_t y = UI_MARGIN_TOP + UI_BUTTON_HEIGHT +
+	const int32_t y = UI_MARGIN_TOP + UI_H2_BUTTON_HEIGHT +
 		UI_LANG_MARGIN_BOTTOM / 2;
 
 	VB2_TRY(ui_draw_text("This firmware is developer-signed. "
@@ -1029,20 +1031,20 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 
 	*out_focused_item_y = 0;
 
-	/* Primary and dropdown trigger buttons */
+	/* H1 and H2 dropdown trigger buttons */
 	x = UI_MARGIN_H;
 	VB2_TRY(ui_get_button_width(menu, state, &button_width));
-	bool prev_is_primary = false;
+	bool prev_is_h1 = false;
 	for (i = 0; i < menu->num_items; i++) {
 		if (UI_GET_BIT(ms->hidden_item_mask, i))
 			continue;
 
 		const struct ui_menu_item *item = &menu->items[i];
-		if (item->type != UI_MENU_ITEM_TYPE_PRIMARY &&
-		    item->type != UI_MENU_ITEM_TYPE_DROPDOWN)
+		if (item->type != UI_MENU_ITEM_TYPE_H1 &&
+		    item->type != UI_MENU_ITEM_TYPE_H2_DROPDOWN)
 			continue;
 
-		if (item->type == UI_MENU_ITEM_TYPE_DROPDOWN && prev_is_primary)
+		if (item->type == UI_MENU_ITEM_TYPE_H2_DROPDOWN && prev_is_h1)
 			y += UI_DROPDOWN_MARGIN_TOP;
 
 		if (i == ms->focused_item)
@@ -1050,40 +1052,43 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 
 		bool is_focused = is_menu_item_focused(state, i);
 
-		if (item->type == UI_MENU_ITEM_TYPE_PRIMARY) {
+		if (item->type == UI_MENU_ITEM_TYPE_H1) {
 			clear_help = prev_ms &&
 				     prev_ms->focused_item == i &&
 				     UI_GET_BIT(prev_ms->disabled_item_mask, i);
-			VB2_TRY(ui_draw_button(item, state, x, y,
-					       button_width, UI_BUTTON_HEIGHT,
-					       is_focused,
-					       UI_GET_BIT(ms->disabled_item_mask, i),
-					       clear_help));
+			VB2_TRY(ui_draw_h1_button(item, state, x, y,
+						  button_width,
+						  UI_H1_BUTTON_HEIGHT,
+						  is_focused,
+						  UI_GET_BIT(ms->disabled_item_mask, i),
+						  clear_help));
 		} else {
-			VB2_TRY(ui_draw_dropdown(item, state, x, y,
-						 UI_BUTTON_HEIGHT,
-						 is_focused));
+			VB2_TRY(ui_draw_h2_dropdown(item, state, x, y,
+						    UI_H2_BUTTON_HEIGHT,
+						    is_focused));
 		}
 
-		prev_is_primary = (item->type == UI_MENU_ITEM_TYPE_PRIMARY);
-		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
+		prev_is_h1 = (item->type == UI_MENU_ITEM_TYPE_H1);
+		y += (prev_is_h1 ?
+		      UI_H1_BUTTON_HEIGHT : UI_H2_BUTTON_HEIGHT) +
+		     UI_BUTTON_MARGIN_V;
 	}
 
-	/* Secondary (link) buttons (anchored to bottom) */
-	x = UI_MARGIN_H - UI_LINK_TEXT_PADDING_LEFT;
+	/* H3 buttons (anchored to bottom) */
+	x = UI_MARGIN_H - UI_BUTTON_PADDING_H;
 	y = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT -
-		UI_FOOTER_MARGIN_TOP - UI_BUTTON_HEIGHT;
+		UI_FOOTER_MARGIN_TOP - UI_H3_BUTTON_HEIGHT;
 	for (i = menu->num_items - 1; i >= 0; i--) {
 		if (UI_GET_BIT(ms->hidden_item_mask, i))
 			continue;
-		if (menu->items[i].type != UI_MENU_ITEM_TYPE_SECONDARY)
+		if (menu->items[i].type != UI_MENU_ITEM_TYPE_H3)
 			continue;
 		if (i == ms->focused_item)
 			*out_focused_item_y = y;
-		VB2_TRY(ui_draw_link(&menu->items[i], state,
-				     x, y, UI_BUTTON_HEIGHT,
-				     ms->focused_item == i));
-		y -= UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
+		VB2_TRY(ui_draw_h3_button(&menu->items[i], state,
+					  x, y, UI_H3_BUTTON_HEIGHT,
+					  ms->focused_item == i));
+		y -= UI_H3_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
 	}
 
 	return VB2_SUCCESS;
@@ -1229,7 +1234,8 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 
 	int32_t box_x = UI_MARGIN_H;
 	int32_t item_h = UI_SUB_MENU_ITEM_HEIGHT;
-	int32_t box_y = focused_item_y + UI_BUTTON_HEIGHT + UI_SUB_MENU_PADDING_V;
+	int32_t box_y = focused_item_y + UI_H2_BUTTON_HEIGHT +
+		UI_SUB_MENU_PADDING_V;
 
 	int32_t max_y = UI_SCALE - UI_MARGIN_BOTTOM;
 	int32_t max_available_h = max_y - box_y;
@@ -1375,11 +1381,11 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 		/*
 		 * Clear everything below the language dropdown header. The
 		 * sub-menu only expands downwards and may overlap
-		 * with secondary buttons and the footer, while the language
+		 * with H3 buttons and the footer, while the language
 		 * dropdown at the top remains untouched and does not need to
 		 * be redrawn.
 		 */
-		const int32_t clear_y = UI_MARGIN_TOP + UI_BUTTON_HEIGHT;
+		const int32_t clear_y = UI_MARGIN_TOP + UI_H2_BUTTON_HEIGHT;
 		VB2_TRY(ui_draw_box(0, clear_y, UI_SCALE, UI_SCALE - clear_y,
 				    &ui_color_bg, 0));
 	}
@@ -1399,9 +1405,10 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 		    prev_state->locale != state->locale ||
 		    prev_state->error_code != state->error_code ||
 		    prev_focused != focused) {
-			VB2_TRY(ui_draw_dropdown(&menu->items[0], state,
-						 UI_MARGIN_H, UI_MARGIN_TOP,
-						 UI_BUTTON_HEIGHT, focused));
+			VB2_TRY(ui_draw_h2_dropdown(&menu->items[0], state,
+						    UI_MARGIN_H, UI_MARGIN_TOP,
+						    UI_H2_BUTTON_HEIGHT,
+						    focused));
 		}
 	}
 
@@ -1423,7 +1430,7 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	if (screen->is_fullview)
 		y = UI_FULLVIEW_TITLE_MARGIN;
 	else
-		y = UI_MARGIN_TOP + UI_BUTTON_HEIGHT + UI_LANG_MARGIN_BOTTOM;
+		y = UI_MARGIN_TOP + UI_H2_BUTTON_HEIGHT + UI_LANG_MARGIN_BOTTOM;
 
 	/* Icon */
 	if (screen->icon != UI_ICON_TYPE_NONE) {
@@ -1482,7 +1489,7 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 		VB2_TRY(ui_draw_desc(&screen->desc, state, &y));
 	y += UI_DESC_MARGIN_BOTTOM;
 
-	/* Primary and secondary buttons */
+	/* Menu buttons */
 	if (screen->draw_menu_items) {
 		VB2_TRY(screen->draw_menu_items(ui, prev_state));
 	} else {

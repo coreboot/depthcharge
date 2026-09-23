@@ -92,7 +92,7 @@
 #define ADVANCED_OPTIONS_ITEM ((struct ui_menu_item){	\
 	.name = "Advanced options",			\
 	.file = "btn_adv_options.bmp",			\
-	.type = UI_MENU_ITEM_TYPE_DROPDOWN,		\
+	.type = UI_MENU_ITEM_TYPE_H2_DROPDOWN,		\
 	.sub_menu = &advanced_options_menu,		\
 })
 
@@ -105,7 +105,7 @@ static vb2_error_t power_off_action(struct ui_context *ui)
 #define POWER_OFF_ITEM ((struct ui_menu_item){	\
 	.name = "Power off",			\
 	.file = "btn_power_off.bmp",		\
-	.type = UI_MENU_ITEM_TYPE_SECONDARY,	\
+	.type = UI_MENU_ITEM_TYPE_H3,	\
 	.icon_file = "ic_power.bmp",		\
 	.flags = UI_MENU_ITEM_FLAG_NO_ARROW,	\
 	.action = power_off_action,		\
@@ -1320,7 +1320,7 @@ static const struct ui_menu_item recovery_select_items[] = {
 	[RECOVERY_SELECT_ITEM_DIAGNOSTICS] = {
 		.name = "Launch diagnostics",
 		.file = "btn_launch_diag.bmp",
-		.type = UI_MENU_ITEM_TYPE_SECONDARY,
+		.type = UI_MENU_ITEM_TYPE_H3,
 		.icon_file = "ic_search.bmp",
 		.flags = UI_MENU_ITEM_FLAG_NO_ARROW,
 		.action = launch_diagnostics_action,
@@ -2388,7 +2388,7 @@ static vb2_error_t diagnostics_test_back_get_width(const struct ui_state *state,
 		int32_t button_width;
 		VB2_TRY(ui_get_bitmap(files[i], state->locale->code, 0,
 				      &bitmap));
-		VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
+		VB2_TRY(ui_get_bitmap_width(&bitmap, UI_H1_BUTTON_TEXT_HEIGHT,
 					    &button_width));
 		*width = MAX(*width, button_width);
 	}
