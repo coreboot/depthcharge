@@ -64,17 +64,17 @@
 
 /*
  * This is the base used to specify the size and the coordinate of the image.
- * For example, height = 40 means 4.0% of the canvas height.
+ * For example, height = 54 means 5.0% of the canvas height.
  */
-#define UI_SCALE				1000
+#define UI_SCALE				1080
 
 /* Margins for all screens. Nothing should be drawn within the margin. */
-#define UI_MARGIN_TOP				30
-#define UI_MARGIN_BOTTOM			50
-#define UI_MARGIN_H				50
+#define UI_MARGIN_TOP				46
+#define UI_MARGIN_H				72
 
 /* For language dropdown header */
-#define UI_LANG_MARGIN_BOTTOM			36
+#define UI_LANG_MARGIN_V			10
+#define UI_LANG_BUTTON_MIN_WIDTH		284
 
 /* For scrollbar */
 #define UI_SCROLLBAR_WIDTH			4
@@ -93,54 +93,65 @@
 #define UI_STEP_ICON_MARGIN_H			7
 #define UI_STEP_ICON_SEPARATOR_WIDTH		60
 
+/*
+ * For each type of text:
+ * - *_TEXT_HEIGHT is the height of each line of the text bitmap, which
+ *   determines the size of the drawn text.
+ * - *_TEXT_LINE_HEIGHT is the line height in the design, which determines the
+ *   space taken up by the text in the layout.
+ * The text bitmap is vertically centered in that space. If *_TEXT_HEIGHT is
+ * larger than *_TEXT_LINE_HEIGHT, the excess height is taken from the margins
+ * above and below the text.
+ */
+
 /* For title and descriptions */
-#define UI_TITLE_TEXT_HEIGHT			42
-#define UI_TITLE_MARGIN_BOTTOM			30
-#define UI_DESC_TEXT_HEIGHT			24
-#define UI_DESC_TEXT_LINE_SPACING		12
+#define UI_TITLE_TEXT_HEIGHT			59
+#define UI_TITLE_TEXT_LINE_HEIGHT		54
+#define UI_TITLE_MARGIN_V			20
+#define UI_DESC_TEXT_HEIGHT			23
+#define UI_DESC_TEXT_LINE_HEIGHT		28
+#define UI_DESC_TEXT_LINE_SPACING		10
 #define UI_DESC_MARGIN_BOTTOM			48
 
 /* For buttons */
+#define UI_BUTTON_TEXT_HEIGHT			21
 #define UI_BUTTON_PADDING_H			16
 #define UI_BUTTON_FOCUS_RING_THICKNESS		2
-#define UI_BUTTON_MARGIN_V			14
+#define UI_BUTTON_MARGIN_V			16
 
 /* For H1 buttons */
-#define UI_H1_BUTTON_HEIGHT			40
-#define UI_H1_BUTTON_TEXT_HEIGHT		20
-#define UI_BUTTON_TEXT_PADDING_H		40
+#define UI_H1_BUTTON_HEIGHT			44
 #define UI_H1_BUTTON_HELP_TEXT_MARGIN_L		30
 
 /* For H2 buttons */
-#define UI_H2_BUTTON_HEIGHT			40
-#define UI_H2_BUTTON_TEXT_HEIGHT		20
+#define UI_H2_BUTTON_HEIGHT			48
 
 /* For dropdown trigger */
-#define UI_DROPDOWN_ICON_SIZE			20
-#define UI_DROPDOWN_ARROW_SIZE			20
-#define UI_DROPDOWN_ARROW_MARGIN_H		12
+#define UI_DROPDOWN_ICON_SIZE			24
+#define UI_DROPDOWN_ARROW_SIZE			24
+#define UI_DROPDOWN_ARROW_MARGIN_H		8
 #define UI_DROPDOWN_MARGIN_TOP			24
 
 /* For sub-menu */
-#define UI_SUB_MENU_MIN_WIDTH			380
-#define UI_SUB_MENU_ITEM_HEIGHT			48
-#define UI_SUB_MENU_ITEM_TEXT_HEIGHT		20
-#define UI_SUB_MENU_PADDING_H			20
-#define UI_SUB_MENU_PADDING_V			8
-#define UI_SUB_MENU_BORDER_RADIUS		12
+#define UI_SUB_MENU_MIN_WIDTH			354
+#define UI_SUB_MENU_MAX_ITEMS			6
+#define UI_SUB_MENU_ITEM_HEIGHT			64
+#define UI_SUB_MENU_PADDING_H			16
+#define UI_SUB_MENU_PADDING_V			10
+#define UI_SUB_MENU_BORDER_RADIUS		24
 
 /* For H3 buttons */
-#define UI_H3_BUTTON_HEIGHT			40
-#define UI_H3_BUTTON_TEXT_HEIGHT		20
+#define UI_H3_BUTTON_HEIGHT			44
 #define UI_H3_BUTTON_ICON_SIZE			24
-#define UI_H3_BUTTON_ICON_MARGIN_R		20
+#define UI_H3_BUTTON_ICON_MARGIN_R		8
 #define UI_H3_BUTTON_ARROW_SIZE			20
-#define UI_H3_BUTTON_ARROW_MARGIN_H		15
+#define UI_H3_BUTTON_ARROW_MARGIN_H		8
 #define UI_H3_BUTTON_BORDER_THICKNESS		2
 
 /* For footer */
 #define UI_FOOTER_MARGIN_TOP			30
 #define UI_FOOTER_HEIGHT			128
+#define UI_FOOTER_PADDING_BOTTOM		45
 #define UI_FOOTER_TEXT_HEIGHT			20
 #define UI_FOOTER_COL1_MARGIN_RIGHT		20
 #define UI_FOOTER_COL2_LINE_SPACING		4
@@ -189,7 +200,7 @@
 #define UI_SIZE_AUTO				0
 /*
  * Minimum size that is guaranteed to show up as at least 1 pixel on the screen,
- * provided that the canvas resolution is at least 500 (UI_SCALE / 2). Pixels
+ * provided that the canvas resolution is at least 540 (UI_SCALE / 2). Pixels
  * may be dropped on devices with screen resolution 640x480.
  */
 #define UI_SIZE_MIN				2
@@ -1109,6 +1120,28 @@ vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 vb2_error_t ui_draw_desc(const struct ui_desc *desc,
 			 const struct ui_state *state,
 			 int32_t *y);
+
+/*
+ * Get the height of a description text block.
+ *
+ * @param bitmap	Description bitmap.
+ *
+ * @return The height of the text block.
+ */
+int32_t ui_get_desc_height(const struct ui_bitmap *bitmap);
+
+/*
+ * Draw a description bitmap, vertically centered in its text block.
+ *
+ * @param bitmap	Description bitmap.
+ * @param y		y-coordinate of the top of the text block.
+ * @param reverse	Whether to reverse the x-coordinate relative to the
+ *			canvas.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_desc_bitmap(const struct ui_bitmap *bitmap, int32_t y,
+				int reverse);
 
 /*
  * Draw a rounded textbox with multi-line text.

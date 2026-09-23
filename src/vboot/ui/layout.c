@@ -24,6 +24,27 @@
 #include "vboot/ui.h"
 
 /*
+ * Get the height of a text block.
+ *
+ * The text bitmap is vertically centered in the text block. The first line of
+ * the text takes up line_height, and each additional line takes up
+ * text_height, because the lines in the bitmap are text_height apart.
+ *
+ * @param bitmap	Text bitmap.
+ * @param text_height	Height of each line of the bitmap.
+ * @param line_height	Line height of the text in the design.
+ *
+ * @return The height of the text block.
+ */
+static int32_t ui_get_text_block_height(const struct ui_bitmap *bitmap,
+					int32_t text_height,
+					int32_t line_height)
+{
+	return text_height * ui_get_bitmap_num_lines(bitmap) +
+		line_height - text_height;
+}
+
+/*
  * Draw step icons.
  *
  * @param state		Current UI state.
@@ -41,8 +62,8 @@ static vb2_error_t ui_draw_step_icons(const struct ui_state *state,
 	const int num_steps = screen->num_steps;
 	int step;
 	int32_t x = UI_MARGIN_H;
-	const int32_t y = UI_MARGIN_TOP + UI_H2_BUTTON_HEIGHT +
-		UI_LANG_MARGIN_BOTTOM;
+	const int32_t y = UI_MARGIN_TOP + UI_LANG_MARGIN_V * 2 +
+		UI_H2_BUTTON_HEIGHT + UI_TITLE_MARGIN_V;
 	const int32_t y_center = y + UI_ICON_HEIGHT / 2;
 	const int32_t icon_size = UI_STEP_ICON_HEIGHT;
 	const int reverse = state->locale->rtl;
@@ -113,7 +134,8 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	int32_t x, y, vspacing;
 	int32_t col2_width;
 	const int32_t w = UI_SIZE_AUTO;
-	const int32_t footer_y = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT;
+	const int32_t footer_y = UI_SCALE - UI_FOOTER_PADDING_BOTTOM -
+		UI_FOOTER_HEIGHT;
 	const int32_t footer_height = UI_FOOTER_HEIGHT;
 	struct ui_bitmap bitmap;
 
@@ -228,7 +250,7 @@ static vb2_error_t draw_navigation_bar(const struct ui_state *state)
 
 	int32_t icon_width;
 	const int32_t icon_height = UI_NAVIGATION_BAR_HEIGHT;
-	const int32_t text_height = UI_H1_BUTTON_TEXT_HEIGHT;
+	const int32_t text_height = UI_BUTTON_TEXT_HEIGHT;
 
 	struct navigation_tip {
 		const char *icon;
@@ -319,11 +341,11 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 			VB2_TRY(ui_get_bitmap(file, state->locale->code, 0,
 					      &bitmap));
 			VB2_TRY(ui_get_bitmap_width(&bitmap,
-						    UI_H1_BUTTON_TEXT_HEIGHT,
+						    UI_BUTTON_TEXT_HEIGHT,
 						    &text_width));
 		} else if (item->name) {
 			VB2_TRY(ui_get_text_width(item->name,
-						  UI_H1_BUTTON_TEXT_HEIGHT,
+						  UI_BUTTON_TEXT_HEIGHT,
 						  &text_width));
 		} else {
 			UI_ERROR("Menu item #%d: no .file or .name\n", i);
@@ -332,7 +354,7 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 		max_text_width = MAX(text_width, max_text_width);
 	}
 
-	*button_width = max_text_width + UI_BUTTON_TEXT_PADDING_H * 2;
+	*button_width = max_text_width + UI_BUTTON_PADDING_H * 2;
 	return VB2_SUCCESS;
 }
 
@@ -390,12 +412,12 @@ vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 		VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
 		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x_center, y_center,
 					      UI_SIZE_AUTO,
-					      UI_H1_BUTTON_TEXT_HEIGHT,
+					      UI_BUTTON_TEXT_HEIGHT,
 					      bg_color, fg_color,
 					      flags, reverse));
 	} else if (item->name) {
 		VB2_TRY(ui_draw_text(item->name, x_center, y_center,
-				     UI_H1_BUTTON_TEXT_HEIGHT,
+				     UI_BUTTON_TEXT_HEIGHT,
 				     bg_color, fg_color,
 				     flags, reverse));
 	} else {
@@ -415,7 +437,7 @@ vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 			VB2_TRY(ui_draw_mapped_bitmap(
 					&bitmap,
 					x_help, y_center,
-					UI_SIZE_AUTO, UI_H1_BUTTON_TEXT_HEIGHT,
+					UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
 					&ui_color_bg, &ui_color_button_help_fg,
 					PIVOT_H_LEFT | PIVOT_V_CENTER,
 					reverse));
@@ -425,12 +447,12 @@ vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 					locale_code, 0, &bitmap));
 			VB2_TRY(ui_get_bitmap_width(
 					&bitmap,
-					UI_H1_BUTTON_TEXT_HEIGHT,
+					UI_BUTTON_TEXT_HEIGHT,
 					&help_text_width));
 			VB2_TRY(ui_draw_box(
 					x_help,
-					y_center - UI_H1_BUTTON_TEXT_HEIGHT / 2,
-					help_text_width, UI_H1_BUTTON_TEXT_HEIGHT,
+					y_center - UI_BUTTON_TEXT_HEIGHT / 2,
+					help_text_width, UI_BUTTON_TEXT_HEIGHT,
 					&ui_color_bg,
 					reverse));
 		}
@@ -473,7 +495,7 @@ static vb2_error_t ui_draw_h2_dropdown(const struct ui_menu_item *item,
 
 	/* Calculate text width */
 	VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
-	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_H2_BUTTON_TEXT_HEIGHT,
+	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
 				    &text_width));
 
 	width = UI_BUTTON_PADDING_H + text_width +
@@ -481,6 +503,8 @@ static vb2_error_t ui_draw_h2_dropdown(const struct ui_menu_item *item,
 		UI_BUTTON_PADDING_H;
 	if (item->icon_file)
 		width += UI_DROPDOWN_ICON_SIZE + UI_DROPDOWN_ARROW_MARGIN_H;
+	if (item->type == UI_MENU_ITEM_TYPE_LANGUAGE)
+		width = MAX(width, UI_LANG_BUTTON_MIN_WIDTH);
 
 	const struct rgb_color *bg_color = &ui_color_h2_button_bg;
 	const struct rgb_color *fg_color = &ui_color_h2_button_fg;
@@ -507,14 +531,13 @@ static vb2_error_t ui_draw_h2_dropdown(const struct ui_menu_item *item,
 	/* Draw button text */
 	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
 				      UI_SIZE_AUTO,
-				      UI_H2_BUTTON_TEXT_HEIGHT,
+				      UI_BUTTON_TEXT_HEIGHT,
 				      bg_color,
 				      fg_color,
 				      flags, reverse));
-	x += text_width;
 
 	/* Draw dropdown arrow */
-	x += UI_DROPDOWN_ARROW_MARGIN_H;
+	x = x_base + width - UI_BUTTON_PADDING_H - UI_DROPDOWN_ARROW_SIZE;
 	VB2_TRY(ui_get_bitmap("ic_dropdown.bmp", NULL, 0, &bitmap));
 	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
 				      UI_DROPDOWN_ARROW_SIZE,
@@ -569,11 +592,11 @@ static vb2_error_t ui_draw_h3_button(const struct ui_menu_item *item,
 
 	/* Get button width */
 	VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
-	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_H3_BUTTON_TEXT_HEIGHT,
+	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
 				    &text_width));
-	width = UI_BUTTON_PADDING_H +
-		UI_H3_BUTTON_ICON_SIZE + UI_H3_BUTTON_ICON_MARGIN_R +
-		text_width + UI_H3_BUTTON_ARROW_MARGIN_H;
+	width = UI_BUTTON_PADDING_H * 2 + text_width;
+	if (item->icon_file)
+		width += UI_H3_BUTTON_ICON_SIZE + UI_H3_BUTTON_ICON_MARGIN_R;
 	if (!(item->flags & UI_MENU_ITEM_FLAG_NO_ARROW))
 		width += UI_H3_BUTTON_ARROW_SIZE + UI_H3_BUTTON_ARROW_MARGIN_H;
 
@@ -591,13 +614,13 @@ static vb2_error_t ui_draw_h3_button(const struct ui_menu_item *item,
 					      UI_H3_BUTTON_ICON_SIZE,
 					      bg_color, fg_color,
 					      flags, reverse));
+		x += UI_H3_BUTTON_ICON_SIZE + UI_H3_BUTTON_ICON_MARGIN_R;
 	}
-	x += UI_H3_BUTTON_ICON_SIZE + UI_H3_BUTTON_ICON_MARGIN_R;
 
 	/* Draw button text */
 	VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
-				      UI_SIZE_AUTO, UI_H3_BUTTON_TEXT_HEIGHT,
+				      UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
 				      bg_color, fg_color,
 				      flags, reverse));
 	x += text_width;
@@ -612,7 +635,6 @@ static vb2_error_t ui_draw_h3_button(const struct ui_menu_item *item,
 					      UI_H3_BUTTON_ARROW_SIZE,
 					      bg_color, fg_color,
 					      flags, reverse));
-		x += UI_H3_BUTTON_ARROW_SIZE + UI_H3_BUTTON_ARROW_MARGIN_H;
 	}
 
 	/* Draw button border */
@@ -624,6 +646,24 @@ static vb2_error_t ui_draw_h3_button(const struct ui_menu_item *item,
 	return VB2_SUCCESS;
 }
 
+int32_t ui_get_desc_height(const struct ui_bitmap *bitmap)
+{
+	return ui_get_text_block_height(bitmap, UI_DESC_TEXT_HEIGHT,
+					UI_DESC_TEXT_LINE_HEIGHT);
+}
+
+vb2_error_t ui_draw_desc_bitmap(const struct ui_bitmap *bitmap, int32_t y,
+				int reverse)
+{
+	const int32_t h =
+		UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(bitmap);
+
+	return ui_draw_bitmap(bitmap, UI_MARGIN_H,
+			      y + ui_get_desc_height(bitmap) / 2,
+			      UI_SIZE_AUTO, h, PIVOT_H_LEFT | PIVOT_V_CENTER,
+			      reverse);
+}
+
 vb2_error_t ui_draw_desc(const struct ui_desc *desc,
 			 const struct ui_state *state,
 			 int32_t *y)
@@ -632,20 +672,13 @@ vb2_error_t ui_draw_desc(const struct ui_desc *desc,
 	struct ui_bitmap bitmap;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
-	int32_t x;
-	const int32_t w = UI_SIZE_AUTO;
-	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
-
-	x = UI_MARGIN_H;
 
 	for (i = 0; i < desc->count; i++) {
-		int32_t h;
 		if (i > 0)
 			*y += UI_DESC_TEXT_LINE_SPACING;
 		VB2_TRY(ui_get_bitmap(desc->files[i], locale_code, 0, &bitmap));
-		h = UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
-		VB2_TRY(ui_draw_bitmap(&bitmap, x, *y, w, h, flags, reverse));
-		*y += h;
+		VB2_TRY(ui_draw_desc_bitmap(&bitmap, *y, reverse));
+		*y += ui_get_desc_height(&bitmap);
 	}
 
 	return VB2_SUCCESS;
@@ -856,7 +889,7 @@ vb2_error_t ui_get_textbox_lines_per_page(enum ui_screen screen, int32_t y,
 			(UI_H1_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V) * 4 -
 			UI_DESC_MARGIN_BOTTOM -
 			UI_FOOTER_MARGIN_TOP - UI_FOOTER_HEIGHT -
-			UI_MARGIN_BOTTOM;
+			UI_FOOTER_PADDING_BOTTOM;
 	}
 
 	*lines_per_page = (textbox_height - UI_BOX_PADDING_V * 2 +
@@ -887,11 +920,12 @@ vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
 		above_textbox_height = title_height +
 				UI_FULLVIEW_TITLE_MARGIN * 2;
 	} else {
-		title_height = UI_TITLE_TEXT_HEIGHT *
-				ui_get_bitmap_num_lines(&bitmap);
+		title_height = ui_get_text_block_height(
+			&bitmap, UI_TITLE_TEXT_HEIGHT,
+			UI_TITLE_TEXT_LINE_HEIGHT);
 		above_textbox_height = UI_MARGIN_TOP +
-			UI_H2_BUTTON_HEIGHT + UI_LANG_MARGIN_BOTTOM +
-			title_height + UI_TITLE_MARGIN_BOTTOM;
+			UI_LANG_MARGIN_V * 2 + UI_H2_BUTTON_HEIGHT +
+			UI_TITLE_MARGIN_V * 2 + title_height;
 	}
 
 	VB2_TRY(ui_get_textbox_lines_per_page(screen, above_textbox_height, lines_per_page));
@@ -994,8 +1028,9 @@ static vb2_error_t ui_draw_dev_signed_warning(void)
 		return VB2_SUCCESS;
 
 	const int32_t x = UI_MARGIN_H;
-	const int32_t y = UI_MARGIN_TOP + UI_H2_BUTTON_HEIGHT +
-		UI_LANG_MARGIN_BOTTOM / 2;
+	const int32_t y = UI_MARGIN_TOP + UI_LANG_MARGIN_V +
+		UI_H2_BUTTON_HEIGHT +
+		(UI_LANG_MARGIN_V + UI_TITLE_MARGIN_V) / 2;
 
 	VB2_TRY(ui_draw_text("This firmware is developer-signed. "
 			     "MP-signed recovery images will not work!",
@@ -1068,8 +1103,8 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 	}
 
 	/* H3 buttons (anchored to bottom) */
-	x = UI_MARGIN_H - UI_BUTTON_PADDING_H;
-	y = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT -
+	x = UI_MARGIN_H;
+	y = UI_SCALE - UI_FOOTER_PADDING_BOTTOM - UI_FOOTER_HEIGHT -
 		UI_FOOTER_MARGIN_TOP - UI_H3_BUTTON_HEIGHT;
 	for (i = menu->num_items - 1; i >= 0; i--) {
 		if (UI_GET_BIT(ms->hidden_item_mask, i))
@@ -1176,7 +1211,7 @@ static vb2_error_t ui_get_sub_menu_width(const struct ui_menu *menu,
 
 		VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
 		VB2_TRY(ui_get_bitmap_width(&bitmap,
-					    UI_SUB_MENU_ITEM_TEXT_HEIGHT,
+					    UI_BUTTON_TEXT_HEIGHT,
 					    &text_width));
 		max_item_width = MAX(max_item_width, text_width);
 	}
@@ -1230,15 +1265,15 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 	int32_t box_y = focused_item_y + UI_H2_BUTTON_HEIGHT +
 		UI_SUB_MENU_PADDING_V;
 
-	int32_t max_y = UI_SCALE - UI_MARGIN_BOTTOM;
-	int32_t max_available_h = max_y - box_y;
+	int32_t max_available_h = UI_SCALE - box_y;
 	if (max_available_h < item_h) {
 		UI_ERROR("No vertical space available for sub-menu (%d < %d)\n",
 			 max_available_h, item_h);
 		return VB2_ERROR_UI_DRAW_FAILURE;
 	}
 
-	size_t max_items = (size_t)(max_available_h / item_h);
+	size_t max_items = MIN((size_t)(max_available_h / item_h),
+			       UI_SUB_MENU_MAX_ITEMS);
 	size_t items_per_page = MIN(total_items, max_items);
 	int32_t box_h = item_h * items_per_page;
 	bool has_scrollbar = total_items > items_per_page;
@@ -1303,7 +1338,7 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 		VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
 		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, text_x, text_y,
 					      UI_SIZE_AUTO,
-					      UI_SUB_MENU_ITEM_TEXT_HEIGHT,
+					      UI_BUTTON_TEXT_HEIGHT,
 					      &ui_color_sub_menu_bg,
 					      &ui_color_fg,
 					      PIVOT_H_LEFT | PIVOT_V_CENTER,
@@ -1361,8 +1396,8 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 			clear_screen(&ui_color_bg);
 		} else {
 			/* Clear everything above the footer for new screen. */
-			const int32_t box_height = UI_SCALE - UI_MARGIN_BOTTOM -
-				UI_FOOTER_HEIGHT;
+			const int32_t box_height = UI_SCALE -
+				UI_FOOTER_PADDING_BOTTOM - UI_FOOTER_HEIGHT;
 			VB2_TRY(ui_draw_box(0, 0, UI_SCALE, box_height,
 					    &ui_color_bg, 0));
 		}
@@ -1374,7 +1409,8 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 		 * dropdown at the top remains untouched and does not need to
 		 * be redrawn.
 		 */
-		const int32_t clear_y = UI_MARGIN_TOP + UI_H2_BUTTON_HEIGHT;
+		const int32_t clear_y = UI_MARGIN_TOP + UI_LANG_MARGIN_V +
+			UI_H2_BUTTON_HEIGHT;
 		VB2_TRY(ui_draw_box(0, clear_y, UI_SCALE, UI_SCALE - clear_y,
 				    &ui_color_bg, 0));
 	}
@@ -1394,10 +1430,10 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 		    prev_state->locale != state->locale ||
 		    prev_state->error_code != state->error_code ||
 		    prev_focused != focused) {
-			VB2_TRY(ui_draw_h2_dropdown(&menu->items[0], state,
-						    UI_MARGIN_H, UI_MARGIN_TOP,
-						    UI_H2_BUTTON_HEIGHT,
-						    focused));
+			VB2_TRY(ui_draw_h2_dropdown(
+				&menu->items[0], state, UI_MARGIN_H,
+				UI_MARGIN_TOP + UI_LANG_MARGIN_V,
+				UI_H2_BUTTON_HEIGHT, focused));
 		}
 	}
 
@@ -1419,7 +1455,8 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	if (screen->is_fullview)
 		y = UI_FULLVIEW_TITLE_MARGIN;
 	else
-		y = UI_MARGIN_TOP + UI_H2_BUTTON_HEIGHT + UI_LANG_MARGIN_BOTTOM;
+		y = UI_MARGIN_TOP + UI_LANG_MARGIN_V * 2 +
+			UI_H2_BUTTON_HEIGHT + UI_TITLE_MARGIN_V;
 
 	/* Icon */
 	if (screen->icon != UI_ICON_TYPE_NONE) {
@@ -1452,22 +1489,28 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	}
 
 	/* Title */
-	int32_t title_text_height, title_margin_bottom;
+	int32_t title_text_height, title_line_height, title_margin_bottom;
 
 	if (screen->is_fullview) {
 		title_text_height = UI_FULLVIEW_TITLE_TEXT_HEIGHT;
+		title_line_height = UI_FULLVIEW_TITLE_TEXT_HEIGHT;
 		title_margin_bottom = UI_FULLVIEW_TITLE_MARGIN;
 	} else {
 		title_text_height = UI_TITLE_TEXT_HEIGHT;
-		title_margin_bottom = UI_TITLE_MARGIN_BOTTOM;
+		title_line_height = UI_TITLE_TEXT_LINE_HEIGHT;
+		title_margin_bottom = UI_TITLE_MARGIN_V;
 	}
 
 	if (screen->title) {
 		VB2_TRY(ui_get_bitmap(screen->title, locale_code, 0, &bitmap));
-		h = title_text_height * ui_get_bitmap_num_lines(&bitmap);
-		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
+		h = ui_get_text_block_height(&bitmap, title_text_height,
+					     title_line_height);
+		VB2_TRY(ui_draw_bitmap(&bitmap, x, y + h / 2, w,
+				       title_text_height *
+				       ui_get_bitmap_num_lines(&bitmap),
+				       PIVOT_H_LEFT | PIVOT_V_CENTER, reverse));
 	} else {
-		h = title_text_height;
+		h = title_line_height;
 	}
 	y += h + title_margin_bottom;
 
@@ -1489,7 +1532,7 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 		if (menu->num_items > 0 &&
 		    menu->items[0].type == UI_MENU_ITEM_TYPE_LANGUAGE &&
 		    ms->focused_item == 0)
-			focused_item_y = UI_MARGIN_TOP;
+			focused_item_y = UI_MARGIN_TOP + UI_LANG_MARGIN_V;
 
 		/* Sub-menu */
 		if (state->is_sub_menu_active)

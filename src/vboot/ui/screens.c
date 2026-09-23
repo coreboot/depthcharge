@@ -174,17 +174,11 @@ static vb2_error_t draw_rec_url_desc(struct ui_context *ui,
 {
 	struct ui_bitmap bitmap;
 	const int reverse = ui->state->locale->rtl;
-	int32_t x, h;
-	const int32_t w = UI_SIZE_AUTO;
-	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
-
-	x = UI_MARGIN_H;
 
 	VB2_TRY(ui_draw_desc(&ui->state->screen->desc, ui->state, y));
 	VB2_TRY(ui_get_bitmap("rec_url_desc.bmp", NULL, 0, &bitmap));
-	h = UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, *y, w, h, flags, reverse));
-	*y += h;
+	VB2_TRY(ui_draw_desc_bitmap(&bitmap, *y, reverse));
+	*y += ui_get_desc_height(&bitmap);
 
 	return VB2_SUCCESS;
 }
@@ -1099,10 +1093,6 @@ static vb2_error_t draw_fastboot_desc_bitmap(
 	struct ui_bitmap desc_bitmap;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
-	const int32_t x = UI_MARGIN_H;
-	const int32_t w = UI_SIZE_AUTO;
-	const int32_t h = UI_DESC_TEXT_HEIGHT;
-	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
 
 	/* Choose correct description based on fastboot session state */
 	if (state->fb_session == NULL || state->fb_session->type >= ARRAY_SIZE(fastboot_desc))
@@ -1112,8 +1102,8 @@ static vb2_error_t draw_fastboot_desc_bitmap(
 
 	VB2_TRY(ui_get_bitmap(bitmap_name, locale_code, 0, &desc_bitmap));
 	assert(ui_get_bitmap_num_lines(&desc_bitmap) == 1);
-	VB2_TRY(ui_draw_bitmap(&desc_bitmap, x, *y, w, h, flags, reverse));
-	*y += h + UI_DESC_TEXT_LINE_SPACING;
+	VB2_TRY(ui_draw_desc_bitmap(&desc_bitmap, *y, reverse));
+	*y += ui_get_desc_height(&desc_bitmap) + UI_DESC_TEXT_LINE_SPACING;
 
 	return VB2_SUCCESS;
 }
@@ -1656,9 +1646,7 @@ static vb2_error_t draw_developer_mode_desc(
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
 	int32_t x;
-	const int32_t w = UI_SIZE_AUTO;
 	int32_t h;
-	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
 
 	x = UI_MARGIN_H;
 
@@ -1670,9 +1658,8 @@ static vb2_error_t draw_developer_mode_desc(
 	      VB2_GBB_FLAG_FORCE_DEV_SWITCH_ON)) {
 		VB2_TRY(ui_get_bitmap("dev_desc0.bmp", locale_code, 0,
 				      &bitmap));
-		h = UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
-		VB2_TRY(ui_draw_bitmap(&bitmap, x, *y, w, h, flags, reverse));
-		*y += h + UI_DESC_TEXT_LINE_SPACING;
+		VB2_TRY(ui_draw_desc_bitmap(&bitmap, *y, reverse));
+		*y += ui_get_desc_height(&bitmap) + UI_DESC_TEXT_LINE_SPACING;
 	}
 
 	/*
@@ -1682,13 +1669,13 @@ static vb2_error_t draw_developer_mode_desc(
 	 */
 	VB2_TRY(ui_get_bitmap("dev_desc1.bmp", locale_code, 0,
 			      &bitmap));
-	h = UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
+	h = ui_get_desc_height(&bitmap);
 	/* Either clear the desc line, or draw it again. */
 	if (state->timer_disabled)
 		VB2_TRY(ui_draw_box(x, *y, UI_SCALE - x, h, &ui_color_bg,
 				    reverse));
 	else
-		VB2_TRY(ui_draw_bitmap(&bitmap, x, *y, w, h, flags, reverse));
+		VB2_TRY(ui_draw_desc_bitmap(&bitmap, *y, reverse));
 	*y += h;
 
 	return VB2_SUCCESS;
@@ -2388,7 +2375,7 @@ static vb2_error_t diagnostics_test_back_get_width(const struct ui_state *state,
 		int32_t button_width;
 		VB2_TRY(ui_get_bitmap(files[i], state->locale->code, 0,
 				      &bitmap));
-		VB2_TRY(ui_get_bitmap_width(&bitmap, UI_H1_BUTTON_TEXT_HEIGHT,
+		VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
 					    &button_width));
 		*width = MAX(*width, button_width);
 	}

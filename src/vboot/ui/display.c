@@ -201,10 +201,10 @@ static vb2_error_t show_error_box(const struct ui_error_message *error,
 	};
 	VB2_TRY(ui_get_bitmap(back_item.file, locale_code, 0, &bitmap));
 	int32_t text_width;
-	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_H1_BUTTON_TEXT_HEIGHT,
+	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
 				    &text_width));
 
-	button_width = text_width + (UI_BUTTON_TEXT_PADDING_H * 2);
+	button_width = text_width + (UI_BUTTON_PADDING_H * 2);
 	/* x and y are top-left corner of the button */
 	x = (UI_SCALE + UI_ERROR_BOX_WIDTH) / 2 -
 		UI_ERROR_BOX_PADDING - button_width;

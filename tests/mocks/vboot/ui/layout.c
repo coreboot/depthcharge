@@ -20,6 +20,17 @@ vb2_error_t ui_draw_desc(const struct ui_desc *desc,
 	return VB2_SUCCESS;
 }
 
+int32_t ui_get_desc_height(const struct ui_bitmap *bitmap)
+{
+	return 0;
+}
+
+vb2_error_t ui_draw_desc_bitmap(const struct ui_bitmap *bitmap, int32_t y,
+				int reverse)
+{
+	return VB2_SUCCESS;
+}
+
 vb2_error_t ui_draw_default(struct ui_context *ui,
 			    const struct ui_state *prev_state)
 {
