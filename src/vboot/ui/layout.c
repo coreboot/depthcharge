@@ -336,6 +336,21 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 	return VB2_SUCCESS;
 }
 
+static vb2_error_t draw_focus_ring(int32_t x, int32_t y,
+				   int32_t width, int32_t height, int reverse)
+{
+	const uint32_t radius = height / 2;
+	const uint32_t t = UI_BUTTON_FOCUS_RING_THICKNESS;
+
+	VB2_TRY(ui_draw_rounded_box(x, y, width, height,
+				    &ui_color_button_focus_ring, t,
+				    radius, reverse));
+	return ui_draw_rounded_box(x + t, y + t,
+				   width - t * 2, height - t * 2,
+				   &ui_color_bg, t,
+				   radius - t, reverse);
+}
+
 vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 			      const struct ui_state *state,
 			      int32_t x, int32_t y,
@@ -347,8 +362,7 @@ vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 	const int32_t x_center = x + width / 2;
 	const int32_t y_center = y + height / 2;
 	const uint32_t flags = PIVOT_H_CENTER | PIVOT_V_CENTER;
-	const struct rgb_color *bg_color, *fg_color, *border_color;
-	int32_t border_thickness;
+	const struct rgb_color *bg_color, *fg_color;
 	const char *file;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
@@ -356,39 +370,20 @@ vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 	VB2_TRY(get_item_file(item, state, &file));
 
 	/* Set button styles */
-	if (focused) {
-		if (disabled) {
-			bg_color = &ui_color_button_disabled_bg;
-			fg_color = &ui_color_button_disabled_fg;
-		} else {
-			bg_color = &ui_color_button;
-			fg_color = &ui_color_bg;
-		}
-		/* Focus ring */
-		border_color = &ui_color_button_focus_ring;
-		border_thickness = UI_BUTTON_FOCUS_RING_THICKNESS;
+	if (disabled) {
+		bg_color = &ui_color_button_disabled_bg;
+		fg_color = &ui_color_button_disabled_fg;
 	} else {
-		if (disabled) {
-			bg_color = &ui_color_bg;
-			fg_color = &ui_color_button_disabled_fg;
-		} else {
-			bg_color = &ui_color_bg;
-			fg_color = &ui_color_button;
-		}
-		/* Regular button border */
-		border_color = &ui_color_button_border;
-		border_thickness = UI_BUTTON_BORDER_THICKNESS;
+		bg_color = &ui_color_button;
+		fg_color = &ui_color_button_fg;
 	}
 
-	/* Clear button area */
+	/* Fill pill button area */
 	VB2_TRY(ui_draw_rounded_box(x, y, width, height, bg_color,
-				    0, UI_BUTTON_BORDER_RADIUS,
-				    reverse));
+				    0, height / 2, reverse));
 
-	/* Draw button borders */
-	VB2_TRY(ui_draw_rounded_box(x, y, width, height,
-				    border_color, border_thickness,
-				    UI_BUTTON_BORDER_RADIUS, reverse));
+	if (focused)
+		VB2_TRY(draw_focus_ring(x, y, width, height, reverse));
 
 	/* Draw button text */
 	if (file) {
@@ -487,14 +482,13 @@ static vb2_error_t ui_draw_h2_dropdown(const struct ui_menu_item *item,
 	if (item->icon_file)
 		width += UI_DROPDOWN_ICON_SIZE + UI_DROPDOWN_ARROW_MARGIN_H;
 
-	/* TODO: Revise dropdown colors */
 	const struct rgb_color *bg_color = &ui_color_h2_button_bg;
 	const struct rgb_color *fg_color = &ui_color_h2_button_fg;
 
-	/* Clear button area with dropdown container background */
+	/* Fill pill button area */
 	VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
 				    bg_color, 0,
-				    UI_BUTTON_BORDER_RADIUS, reverse));
+				    height / 2, reverse));
 
 	x += UI_BUTTON_PADDING_H;
 
@@ -531,10 +525,7 @@ static vb2_error_t ui_draw_h2_dropdown(const struct ui_menu_item *item,
 
 	/* Draw focus ring */
 	if (focused)
-		VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
-					    &ui_color_button_focus_ring,
-					    UI_DROPDOWN_FOCUS_RING_THICKNESS,
-					    UI_BUTTON_BORDER_RADIUS, reverse));
+		VB2_TRY(draw_focus_ring(x_base, y, width, height, reverse));
 
 	return VB2_SUCCESS;
 }
@@ -562,7 +553,10 @@ static vb2_error_t ui_draw_h3_button(const struct ui_menu_item *item,
 	const int32_t y_center = y + height / 2;
 	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
 	const char *arrow_file;
-	const struct rgb_color *bg_color;
+	const struct rgb_color *bg_color = &ui_color_bg;
+	const struct rgb_color *fg_color = &ui_color_button;
+	const struct rgb_color *border_color = focused ?
+		&ui_color_button_focus_ring : &ui_color_h3_button_border;
 	const char *file;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
@@ -572,8 +566,6 @@ static vb2_error_t ui_draw_h3_button(const struct ui_menu_item *item,
 		UI_ERROR("No H3 button image filename\n");
 		return VB2_ERROR_UI_DRAW_FAILURE;
 	}
-
-	bg_color = focused ? &ui_color_h3_button_bg : &ui_color_bg;
 
 	/* Get button width */
 	VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
@@ -587,17 +579,18 @@ static vb2_error_t ui_draw_h3_button(const struct ui_menu_item *item,
 
 	/* Clear button area */
 	VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
-				    bg_color, 0, UI_BUTTON_BORDER_RADIUS,
+				    bg_color, 0, height / 2,
 				    reverse));
 
 	/* Draw button icon */
 	x += UI_BUTTON_PADDING_H;
 	if (item->icon_file) {
-		VB2_TRY(ui_get_bitmap(item->icon_file, NULL, focused, &bitmap));
-		VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
-				       UI_H3_BUTTON_ICON_SIZE,
-				       UI_H3_BUTTON_ICON_SIZE,
-				       flags, reverse));
+		VB2_TRY(ui_get_bitmap(item->icon_file, NULL, 0, &bitmap));
+		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
+					      UI_H3_BUTTON_ICON_SIZE,
+					      UI_H3_BUTTON_ICON_SIZE,
+					      bg_color, fg_color,
+					      flags, reverse));
 	}
 	x += UI_H3_BUTTON_ICON_SIZE + UI_H3_BUTTON_ICON_MARGIN_R;
 
@@ -605,7 +598,7 @@ static vb2_error_t ui_draw_h3_button(const struct ui_menu_item *item,
 	VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
 				      UI_SIZE_AUTO, UI_H3_BUTTON_TEXT_HEIGHT,
-				      bg_color, &ui_color_button,
+				      bg_color, fg_color,
 				      flags, reverse));
 	x += text_width;
 
@@ -613,20 +606,20 @@ static vb2_error_t ui_draw_h3_button(const struct ui_menu_item *item,
 	x += UI_H3_BUTTON_ARROW_MARGIN_H;
 	if (!(item->flags & UI_MENU_ITEM_FLAG_NO_ARROW)) {
 		arrow_file = reverse ? "ic_dropleft.bmp" : "ic_dropright.bmp";
-		VB2_TRY(ui_get_bitmap(arrow_file, NULL, focused, &bitmap));
-		VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
-				       UI_H3_BUTTON_ARROW_SIZE,
-				       UI_H3_BUTTON_ARROW_SIZE,
-				       flags, reverse));
+		VB2_TRY(ui_get_bitmap(arrow_file, NULL, 0, &bitmap));
+		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
+					      UI_H3_BUTTON_ARROW_SIZE,
+					      UI_H3_BUTTON_ARROW_SIZE,
+					      bg_color, fg_color,
+					      flags, reverse));
 		x += UI_H3_BUTTON_ARROW_SIZE + UI_H3_BUTTON_ARROW_MARGIN_H;
 	}
 
-	/* Draw button borders */
-	if (focused)
-		VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
-					    &ui_color_h3_button_border,
-					    UI_H3_BUTTON_BORDER_THICKNESS,
-					    UI_BUTTON_BORDER_RADIUS, reverse));
+	/* Draw button border */
+	VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
+				    border_color,
+				    UI_H3_BUTTON_BORDER_THICKNESS,
+				    height / 2, reverse));
 
 	return VB2_SUCCESS;
 }
@@ -1111,9 +1104,9 @@ static vb2_error_t ui_draw_sub_menu_item_focus(int32_t x, int32_t y,
 					       int reverse)
 {
 	const uint32_t radius = UI_SUB_MENU_BORDER_RADIUS;
-	const uint32_t thickness = UI_DROPDOWN_FOCUS_RING_THICKNESS;
+	const uint32_t thickness = UI_BUTTON_FOCUS_RING_THICKNESS;
 	const struct rgb_color *border_color = &ui_color_button_focus_ring;
-	const struct rgb_color *bg_color = &ui_color_lang_menu_bg;
+	const struct rgb_color *bg_color = &ui_color_sub_menu_bg;
 	/* Single/first/last items use radius; middle items have square corners (0). */
 	uint32_t r = (is_first || is_last) ? radius : 0;
 
@@ -1269,11 +1262,7 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 
 	/* Background container card */
 	VB2_TRY(ui_draw_rounded_box(box_x, box_y, box_w, box_h,
-				    &ui_color_lang_menu_bg, 0,
-				    UI_SUB_MENU_BORDER_RADIUS, reverse));
-	VB2_TRY(ui_draw_rounded_box(box_x, box_y, box_w, box_h,
-				    &ui_color_lang_menu_border,
-				    UI_SUB_MENU_BORDER_THICKNESS,
+				    &ui_color_sub_menu_bg, 0,
 				    UI_SUB_MENU_BORDER_RADIUS, reverse));
 
 	size_t pos = 0, slot = 0;
@@ -1315,7 +1304,7 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, text_x, text_y,
 					      UI_SIZE_AUTO,
 					      UI_SUB_MENU_ITEM_TEXT_HEIGHT,
-					      &ui_color_lang_menu_bg,
+					      &ui_color_sub_menu_bg,
 					      &ui_color_fg,
 					      PIVOT_H_LEFT | PIVOT_V_CENTER,
 					      reverse));

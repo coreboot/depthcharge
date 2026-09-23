@@ -102,9 +102,7 @@
 
 /* For buttons */
 #define UI_BUTTON_PADDING_H			16
-#define UI_BUTTON_BORDER_THICKNESS		2
-#define UI_BUTTON_FOCUS_RING_THICKNESS		3
-#define UI_BUTTON_BORDER_RADIUS			8
+#define UI_BUTTON_FOCUS_RING_THICKNESS		2
 #define UI_BUTTON_MARGIN_V			14
 
 /* For H1 buttons */
@@ -121,7 +119,6 @@
 #define UI_DROPDOWN_ICON_SIZE			20
 #define UI_DROPDOWN_ARROW_SIZE			20
 #define UI_DROPDOWN_ARROW_MARGIN_H		12
-#define UI_DROPDOWN_FOCUS_RING_THICKNESS	3
 #define UI_DROPDOWN_MARGIN_TOP			24
 
 /* For sub-menu */
@@ -131,7 +128,6 @@
 #define UI_SUB_MENU_PADDING_H			20
 #define UI_SUB_MENU_PADDING_V			8
 #define UI_SUB_MENU_BORDER_RADIUS		12
-#define UI_SUB_MENU_BORDER_THICKNESS		1
 
 /* For H3 buttons */
 #define UI_H3_BUTTON_HEIGHT			40
@@ -140,7 +136,7 @@
 #define UI_H3_BUTTON_ICON_MARGIN_R		20
 #define UI_H3_BUTTON_ARROW_SIZE			20
 #define UI_H3_BUTTON_ARROW_MARGIN_H		15
-#define UI_H3_BUTTON_BORDER_THICKNESS		3
+#define UI_H3_BUTTON_BORDER_THICKNESS		2
 
 /* For footer */
 #define UI_FOOTER_MARGIN_TOP			30
@@ -319,26 +315,24 @@ enum ui_error {
 	UI_ERROR_DEV_MODE_OEM_LOCK,
 };
 
-static const struct rgb_color ui_color_bg		= { 0x20, 0x21, 0x24 };
-static const struct rgb_color ui_color_fg		= { 0xe8, 0xea, 0xed };
-static const struct rgb_color ui_color_footer_fg	= { 0x9a, 0xa0, 0xa6 };
-static const struct rgb_color ui_color_lang_menu_bg	= { 0x2d, 0x2e, 0x30 };
-static const struct rgb_color ui_color_lang_menu_border	= { 0x49, 0x57, 0x70 };
-static const struct rgb_color ui_color_button		= { 0x8a, 0xb4, 0xf8 };
+static const struct rgb_color ui_color_bg		= { 0x1e, 0x1f, 0x20 };
+static const struct rgb_color ui_color_fg		= { 0xe3, 0xe3, 0xe3 };
+static const struct rgb_color ui_color_footer_fg	= { 0xe3, 0xe3, 0xe3 };
+static const struct rgb_color ui_color_sub_menu_bg	= { 0x37, 0x39, 0x3b };
+static const struct rgb_color ui_color_button		= { 0xa8, 0xc7, 0xfa };
+static const struct rgb_color ui_color_button_fg	= { 0x06, 0x2e, 0x6f };
 static const struct rgb_color ui_color_button_disabled_bg
 	= { 0x3c, 0x40, 0x43 };
 static const struct rgb_color ui_color_button_disabled_fg
 	= { 0x9a, 0xa0, 0xa6 };
-static const struct rgb_color ui_color_button_border	= { 0x4c, 0x4d, 0x4f };
 static const struct rgb_color ui_color_button_focus_ring
-	= { 0x4a, 0x5b, 0x78 };
+	= { 0xa8, 0xc7, 0xfa };
 static const struct rgb_color ui_color_button_help_fg	= { 0xf2, 0x8b, 0x82 };
-static const struct rgb_color ui_color_h2_button_bg	= { 0x2a, 0x2f, 0x39 };
-static const struct rgb_color ui_color_h2_button_fg	= { 0x8a, 0xb4, 0xf8 };
-static const struct rgb_color ui_color_h3_button_bg	= { 0x2a, 0x2f, 0x39 };
-static const struct rgb_color ui_color_h3_button_border	= { 0x4a, 0x5b, 0x78 };
-static const struct rgb_color ui_color_border		= { 0x3f, 0x40, 0x42 };
-static const struct rgb_color ui_color_error_box	= { 0x20, 0x21, 0x24 };
+static const struct rgb_color ui_color_h2_button_bg	= { 0x00, 0x4a, 0x77 };
+static const struct rgb_color ui_color_h2_button_fg	= { 0xc2, 0xe7, 0xff };
+static const struct rgb_color ui_color_h3_button_border	= { 0x63, 0x5e, 0x53 };
+static const struct rgb_color ui_color_border		= { 0x44, 0x47, 0x46 };
+static const struct rgb_color ui_color_error_box	= { 0x28, 0x2a, 0x2c };
 static const struct rgb_color ui_color_scrollbar	= { 0xa8, 0xc7, 0xfa };
 static const struct rgb_color ui_color_scrollbar_track	= { 0x37, 0x39, 0x3b };
 static const struct rgb_color ui_color_black		= { 0x00, 0x00, 0x00 };
