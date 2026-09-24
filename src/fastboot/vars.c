@@ -323,7 +323,7 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 			if (state != STATE_OK)
 				return state;
 			used_len = snprintf(outbuf, outbuf_len, "%s:", name);
-			if (used_len < 0 || used_len > outbuf_len) {
+			if (used_len < 0 || used_len >= outbuf_len) {
 				free(name);
 				break;
 			}
@@ -388,7 +388,7 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 			if (state != STATE_OK)
 				return state;
 			used_len = snprintf(outbuf, outbuf_len, "%c:", slot);
-			if (used_len < 0 || used_len > outbuf_len)
+			if (used_len < 0 || used_len >= outbuf_len)
 				break;
 			outbuf += used_len;
 		}
@@ -450,7 +450,7 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 			}
 			used_len = snprintf(outbuf, outbuf_len, "%.*s:", name_len, name);
 			free(name);
-			if (used_len < 0 || used_len > outbuf_len)
+			if (used_len < 0 || used_len >= outbuf_len)
 				break;
 			outbuf += used_len;
 		}
@@ -483,7 +483,7 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		} else {
 			value = index;
 			used_len = snprintf(outbuf, outbuf_len, "%d:", value);
-			if (used_len < 0 || used_len > outbuf_len)
+			if (used_len < 0 || used_len >= outbuf_len)
 				break;
 			outbuf += used_len;
 		}
@@ -577,7 +577,7 @@ fastboot_getvar_result_t fastboot_getvar(struct FastbootOps *fb, fastboot_var_t 
 		return STATE_PARSING_ERROR;
 	}
 
-	if (used_len > outbuf_len) {
+	if (used_len >= outbuf_len) {
 		printf("%s(): too long output for var %d, arg \"%s\", index %ld\n",
 		       __func__, var, arg, index);
 		return STATE_OVERFLOW;
