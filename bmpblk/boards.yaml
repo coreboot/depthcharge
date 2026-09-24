@@ -366,11 +366,11 @@ skyrim:
 
 geralt:
   # 1920x1200
-  dpi: 112 # DO NOT COPY-PASTE -- follow instructions at top of file.
+  dpi: 104 # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 staryu:
   sdcard: False
-  dpi: 110 # DO NOT COPY-PASTE -- follow instructions at top of file.
+  dpi: 104 # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 myst:
   # 1920x1080, boots recovery image on any SD card or USB ports.
@@ -396,7 +396,7 @@ fatcat:
   split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 rauru:
-  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  dpi: 88  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 skywalker:
   sdcard: False

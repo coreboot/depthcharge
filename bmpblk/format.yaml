@@ -19,7 +19,7 @@ generic_files:
 # Key is the name in firmware_strings.grd; value is the category of the string.
 localized_files:
   # pre-generated
-  language: language
+  language: button
   # firmware sync
   firmware_sync_title: title
   firmware_sync_desc: desc
@@ -37,21 +37,21 @@ localized_files:
   broken_desc2_detach: desc
   # advanced options
   adv_options_title: title
-  btn_dev_mode: h1_button
-  btn_debug_info: h1_button
-  btn_fastboot: h1_button
-  btn_firmware_log: h1_button
-  btn_firmware_shell: h1_button
-  btn_rec_by_internet_old: h1_button
+  btn_dev_mode: button
+  btn_debug_info: button
+  btn_fastboot: button
+  btn_firmware_log: button
+  btn_firmware_shell: button
+  btn_rec_by_internet_old: button
   # debug info and firmware log
   debug_info_title: title
   firmware_log_title: title
   # recovery screen
   rec_sel_title: title
   rec_sel_desc0: desc
-  btn_rec_by_disk: h1_button
-  btn_rec_by_disk_no_sd: h1_button
-  btn_rec_by_internet: h1_button
+  btn_rec_by_disk: button
+  btn_rec_by_disk_no_sd: button
+  btn_rec_by_internet: button
   # recovery - common
   rec_learn_more_at_desc: desc
   # recovery - disk
@@ -76,20 +76,20 @@ localized_files:
   rec_to_dev_title: title
   rec_to_dev_desc0: desc
   rec_to_dev_desc1_phyrec: desc
-  btn_rec_to_dev: h1_button
+  btn_rec_to_dev: button
   # developer screen
   dev_title: title
   dev_desc0: desc
   dev_desc1: desc
-  btn_secure_mode: h1_button
-  btn_int_disk: h1_button
-  btn_ext_disk: h1_button
-  btn_alt_bootloader: h1_button
+  btn_secure_mode: button
+  btn_int_disk: button
+  btn_ext_disk: button
+  btn_alt_bootloader: button
   # to-norm screen
   dev_to_norm_title: title
   dev_to_norm_desc0: desc
   dev_to_norm_desc1: desc
-  btn_lock: h1_button
+  btn_lock: button
   # developer: boot from external disk
   dev_boot_ext_title: title
   dev_boot_ext_desc0: desc
@@ -98,15 +98,15 @@ localized_files:
   # developer: select bootloader
   dev_select_bootloader_title: title
   # generic buttons
-  btn_next: h1_button
-  btn_back: h1_button
-  btn_confirm: h1_button
-  btn_cancel: h1_button
-  btn_adv_options: h2_button
-  btn_power_off: h3_button
+  btn_next: button
+  btn_back: button
+  btn_confirm: button
+  btn_cancel: button
+  btn_adv_options: button
+  btn_power_off: button
   # log screen
-  btn_page_up: h1_button
-  btn_page_down: h1_button
+  btn_page_up: button
+  btn_page_down: button
   page_up_disabled_help: help
   page_down_disabled_help: help
   # footer
@@ -134,14 +134,14 @@ localized_files:
   error_internet_recovery_no_sd: error
   error_dev_mode_oem_lock: error
   # diagnostic tools - menu
-  btn_launch_diag: h3_button
+  btn_launch_diag: button
   diag_menu_title: title
   diag_menu_desc0: desc
-  btn_diag_storage_health: h1_button
-  btn_diag_storage_short_test: h1_button
-  btn_diag_storage_ext_test: h1_button
-  btn_diag_memory_quick: h1_button
-  btn_diag_memory_full: h1_button
+  btn_diag_storage_health: button
+  btn_diag_storage_short_test: button
+  btn_diag_storage_ext_test: button
+  btn_diag_memory_quick: button
+  btn_diag_memory_full: button
   # diagnostic tools - storage
   diag_storage_health_title: title
   diag_storage_srt_test_title: title
@@ -194,47 +194,42 @@ styles:
     bgcolor: '#000000'
     fgcolor: '#ffffff'
     # Height of the generated bitmap relative to the screen resolution specified
-    # in boards.yaml, using 1000 as a base. For example, "height: 200" means the
-    # image will be scaled to 20% of the screen height. These scale-related
+    # in boards.yaml, using 1080 as a base. For example, "height: 54" means the
+    # image will be scaled to 5% of the screen height. These scale-related
     # numbers are supposed to be kept in sync with the those set in depthcharge,
     # to ensure the size of the generated bitmap will be proportional to the
-    # size that it is displayed at.
-    height: 24
+    # size that it is displayed at. For text, this is the height of each line,
+    # that is, the font size in the design times LINE_HEIGHT_RATIO in build.py.
+    height: 23
     # Maximum width of the bitmap for wrapping lines. Unit is the same as the
     # "height" option.
     max_width: null
     max_num_lines: null
   _GLYPH_:
     height: 20
-  language:
-    height: 26
   title:
     bgcolor: *surface_container
     fgcolor: *on_surface
-    height: 42
-    # UI_SCALE = 1000
-    # UI_MARGIN_H = 50
+    height: 59
+    # UI_SCALE = 1080
+    # UI_MARGIN_H = 72
     # UI_SCALE - UI_MARGIN_H * 2
-    max_width: 900
+    max_width: 936
   desc:
     bgcolor: *surface_container
     fgcolor: *on_surface
     # UI_SCALE - UI_MARGIN_H * 2
-    max_width: 900
+    max_width: 936
   one_line_desc:
     bgcolor: *surface_container
     fgcolor: *on_surface
-    max_width: 900
+    max_width: 936
     max_num_lines: 1
   desc_url:
     bgcolor: *surface_container
     fgcolor: *on_surface
-  h1_button:
-    height: 20
-  h2_button:
-    height: 20
-  h3_button:
-    height: 20
+  button:
+    height: 21
   footer:
     bgcolor: *surface_container
     fgcolor: *on_surface
@@ -251,18 +246,20 @@ styles:
     # UI_SCALE - UI_MARGIN_H * 2 - UI_FOOTER_HEIGHT
     # - UI_FOOTER_COL1_MARGIN_RIGHT - 282
     # - UI_FOOTER_COL2_MARGIN_RIGHT - UI_FOOTER_COL3_MARGIN_LEFT
-    max_width: 390
+    max_width: 426
   error:
     bgcolor: *surface_container_high
     fgcolor: *on_surface
+    height: 24
     # UI_ERROR_BOX_WIDTH - UI_ERROR_BOX_PADDING * 2
     max_width: 440
   error_url:
     bgcolor: *surface_container_high
     fgcolor: *on_surface
+    height: 24
   # sprite bitmaps
   ic_globe:
-    height: 20
+    height: 24
   ic_dropdown:
     height: 24
   icon:

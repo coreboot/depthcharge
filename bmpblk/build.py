@@ -218,7 +218,7 @@ class Converter:
         GLYPH_MAX_COLORS (int): Maximum colors to use for glyph bitmaps.
     """
 
-    SCALE_BASE = 1000
+    SCALE_BASE = 1080
 
     # Line height (ascent + descent) of the default font (Roboto) relative to
     # its font size.
