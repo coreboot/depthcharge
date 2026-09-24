@@ -87,6 +87,7 @@ MmapFlash *new_mmap_backed_flash(FlashOps *base_ops)
 	MmapFlash *flash = xzalloc(sizeof(*flash));
 	flash->ops.read = mmap_backed_flash_read;
 	if (base_ops) {
+		flash->ops.sector_size = base_ops->sector_size;
 		flash->ops.write = mmap_backed_flash_write;
 		flash->ops.erase = mmap_backed_flash_erase;
 		flash->base_ops = base_ops;
