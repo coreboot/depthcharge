@@ -155,7 +155,7 @@ sprite_files:
   ic_globe: ic_globe
   ic_dropdown: ic_dropdown
   # icons
-  ic_info: icon
+  ic_info: error_icon
   ic_error: icon
   ic_dev_mode: icon
   ic_restart: icon
@@ -166,15 +166,10 @@ sprite_files:
   ic_done: icon_step
   # button icons
   ic_search: button_icon
-  ic_search_focus: button_icon_focus
   ic_settings: button_icon
-  ic_settings_focus: button_icon_focus
   ic_power: button_icon
-  ic_power_focus: button_icon_focus
   ic_dropleft: button_arrow
-  ic_dropleft_focus: button_arrow_focus
   ic_dropright: button_arrow
-  ic_dropright_focus: button_arrow_focus
   # QR code
   qr_rec: qr_rec
   # navigation instructions
@@ -185,12 +180,12 @@ sprite_files:
   nav-button_volume_down: nav_icon
   nav-button_power: nav_icon
 
-# Google material colors
-# See https://carbon.googleplex.com/cros-ux/pages/color/overview.
+# Google Material 3 (GM3) dark theme colors
+# See https://carbon.googleplex.com/google-material-3/pages/static/gm3-baseline.
 color_aliases:
-  - &grey_900 '#202124'
-  - &grey_500 '#9aa0a6'
-  - &grey_200 '#e8eaed'
+  - &surface_container '#1e1f20'
+  - &surface_container_high '#282a2c'
+  - &on_surface '#e3e3e3'
 
 # Style of each category
 styles:
@@ -214,26 +209,26 @@ styles:
   language:
     height: 26
   title:
-    bgcolor: *grey_900
-    fgcolor: *grey_200
+    bgcolor: *surface_container
+    fgcolor: *on_surface
     height: 42
     # UI_SCALE = 1000
     # UI_MARGIN_H = 50
     # UI_SCALE - UI_MARGIN_H * 2
     max_width: 900
   desc:
-    bgcolor: *grey_900
-    fgcolor: *grey_200
+    bgcolor: *surface_container
+    fgcolor: *on_surface
     # UI_SCALE - UI_MARGIN_H * 2
     max_width: 900
   one_line_desc:
-    bgcolor: *grey_900
-    fgcolor: *grey_200
+    bgcolor: *surface_container
+    fgcolor: *on_surface
     max_width: 900
     max_num_lines: 1
   desc_url:
-    bgcolor: *grey_900
-    fgcolor: *grey_200
+    bgcolor: *surface_container
+    fgcolor: *on_surface
   h1_button:
     height: 20
   h2_button:
@@ -241,12 +236,12 @@ styles:
   h3_button:
     height: 20
   footer:
-    bgcolor: *grey_900
-    fgcolor: *grey_500
+    bgcolor: *surface_container
+    fgcolor: *on_surface
     height: 20
   footer_nav:
-    bgcolor: *grey_900
-    fgcolor: *grey_500
+    bgcolor: *surface_container
+    fgcolor: *on_surface
     height: 20
     # UI_FOOTER_HEIGHT = 128
     # UI_FOOTER_COL1_MARGIN_RIGHT = 20
@@ -258,43 +253,36 @@ styles:
     # - UI_FOOTER_COL2_MARGIN_RIGHT - UI_FOOTER_COL3_MARGIN_LEFT
     max_width: 390
   error:
-    bgcolor: *grey_900
-    fgcolor: *grey_200
+    bgcolor: *surface_container_high
+    fgcolor: *on_surface
     # UI_ERROR_BOX_WIDTH - UI_ERROR_BOX_PADDING * 2
     max_width: 440
   error_url:
-    bgcolor: *grey_900
-    fgcolor: *grey_200
+    bgcolor: *surface_container_high
+    fgcolor: *on_surface
   # sprite bitmaps
   ic_globe:
-    bgcolor: '#161719'
     height: 20
   ic_dropdown:
-    bgcolor: '#161719'
     height: 24
   icon:
-    bgcolor: *grey_900
+    bgcolor: *surface_container
+    height: 45
+  error_icon:
+    bgcolor: *surface_container_high
     height: 45
   icon_step:
-    bgcolor: *grey_900
+    bgcolor: *surface_container
     height: 28
   button_icon:
-    bgcolor: *grey_900
-    height: 24
-  button_icon_focus:
-    bgcolor: '#2a2f39'
     height: 24
   button_arrow:
-    bgcolor: *grey_900
-    height: 20
-  button_arrow_focus:
-    bgcolor: '#2a2f39'
     height: 20
   qr_rec:
-    bgcolor: *grey_900
+    bgcolor: *surface_container
     height: 128
   nav_icon:
-    bgcolor: *grey_900
+    bgcolor: *surface_container
     height: 30
 
 # Font of each locale

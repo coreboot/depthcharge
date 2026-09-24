@@ -11,7 +11,7 @@
             <mask id="mask-2" fill="white">
                 <use xlink:href="#path-1"></use>
             </mask>
-            <use id="↳Color-fill" fill="#8AB4F8" fill-rule="evenodd" transform="translate(10.000000, 10.000000) scale(1, -1) rotate(90.000000) translate(-10.000000, -10.000000) " xlink:href="#path-1"></use>
+            <use id="↳Color-fill" fill="#ffffff" fill-rule="evenodd" transform="translate(10.000000, 10.000000) scale(1, -1) rotate(90.000000) translate(-10.000000, -10.000000) " xlink:href="#path-1"></use>
         </g>
     </g>
 </svg>

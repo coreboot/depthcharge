@@ -11,7 +11,7 @@
             <mask id="mask-2" fill="white">
                 <use xlink:href="#path-1"></use>
             </mask>
-            <use id="↳Color-fill" fill="#9AA0A6" fill-rule="evenodd" xlink:href="#path-1"></use>
+            <use id="↳Color-fill" fill="#ffffff" fill-rule="evenodd" xlink:href="#path-1"></use>
         </g>
     </g>
 </svg>
