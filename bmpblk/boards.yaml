@@ -70,6 +70,9 @@ _DEFAULT_:
   rw_override:  []
   split_ratio: 0
 
+# Used by depthcharge's `make screenshot`. Not a real board.
+screenshot:
+
 asurada:
   # 1920x1080, boots recovery image on USB ports or SD card.
   dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
