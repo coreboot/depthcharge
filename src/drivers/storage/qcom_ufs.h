@@ -47,6 +47,7 @@
 
 #define UFS_MEM_CFG0			0xd8
 #define UFS_MEM_CFG1			0xdc
+#define UFS_MEM_DEBUG_SPARE_CFG		0x284C
 #define CFG0_QUNIPRO_G4_SEL		BIT(5)
 #define CFG1_UFS_DEV_REF_CLK_EN		BIT(26)
 #define CFG1_UFS_PHY_SOFT_RESET		BIT(1)

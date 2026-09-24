@@ -362,6 +362,12 @@ static int qcom_ufs_post_gear_switch(struct qcom_ufs_ctlr *qcom_ufs)
 		}
 	}
 
+	uint16_t spec_ver = be16toh(ufs_dd(ufs)->wSpecVersion);
+	uint8_t spec_major = (spec_ver >> 8) & 0xF;
+	uint8_t spec_minor = (spec_ver >> 4) & 0xF;
+
+	ufs_write32(ufs, UFS_MEM_DEBUG_SPARE_CFG, (spec_major << 4) | spec_minor);
+
 	return 0;
 }
 
