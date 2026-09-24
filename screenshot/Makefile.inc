@@ -27,8 +27,18 @@ LOG ?=
 override LOG := \"$(LOG)\"
 LOG_FILE ?=
 override LOG_FILE := \"$(LOG_FILE)\"
-BMP_PATH ?= $(screenshotsrc)/bmp
+
+# Unless BMP_PATH is specified, bitmaps are generated from bmpblk.
+BMPBLK_SOURCE ?= $(abspath $(src)/../bmpblk)
+BMPBLK_BOARD ?= screenshot
+bmpblk-out := $(testobj)/bmpblk
+bmpblk-stamp := $(bmpblk-out)/.stamp
+ifeq ($(origin BMP_PATH),undefined)
+BMP_PATH := $(bmpblk-out)/$(BMPBLK_BOARD)
+screenshot-bmp-deps := $(bmpblk-stamp)
+endif
 override BMP_PATH := \"$(BMP_PATH)\"
+
 OUTPUT ?= $(screenshotobj)/$(SCREEN).bmp
 
 SCREENSHOT_OPTIONS += WIDTH HEIGHT SCREEN ITEM
@@ -114,7 +124,22 @@ OUTPUT_RAW := $(screenshotobj)/$(notdir $(basename $(OUTPUT))).raw
 
 .PHONY: screenshot test-screenshot clean-screenshot
 
-screenshot: $(screenshot-bin)
+bmpblk-srcs := $(shell find $(BMPBLK_SOURCE) \
+	\( -name build -o -name '.*' -o -name __pycache__ \) -prune -o \
+	-type f -print 2>/dev/null)
+
+$(bmpblk-stamp): $(bmpblk-srcs)
+	@if [ ! -d "$(BMPBLK_SOURCE)" ]; then \
+		echo "bmpblk not found in $(BMPBLK_SOURCE);" \
+			"please set BMPBLK_SOURCE or BMP_PATH" >&2; \
+		exit 1; \
+	fi
+	rm -rf $(bmpblk-out)
+	$(MAKE) -C $(BMPBLK_SOURCE) BOARD=$(BMPBLK_BOARD) LOCALES=en \
+		OUTPUT=$(bmpblk-out)
+	touch $@
+
+screenshot: $(screenshot-bin) $(screenshot-bmp-deps)
 	$(screenshot-bin) $(OUTPUT_RAW)
 	$(screenshotsrc)/raw2bmp.py $(WIDTH) $(HEIGHT) $(OUTPUT_RAW) $(OUTPUT)
 	@echo Screenshot saved to $(OUTPUT)
