@@ -153,7 +153,8 @@ localized_files:
 sprite_files:
   # language menu
   ic_globe: ic_globe
-  ic_dropdown: ic_dropdown
+  ic_arrow_down: ic_arrow
+  ic_arrow_up: ic_arrow
   # icons
   ic_info: error_icon
   ic_error: icon
@@ -260,7 +261,7 @@ styles:
   # sprite bitmaps
   ic_globe:
     height: 24
-  ic_dropdown:
+  ic_arrow:
     height: 24
   icon:
     bgcolor: *surface_container
