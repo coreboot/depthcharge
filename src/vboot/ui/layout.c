@@ -319,45 +319,6 @@ static bool is_menu_item_focused(const struct ui_state *state, size_t item_index
 	return true;
 }
 
-vb2_error_t ui_get_button_width(const struct ui_menu *menu,
-				const struct ui_state *state,
-				int32_t *button_width)
-{
-	int i;
-	const struct ui_menu_item *item;
-	const char *file;
-	struct ui_bitmap bitmap;
-	int32_t text_width;
-	int32_t max_text_width = 0;
-
-	for (i = 0; i < menu->num_items; i++) {
-		item = &menu->items[i];
-		if (item->type != UI_MENU_ITEM_TYPE_H1)
-			continue;
-		VB2_TRY(get_item_file(item, state, &file));
-		if (item->get_width) {
-			VB2_TRY(item->get_width(state, &text_width));
-		} else if (file) {
-			VB2_TRY(ui_get_bitmap(file, state->locale->code, 0,
-					      &bitmap));
-			VB2_TRY(ui_get_bitmap_width(&bitmap,
-						    UI_BUTTON_TEXT_HEIGHT,
-						    &text_width));
-		} else if (item->name) {
-			VB2_TRY(ui_get_text_width(item->name,
-						  UI_BUTTON_TEXT_HEIGHT,
-						  &text_width));
-		} else {
-			UI_ERROR("Menu item #%d: no .file or .name\n", i);
-			return VB2_ERROR_UI_DRAW_FAILURE;
-		}
-		max_text_width = MAX(text_width, max_text_width);
-	}
-
-	*button_width = max_text_width + UI_BUTTON_PADDING_H * 2;
-	return VB2_SUCCESS;
-}
-
 static vb2_error_t draw_focus_ring(int32_t x, int32_t y,
 				   int32_t width, int32_t height, int reverse)
 {
@@ -373,16 +334,41 @@ static vb2_error_t draw_focus_ring(int32_t x, int32_t y,
 				   radius - t, reverse);
 }
 
+vb2_error_t ui_get_h1_button_width(const struct ui_menu_item *item,
+				   const struct ui_state *state,
+				   int32_t *button_width)
+{
+	const char *file;
+	struct ui_bitmap bitmap;
+	int32_t text_width;
+
+	VB2_TRY(get_item_file(item, state, &file));
+	if (item->get_width) {
+		VB2_TRY(item->get_width(state, &text_width));
+	} else if (file) {
+		VB2_TRY(ui_get_bitmap(file, state->locale->code, 0, &bitmap));
+		VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
+					    &text_width));
+	} else if (item->name) {
+		VB2_TRY(ui_get_text_width(item->name, UI_BUTTON_TEXT_HEIGHT,
+					  &text_width));
+	} else {
+		UI_ERROR("Menu item: no .file or .name\n");
+		return VB2_ERROR_UI_DRAW_FAILURE;
+	}
+
+	*button_width = text_width + UI_BUTTON_PADDING_H * 2;
+	return VB2_SUCCESS;
+}
+
 vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 			      const struct ui_state *state,
-			      int32_t x, int32_t y,
-			      int32_t width, int32_t height,
+			      int32_t x, int32_t y, int32_t height,
 			      int focused, int disabled,
 			      int clear_help)
 {
 	struct ui_bitmap bitmap;
-	const int32_t x_center = x + width / 2;
-	const int32_t y_center = y + height / 2;
+	int32_t width;
 	const uint32_t flags = PIVOT_H_CENTER | PIVOT_V_CENTER;
 	const struct rgb_color *bg_color, *fg_color;
 	const char *file;
@@ -390,6 +376,9 @@ vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 	const int reverse = state->locale->rtl;
 
 	VB2_TRY(get_item_file(item, state, &file));
+	VB2_TRY(ui_get_h1_button_width(item, state, &width));
+	const int32_t x_center = x + width / 2;
+	const int32_t y_center = y + height / 2;
 
 	/* Set button styles */
 	if (disabled) {
@@ -1051,7 +1040,6 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 {
 	int i;
 	int32_t x;
-	int32_t button_width;
 	int clear_help;
 	const struct ui_menu_state *ms = &state->menu_state;
 	const struct ui_menu_state *prev_ms = prev_state ?
@@ -1061,7 +1049,6 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 
 	/* H1 and H2 dropdown trigger buttons */
 	x = UI_MARGIN_H;
-	VB2_TRY(ui_get_button_width(menu, state, &button_width));
 	bool prev_is_h1 = false;
 	for (i = 0; i < menu->num_items; i++) {
 		if (UI_GET_BIT(ms->hidden_item_mask, i))
@@ -1085,7 +1072,6 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 				     prev_ms->focused_item == i &&
 				     UI_GET_BIT(prev_ms->disabled_item_mask, i);
 			VB2_TRY(ui_draw_h1_button(item, state, x, y,
-						  button_width,
 						  UI_H1_BUTTON_HEIGHT,
 						  is_focused,
 						  UI_GET_BIT(ms->disabled_item_mask, i),

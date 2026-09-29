@@ -199,12 +199,7 @@ static vb2_error_t show_error_box(const struct ui_error_message *error,
 	const struct ui_menu_item back_item = {
 		.file = "btn_back.bmp",
 	};
-	VB2_TRY(ui_get_bitmap(back_item.file, locale_code, 0, &bitmap));
-	int32_t text_width;
-	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
-				    &text_width));
-
-	button_width = text_width + (UI_BUTTON_PADDING_H * 2);
+	VB2_TRY(ui_get_h1_button_width(&back_item, state, &button_width));
 	/* x and y are top-left corner of the button */
 	x = (UI_SCALE + UI_ERROR_BOX_WIDTH) / 2 -
 		UI_ERROR_BOX_PADDING - button_width;
@@ -213,7 +208,6 @@ static vb2_error_t show_error_box(const struct ui_error_message *error,
 	VB2_TRY(ui_draw_h1_button(&back_item,
 				  state,
 				  x, y,
-				  button_width,
 				  UI_H1_BUTTON_HEIGHT,
 				  1, 0, 0));
 

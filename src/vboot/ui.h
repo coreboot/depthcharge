@@ -1068,19 +1068,17 @@ vb2_error_t ui_draw_h_line(int32_t x, int32_t y,
 /* layout.c */
 
 /*
- * Get H1 button width, based on the longest text of all visible H1 buttons.
+ * Get the width of an H1 button, based on its text width.
  *
- * Menu items specified in hidden_item_mask are ignored.
- *
- * @param menu			Menu items.
+ * @param item			Menu item.
  * @param state			UI state.
  * @param button_width		Button width to be calculated.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_get_button_width(const struct ui_menu *menu,
-				const struct ui_state *state,
-				int32_t *button_width);
+vb2_error_t ui_get_h1_button_width(const struct ui_menu_item *item,
+				   const struct ui_state *state,
+				   int32_t *button_width);
 
 /*
  * Draw an H1 button.
@@ -1091,7 +1089,6 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
  * @param state		UI state.
  * @param x		x-coordinate of the top-left corner.
  * @param y		y-coordinate of the top-left corner.
- * @param width		Width of the button.
  * @param height	Height of the button.
  * @param focused	1 for focused and 0 for non-focused.
  * @param disabled	1 for disabled style and 0 for normal style.
@@ -1101,8 +1098,7 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
  */
 vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 			      const struct ui_state *state,
-			      int32_t x, int32_t y,
-			      int32_t width, int32_t height,
+			      int32_t x, int32_t y, int32_t height,
 			      int focused, int disabled,
 			      int clear_help);
 
