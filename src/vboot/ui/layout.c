@@ -319,6 +319,13 @@ static bool is_menu_item_focused(const struct ui_state *state, size_t item_index
 	return true;
 }
 
+static bool is_dropdown_expanded(const struct ui_state *state,
+				 size_t item_index)
+{
+	return state && state->is_sub_menu_active &&
+	       state->menu_state.focused_item == item_index;
+}
+
 static vb2_error_t draw_focus_ring(int32_t x, int32_t y,
 				   int32_t width, int32_t height, int reverse)
 {
@@ -459,13 +466,14 @@ vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
  * @param y		y-coordinate of the top-left corner.
  * @param height	Height of the box.
  * @param focused	1 for focused and 0 for non-focused.
+ * @param expanded	Whether the sub-menu of the dropdown is expanded.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
 static vb2_error_t ui_draw_h2_dropdown(const struct ui_menu_item *item,
 				       const struct ui_state *state,
 				       int32_t x, int32_t y, int32_t height,
-				       int focused)
+				       int focused, int expanded)
 {
 	struct ui_bitmap bitmap;
 	int32_t text_width, width;
@@ -527,7 +535,8 @@ static vb2_error_t ui_draw_h2_dropdown(const struct ui_menu_item *item,
 
 	/* Draw dropdown arrow */
 	x = x_base + width - UI_BUTTON_PADDING_H - UI_DROPDOWN_ARROW_SIZE;
-	VB2_TRY(ui_get_bitmap("ic_dropdown.bmp", NULL, 0, &bitmap));
+	file = expanded ? "ic_arrow_up.bmp" : "ic_arrow_down.bmp";
+	VB2_TRY(ui_get_bitmap(file, NULL, 0, &bitmap));
 	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
 				      UI_DROPDOWN_ARROW_SIZE,
 				      UI_DROPDOWN_ARROW_SIZE,
@@ -1077,9 +1086,10 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 						  UI_GET_BIT(ms->disabled_item_mask, i),
 						  clear_help));
 		} else {
+			bool is_expanded = is_dropdown_expanded(state, i);
 			VB2_TRY(ui_draw_h2_dropdown(item, state, x, y,
 						    UI_H2_BUTTON_HEIGHT,
-						    is_focused));
+						    is_focused, is_expanded));
 		}
 
 		prev_is_h1 = (item->type == UI_MENU_ITEM_TYPE_H1);
@@ -1410,16 +1420,19 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	    menu->items[0].type == UI_MENU_ITEM_TYPE_LANGUAGE) {
 		focused = is_menu_item_focused(state, 0);
 		bool prev_focused = is_menu_item_focused(prev_state, 0);
+		bool expanded = is_dropdown_expanded(state, 0);
+		bool prev_expanded = is_dropdown_expanded(prev_state, 0);
 
 		if (!prev_state ||
 		    prev_state->screen != state->screen ||
 		    prev_state->locale != state->locale ||
 		    prev_state->error_code != state->error_code ||
-		    prev_focused != focused) {
+		    prev_focused != focused ||
+		    prev_expanded != expanded) {
 			VB2_TRY(ui_draw_h2_dropdown(
 				&menu->items[0], state, UI_MARGIN_H,
 				UI_MARGIN_TOP + UI_LANG_MARGIN_V,
-				UI_H2_BUTTON_HEIGHT, focused));
+				UI_H2_BUTTON_HEIGHT, focused, expanded));
 		}
 	}
 
