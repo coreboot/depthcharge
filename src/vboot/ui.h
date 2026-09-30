@@ -139,8 +139,6 @@
 #define UI_H3_BUTTON_HEIGHT			44
 #define UI_H3_BUTTON_ICON_SIZE			24
 #define UI_H3_BUTTON_ICON_MARGIN_R		8
-#define UI_H3_BUTTON_ARROW_SIZE			20
-#define UI_H3_BUTTON_ARROW_MARGIN_H		8
 #define UI_H3_BUTTON_BORDER_THICKNESS		2
 
 /* For keycaps */
@@ -433,10 +431,8 @@ enum ui_menu_item_type {
 };
 
 enum ui_menu_item_flag {
-	/* No arrow; valid for UI_MENU_ITEM_TYPE_H3 only. */
-	UI_MENU_ITEM_FLAG_NO_ARROW		= 1 << 0,
 	/* Bitmap is stored in generic archive (UI_ARCHIVE_GENERIC). */
-	UI_MENU_ITEM_FLAG_GENERIC_ARCHIVE	= 1 << 1,
+	UI_MENU_ITEM_FLAG_GENERIC_ARCHIVE	= 1 << 0,
 };
 
 /* Menu item. */

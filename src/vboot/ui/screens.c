@@ -67,7 +67,6 @@
 	.name = "Back",				\
 	.file = "btn_back.bmp",			\
 	.type = UI_MENU_ITEM_TYPE_H3,		\
-	.flags = UI_MENU_ITEM_FLAG_NO_ARROW,	\
 	.action = ui_screen_back,		\
 })
 
@@ -95,7 +94,6 @@ static vb2_error_t power_off_action(struct ui_context *ui)
 	.file = "btn_power_off.bmp",		\
 	.type = UI_MENU_ITEM_TYPE_H3,	\
 	.icon_file = "ic_power.bmp",		\
-	.flags = UI_MENU_ITEM_FLAG_NO_ARROW,	\
 	.action = power_off_action,		\
 })
 
@@ -1294,7 +1292,6 @@ static const struct ui_menu_item recovery_select_items[] = {
 		.file = "btn_launch_diag.bmp",
 		.type = UI_MENU_ITEM_TYPE_H3,
 		.icon_file = "ic_search.bmp",
-		.flags = UI_MENU_ITEM_FLAG_NO_ARROW,
 		.action = launch_diagnostics_action,
 	},
 	POWER_OFF_ITEM,

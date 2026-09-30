@@ -162,8 +162,6 @@ sprite_files:
   ic_search: button_icon
   ic_settings: button_icon
   ic_power: button_icon
-  ic_dropleft: button_arrow
-  ic_dropright: button_arrow
   # QR code
   qr_rec: qr_rec
   # keycap icons for detachables
@@ -273,8 +271,6 @@ styles:
     height: 40
   button_icon:
     height: 24
-  button_arrow:
-    height: 20
   qr_rec:
     height: 86
 

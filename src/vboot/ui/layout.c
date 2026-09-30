@@ -739,7 +739,6 @@ static vb2_error_t ui_draw_h3_button(const struct ui_menu_item *item,
 	const int32_t x_base = x;
 	const int32_t y_center = y + height / 2;
 	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
-	const char *arrow_file;
 	const struct rgb_color *bg_color = &ui_color_bg;
 	const struct rgb_color *fg_color = &ui_color_button;
 	const struct rgb_color *border_color = focused ?
@@ -761,8 +760,6 @@ static vb2_error_t ui_draw_h3_button(const struct ui_menu_item *item,
 	width = UI_BUTTON_PADDING_H * 2 + text_width;
 	if (item->icon_file)
 		width += UI_H3_BUTTON_ICON_SIZE + UI_H3_BUTTON_ICON_MARGIN_R;
-	if (!(item->flags & UI_MENU_ITEM_FLAG_NO_ARROW))
-		width += UI_H3_BUTTON_ARROW_SIZE + UI_H3_BUTTON_ARROW_MARGIN_H;
 
 	/* Clear button area */
 	VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
@@ -787,19 +784,6 @@ static vb2_error_t ui_draw_h3_button(const struct ui_menu_item *item,
 				      UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
 				      bg_color, fg_color,
 				      flags, reverse));
-	x += text_width;
-
-	/* Draw arrow */
-	x += UI_H3_BUTTON_ARROW_MARGIN_H;
-	if (!(item->flags & UI_MENU_ITEM_FLAG_NO_ARROW)) {
-		arrow_file = reverse ? "ic_dropleft.bmp" : "ic_dropright.bmp";
-		VB2_TRY(ui_get_bitmap(arrow_file, NULL, 0, &bitmap));
-		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
-					      UI_H3_BUTTON_ARROW_SIZE,
-					      UI_H3_BUTTON_ARROW_SIZE,
-					      bg_color, fg_color,
-					      flags, reverse));
-	}
 
 	/* Draw button border */
 	VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
