@@ -44,57 +44,6 @@ static int32_t ui_get_text_block_height(const struct ui_bitmap *bitmap,
 		line_height - text_height;
 }
 
-/*
- * Draw step icons.
- *
- * @param state		Current UI state.
- * @param prev_state	Previous UI state.
- *
- * @return VB2_SUCCESS on success, non-zero on error.
- */
-static vb2_error_t ui_draw_step_icons(const struct ui_state *state,
-				      const struct ui_state *prev_state)
-{
-	struct ui_bitmap bitmap;
-	const struct ui_screen_info *screen = state->screen;
-	const int has_error = screen->step < 0;
-	const int cur_step = screen->step >= 0 ? screen->step : -screen->step;
-	const int num_steps = screen->num_steps;
-	int step;
-	int32_t x = UI_MARGIN_H;
-	const int32_t y = UI_MARGIN_TOP + UI_LANG_MARGIN_V * 2 +
-		UI_H2_BUTTON_HEIGHT + UI_TITLE_MARGIN_V;
-	const int32_t y_center = y + UI_ICON_HEIGHT / 2;
-	const int32_t icon_size = UI_STEP_ICON_HEIGHT;
-	const int reverse = state->locale->rtl;
-	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
-
-	for (step = 1; step <= num_steps; step++) {
-		if (has_error && step == cur_step)
-			VB2_TRY(ui_get_bitmap("ic_error.bmp", NULL, 0,
-					      &bitmap));
-		else if (step < cur_step)
-			VB2_TRY(ui_get_bitmap("ic_done.bmp", NULL, 0, &bitmap));
-		else
-			VB2_TRY(ui_get_step_icon_bitmap(step, step == cur_step,
-							&bitmap));
-		VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
-				       icon_size, icon_size, flags, reverse));
-		x += icon_size;
-		if (step == num_steps)
-			break;
-
-		/* Separator */
-		x += UI_STEP_ICON_MARGIN_H;
-		VB2_TRY(ui_draw_box(x, y_center,
-				    UI_STEP_ICON_SEPARATOR_WIDTH, UI_SIZE_MIN,
-				    &ui_color_border, reverse));
-		x += UI_STEP_ICON_SEPARATOR_WIDTH + UI_STEP_ICON_MARGIN_H;
-	}
-
-	return VB2_SUCCESS;
-}
-
 static const char *get_device_from_vpd(void)
 {
 	static char device[ANDROID_VPD_MAX_BUFFER_SIZE];
@@ -1555,6 +1504,9 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	const bool closing_sub_menu = prev_state &&
 				      prev_state->is_sub_menu_active &&
 				      !state->is_sub_menu_active;
+	const bool has_lang_dropdown =
+		menu->num_items > 0 &&
+		menu->items[0].type == UI_MENU_ITEM_TYPE_LANGUAGE;
 
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
@@ -1562,7 +1514,6 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	int32_t x, y;
 	const int32_t w = UI_SIZE_AUTO;
 	int32_t h;
-	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
 	const char *icon_file;
 	struct ui_bitmap bitmap;
 
@@ -1608,8 +1559,7 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 		VB2_TRY(ui_draw_dev_signed_warning());
 
 	/* Language dropdown header */
-	if (menu->num_items > 0 &&
-	    menu->items[0].type == UI_MENU_ITEM_TYPE_LANGUAGE) {
+	if (has_lang_dropdown) {
 		focused = is_menu_item_focused(state, 0);
 		bool prev_focused = is_menu_item_focused(prev_state, 0);
 		bool expanded = is_dropdown_expanded(state, 0);
@@ -1641,44 +1591,34 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 		VB2_TRY(draw_footer(state));
 
 	x = UI_MARGIN_H;
-	if (screen->is_fullview)
-		y = UI_MARGIN_TOP + UI_TITLE_MARGIN_V;
-	else
-		y = UI_MARGIN_TOP + UI_LANG_MARGIN_V * 2 +
-			UI_H2_BUTTON_HEIGHT + UI_TITLE_MARGIN_V;
+	y = UI_MARGIN_TOP;
+	if (has_lang_dropdown)
+		y += UI_LANG_MARGIN_V * 2 + UI_H2_BUTTON_HEIGHT;
 
-	/* Icon */
+	/* Screen icon */
 	if (screen->icon != UI_ICON_TYPE_NONE) {
 		switch (screen->icon) {
-		case UI_ICON_TYPE_INFO:
-			icon_file = "ic_info.bmp";
-			break;
-		case UI_ICON_TYPE_ERROR:
-			icon_file = "ic_error.bmp";
-			break;
-		case UI_ICON_TYPE_DEV_MODE:
-			icon_file = "ic_dev_mode.bmp";
-			break;
-		case UI_ICON_TYPE_RESTART:
-			icon_file = "ic_restart.bmp";
+		case UI_ICON_TYPE_CONSTRUCTION:
+			icon_file = "ic_construction.bmp";
 			break;
 		default:
-			icon_file = NULL;
-			break;
+			UI_ERROR("Unknown icon type: %d\n", screen->icon);
+			return VB2_ERROR_UI_DRAW_FAILURE;
 		}
-
-		if (screen->icon == UI_ICON_TYPE_STEP) {
-			VB2_TRY(ui_draw_step_icons(state, prev_state));
-		} else if (icon_file) {
-			VB2_TRY(ui_get_bitmap(icon_file, NULL, 0, &bitmap));
-			VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, UI_ICON_HEIGHT,
-					       flags, reverse));
-		}
-		y += UI_ICON_HEIGHT + UI_ICON_MARGIN_BOTTOM;
+		VB2_TRY(ui_get_bitmap(icon_file, NULL, 0, &bitmap));
+		VB2_TRY(ui_draw_mapped_bitmap(
+			&bitmap,
+			x + UI_ICON_BOX_SIZE / 2,
+			y + UI_ICON_MARGIN_V + UI_ICON_BOX_SIZE / 2,
+			UI_ICON_HEIGHT, UI_ICON_HEIGHT,
+			&ui_color_bg, &ui_color_icon,
+			PIVOT_H_CENTER | PIVOT_V_CENTER, reverse));
+		y += UI_ICON_MARGIN_V * 2 + UI_ICON_BOX_SIZE;
 	}
 
 	/* Title */
 	if (screen->title) {
+		y += UI_TITLE_MARGIN_V;
 		VB2_TRY(ui_get_bitmap(screen->title, locale_code, 0, &bitmap));
 		h = ui_get_text_block_height(&bitmap, UI_TITLE_TEXT_HEIGHT,
 					     UI_TITLE_TEXT_LINE_HEIGHT);
@@ -1686,10 +1626,8 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 				       UI_TITLE_TEXT_HEIGHT *
 				       ui_get_bitmap_num_lines(&bitmap),
 				       PIVOT_H_LEFT | PIVOT_V_CENTER, reverse));
-	} else {
-		h = UI_TITLE_TEXT_LINE_HEIGHT;
+		y += h + UI_TITLE_MARGIN_V;
 	}
-	y += h + UI_TITLE_MARGIN_V;
 
 	/* Navigation bar */
 	if (screen->is_fullview) {
@@ -1712,9 +1650,7 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 		VB2_TRY(ui_draw_menu_items(menu, state, prev_state, y,
 					   &focused_item_y));
 
-		if (menu->num_items > 0 &&
-		    menu->items[0].type == UI_MENU_ITEM_TYPE_LANGUAGE &&
-		    ms->focused_item == 0)
+		if (has_lang_dropdown && ms->focused_item == 0)
 			focused_item_y = UI_MARGIN_TOP + UI_LANG_MARGIN_V;
 
 		/* Sub-menu */

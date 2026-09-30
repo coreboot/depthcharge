@@ -85,13 +85,9 @@
 #define UI_SCROLLBAR_MARGIN_LEFT		4
 
 /* For screen icon */
-#define UI_ICON_HEIGHT				45
-#define UI_ICON_MARGIN_BOTTOM			58
-
-/* For step icons */
-#define UI_STEP_ICON_HEIGHT			28
-#define UI_STEP_ICON_MARGIN_H			7
-#define UI_STEP_ICON_SEPARATOR_WIDTH		60
+#define UI_ICON_BOX_SIZE			56
+#define UI_ICON_HEIGHT				50
+#define UI_ICON_MARGIN_V			6
 
 /*
  * For each type of text:
@@ -353,6 +349,7 @@ static const struct rgb_color ui_color_footer_fg	= { 0xe3, 0xe3, 0xe3 };
 static const struct rgb_color ui_color_keycap_fg	= { 0xc4, 0xc7, 0xc5 };
 static const struct rgb_color ui_color_qr_bg		= { 0xcc, 0xcc, 0xcc };
 static const struct rgb_color ui_color_qr_fg		= { 0x25, 0x26, 0x29 };
+static const struct rgb_color ui_color_icon		= { 0xa8, 0xc7, 0xfa };
 static const struct rgb_color ui_color_sub_menu_bg	= { 0x37, 0x39, 0x3b };
 static const struct rgb_color ui_color_button		= { 0xa8, 0xc7, 0xfa };
 static const struct rgb_color ui_color_button_fg	= { 0x06, 0x2e, 0x6f };
@@ -513,13 +510,8 @@ struct ui_menu_state {
 
 /* Icon type. */
 enum ui_icon_type {
-	/* No reserved space for any icon. */
 	UI_ICON_TYPE_NONE = 0,
-	UI_ICON_TYPE_INFO,
-	UI_ICON_TYPE_ERROR,
-	UI_ICON_TYPE_DEV_MODE,
-	UI_ICON_TYPE_RESTART,
-	UI_ICON_TYPE_STEP,
+	UI_ICON_TYPE_CONSTRUCTION,
 };
 
 /* List of description files. */
@@ -535,13 +527,6 @@ struct ui_screen_info {
 	const char *name;
 	/* Icon type */
 	enum ui_icon_type icon;
-	/*
-	 * Current step number; valid only if icon is UI_ICON_TYPE_STEP. A
-	 * negative value indicates an error in the abs(step)-th step.
-	 */
-	int step;
-	/* Total number of steps; valid only if icon is UI_ICON_TYPE_STEP */
-	int num_steps;
 	/* File for screen title; required with ui_draw_default(). */
 	const char *title;
 	/* Files for screen descriptions. */
@@ -862,18 +847,6 @@ vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
  * @return VB2_SUCCESS on success, non-zero on error.
  */
 vb2_error_t ui_get_char_bitmap(const char c, struct ui_bitmap *bitmap);
-
-/*
- * Get bitmap of step icon.
- *
- * @param step		Step number.
- * @param focused	1 for focused and 0 for non-focused.
- * @param bitmap	Bitmap struct to be filled.
- *
- * @return VB2_SUCCESS on success, non-zero on error.
- */
-vb2_error_t ui_get_step_icon_bitmap(int step, int focused,
-				    struct ui_bitmap *bitmap);
 
 /******************************************************************************/
 /* draw.c */

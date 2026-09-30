@@ -156,14 +156,8 @@ sprite_files:
   ic_arrow_up: ic_arrow
   # icons
   ic_info: error_icon
-  ic_error: icon
-  ic_dev_mode: icon
-  ic_restart: icon
-  ic_1: icon_step
-  ic_1-done: icon_step
-  ic_2: icon_step
-  ic_2-done: icon_step
-  ic_done: icon_step
+  # screen icons
+  ic_construction: screen_icon
   # button icons
   ic_search: button_icon
   ic_settings: button_icon
@@ -272,15 +266,11 @@ styles:
     height: 24
   ic_arrow:
     height: 24
-  icon:
-    bgcolor: *surface_container
-    height: 45
+  screen_icon:
+    height: 50
   error_icon:
     bgcolor: *surface_container_high
     height: 45
-  icon_step:
-    bgcolor: *surface_container
-    height: 28
   button_icon:
     height: 24
   button_arrow:

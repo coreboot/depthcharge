@@ -41,13 +41,3 @@ vb2_error_t ui_get_char_bitmap(const char c, struct ui_bitmap *bitmap)
 	snprintf(file, sizeof(file), pattern, c, c);
 	return ui_load_bitmap(UI_ARCHIVE_FONT, file, NULL, bitmap);
 }
-
-vb2_error_t ui_get_step_icon_bitmap(int step, int focused,
-				    struct ui_bitmap *bitmap)
-{
-	char file[UI_BITMAP_FILENAME_MAX_LEN + 1];
-	const char *pattern = focused ? "ic_%d-done.bmp" : "ic_%d.bmp";
-
-	snprintf(file, sizeof(file), pattern, step);
-	return ui_get_bitmap(file, NULL, 0, bitmap);
-}
