@@ -281,11 +281,10 @@ class Converter:
 
         # Navigation instructions
         if is_detachable:
+            # ic_arrow_up and ic_arrow_down are not used for the keycaps on
+            # detachables, but are still needed for the language dropdown.
             rename_map.update(
                 {
-                    'nav-button_power': 'nav-key_enter',
-                    'nav-button_volume_up': 'nav-key_up',
-                    'nav-button_volume_down': 'nav-key_down',
                     'navigate0_tablet': 'navigate0',
                     'navigate1_tablet': 'navigate1',
                     'key_enter': None,
@@ -294,9 +293,6 @@ class Converter:
         else:
             rename_map.update(
                 {
-                    'nav-button_power': None,
-                    'nav-button_volume_up': None,
-                    'nav-button_volume_down': None,
                     'navigate0_tablet': None,
                     'navigate1_tablet': None,
                     'ic_volume_up': None,

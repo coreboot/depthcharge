@@ -178,13 +178,6 @@ sprite_files:
   ic_volume_up: ic_arrow
   ic_volume_down: ic_arrow
   ic_power_settings_new: ic_arrow
-  # navigation instructions
-  nav-key_up: nav_icon
-  nav-key_down: nav_icon
-  nav-key_enter: nav_icon
-  nav-button_volume_up: nav_icon
-  nav-button_volume_down: nav_icon
-  nav-button_power: nav_icon
 
 # Google Material 3 (GM3) dark theme colors
 # See https://carbon.googleplex.com/google-material-3/pages/static/gm3-baseline.
@@ -230,8 +223,11 @@ styles:
   one_line_desc:
     bgcolor: *surface_container
     fgcolor: *on_surface
-    max_width: 936
-    max_num_lines: 1
+    # Same text size as the navigation bar labels (button), since the text
+    # is drawn on the right of the navigation bar.
+    height: 21
+    # No max_width, so that the bitmap is not padded to the full width
+    # when drawn on the right of the navigation bar.
   desc_url:
     bgcolor: *surface_container
     fgcolor: *on_surface
@@ -293,9 +289,6 @@ styles:
     height: 20
   qr_rec:
     height: 86
-  nav_icon:
-    bgcolor: *surface_container
-    height: 30
 
 # Font of each locale
 fonts:
