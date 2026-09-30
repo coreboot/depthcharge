@@ -155,7 +155,7 @@ sprite_files:
   ic_arrow_down: ic_arrow
   ic_arrow_up: ic_arrow
   # icons
-  ic_info: error_icon
+  ic_error: error_icon
   # screen icons
   ic_construction: screen_icon
   # button icons
@@ -178,6 +178,7 @@ color_aliases:
   - &surface_container '#1e1f20'
   - &surface_container_high '#282a2c'
   - &on_surface '#e3e3e3'
+  - &on_surface_variant '#c4c7c5'
 
 # Style of each category
 styles:
@@ -253,14 +254,14 @@ styles:
     height: 21
   error:
     bgcolor: *surface_container_high
-    fgcolor: *on_surface
-    height: 24
+    fgcolor: *on_surface_variant
+    height: 21
     # UI_ERROR_BOX_WIDTH - UI_ERROR_BOX_PADDING * 2
-    max_width: 440
+    max_width: 392
   error_url:
     bgcolor: *surface_container_high
-    fgcolor: *on_surface
-    height: 24
+    fgcolor: *on_surface_variant
+    height: 21
   # sprite bitmaps
   ic_globe:
     height: 24
@@ -269,8 +270,7 @@ styles:
   screen_icon:
     height: 50
   error_icon:
-    bgcolor: *surface_container_high
-    height: 45
+    height: 40
   button_icon:
     height: 24
   button_arrow:

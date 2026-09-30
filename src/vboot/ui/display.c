@@ -148,70 +148,76 @@ static vb2_error_t init_screen(void)
 static vb2_error_t show_error_box(const struct ui_error_message *error,
 				  const struct ui_state *state)
 {
-	vb2_error_t rv = VB2_SUCCESS;
+	struct ui_bitmap icon_bitmap, text_bitmap, url_bitmap;
 	int32_t x, y;
-	const int32_t w = UI_SIZE_AUTO;
-	int32_t h;
+	int32_t box_h, text_h, url_h = 0;
 	int32_t button_width;
 	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
 	const int reverse = state->locale->rtl;
 	const char *locale_code = state->locale->code;
+	const int32_t box_x = (UI_SCALE - UI_ERROR_BOX_WIDTH) / 2;
+	int32_t box_y;
+	/* Leading of the text block, split evenly above and below the text */
+	const int32_t text_leading = UI_ERROR_BOX_TEXT_LINE_HEIGHT -
+		UI_ERROR_BOX_TEXT_HEIGHT;
 
-	/* Center the box on the screen */
-	x = (UI_SCALE - UI_ERROR_BOX_WIDTH) / 2;
-	y = (UI_SCALE - UI_ERROR_BOX_HEIGHT) / 2;
-
-	/* Clear printing area */
-	ui_draw_rounded_box(x, y,
-			    UI_ERROR_BOX_WIDTH,
-			    UI_ERROR_BOX_HEIGHT,
-			    &ui_color_error_box,
-			    0,
-			    UI_ERROR_BOX_RADIUS,
-			    reverse);
-
-	x += UI_ERROR_BOX_PADDING;
-	y += UI_ERROR_BOX_PADDING;
-
-	/* Insert icon */
-	struct ui_bitmap bitmap;
-	VB2_TRY(ui_get_bitmap("ic_info.bmp", NULL, 0, &bitmap));
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y,
-			       UI_ERROR_BOX_ICON_HEIGHT,
-			       UI_ERROR_BOX_ICON_HEIGHT,
-			       flags, reverse));
-
-	/* Insert in the body */
-	y += UI_ERROR_BOX_SECTION_SPACING + UI_ERROR_BOX_ICON_HEIGHT;
-	VB2_TRY(ui_get_bitmap(error->file, locale_code, 0, &bitmap));
-	h = UI_ERROR_BOX_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
-	y += h;
+	VB2_TRY(ui_get_bitmap("ic_error.bmp", NULL, 0, &icon_bitmap));
+	VB2_TRY(ui_get_bitmap(error->file, locale_code, 0, &text_bitmap));
+	text_h = UI_ERROR_BOX_TEXT_HEIGHT *
+		ui_get_bitmap_num_lines(&text_bitmap);
 	if (error->url != UI_ERROR_URL_NONE) {
-		y += UI_ERROR_BOX_TEXT_LINE_SPACING;
-		VB2_TRY(ui_get_bitmap(ui_error_url_bmp[error->url], NULL, 0, &bitmap));
-		h = UI_ERROR_BOX_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
-		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
-		y += h;
+		VB2_TRY(ui_get_bitmap(ui_error_url_bmp[error->url], NULL, 0,
+				      &url_bitmap));
+		url_h = UI_ERROR_BOX_TEXT_HEIGHT *
+			ui_get_bitmap_num_lines(&url_bitmap);
 	}
 
-	/* Insert "Back" button */
+	box_h = UI_ERROR_BOX_PADDING +
+		UI_ERROR_BOX_ICON_HEIGHT + UI_ERROR_BOX_ICON_MARGIN_BOTTOM +
+		text_h + url_h + text_leading +
+		UI_ERROR_BOX_TEXT_MARGIN_BOTTOM +
+		UI_H1_BUTTON_HEIGHT + UI_ERROR_BOX_PADDING;
+
+	/* Center the box on the screen */
+	box_y = (UI_SCALE - box_h) / 2;
+	VB2_TRY(ui_draw_rounded_box(box_x, box_y, UI_ERROR_BOX_WIDTH, box_h,
+				    &ui_color_error_box, 0,
+				    UI_ERROR_BOX_RADIUS, reverse));
+
+	/* Icon, horizontally centered */
+	y = box_y + UI_ERROR_BOX_PADDING;
+	VB2_TRY(ui_draw_mapped_bitmap(&icon_bitmap, UI_SCALE / 2, y,
+				      UI_ERROR_BOX_ICON_HEIGHT,
+				      UI_ERROR_BOX_ICON_HEIGHT,
+				      &ui_color_error_box, &ui_color_icon,
+				      PIVOT_H_CENTER | PIVOT_V_TOP, reverse));
+	y += UI_ERROR_BOX_ICON_HEIGHT + UI_ERROR_BOX_ICON_MARGIN_BOTTOM;
+
+	/* Body text */
+	x = box_x + UI_ERROR_BOX_PADDING;
+	y += text_leading / 2;
+	VB2_TRY(ui_draw_bitmap(&text_bitmap, x, y, UI_SIZE_AUTO, text_h,
+			       flags, reverse));
+	y += text_h;
+	if (error->url != UI_ERROR_URL_NONE)
+		VB2_TRY(ui_draw_bitmap(&url_bitmap, x, y, UI_SIZE_AUTO, url_h,
+				       flags, reverse));
+
+	/*
+	 * "Back" button, right-aligned. Since it is the only button in the
+	 * box, it is always focused.
+	 */
 	const struct ui_menu_item back_item = {
 		.file = "btn_back.bmp",
 	};
 	VB2_TRY(ui_get_h1_button_width(&back_item, state, &button_width));
 	/* x and y are top-left corner of the button */
-	x = (UI_SCALE + UI_ERROR_BOX_WIDTH) / 2 -
-		UI_ERROR_BOX_PADDING - button_width;
-	y = (UI_SCALE + UI_ERROR_BOX_HEIGHT) / 2 -
-		UI_ERROR_BOX_PADDING - UI_H1_BUTTON_HEIGHT;
-	VB2_TRY(ui_draw_h1_button(&back_item,
-				  state,
-				  x, y,
-				  UI_H1_BUTTON_HEIGHT,
-				  1, 0));
+	x = box_x + UI_ERROR_BOX_WIDTH - UI_ERROR_BOX_PADDING - button_width;
+	y = box_y + box_h - UI_ERROR_BOX_PADDING - UI_H1_BUTTON_HEIGHT;
+	VB2_TRY(ui_draw_h1_button(&back_item, state, x, y,
+				  UI_H1_BUTTON_HEIGHT, 1, 0));
 
-	return rv;
+	return VB2_SUCCESS;
 }
 
 static const struct rgb_color colors[] = {
