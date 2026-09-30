@@ -66,6 +66,8 @@
 #define BACK_ITEM ((struct ui_menu_item){	\
 	.name = "Back",				\
 	.file = "btn_back.bmp",			\
+	.type = UI_MENU_ITEM_TYPE_H3,		\
+	.flags = UI_MENU_ITEM_FLAG_NO_ARROW,	\
 	.action = ui_screen_back,		\
 })
 
@@ -1341,6 +1343,7 @@ static vb2_error_t draw_recovery_disk_step1_desc(
 static const struct ui_menu_item recovery_disk_step1_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	NEXT_ITEM(UI_SCREEN_RECOVERY_DISK_STEP2),
+	ADVANCED_OPTIONS_ITEM,
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
