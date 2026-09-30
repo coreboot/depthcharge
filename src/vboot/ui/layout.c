@@ -125,18 +125,221 @@ static const char *get_device_from_hwid(void)
 	return hwid;
 }
 
+/* Keys for navigating the menu */
+enum nav_key {
+	NAV_KEY_UP,
+	NAV_KEY_DOWN,
+	NAV_KEY_SELECT,
+};
+
+/* Keycap of a navigation key */
+struct keycap {
+	/* Generic bitmap filename of the icon or the text label. */
+	const char *file;
+	/* Whether the bitmap is a text label instead of an icon. */
+	bool is_text;
+};
+
+/*
+ * Keycaps of the navigation keys, indexed by enum nav_key. On detachables, the
+ * volume buttons and the power button are used for navigation instead of the
+ * arrow keys and the Enter key.
+ */
+static const struct keycap keyboard_keycaps[] = {
+	[NAV_KEY_UP] = { .file = "ic_arrow_up.bmp" },
+	[NAV_KEY_DOWN] = { .file = "ic_arrow_down.bmp" },
+	[NAV_KEY_SELECT] = { .file = "key_enter.bmp", .is_text = true },
+};
+
+static const struct keycap detachable_keycaps[] = {
+	[NAV_KEY_UP] = { .file = "ic_volume_up.bmp" },
+	[NAV_KEY_DOWN] = { .file = "ic_volume_down.bmp" },
+	[NAV_KEY_SELECT] = { .file = "ic_power_settings_new.bmp" },
+};
+
+static const struct keycap *get_keycap(enum nav_key key)
+{
+	if (CONFIG(DETACHABLE))
+		return &detachable_keycaps[key];
+	return &keyboard_keycaps[key];
+}
+
+/*
+ * Get the size of the keycap of a navigation key.
+ *
+ * @param key		Navigation key.
+ * @param width		Width of the keycap to be returned.
+ * @param height	Height of the keycap to be returned.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+static vb2_error_t get_keycap_size(enum nav_key key, int32_t *width,
+				   int32_t *height)
+{
+	const struct keycap *keycap = get_keycap(key);
+	struct ui_bitmap bitmap;
+
+	if (!keycap->is_text) {
+		*width = UI_KEYCAP_SIZE;
+		*height = UI_KEYCAP_SIZE;
+		return VB2_SUCCESS;
+	}
+
+	VB2_TRY(ui_get_bitmap(keycap->file, NULL, 0, &bitmap));
+	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_KEYCAP_TEXT_HEIGHT, width));
+	*width += UI_KEYCAP_PADDING_H * 2;
+	*height = UI_KEYCAP_TEXT_BOX_HEIGHT;
+	return VB2_SUCCESS;
+}
+
+/*
+ * Draw the keycap of a navigation key, vertically centered at y_center.
+ *
+ * The keycap is a rounded box with an icon or a text label inside.
+ *
+ * @param key		Navigation key.
+ * @param x		x-coordinate of the left edge.
+ * @param y_center	y-coordinate of the vertical center.
+ * @param reverse	Whether to reverse the x-coordinate relative to the
+ *			canvas.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+static vb2_error_t draw_keycap(enum nav_key key, int32_t x, int32_t y_center,
+			       int reverse)
+{
+	const struct keycap *keycap = get_keycap(key);
+	struct ui_bitmap bitmap;
+	int32_t width, height;
+
+	VB2_TRY(get_keycap_size(key, &width, &height));
+	VB2_TRY(ui_draw_rounded_box(x, y_center - height / 2, width, height,
+				    &ui_color_border,
+				    UI_KEYCAP_BORDER_THICKNESS,
+				    UI_KEYCAP_BORDER_RADIUS, reverse));
+	VB2_TRY(ui_get_bitmap(keycap->file, NULL, 0, &bitmap));
+	if (keycap->is_text)
+		return ui_draw_mapped_bitmap(&bitmap, x + UI_KEYCAP_PADDING_H,
+					     y_center, UI_SIZE_AUTO,
+					     UI_KEYCAP_TEXT_HEIGHT,
+					     &ui_color_bg, &ui_color_keycap_fg,
+					     PIVOT_H_LEFT | PIVOT_V_CENTER,
+					     reverse);
+	return ui_draw_mapped_bitmap(&bitmap, x + width / 2, y_center,
+				     UI_KEYCAP_ICON_SIZE, UI_KEYCAP_ICON_SIZE,
+				     &ui_color_bg, &ui_color_keycap_fg,
+				     PIVOT_H_CENTER | PIVOT_V_CENTER, reverse);
+}
+
+/*
+ * Get the height of a footer text block, including the spacing between the
+ * text and the line box.
+ */
+static int32_t get_footer_text_block_height(const struct ui_bitmap *bitmap)
+{
+	return ui_get_text_block_height(bitmap, UI_FOOTER_TEXT_HEIGHT,
+					UI_FOOTER_TEXT_LINE_HEIGHT);
+}
+
+/*
+ * Draw a footer text bitmap, vertically centered at y_center.
+ */
+static vb2_error_t draw_footer_text(const struct ui_bitmap *bitmap,
+				    int32_t x, int32_t y_center, int reverse)
+{
+	const int32_t h =
+		UI_FOOTER_TEXT_HEIGHT * ui_get_bitmap_num_lines(bitmap);
+
+	return ui_draw_bitmap(bitmap, x, y_center, UI_SIZE_AUTO, h,
+			      PIVOT_H_LEFT | PIVOT_V_CENTER, reverse);
+}
+
+/*
+ * Get the height of a row in the left column of the footer, including the
+ * vertical padding. The row consists of keycaps and a text block.
+ */
+static int32_t get_footer_row_height(int32_t keycap_height,
+				     const struct ui_bitmap *bitmap)
+{
+	return MAX(keycap_height, get_footer_text_block_height(bitmap)) +
+		UI_FOOTER_ROW_PADDING_V * 2;
+}
+
+/*
+ * Get the height of the left column of the footer.
+ *
+ * When the text wraps, the rows may take up the spacing between them, so that
+ * the column doesn't grow for 2-line text.
+ *
+ * @param locale_code	Language code of locale.
+ * @param height	Height of the left column to be returned.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+static vb2_error_t get_footer_left_height(const char *locale_code,
+					  int32_t *height)
+{
+	struct ui_bitmap bitmap;
+	int32_t keycap_width, keycap1_height, keycap2_height;
+	int32_t row1_height, row2_height;
+
+	VB2_TRY(ui_get_bitmap("navigate0.bmp", locale_code, 0, &bitmap));
+	VB2_TRY(get_keycap_size(NAV_KEY_DOWN, &keycap_width,
+				&keycap1_height));
+	row1_height = get_footer_row_height(keycap1_height, &bitmap);
+	VB2_TRY(ui_get_bitmap("navigate1.bmp", locale_code, 0, &bitmap));
+	VB2_TRY(get_keycap_size(NAV_KEY_SELECT, &keycap_width,
+				&keycap2_height));
+	row2_height = get_footer_row_height(keycap2_height, &bitmap);
+
+	*height = MAX(row1_height + row2_height,
+		      keycap1_height + keycap2_height +
+		      UI_FOOTER_ROW_PADDING_V * 4 + UI_FOOTER_ROW_SPACING);
+	return VB2_SUCCESS;
+}
+
+/*
+ * Get the y-coordinate of the top of the footer.
+ *
+ * The footer is anchored to the bottom of the screen, and its height is
+ * determined by the taller column. Therefore, the footer grows upward when the
+ * text wraps to too many lines.
+ *
+ * @param locale_code	Language code of locale.
+ * @param y		y-coordinate of the top of the footer to be returned.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+static vb2_error_t get_footer_y(const char *locale_code, int32_t *y)
+{
+	struct ui_bitmap bitmap;
+	int32_t left_height, right_height;
+
+	/* Left column: keyboard navigation instructions */
+	VB2_TRY(get_footer_left_height(locale_code, &left_height));
+
+	/* Right column: QR code, device name and help center URL */
+	VB2_TRY(ui_get_bitmap("device.bmp", locale_code, 0, &bitmap));
+	right_height = get_footer_text_block_height(&bitmap) +
+		UI_FOOTER_TEXT_LINE_HEIGHT + UI_FOOTER_PARA_SPACING;
+	VB2_TRY(ui_get_bitmap("help_center.bmp", locale_code, 0, &bitmap));
+	right_height += get_footer_text_block_height(&bitmap) +
+		UI_FOOTER_TEXT_LINE_HEIGHT;
+	right_height = MAX(right_height, UI_FOOTER_QR_BOX_SIZE);
+
+	*y = UI_SCALE - UI_FOOTER_PADDING_BOTTOM -
+		MAX(left_height, right_height) - UI_FOOTER_PADDING_TOP -
+		UI_FOOTER_DIVIDER_THICKNESS;
+	return VB2_SUCCESS;
+}
+
 static vb2_error_t draw_footer(const struct ui_state *state)
 {
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
-	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
-	const int32_t text_height = UI_FOOTER_TEXT_HEIGHT;
-	int32_t x, y, vspacing;
-	int32_t col2_width;
-	const int32_t w = UI_SIZE_AUTO;
-	const int32_t footer_y = UI_SCALE - UI_FOOTER_PADDING_BOTTOM -
-		UI_FOOTER_HEIGHT;
-	const int32_t footer_height = UI_FOOTER_HEIGHT;
+	const int32_t line_height = UI_FOOTER_TEXT_LINE_HEIGHT;
+	int32_t footer_y, content_y;
+	int32_t x, y, h, row_height, y_center, keycap_width, keycap_height;
 	struct ui_bitmap bitmap;
 
 	/* Get device name. */
@@ -149,89 +352,88 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 			device = "NOT FOUND";
 	}
 
-	/* Column 1 */
-	x = UI_MARGIN_H;
-	y = footer_y;
-	VB2_TRY(ui_get_bitmap("qr_rec.bmp", NULL, 0, &bitmap));
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, footer_height, footer_height,
-			       flags, reverse));
-	x += footer_height + UI_FOOTER_COL1_MARGIN_RIGHT;
+	VB2_TRY(get_footer_y(locale_code, &footer_y));
+	content_y = footer_y + UI_FOOTER_DIVIDER_THICKNESS +
+		UI_FOOTER_PADDING_TOP;
 
-	/* Column 2: 4 lines of text */
-	y = footer_y;
-	vspacing = footer_height - text_height * 4 -
-		UI_FOOTER_COL2_LINE_SPACING * 2;
-	VB2_TRY(ui_get_bitmap("device.bmp", locale_code, 0, &bitmap));
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
-	y += text_height + UI_FOOTER_COL2_LINE_SPACING;
-	VB2_TRY(ui_draw_text(device, x, y, text_height,
-			     &ui_color_bg, &ui_color_footer_fg,
-			     flags, reverse));
-	y += text_height + vspacing;
-	VB2_TRY(ui_get_bitmap("help_center.bmp", locale_code, 0, &bitmap));
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
-	y += text_height + UI_FOOTER_COL2_LINE_SPACING;
-	VB2_TRY(ui_get_bitmap("rec_url.bmp", NULL, 0, &bitmap));
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
-	VB2_TRY(ui_get_bitmap_width(&bitmap, text_height, &col2_width));
-	x += col2_width + UI_FOOTER_COL2_MARGIN_RIGHT;
-
-	/* Separator */
-	VB2_TRY(ui_draw_box(x, footer_y, UI_SIZE_MIN, footer_height,
-			    &ui_color_border, reverse));
+	/* Divider */
+	VB2_TRY(ui_draw_box(UI_MARGIN_H, footer_y, UI_SCALE - UI_MARGIN_H * 2,
+			    UI_FOOTER_DIVIDER_THICKNESS, &ui_color_border,
+			    reverse));
 
 	/*
-	 * Column 3 contains:
-	 * - Navigation instruction string 1 (possibly multi-line)
-	 * - Navigation instruction string 2 (possibly multi-line)
-	 * - Navigation icons (one line)
-	 * vspacing is the space between 2 navigation strings, while
-	 * para_spacing is the space before the icon line.
+	 * TODO(b/551743258): Draw the column headers ("How to navigate with
+	 * keyboard" and "More details") once the strings are translated.
 	 */
-	int32_t icon_width;
-	int32_t para_spacing;
-	uint32_t col3_num_lines0, col3_num_lines1;
-	const int32_t icon_height = UI_FOOTER_COL3_ICON_HEIGHT;
-	struct ui_bitmap col3_bitmap0, col3_bitmap1;
-	VB2_TRY(ui_get_bitmap("navigate0.bmp", locale_code, 0, &col3_bitmap0));
-	VB2_TRY(ui_get_bitmap("navigate1.bmp", locale_code, 0, &col3_bitmap1));
-	col3_num_lines0 = ui_get_bitmap_num_lines(&col3_bitmap0);
-	col3_num_lines1 = ui_get_bitmap_num_lines(&col3_bitmap1);
-	x += UI_FOOTER_COL3_MARGIN_LEFT;
-	y = footer_y;
-	para_spacing = UI_FOOTER_COL3_PARA_SPACING;
-	vspacing = footer_height -
-		text_height * (col3_num_lines0 + col3_num_lines1) -
-		icon_height - UI_FOOTER_COL3_PARA_SPACING;
-	/* Not enough room for the vspacing; reduce the para_spacing */
-	if (vspacing < 0) {
-		para_spacing = MAX(para_spacing + vspacing -
-				   UI_FOOTER_COL3_SPACING_MIN,
-				   UI_FOOTER_COL3_SPACING_MIN);
-		vspacing = UI_FOOTER_COL3_SPACING_MIN;
-	}
 
-	VB2_TRY(ui_draw_bitmap(&col3_bitmap0, x, y, w,
-			       text_height * col3_num_lines0, flags, reverse));
-	y += text_height * col3_num_lines0 + vspacing;
+	/* Left column: keyboard navigation instructions */
+	x = UI_MARGIN_H;
+	y = content_y;
 
-	VB2_TRY(ui_draw_bitmap(&col3_bitmap1, x, y, w,
-			       text_height * col3_num_lines1, flags, reverse));
-	y += text_height * col3_num_lines1 + para_spacing;
+	/* Row 1: down and up keys, aligned to the top of the footer */
+	VB2_TRY(ui_get_bitmap("navigate0.bmp", locale_code, 0, &bitmap));
+	VB2_TRY(get_keycap_size(NAV_KEY_DOWN, &keycap_width, &keycap_height));
+	row_height = get_footer_row_height(keycap_height, &bitmap);
+	y_center = y + row_height / 2;
+	VB2_TRY(draw_keycap(NAV_KEY_DOWN, x, y_center, reverse));
+	x += keycap_width + UI_KEYCAP_SPACING;
+	VB2_TRY(draw_keycap(NAV_KEY_UP, x, y_center, reverse));
+	x += keycap_width + UI_KEYCAP_MARGIN_R;
+	VB2_TRY(draw_footer_text(&bitmap, x, y_center, reverse));
 
-	const char *const icon_files[] = {
-		"nav-key_enter.bmp",
-		"nav-key_up.bmp",
-		"nav-key_down.bmp",
-	};
+	/*
+	 * Row 2: select key, aligned to the bottom of the footer, so that both
+	 * columns end at the same line.
+	 */
+	x = UI_MARGIN_H;
+	VB2_TRY(ui_get_bitmap("navigate1.bmp", locale_code, 0, &bitmap));
+	VB2_TRY(get_keycap_size(NAV_KEY_SELECT, &keycap_width,
+				&keycap_height));
+	row_height = get_footer_row_height(keycap_height, &bitmap);
+	y = UI_SCALE - UI_FOOTER_PADDING_BOTTOM - row_height;
+	y_center = y + row_height / 2;
+	VB2_TRY(draw_keycap(NAV_KEY_SELECT, x, y_center, reverse));
+	x += keycap_width + UI_KEYCAP_MARGIN_R;
+	VB2_TRY(draw_footer_text(&bitmap, x, y_center, reverse));
 
-	for (int i = 0; i < ARRAY_SIZE(icon_files); i++) {
-		VB2_TRY(ui_get_bitmap(icon_files[i], NULL, 0, &bitmap));
-		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, icon_height,
-				       flags, reverse));
-		VB2_TRY(ui_get_bitmap_width(&bitmap, icon_height, &icon_width));
-		x += icon_width + UI_FOOTER_COL3_ICON_SPACING;
-	}
+	/* Right column: QR code, device name and help center URL */
+	x = UI_SCALE / 2 + UI_FOOTER_COL_PADDING_INNER;
+	y = content_y;
+
+	/*
+	 * The QR code bitmap is white on black, without the quiet zone.
+	 * Recolor it, and use the padding of the box as the quiet zone.
+	 */
+	const int32_t box_size = UI_FOOTER_QR_BOX_SIZE;
+	const int32_t qr_size = box_size - UI_FOOTER_QR_BOX_PADDING * 2;
+	VB2_TRY(ui_draw_rounded_box(x, y, box_size, box_size, &ui_color_qr_bg,
+				    0, UI_FOOTER_QR_BOX_RADIUS, reverse));
+	VB2_TRY(ui_get_bitmap("qr_rec.bmp", NULL, 0, &bitmap));
+	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x + UI_FOOTER_QR_BOX_PADDING,
+				      y + UI_FOOTER_QR_BOX_PADDING,
+				      qr_size, qr_size,
+				      &ui_color_qr_bg, &ui_color_qr_fg,
+				      PIVOT_H_LEFT | PIVOT_V_TOP, reverse));
+	x += box_size + UI_FOOTER_QR_BOX_MARGIN_R;
+
+	/* Device name */
+	VB2_TRY(ui_get_bitmap("device.bmp", locale_code, 0, &bitmap));
+	h = get_footer_text_block_height(&bitmap);
+	VB2_TRY(draw_footer_text(&bitmap, x, y + h / 2, reverse));
+	y += h;
+	VB2_TRY(ui_draw_text(device, x, y + line_height / 2,
+			     UI_FOOTER_DEVICE_TEXT_HEIGHT,
+			     &ui_color_bg, &ui_color_footer_fg,
+			     PIVOT_H_LEFT | PIVOT_V_CENTER, reverse));
+	y += line_height + UI_FOOTER_PARA_SPACING;
+
+	/* Help center URL */
+	VB2_TRY(ui_get_bitmap("help_center.bmp", locale_code, 0, &bitmap));
+	h = get_footer_text_block_height(&bitmap);
+	VB2_TRY(draw_footer_text(&bitmap, x, y + h / 2, reverse));
+	y += h;
+	VB2_TRY(ui_get_bitmap("rec_url.bmp", NULL, 0, &bitmap));
+	VB2_TRY(draw_footer_text(&bitmap, x, y + line_height / 2, reverse));
 
 	return VB2_SUCCESS;
 }
@@ -866,11 +1068,12 @@ vb2_error_t ui_get_textbox_chars_per_line(uint32_t *chars_per_line)
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_get_textbox_lines_per_page(enum ui_screen screen, int32_t y,
+vb2_error_t ui_get_textbox_lines_per_page(enum ui_screen screen,
+					  const char *locale_code, int32_t y,
 					  uint32_t *lines_per_page)
 {
 	const struct ui_screen_info *screen_info;
-	int32_t textbox_height;
+	int32_t textbox_height, footer_y;
 
 	screen_info = ui_get_screen_info(screen);
 
@@ -881,13 +1084,13 @@ vb2_error_t ui_get_textbox_lines_per_page(enum ui_screen screen, int32_t y,
 				UI_NAVIGATION_BAR_MARGIN * 2 -
 				UI_NAVIGATION_BAR_HEIGHT;
 	} else {
+		VB2_TRY(get_footer_y(locale_code, &footer_y));
 		/* TODO(503252263): It would be better to calculate it based on screen menu */
-		textbox_height = UI_SCALE - y -
+		textbox_height = footer_y - y -
 			/* Page up, page down, back, and power off button */
 			(UI_H1_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V) * 4 -
 			UI_DESC_MARGIN_BOTTOM -
-			UI_FOOTER_MARGIN_TOP - UI_FOOTER_HEIGHT -
-			UI_FOOTER_PADDING_BOTTOM;
+			UI_FOOTER_MARGIN_TOP;
 	}
 
 	*lines_per_page = (textbox_height - UI_BOX_PADDING_V * 2 +
@@ -926,7 +1129,9 @@ vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
 			UI_TITLE_MARGIN_V * 2 + title_height;
 	}
 
-	VB2_TRY(ui_get_textbox_lines_per_page(screen, above_textbox_height, lines_per_page));
+	VB2_TRY(ui_get_textbox_lines_per_page(screen, locale_code,
+					      above_textbox_height,
+					      lines_per_page));
 
 	return ui_get_textbox_chars_per_line(chars_per_line);
 }
@@ -942,7 +1147,9 @@ vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
 	int32_t box_height;
 	const int32_t log_box_width = UI_SCALE - UI_MARGIN_H * 2;
 
-	VB2_TRY(ui_get_textbox_lines_per_page(state->screen->id, *y, &lines_per_page));
+	VB2_TRY(ui_get_textbox_lines_per_page(state->screen->id,
+					      state->locale->code, *y,
+					      &lines_per_page));
 	VB2_TRY(ui_get_textbox_chars_per_line(&chars_per_line));
 	if (wrap_lines)
 		VB2_TRY(ui_draw_auto_wrap_textbox(str, n, y, lines_per_page, chars_per_line));
@@ -1100,8 +1307,8 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 
 	/* H3 buttons (anchored to bottom) */
 	x = UI_MARGIN_H;
-	y = UI_SCALE - UI_FOOTER_PADDING_BOTTOM - UI_FOOTER_HEIGHT -
-		UI_FOOTER_MARGIN_TOP - UI_H3_BUTTON_HEIGHT;
+	VB2_TRY(get_footer_y(state->locale->code, &y));
+	y -= UI_FOOTER_MARGIN_TOP + UI_H3_BUTTON_HEIGHT;
 	for (i = menu->num_items - 1; i >= 0; i--) {
 		if (UI_GET_BIT(ms->hidden_item_mask, i))
 			continue;
@@ -1392,9 +1599,10 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 			clear_screen(&ui_color_bg);
 		} else {
 			/* Clear everything above the footer for new screen. */
-			const int32_t box_height = UI_SCALE -
-				UI_FOOTER_PADDING_BOTTOM - UI_FOOTER_HEIGHT;
-			VB2_TRY(ui_draw_box(0, 0, UI_SCALE, box_height,
+			int32_t footer_y;
+
+			VB2_TRY(get_footer_y(locale_code, &footer_y));
+			VB2_TRY(ui_draw_box(0, 0, UI_SCALE, footer_y,
 					    &ui_color_bg, 0));
 		}
 	} else if (closing_sub_menu) {

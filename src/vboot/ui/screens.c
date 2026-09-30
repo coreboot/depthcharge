@@ -1158,7 +1158,9 @@ static vb2_error_t draw_fastboot_desc(
 	*y += UI_BOX_TEXT_HEIGHT + UI_BOX_TEXT_LINE_SPACING;
 
 	/* Report the textbox geometry to the log module */
-	VB2_TRY(ui_get_textbox_lines_per_page(state->screen->id, *y, &lines_per_page));
+	VB2_TRY(ui_get_textbox_lines_per_page(state->screen->id,
+					      state->locale->code, *y,
+					      &lines_per_page));
 	VB2_TRY(ui_get_textbox_chars_per_line(&chars_per_line));
 	ui_fb_log_set_geometry(&state->log, fb_session ? fb_session->log : NULL,
 			       lines_per_page, chars_per_line);

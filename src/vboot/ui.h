@@ -148,19 +148,42 @@
 #define UI_H3_BUTTON_ARROW_MARGIN_H		8
 #define UI_H3_BUTTON_BORDER_THICKNESS		2
 
+/* For keycaps */
+#define UI_KEYCAP_SIZE				40
+#define UI_KEYCAP_ICON_SIZE			22
+#define UI_KEYCAP_TEXT_HEIGHT			21
+#define UI_KEYCAP_TEXT_LINE_HEIGHT		24
+#define UI_KEYCAP_PADDING_H			16
+#define UI_KEYCAP_PADDING_V			10
+#define UI_KEYCAP_SPACING			6
+#define UI_KEYCAP_MARGIN_R			10
+#define UI_KEYCAP_BORDER_THICKNESS		2
+#define UI_KEYCAP_BORDER_RADIUS			12
+#define UI_KEYCAP_TEXT_BOX_HEIGHT		(UI_KEYCAP_TEXT_LINE_HEIGHT + \
+						 UI_KEYCAP_PADDING_V * 2)
+
 /* For footer */
-#define UI_FOOTER_MARGIN_TOP			30
-#define UI_FOOTER_HEIGHT			128
+#define UI_FOOTER_MARGIN_TOP			26
+#define UI_FOOTER_DIVIDER_THICKNESS		2
+#define UI_FOOTER_PADDING_TOP			20
 #define UI_FOOTER_PADDING_BOTTOM		45
-#define UI_FOOTER_TEXT_HEIGHT			20
-#define UI_FOOTER_COL1_MARGIN_RIGHT		20
-#define UI_FOOTER_COL2_LINE_SPACING		4
-#define UI_FOOTER_COL2_MARGIN_RIGHT		40
-#define UI_FOOTER_COL3_MARGIN_LEFT		40
-#define UI_FOOTER_COL3_SPACING_MIN		5
-#define UI_FOOTER_COL3_PARA_SPACING		48
-#define UI_FOOTER_COL3_ICON_HEIGHT		30
-#define UI_FOOTER_COL3_ICON_SPACING		5
+/*
+ * The footer is divided into two columns of equal width (UI_SCALE / 2).
+ * Each column has an outer padding of UI_MARGIN_H and an inner padding of
+ * UI_FOOTER_COL_PADDING_INNER.
+ */
+#define UI_FOOTER_COL_PADDING_INNER		24
+#define UI_FOOTER_TEXT_HEIGHT			21
+#define UI_FOOTER_TEXT_LINE_HEIGHT		24
+/* Device name drawn with glyph bitmaps (Cousine, 1.135 * font size) */
+#define UI_FOOTER_DEVICE_TEXT_HEIGHT		20
+#define UI_FOOTER_ROW_PADDING_V			4
+#define UI_FOOTER_ROW_SPACING			6
+#define UI_FOOTER_PARA_SPACING			10
+#define UI_FOOTER_QR_BOX_SIZE			102
+#define UI_FOOTER_QR_BOX_PADDING		8
+#define UI_FOOTER_QR_BOX_RADIUS			12
+#define UI_FOOTER_QR_BOX_MARGIN_R		20
 
 /* For error box */
 #define UI_ERROR_BOX_RADIUS			12
@@ -329,6 +352,9 @@ enum ui_error {
 static const struct rgb_color ui_color_bg		= { 0x1e, 0x1f, 0x20 };
 static const struct rgb_color ui_color_fg		= { 0xe3, 0xe3, 0xe3 };
 static const struct rgb_color ui_color_footer_fg	= { 0xe3, 0xe3, 0xe3 };
+static const struct rgb_color ui_color_keycap_fg	= { 0xc4, 0xc7, 0xc5 };
+static const struct rgb_color ui_color_qr_bg		= { 0xcc, 0xcc, 0xcc };
+static const struct rgb_color ui_color_qr_fg		= { 0x25, 0x26, 0x29 };
 static const struct rgb_color ui_color_sub_menu_bg	= { 0x37, 0x39, 0x3b };
 static const struct rgb_color ui_color_button		= { 0xa8, 0xc7, 0xfa };
 static const struct rgb_color ui_color_button_fg	= { 0x06, 0x2e, 0x6f };
@@ -1172,13 +1198,15 @@ vb2_error_t ui_get_textbox_chars_per_line(uint32_t *chars_per_line);
  * Get the maximum number of lines per page of the textbox.
  *
  * @param screen		Screen to display the textbox.
+ * @param locale_code		Language code of locale.
  * @param y			Offset of the textbox from the top of the screen.
  * @param lines_per_page	On return, the value will be maximum number of
  *				lines per page.
  *
  * @return VB2_SUCCESS on success, no-zero on error.
  */
-vb2_error_t ui_get_textbox_lines_per_page(enum ui_screen screen, int32_t y,
+vb2_error_t ui_get_textbox_lines_per_page(enum ui_screen screen,
+					  const char *locale_code, int32_t y,
 					  uint32_t *lines_per_page);
 
 /*
