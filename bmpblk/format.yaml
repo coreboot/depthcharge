@@ -9,11 +9,12 @@
 # Key is the string name (see strings/*.txt); value is the category of the
 # string.
 generic_files:
-  rec_url: footer         # see strings/rec_url.txt
+  rec_url: footer_url     # see strings/rec_url.txt
   rec_url_desc: desc_url  # see strings/rec_url_desc.txt
   dev_mode_url: error_url # see strings/dev_mode_url.txt
   dev_blocked_url: error_url # see strings/dev_blocked_url.txt
   oem_lock_url: error_url # see strings/oem_lock_url.txt
+  key_enter: keycap       # see strings/key_enter.txt
 
 # Localized strings
 # Key is the name in firmware_strings.grd; value is the category of the string.
@@ -173,6 +174,10 @@ sprite_files:
   ic_dropright: button_arrow
   # QR code
   qr_rec: qr_rec
+  # keycap icons for detachables
+  ic_volume_up: ic_arrow
+  ic_volume_down: ic_arrow
+  ic_power_settings_new: ic_arrow
   # navigation instructions
   nav-key_up: nav_icon
   nav-key_down: nav_icon
@@ -184,6 +189,7 @@ sprite_files:
 # Google Material 3 (GM3) dark theme colors
 # See https://carbon.googleplex.com/google-material-3/pages/static/gm3-baseline.
 color_aliases:
+  - &primary '#a8c7fa'
   - &surface_container '#1e1f20'
   - &surface_container_high '#282a2c'
   - &on_surface '#e3e3e3'
@@ -234,20 +240,29 @@ styles:
   footer:
     bgcolor: *surface_container
     fgcolor: *on_surface
-    height: 20
+    height: 21
+    # UI_FOOTER_COL_PADDING_INNER = 24
+    # UI_FOOTER_QR_BOX_SIZE = 102
+    # UI_FOOTER_QR_BOX_MARGIN_R = 20
+    # UI_SCALE / 2 - UI_MARGIN_H - UI_FOOTER_COL_PADDING_INNER
+    # - UI_FOOTER_QR_BOX_SIZE - UI_FOOTER_QR_BOX_MARGIN_R
+    max_width: 322
+  footer_url:
+    bgcolor: *surface_container
+    fgcolor: *primary
+    height: 21
   footer_nav:
     bgcolor: *surface_container
     fgcolor: *on_surface
-    height: 20
-    # UI_FOOTER_HEIGHT = 128
-    # UI_FOOTER_COL1_MARGIN_RIGHT = 20
-    # width of rec_url.bmp = 282
-    # UI_FOOTER_COL2_MARGIN_RIGHT = 40
-    # UI_FOOTER_COL3_MARGIN_LEFT = 40
-    # UI_SCALE - UI_MARGIN_H * 2 - UI_FOOTER_HEIGHT
-    # - UI_FOOTER_COL1_MARGIN_RIGHT - 282
-    # - UI_FOOTER_COL2_MARGIN_RIGHT - UI_FOOTER_COL3_MARGIN_LEFT
-    max_width: 426
+    height: 21
+    # UI_KEYCAP_SIZE = 40
+    # UI_KEYCAP_SPACING = 6
+    # UI_KEYCAP_MARGIN_R = 10
+    # UI_SCALE / 2 - UI_MARGIN_H - UI_FOOTER_COL_PADDING_INNER
+    # - UI_KEYCAP_SIZE * 2 - UI_KEYCAP_SPACING - UI_KEYCAP_MARGIN_R
+    max_width: 348
+  keycap:
+    height: 21
   error:
     bgcolor: *surface_container_high
     fgcolor: *on_surface
@@ -277,8 +292,7 @@ styles:
   button_arrow:
     height: 20
   qr_rec:
-    bgcolor: *surface_container
-    height: 128
+    height: 86
   nav_icon:
     bgcolor: *surface_container
     height: 30

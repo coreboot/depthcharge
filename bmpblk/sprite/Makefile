@@ -10,8 +10,10 @@ all: qr_rec.svg
 # Web UI: http://goqr.me/
 API_URL = https://api.qrserver.com/v1/create-qr-code/
 
+# The colors are adjusted at runtime, and the quiet zone is drawn at runtime as
+# the padding around the QR code.
 # qzone: Border width in terms of number of squares
-PARAMS = color=202124&bgcolor=e8eaed&qzone=2&format=svg
+PARAMS = color=ffffff&bgcolor=000000&qzone=0&format=svg
 
 qr_rec.svg:
 	curl "$(API_URL)?$(PARAMS)&data=https://goo.gle/mydevice_recovery" -o $@

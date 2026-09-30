@@ -288,6 +288,7 @@ class Converter:
                     'nav-button_volume_down': 'nav-key_down',
                     'navigate0_tablet': 'navigate0',
                     'navigate1_tablet': 'navigate1',
+                    'key_enter': None,
                 }
             )
         else:
@@ -298,6 +299,9 @@ class Converter:
                     'nav-button_volume_down': None,
                     'navigate0_tablet': None,
                     'navigate1_tablet': None,
+                    'ic_volume_up': None,
+                    'ic_volume_down': None,
+                    'ic_power_settings_new': None,
                 }
             )
 
