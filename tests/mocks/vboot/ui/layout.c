@@ -37,6 +37,13 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	return VB2_SUCCESS;
 }
 
+vb2_error_t ui_get_navigation_bar_width(const struct ui_state *state,
+					int32_t *width)
+{
+	*width = 0;
+	return VB2_SUCCESS;
+}
+
 vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
 				int32_t *y)
 {
@@ -45,7 +52,8 @@ vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
 
 vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
 			      int32_t first_item_index, size_t items_count,
-			      size_t items_per_page, int reverse)
+			      size_t items_per_page,
+			      const struct rgb_color *track_color, int reverse)
 {
 	return VB2_SUCCESS;
 }

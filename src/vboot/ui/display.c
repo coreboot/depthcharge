@@ -340,7 +340,7 @@ vb2_error_t ui_display(struct ui_context *ui,
 		UI_ERROR("Drawing screen %#x failed: %#x\n", screen->id, rv);
 		/* Print fallback message if drawing failed. */
 		if (screen->mesg)
-			ui_draw_textbox(screen->mesg, &y, 1);
+			ui_draw_textbox(screen->mesg, &y, 1, 0);
 		/* Also draw colored stripes */
 		draw_fallback_stripes(screen->id, ms->focused_item);
 	}

@@ -196,11 +196,9 @@
 #define UI_ERROR_BOX_TEXT_LINE_SPACING		12
 
 /* For full view layout */
-#define UI_FULLVIEW_TITLE_TEXT_HEIGHT		30
-#define UI_FULLVIEW_TITLE_MARGIN		12
-#define UI_NAVIGATION_BAR_ICON_SPACING		5
-#define UI_NAVIGATION_BAR_HEIGHT		30
-#define UI_NAVIGATION_BAR_MARGIN		8
+#define UI_NAVIGATION_BAR_HEIGHT		68
+#define UI_NAVIGATION_BAR_ITEM_SPACING		34
+#define UI_NAVIGATION_BAR_TEXT_LINE_HEIGHT	24
 
 /*
  * UI_BOX_* constants define a large textbox taking up the width of the screen.
@@ -209,12 +207,13 @@
  * (2) a main UI element for viewing a large body of text.
  */
 #define UI_BOX_TEXT_HEIGHT			20
-#define UI_BOX_TEXT_LINE_SPACING		2
+#define UI_BOX_TEXT_LINE_SPACING		4
 #define UI_BOX_MARGIN_V				275
-#define UI_BOX_PADDING_H			17
-#define UI_BOX_PADDING_V			11
-#define UI_BOX_BORDER_THICKNESS			2
-#define UI_BOX_BORDER_RADIUS			6
+#define UI_BOX_PADDING_H			16
+#define UI_BOX_PADDING_V			16
+#define UI_BOX_RADIUS				12
+/* Margin below the textbox in full view */
+#define UI_BOX_MARGIN_BOTTOM			12
 
 /* For fallback colored stripes */
 #define UI_FALLBACK_STRIPE_HEIGHT		10
@@ -372,6 +371,7 @@ static const struct rgb_color ui_color_border		= { 0x44, 0x47, 0x46 };
 static const struct rgb_color ui_color_error_box	= { 0x28, 0x2a, 0x2c };
 static const struct rgb_color ui_color_scrollbar	= { 0xa8, 0xc7, 0xfa };
 static const struct rgb_color ui_color_scrollbar_track	= { 0x37, 0x39, 0x3b };
+static const struct rgb_color ui_color_textbox_bg	= { 0x13, 0x13, 0x14 };
 static const struct rgb_color ui_color_black		= { 0x00, 0x00, 0x00 };
 
 /*
@@ -1129,6 +1129,19 @@ vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 			      int clear_help);
 
 /*
+ * Get the width of the navigation bar of the full view layout.
+ *
+ * The navigation bar is drawn right below the title of a full view screen.
+ *
+ * @param state		UI state.
+ * @param width		On return, the width of the navigation bar.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_get_navigation_bar_width(const struct ui_state *state,
+					int32_t *width);
+
+/*
  * Draw screen descriptions.
  *
  * @param desc		List of description files.
@@ -1178,9 +1191,12 @@ vb2_error_t ui_draw_desc_bitmap(const struct ui_bitmap *bitmap, int32_t y,
  *			below the box.
  * @param min_lines	Minimum number of lines the textbox should contain. Pad
  *			with empty lines if str does not reach this limit.
+ * @param min_height	Minimum height of the box. The box is extended below the
+ *			text to this height, or 0 to fit the box to the text.
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines);
+vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines,
+			    int32_t min_height);
 
 /*
  * Get the maximum number of characters per line of the textbox.
@@ -1271,12 +1287,14 @@ vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
  * @param items_count		Number of the items.
  * @param items_per_page	Number of items in the same page, used when
  *				calculating the height of the scrollbar.
+ * @param track_color		Color of the scrollbar track.
  * @param reverse		RTL flag.
  * @return VB2_SUCCESS on success, non-zero on error.
  */
 vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
 			      int32_t first_item_index, size_t items_count,
-			      size_t items_per_page, int reverse);
+			      size_t items_per_page,
+			      const struct rgb_color *track_color, int reverse);
 
 /*
  * Draw H1, H2, and H3 buttons; ignore the language dropdown header.

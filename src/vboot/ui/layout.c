@@ -438,48 +438,80 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t draw_navigation_bar(const struct ui_state *state)
+/*
+ * Navigation tips in the navigation bar of the full view layout.
+ *
+ * TODO(b/551743258): Show "Page down / up" next to the down and up keycaps,
+ * and "Exit this view" next to the select keycap as in the design.
+ */
+static const struct {
+	enum nav_key key;
+	const char *file;
+} navigation_tips[] = {
+	{ NAV_KEY_DOWN, "btn_page_down.bmp" },
+	{ NAV_KEY_UP, "btn_page_up.bmp" },
+	{ NAV_KEY_SELECT, "btn_back.bmp" },
+};
+
+vb2_error_t ui_get_navigation_bar_width(const struct ui_state *state,
+					int32_t *width)
 {
-	const int reverse = state->locale->rtl;
-	int32_t x, y;
-	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
-	const int32_t w = UI_SIZE_AUTO;
-	struct ui_bitmap bitmap;
 	const char *locale_code = state->locale->code;
+	struct ui_bitmap bitmap;
+	int32_t keycap_width, keycap_height, text_width;
 
-	x = UI_MARGIN_H;
-	y = UI_SCALE - UI_NAVIGATION_BAR_HEIGHT - UI_NAVIGATION_BAR_MARGIN;
+	*width = 0;
+	for (int i = 0; i < ARRAY_SIZE(navigation_tips); i++) {
+		if (i > 0)
+			*width += UI_NAVIGATION_BAR_ITEM_SPACING;
+		VB2_TRY(get_keycap_size(navigation_tips[i].key, &keycap_width,
+					&keycap_height));
+		VB2_TRY(ui_get_bitmap(navigation_tips[i].file, locale_code, 0,
+				      &bitmap));
+		VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
+					    &text_width));
+		*width += keycap_width + UI_KEYCAP_MARGIN_R + text_width;
+	}
 
-	int32_t icon_width;
-	const int32_t icon_height = UI_NAVIGATION_BAR_HEIGHT;
+	return VB2_SUCCESS;
+}
+
+/*
+ * Draw the navigation bar of the full view layout.
+ *
+ * @param state		UI state.
+ * @param y		y-coordinate of the top of the navigation bar.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+static vb2_error_t draw_navigation_bar(const struct ui_state *state,
+				       int32_t y)
+{
+	const char *locale_code = state->locale->code;
+	const int reverse = state->locale->rtl;
+	const int32_t y_center = y + UI_NAVIGATION_BAR_HEIGHT / 2;
 	const int32_t text_height = UI_BUTTON_TEXT_HEIGHT;
+	int32_t x = UI_MARGIN_H;
+	int32_t keycap_width, keycap_height, text_width;
+	struct ui_bitmap bitmap;
 
-	struct navigation_tip {
-		const char *icon;
-		const char *desc;
-	};
-
-	const struct navigation_tip tips[] = {
-		{ "nav-key_up.bmp", "btn_page_up.bmp" },
-		{ "nav-key_down.bmp", "btn_page_down.bmp" },
-		{ "nav-key_enter.bmp", "btn_back.bmp" },
-	};
-
-	for (int i = 0; i < ARRAY_SIZE(tips); i++) {
-		/* Draw icon */
-		int32_t nav_x = x + i * (UI_SCALE - 2 * x) / ARRAY_SIZE(tips);
-		VB2_TRY(ui_get_bitmap(tips[i].icon, NULL, 0, &bitmap));
-		VB2_TRY(ui_draw_bitmap(&bitmap, nav_x, y, w, icon_height, flags,
-				       reverse));
-		VB2_TRY(ui_get_bitmap_width(&bitmap, icon_height, &icon_width));
-		/* Draw description */
-		nav_x += icon_width + UI_NAVIGATION_BAR_ICON_SPACING;
-		VB2_TRY(ui_get_bitmap(tips[i].desc, locale_code, 0, &bitmap));
-		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, nav_x,
-					      y + (icon_height - text_height) / 2,
+	for (int i = 0; i < ARRAY_SIZE(navigation_tips); i++) {
+		if (i > 0)
+			x += UI_NAVIGATION_BAR_ITEM_SPACING;
+		VB2_TRY(get_keycap_size(navigation_tips[i].key, &keycap_width,
+					&keycap_height));
+		VB2_TRY(draw_keycap(navigation_tips[i].key, x, y_center,
+				    reverse));
+		x += keycap_width + UI_KEYCAP_MARGIN_R;
+		VB2_TRY(ui_get_bitmap(navigation_tips[i].file, locale_code, 0,
+				      &bitmap));
+		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
 					      UI_SIZE_AUTO, text_height,
-					      &ui_color_bg, &ui_color_fg, flags,
+					      &ui_color_bg, &ui_color_fg,
+					      PIVOT_H_LEFT | PIVOT_V_CENTER,
 					      reverse));
+		VB2_TRY(ui_get_bitmap_width(&bitmap, text_height, &text_width));
+		x += text_width;
 	}
 
 	return VB2_SUCCESS;
@@ -900,7 +932,8 @@ static int count_lines(const char *str)
 	return num_lines;
 }
 
-vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
+vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines,
+			    int32_t min_height)
 {
 	vb2_error_t rv = VB2_SUCCESS;
 	int32_t x;
@@ -941,13 +974,14 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
 	content_width = box_width - UI_BOX_PADDING_H * 2;
 	box_height = max_height * num_lines + line_spacing +
 		UI_BOX_PADDING_V * 2;
+	box_height = MAX(box_height, min_height);
 
 	/* Clear printing area. */
 	ui_draw_rounded_box(x, *y, box_width, box_height,
 			    &ui_color_bg, 0, 0, 0);
-	/* Draw the border of a box. */
-	ui_draw_rounded_box(x, *y, box_width, box_height, &ui_color_fg,
-			    UI_BOX_BORDER_THICKNESS, UI_BOX_BORDER_RADIUS, 0);
+	/* Draw the box. */
+	ui_draw_rounded_box(x, *y, box_width, box_height, &ui_color_textbox_bg,
+			    0, UI_BOX_RADIUS, 0);
 
 	x += UI_BOX_PADDING_H;
 	*y += UI_BOX_PADDING_V;
@@ -968,7 +1002,7 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
 		if (line_width > content_width)
 			line_height = line_height * content_width / line_width;
 		line_rv = ui_draw_text(line, x, *y, line_height,
-				       &ui_color_bg, &ui_color_fg,
+				       &ui_color_textbox_bg, &ui_color_fg,
 				       PIVOT_H_LEFT | PIVOT_V_TOP, 0);
 		*y += line_height + UI_BOX_TEXT_LINE_SPACING;
 		/* Save the first error in rv */
@@ -982,7 +1016,8 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
 }
 
 vb2_error_t ui_draw_auto_wrap_textbox(const char *str, size_t str_len, int32_t *y,
-				      int32_t num_lines, uint32_t chars_per_line)
+				      int32_t num_lines, uint32_t chars_per_line,
+				      int32_t min_height)
 {
 	vb2_error_t rv = VB2_SUCCESS;
 	int32_t x;
@@ -1005,13 +1040,14 @@ vb2_error_t ui_draw_auto_wrap_textbox(const char *str, size_t str_len, int32_t *
 	content_width = box_width - UI_BOX_PADDING_H * 2;
 	box_height = max_height * num_lines + line_spacing +
 		UI_BOX_PADDING_V * 2;
+	box_height = MAX(box_height, min_height);
 
 	/* Clear printing area. */
 	ui_draw_rounded_box(x, *y, box_width, box_height,
 			    &ui_color_bg, 0, 0, 0);
-	/* Draw the border of a box. */
-	ui_draw_rounded_box(x, *y, box_width, box_height, &ui_color_fg,
-			    UI_BOX_BORDER_THICKNESS, UI_BOX_BORDER_RADIUS, 0);
+	/* Draw the box. */
+	ui_draw_rounded_box(x, *y, box_width, box_height, &ui_color_textbox_bg,
+			    0, UI_BOX_RADIUS, 0);
 
 	x += UI_BOX_PADDING_H;
 	*y += UI_BOX_PADDING_V;
@@ -1044,7 +1080,7 @@ vb2_error_t ui_draw_auto_wrap_textbox(const char *str, size_t str_len, int32_t *
 		if (line_width > content_width)
 			line_height = line_height * content_width / line_width;
 		line_rv = ui_draw_ntext(line, n, x, *y, line_height,
-					&ui_color_bg, &ui_color_fg,
+					&ui_color_textbox_bg, &ui_color_fg,
 					PIVOT_H_LEFT | PIVOT_V_TOP, 0);
 		*y += line_height + UI_BOX_TEXT_LINE_SPACING;
 		/* Save the first error in rv */
@@ -1080,9 +1116,8 @@ vb2_error_t ui_get_textbox_lines_per_page(enum ui_screen screen,
 	/* Calculate textbox height by subtracting the height of other items
 	   from UI_SCALE. */
 	if (screen_info->is_fullview) {
-		textbox_height = UI_SCALE - y -
-				UI_NAVIGATION_BAR_MARGIN * 2 -
-				UI_NAVIGATION_BAR_HEIGHT;
+		/* The textbox extends to the bottom margin of the screen. */
+		textbox_height = UI_SCALE - UI_BOX_MARGIN_BOTTOM - y;
 	} else {
 		VB2_TRY(get_footer_y(locale_code, &footer_y));
 		/* TODO(503252263): It would be better to calculate it based on screen menu */
@@ -1115,15 +1150,13 @@ vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
 
 	/* Calculate textbox height by subtracting the height of other items
 	   from UI_SCALE. */
+	title_height = ui_get_text_block_height(&bitmap, UI_TITLE_TEXT_HEIGHT,
+						UI_TITLE_TEXT_LINE_HEIGHT);
 	if (screen_info->is_fullview) {
-		title_height = UI_FULLVIEW_TITLE_TEXT_HEIGHT *
-				ui_get_bitmap_num_lines(&bitmap);
-		above_textbox_height = title_height +
-				UI_FULLVIEW_TITLE_MARGIN * 2;
+		above_textbox_height = UI_MARGIN_TOP +
+			UI_TITLE_MARGIN_V * 2 + title_height +
+			UI_NAVIGATION_BAR_HEIGHT;
 	} else {
-		title_height = ui_get_text_block_height(
-			&bitmap, UI_TITLE_TEXT_HEIGHT,
-			UI_TITLE_TEXT_LINE_HEIGHT);
 		above_textbox_height = UI_MARGIN_TOP +
 			UI_LANG_MARGIN_V * 2 + UI_H2_BUTTON_HEIGHT +
 			UI_TITLE_MARGIN_V * 2 + title_height;
@@ -1144,31 +1177,40 @@ vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
 	uint32_t lines_per_page;
 	uint32_t chars_per_line;
 	const int32_t y_base = *y;
-	int32_t box_height;
+	int32_t box_height, scrollbar_y, scrollbar_height;
+	int32_t min_height = 0;
 	const int32_t log_box_width = UI_SCALE - UI_MARGIN_H * 2;
 
 	VB2_TRY(ui_get_textbox_lines_per_page(state->screen->id,
 					      state->locale->code, *y,
 					      &lines_per_page));
 	VB2_TRY(ui_get_textbox_chars_per_line(&chars_per_line));
+	/* In full view, extend the textbox to the bottom margin of the screen. */
+	if (state->screen->is_fullview)
+		min_height = UI_SCALE - UI_BOX_MARGIN_BOTTOM - *y;
 	if (wrap_lines)
-		VB2_TRY(ui_draw_auto_wrap_textbox(str, n, y, lines_per_page, chars_per_line));
+		VB2_TRY(ui_draw_auto_wrap_textbox(str, n, y, lines_per_page,
+						  chars_per_line, min_height));
 	else
-		VB2_TRY(ui_draw_textbox(str, y, lines_per_page));
+		VB2_TRY(ui_draw_textbox(str, y, lines_per_page, min_height));
 
 	box_height = *y - y_base;
+
+	/* Align the scrollbar with the text. */
+	scrollbar_y = y_base + UI_BOX_PADDING_V;
+	scrollbar_height = box_height - UI_BOX_PADDING_V * 2;
 
 	/* No scrollbar if there is only one page. Clear any previous scrollbar. */
 	if (total_items <= items_per_page) {
 		const int32_t scrollbar_x = UI_MARGIN_H + log_box_width +
 					    UI_SCROLLBAR_MARGIN_LEFT;
-		return ui_draw_box(scrollbar_x, y_base, UI_SCROLLBAR_WIDTH,
-				   box_height, &ui_color_bg, 0);
+		return ui_draw_box(scrollbar_x, scrollbar_y, UI_SCROLLBAR_WIDTH,
+				   scrollbar_height, &ui_color_bg, 0);
 	}
 
-	return ui_draw_scrollbar(UI_MARGIN_H + log_box_width, y_base,
-				 box_height, first_item, total_items,
-				 items_per_page, 0);
+	return ui_draw_scrollbar(UI_MARGIN_H + log_box_width, scrollbar_y,
+				 scrollbar_height, first_item, total_items,
+				 items_per_page, &ui_color_textbox_bg, 0);
 }
 
 vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
@@ -1180,7 +1222,8 @@ vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
 
 vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
 			      int32_t first_item_index, size_t items_count,
-			      size_t items_per_page, int reverse)
+			      size_t items_per_page,
+			      const struct rgb_color *track_color, int reverse)
 {
 	int32_t h, y, movable_height;
 	if (items_count <= 1)
@@ -1212,7 +1255,7 @@ vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
 
 	/* Draw background track */
 	VB2_TRY(ui_draw_rounded_box(scrollbar_x, begin_y, UI_SCROLLBAR_WIDTH,
-				    total_h, &ui_color_scrollbar_track, 0,
+				    total_h, track_color, 0,
 				    UI_SCROLLBAR_CORNER_RADIUS, reverse));
 	/* Draw scrollbar thumb */
 	VB2_TRY(ui_draw_rounded_box(scrollbar_x, y, UI_SCROLLBAR_WIDTH, h,
@@ -1555,7 +1598,7 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 		VB2_TRY(ui_draw_scrollbar(box_x + box_w, box_y,
 					  box_h, id_begin,
 					  total_items, items_per_page,
-					  reverse));
+					  &ui_color_scrollbar_track, reverse));
 	}
 
 	return VB2_SUCCESS;
@@ -1655,12 +1698,10 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	     prev_state->error_code != state->error_code ||
 	     closing_sub_menu))
 		VB2_TRY(draw_footer(state));
-	else if (screen->is_fullview)
-		VB2_TRY(draw_navigation_bar(state));
 
 	x = UI_MARGIN_H;
 	if (screen->is_fullview)
-		y = UI_FULLVIEW_TITLE_MARGIN;
+		y = UI_MARGIN_TOP + UI_TITLE_MARGIN_V;
 	else
 		y = UI_MARGIN_TOP + UI_LANG_MARGIN_V * 2 +
 			UI_H2_BUTTON_HEIGHT + UI_TITLE_MARGIN_V;
@@ -1696,30 +1737,24 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	}
 
 	/* Title */
-	int32_t title_text_height, title_line_height, title_margin_bottom;
-
-	if (screen->is_fullview) {
-		title_text_height = UI_FULLVIEW_TITLE_TEXT_HEIGHT;
-		title_line_height = UI_FULLVIEW_TITLE_TEXT_HEIGHT;
-		title_margin_bottom = UI_FULLVIEW_TITLE_MARGIN;
-	} else {
-		title_text_height = UI_TITLE_TEXT_HEIGHT;
-		title_line_height = UI_TITLE_TEXT_LINE_HEIGHT;
-		title_margin_bottom = UI_TITLE_MARGIN_V;
-	}
-
 	if (screen->title) {
 		VB2_TRY(ui_get_bitmap(screen->title, locale_code, 0, &bitmap));
-		h = ui_get_text_block_height(&bitmap, title_text_height,
-					     title_line_height);
+		h = ui_get_text_block_height(&bitmap, UI_TITLE_TEXT_HEIGHT,
+					     UI_TITLE_TEXT_LINE_HEIGHT);
 		VB2_TRY(ui_draw_bitmap(&bitmap, x, y + h / 2, w,
-				       title_text_height *
+				       UI_TITLE_TEXT_HEIGHT *
 				       ui_get_bitmap_num_lines(&bitmap),
 				       PIVOT_H_LEFT | PIVOT_V_CENTER, reverse));
 	} else {
-		h = title_line_height;
+		h = UI_TITLE_TEXT_LINE_HEIGHT;
 	}
-	y += h + title_margin_bottom;
+	y += h + UI_TITLE_MARGIN_V;
+
+	/* Navigation bar */
+	if (screen->is_fullview) {
+		VB2_TRY(draw_navigation_bar(state, y));
+		y += UI_NAVIGATION_BAR_HEIGHT;
+	}
 
 	/* Description */
 	if (screen->draw_desc)

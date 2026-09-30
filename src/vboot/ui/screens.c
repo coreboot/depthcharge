@@ -1087,12 +1087,14 @@ static vb2_error_t fastboot_screen_init(struct ui_context *ui)
 
 static vb2_error_t draw_fastboot_desc_bitmap(
 	struct ui_state *state,
-	int32_t *y)
+	int32_t x, int32_t y_center)
 {
 	const char *bitmap_name = NULL;
 	struct ui_bitmap desc_bitmap;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
+	const int32_t h = UI_BUTTON_TEXT_HEIGHT;
+	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
 
 	/* Choose correct description based on fastboot session state */
 	if (state->fb_session == NULL || state->fb_session->type >= ARRAY_SIZE(fastboot_desc))
@@ -1102,10 +1104,8 @@ static vb2_error_t draw_fastboot_desc_bitmap(
 
 	VB2_TRY(ui_get_bitmap(bitmap_name, locale_code, 0, &desc_bitmap));
 	assert(ui_get_bitmap_num_lines(&desc_bitmap) == 1);
-	VB2_TRY(ui_draw_desc_bitmap(&desc_bitmap, *y, reverse));
-	*y += ui_get_desc_height(&desc_bitmap) + UI_DESC_TEXT_LINE_SPACING;
-
-	return VB2_SUCCESS;
+	return ui_draw_bitmap(&desc_bitmap, x, y_center, UI_SIZE_AUTO, h, flags,
+			      reverse);
 }
 
 static vb2_error_t draw_fastboot_log(
@@ -1143,19 +1143,36 @@ static vb2_error_t draw_fastboot_desc(
 	struct ui_state *state = ui->state;
 	struct FastbootOps *fb_session = state->fb_session;
 	const int reverse = state->locale->rtl;
-	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
-	const int32_t x = UI_MARGIN_H;
+	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
+	/* The navigation bar is right above the textbox. */
+	const int32_t nav_y = *y - UI_NAVIGATION_BAR_HEIGHT;
+	const int32_t y_center = nav_y + UI_NAVIGATION_BAR_HEIGHT / 2;
 	uint32_t lines_per_page, chars_per_line;
+	int32_t x, nav_width;
 	char *serial;
 
-	VB2_TRY(draw_fastboot_desc_bitmap(state, y));
-
-	/* Print line with fastboot serial */
+	/*
+	 * Print the connection status on the right of the navigation bar. If
+	 * there is a fastboot serial, print it below the status, so that the
+	 * two lines fit in the remaining width. Both lines are vertically
+	 * centered in the navigation bar together.
+	 */
+	VB2_TRY(ui_get_navigation_bar_width(state, &nav_width));
+	x = UI_MARGIN_H + nav_width + UI_NAVIGATION_BAR_ITEM_SPACING;
+	VB2_TRY(ui_draw_box(x, nav_y, UI_SCALE - UI_MARGIN_H - x,
+			    UI_NAVIGATION_BAR_HEIGHT, &ui_color_bg, reverse));
 	serial = fb_session && fb_session->serial ? fb_session->serial : "";
-	VB2_TRY(ui_draw_box(x, *y, UI_SCALE - x, UI_BOX_TEXT_HEIGHT, &ui_color_bg, reverse));
-	VB2_TRY(ui_draw_text(serial, x, *y, UI_BOX_TEXT_HEIGHT,
-			     &ui_color_bg, &ui_color_fg, flags, reverse));
-	*y += UI_BOX_TEXT_HEIGHT + UI_BOX_TEXT_LINE_SPACING;
+	if (*serial) {
+		const int32_t line_height = UI_NAVIGATION_BAR_TEXT_LINE_HEIGHT;
+
+		VB2_TRY(draw_fastboot_desc_bitmap(state, x,
+						  y_center - line_height / 2));
+		VB2_TRY(ui_draw_text(serial, x, y_center + line_height / 2,
+				     UI_BOX_TEXT_HEIGHT, &ui_color_bg,
+				     &ui_color_fg, flags, reverse));
+	} else {
+		VB2_TRY(draw_fastboot_desc_bitmap(state, x, y_center));
+	}
 
 	/* Report the textbox geometry to the log module */
 	VB2_TRY(ui_get_textbox_lines_per_page(state->screen->id,
