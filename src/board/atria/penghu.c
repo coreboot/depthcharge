@@ -4,6 +4,7 @@
 
 #include "base/fw_config.h"
 #include "drivers/bus/soundwire/cavs_2_5-sndwregs.h"
+#include "drivers/ec/tps6699x/tps6699x.h"
 #include "drivers/soc/novalake.h"
 #include "drivers/sound/intel_audio_setup.h"
 #include "drivers/storage/storage_common.h"
@@ -35,4 +36,21 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 {
 	*count = ARRAY_SIZE(storage_configs);
 	return storage_configs;
+}
+
+/* Override of func in src/drivers/ec/tps6699x/tps6699x.c */
+void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path,
+				    int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
+{
+	switch (ec_pd_id)
+	{
+		case 1:
+		case 2:
+			*image_path = "tps6699x_GOOG0b00.bin";
+			*hash_path = "tps6699x_GOOG0b00.hash";
+			break;
+		default:
+			*image_path = NULL;
+			*hash_path = NULL;
+	}
 }
