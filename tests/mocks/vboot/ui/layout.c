@@ -74,9 +74,7 @@ vb2_error_t ui_get_textbox_chars_per_line(uint32_t *chars_per_line)
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_get_textbox_lines_per_page(enum ui_screen screen,
-					  const char *locale_code, int32_t y,
-					  uint32_t *lines_per_page)
+vb2_error_t ui_get_textbox_lines_per_page(int32_t y, uint32_t *lines_per_page)
 {
 	*lines_per_page = ui_mock_lines_per_page();
 	return VB2_SUCCESS;

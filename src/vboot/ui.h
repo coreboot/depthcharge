@@ -121,7 +121,6 @@
 
 /* For H1 buttons */
 #define UI_H1_BUTTON_HEIGHT			44
-#define UI_H1_BUTTON_HELP_TEXT_MARGIN_L		30
 
 /* For H2 buttons */
 #define UI_H2_BUTTON_HEIGHT			48
@@ -363,7 +362,6 @@ static const struct rgb_color ui_color_button_disabled_fg
 	= { 0x9a, 0xa0, 0xa6 };
 static const struct rgb_color ui_color_button_focus_ring
 	= { 0xa8, 0xc7, 0xfa };
-static const struct rgb_color ui_color_button_help_fg	= { 0xf2, 0x8b, 0x82 };
 static const struct rgb_color ui_color_h2_button_bg	= { 0x00, 0x4a, 0x77 };
 static const struct rgb_color ui_color_h2_button_fg	= { 0xc2, 0xe7, 0xff };
 static const struct rgb_color ui_color_h3_button_border	= { 0x63, 0x5e, 0x53 };
@@ -476,12 +474,6 @@ struct ui_menu_item {
 	 * UI_MENU_ITEM_TYPE_H2_DROPDOWN, and UI_MENU_ITEM_TYPE_LANGUAGE.
 	 */
 	const char *icon_file;
-	/*
-	 * Bitmap file of the help text displayed next to the button.
-	 * This field is only for disabled buttons of type
-	 * UI_MENU_ITEM_TYPE_H1.
-	 */
-	const char *disabled_help_text_file;
 	/* Flags are defined in enum ui_menu_item_flag. */
 	uint8_t flags;
 	/* Target screen */
@@ -609,13 +601,6 @@ struct ui_screen_info {
 	 * will be ignored.
 	 */
 	const struct ui_menu *(*get_menu)(struct ui_context *ui);
-	/*
-	 * Indices of menu items;
-	 * used by log_page_* functions in ui/screens.c.
-	 */
-	uint32_t page_up_item;
-	uint32_t page_down_item;
-	uint32_t back_item;
 };
 
 enum ui_log_type {
@@ -1118,15 +1103,13 @@ vb2_error_t ui_get_h1_button_width(const struct ui_menu_item *item,
  * @param height	Height of the button.
  * @param focused	1 for focused and 0 for non-focused.
  * @param disabled	1 for disabled style and 0 for normal style.
- * @param clear_help	1 to request for clearing the disabled help text area.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
 vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 			      const struct ui_state *state,
 			      int32_t x, int32_t y, int32_t height,
-			      int focused, int disabled,
-			      int clear_help);
+			      int focused, int disabled);
 
 /*
  * Get the width of the navigation bar of the full view layout.
@@ -1213,17 +1196,15 @@ vb2_error_t ui_get_textbox_chars_per_line(uint32_t *chars_per_line);
 /*
  * Get the maximum number of lines per page of the textbox.
  *
- * @param screen		Screen to display the textbox.
- * @param locale_code		Language code of locale.
+ * The textbox extends to the bottom margin of the screen.
+ *
  * @param y			Offset of the textbox from the top of the screen.
  * @param lines_per_page	On return, the value will be maximum number of
  *				lines per page.
  *
  * @return VB2_SUCCESS on success, no-zero on error.
  */
-vb2_error_t ui_get_textbox_lines_per_page(enum ui_screen screen,
-					  const char *locale_code, int32_t y,
-					  uint32_t *lines_per_page);
+vb2_error_t ui_get_textbox_lines_per_page(int32_t y, uint32_t *lines_per_page);
 
 /*
  * Get the dimensions of the log textbox.

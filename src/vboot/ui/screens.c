@@ -63,20 +63,6 @@
 	.get_sub_menu = get_language_menu,		\
 })
 
-#define PAGE_UP_ITEM ((struct ui_menu_item){			\
-	.name = "Page up",					\
-	.file = "btn_page_up.bmp",				\
-	.disabled_help_text_file = "page_up_disabled_help.bmp",	\
-	.action = log_page_prev_action,				\
-})
-
-#define PAGE_DOWN_ITEM ((struct ui_menu_item){				\
-	.name = "Page down",						\
-	.file = "btn_page_down.bmp",					\
-	.disabled_help_text_file = "page_down_disabled_help.bmp",	\
-	.action = log_page_next_action,					\
-})
-
 #define BACK_ITEM ((struct ui_menu_item){	\
 	.name = "Back",				\
 	.file = "btn_back.bmp",			\
@@ -212,10 +198,8 @@ static vb2_error_t set_ui_error_and_go_back(struct ui_context *ui,
 /*
  * Functions used for log screens
  *
- * Expects that the page_count is valid and page_up_item and page_down_item are
- * assigned to correct menu item indices in all three functions, the
- * current_page is valid in prev and next actions, and the back_item is assigned
- * to a correct menu item index.
+ * Expects that the page_count is valid, and the current_page is valid in prev
+ * and next actions.
  */
 
 static vb2_error_t log_page_update(struct ui_context *ui,
@@ -224,49 +208,24 @@ static vb2_error_t log_page_update(struct ui_context *ui,
 	const struct ui_screen_info *screen = ui->state->screen;
 	struct ui_log_info *log = &ui->state->log;
 
-	if (new_log_string) {
-		VB2_TRY(ui_log_init(screen->id, ui->state->locale->code,
-				    new_log_string, log));
-		if (log->impl.static_log.page_count == 0) {
-			UI_ERROR("page_count is 0\n");
-			return VB2_ERROR_UI_LOG_INIT;
-		}
-
-		if (ui->state->current_page >= log->impl.static_log.page_count)
-			ui->state->current_page = log->impl.static_log.page_count - 1;
-		ui->force_display = 1;
+	VB2_TRY(ui_log_init(screen->id, ui->state->locale->code,
+			    new_log_string, log));
+	if (log->impl.static_log.page_count == 0) {
+		UI_ERROR("page_count is 0\n");
+		return VB2_ERROR_UI_LOG_INIT;
 	}
 
-	if (ui_get_menu(ui)->num_items == 0)
-		return VB2_SUCCESS;
-
-	struct ui_menu_state *ms = &ui->state->menu_state;
-
-	UI_CLR_BIT(ms->disabled_item_mask, screen->page_up_item);
-	UI_CLR_BIT(ms->disabled_item_mask, screen->page_down_item);
-	if (ui->state->current_page == 0)
-		UI_SET_BIT(ms->disabled_item_mask,
-			   screen->page_up_item);
-	if (ui->state->current_page == log->impl.static_log.page_count - 1)
-		UI_SET_BIT(ms->disabled_item_mask,
-			   screen->page_down_item);
+	if (ui->state->current_page >= log->impl.static_log.page_count)
+		ui->state->current_page = log->impl.static_log.page_count - 1;
+	ui->force_display = 1;
 
 	return VB2_SUCCESS;
 }
 
 static vb2_error_t log_page_reset_to_top(struct ui_context *ui)
 {
-	const struct ui_screen_info *screen = ui->state->screen;
-	struct ui_menu_state *ms = &ui->state->menu_state;
-
 	ui->state->current_page = 0;
-	if (ui->state->test_state == UI_TEST_STATE_NONE) {
-		ms->focused_item = ui->state->log.impl.static_log.page_count > 1 ?
-			screen->page_down_item : screen->back_item;
-	} else {
-		ms->focused_item = screen->back_item;
-	}
-	return log_page_update(ui, NULL);
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t log_page_prev_action(struct ui_context *ui)
@@ -284,7 +243,7 @@ static vb2_error_t log_page_prev_action(struct ui_context *ui)
 			return VB2_SUCCESS;
 
 		ui->state->current_page--;
-		return log_page_update(ui, NULL);
+		return VB2_SUCCESS;
 	default:
 		return VB2_SUCCESS;
 	}
@@ -305,7 +264,7 @@ static vb2_error_t log_page_next_action(struct ui_context *ui)
 			return VB2_SUCCESS;
 
 		ui->state->current_page++;
-		return log_page_update(ui, NULL);
+		return VB2_SUCCESS;
 	default:
 		return VB2_SUCCESS;
 	}
@@ -326,7 +285,7 @@ static vb2_error_t log_page_first_action(struct ui_context *ui)
 			return VB2_SUCCESS;
 
 		ui->state->current_page = 0;
-		return log_page_update(ui, NULL);
+		return VB2_SUCCESS;
 	default:
 		return VB2_SUCCESS;
 	}
@@ -348,7 +307,7 @@ static vb2_error_t log_page_last_action(struct ui_context *ui)
 
 		ui->state->current_page = (log->impl.static_log.page_count) ?
 					  (log->impl.static_log.page_count - 1) : 0;
-		return log_page_update(ui, NULL);
+		return VB2_SUCCESS;
 	default:
 		return VB2_SUCCESS;
 	}
@@ -377,7 +336,7 @@ static vb2_error_t log_page_anchor(struct ui_context *ui, int dir)
 		return VB2_SUCCESS;
 
 	ui->state->current_page = target_page;
-	return log_page_update(ui, NULL);
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t log_page_next_anchor(struct ui_context *ui)
@@ -390,7 +349,9 @@ static vb2_error_t log_page_prev_anchor(struct ui_context *ui)
 	return log_page_anchor(ui, -1);
 }
 
-static vb2_error_t fullview_log_screen_action(struct ui_context *ui)
+static vb2_error_t log_screen_action_impl(
+	struct ui_context *ui,
+	vb2_error_t (*exit_action)(struct ui_context *ui))
 {
 	uint32_t key = ui->key;
 	vb2_error_t (*action)(struct ui_context *ui) = NULL;
@@ -418,7 +379,7 @@ static vb2_error_t fullview_log_screen_action(struct ui_context *ui)
 		action = log_page_last_action;
 		break;
 	case UI_KEY_ENTER:
-		action = ui_screen_back;
+		action = exit_action;
 		break;
 	case UI_KEY_PREV_ANCHOR:
 		action = log_page_prev_anchor;
@@ -434,6 +395,11 @@ static vb2_error_t fullview_log_screen_action(struct ui_context *ui)
 	}
 
 	return VB2_SUCCESS;
+}
+
+static vb2_error_t log_screen_action(struct ui_context *ui)
+{
+	return log_screen_action_impl(ui, ui_screen_back);
 }
 
 /******************************************************************************/
@@ -827,7 +793,7 @@ static const struct ui_screen_info debug_info_screen = {
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "debug_info_title.bmp",
 	.init = debug_info_init,
-	.action = fullview_log_screen_action,
+	.action = log_screen_action,
 	.draw_desc = draw_log_desc,
 	.mesg = "Debug info",
 	.no_footer = 1,
@@ -891,7 +857,7 @@ static const struct ui_screen_info firmware_log_screen = {
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "firmware_log_title.bmp",
 	.init = firmware_log_init,
-	.action = fullview_log_screen_action,
+	.action = log_screen_action,
 	.draw_desc = draw_log_desc,
 	.mesg = "Firmware log",
 	.no_footer = 1,
@@ -1175,9 +1141,7 @@ static vb2_error_t draw_fastboot_desc(
 	}
 
 	/* Report the textbox geometry to the log module */
-	VB2_TRY(ui_get_textbox_lines_per_page(state->screen->id,
-					      state->locale->code, *y,
-					      &lines_per_page));
+	VB2_TRY(ui_get_textbox_lines_per_page(*y, &lines_per_page));
 	VB2_TRY(ui_get_textbox_chars_per_line(&chars_per_line));
 	ui_fb_log_set_geometry(&state->log, fb_session ? fb_session->log : NULL,
 			       lines_per_page, chars_per_line);
@@ -1197,7 +1161,7 @@ static vb2_error_t fastboot_action(struct ui_context *ui)
 		/* Try to init fastboot */
 		state->fb_session = fastboot_init();
 		if (state->fb_session == NULL)
-			return fullview_log_screen_action(ui);
+			return log_screen_action(ui);
 		/* Change the description based on new fastboot state */
 		ui->force_display = 1;
 		ui_fb_log_init(&state->log);
@@ -1240,7 +1204,7 @@ static vb2_error_t fastboot_action(struct ui_context *ui)
 		state->log.impl.fastboot_log.total_bytes = new_total_bytes;
 	}
 
-	return fullview_log_screen_action(ui);
+	return log_screen_action(ui);
 }
 
 static vb2_error_t fastboot_exit(struct ui_context *ui)
@@ -2259,7 +2223,7 @@ static const struct ui_screen_info diagnostics_storage_health_screen = {
 	.title = "diag_storage_health_title.bmp",
 	.init = diagnostics_storage_health_init,
 	.exit = diagnostics_test_exit,
-	.action = fullview_log_screen_action,
+	.action = log_screen_action,
 	.draw_desc = draw_log_desc,
 	.mesg = "Storage health info",
 	.no_footer = 1,
@@ -2269,10 +2233,6 @@ static const struct ui_screen_info diagnostics_storage_health_screen = {
 /******************************************************************************/
 /* UI_SCREEN_DIAGNOSTICS_STORAGE_TEST_SHORT */
 /* UI_SCREEN_DIAGNOSTICS_STORAGE_TEST_EXTENDED */
-
-#define DIAGNOSTICS_STORAGE_TEST_ITEM_PAGE_UP 0
-#define DIAGNOSTICS_STORAGE_TEST_ITEM_PAGE_DOWN 1
-#define DIAGNOSTICS_STORAGE_TEST_ITEM_BACK 2
 
 static vb2_error_t diagnostics_storage_test_update_impl(
 	struct ui_context *ui)
@@ -2368,66 +2328,24 @@ static vb2_error_t diagnostics_storage_test_cancel(struct ui_context *ui)
 	return ui_screen_back(ui);
 }
 
-#define DIAGNOSTICS_TEST_BACK_FILE	"btn_back.bmp"
-#define DIAGNOSTICS_TEST_CANCEL_FILE	"btn_cancel.bmp"
-
-static const char *diagnostics_test_back_get_file(const struct ui_state *state)
+static vb2_error_t diagnostics_storage_test_action(struct ui_context *ui)
 {
-	/* When the test is running, show "Cancel". Otherwise, show "Back". */
-	if (state->test_state == UI_TEST_STATE_RUNNING)
-		return DIAGNOSTICS_TEST_CANCEL_FILE;
-	else
-		return DIAGNOSTICS_TEST_BACK_FILE;
+	VB2_TRY(diagnostics_storage_test_update(ui));
+	return log_screen_action_impl(ui, diagnostics_storage_test_cancel);
 }
-
-static vb2_error_t diagnostics_test_back_get_width(const struct ui_state *state,
-						   int32_t *width)
-{
-	const char *const files[] = {
-		DIAGNOSTICS_TEST_BACK_FILE,
-		DIAGNOSTICS_TEST_CANCEL_FILE,
-	};
-
-	*width = 0;
-	for (int i = 0; i < ARRAY_SIZE(files); i++) {
-		struct ui_bitmap bitmap;
-		int32_t button_width;
-		VB2_TRY(ui_get_bitmap(files[i], state->locale->code, 0,
-				      &bitmap));
-		VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
-					    &button_width));
-		*width = MAX(*width, button_width);
-	}
-
-	return VB2_SUCCESS;
-}
-
-static const struct ui_menu_item diagnostics_storage_test_items[] = {
-	[DIAGNOSTICS_STORAGE_TEST_ITEM_PAGE_UP] = PAGE_UP_ITEM,
-	[DIAGNOSTICS_STORAGE_TEST_ITEM_PAGE_DOWN] = PAGE_DOWN_ITEM,
-	[DIAGNOSTICS_STORAGE_TEST_ITEM_BACK] = {
-		.name = "Back/Cancel",
-		.get_file = diagnostics_test_back_get_file,
-		.get_width = diagnostics_test_back_get_width,
-		.action = diagnostics_storage_test_cancel,
-	},
-	POWER_OFF_ITEM,
-};
 
 static const struct ui_screen_info diagnostics_storage_test_short_screen = {
 	.id = UI_SCREEN_DIAGNOSTICS_STORAGE_TEST_SHORT,
 	.name = "Storage self-test (short)",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "diag_storage_srt_test_title.bmp",
-	.menu = UI_MENU(diagnostics_storage_test_items),
 	.init = diagnostics_storage_test_short_init,
 	.exit = diagnostics_test_exit,
-	.action = diagnostics_storage_test_update,
+	.action = diagnostics_storage_test_action,
 	.draw_desc = draw_log_desc,
 	.mesg = "Storage self test (short)",
-	.page_up_item = DIAGNOSTICS_STORAGE_TEST_ITEM_PAGE_UP,
-	.page_down_item = DIAGNOSTICS_STORAGE_TEST_ITEM_PAGE_DOWN,
-	.back_item = DIAGNOSTICS_STORAGE_TEST_ITEM_BACK,
+	.no_footer = 1,
+	.is_fullview = 1,
 };
 
 static const struct ui_screen_info diagnostics_storage_test_extended_screen = {
@@ -2435,24 +2353,18 @@ static const struct ui_screen_info diagnostics_storage_test_extended_screen = {
 	.name = "Storage self-test (extended)",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "diag_storage_ext_test_title.bmp",
-	.menu = UI_MENU(diagnostics_storage_test_items),
 	.init = diagnostics_storage_test_extended_init,
 	.exit = diagnostics_test_exit,
-	.action = diagnostics_storage_test_update,
+	.action = diagnostics_storage_test_action,
 	.draw_desc = draw_log_desc,
 	.mesg = "Storage self test (extended)",
-	.page_up_item = DIAGNOSTICS_STORAGE_TEST_ITEM_PAGE_UP,
-	.page_down_item = DIAGNOSTICS_STORAGE_TEST_ITEM_PAGE_DOWN,
-	.back_item = DIAGNOSTICS_STORAGE_TEST_ITEM_BACK,
+	.no_footer = 1,
+	.is_fullview = 1,
 };
 
 /******************************************************************************/
 /* UI_SCREEN_DIAGNOSTICS_MEMORY_QUICK */
 /* UI_SCREEN_DIAGNOSTICS_MEMORY_FULL */
-
-#define DIAGNOSTICS_MEMORY_ITEM_PAGE_UP 0
-#define DIAGNOSTICS_MEMORY_ITEM_PAGE_DOWN 1
-#define DIAGNOSTICS_MEMORY_ITEM_BACK 2
 
 static vb2_error_t diagnostics_memory_update_screen_impl(
 	struct ui_context *ui, MemoryTestMode mode, int reset)
@@ -2521,42 +2433,31 @@ static vb2_error_t diagnostics_memory_init_full(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t diagnostics_memory_update_quick(struct ui_context *ui)
+static vb2_error_t diagnostics_memory_action_quick(struct ui_context *ui)
 {
-	return diagnostics_memory_update_screen(ui, MEMORY_TEST_MODE_QUICK, 0);
+	VB2_TRY(diagnostics_memory_update_screen(ui, MEMORY_TEST_MODE_QUICK,
+						 0));
+	return log_screen_action(ui);
 }
 
-static vb2_error_t diagnostics_memory_update_full(struct ui_context *ui)
+static vb2_error_t diagnostics_memory_action_full(struct ui_context *ui)
 {
-	return diagnostics_memory_update_screen(ui, MEMORY_TEST_MODE_FULL, 0);
+	VB2_TRY(diagnostics_memory_update_screen(ui, MEMORY_TEST_MODE_FULL, 0));
+	return log_screen_action(ui);
 }
-
-static const struct ui_menu_item diagnostics_memory_items[] = {
-	[DIAGNOSTICS_MEMORY_ITEM_PAGE_UP] = PAGE_UP_ITEM,
-	[DIAGNOSTICS_MEMORY_ITEM_PAGE_DOWN] = PAGE_DOWN_ITEM,
-	[DIAGNOSTICS_MEMORY_ITEM_BACK] = {
-		.name = "Back/Cancel",
-		.get_file = diagnostics_test_back_get_file,
-		.get_width = diagnostics_test_back_get_width,
-		.action = ui_screen_back,
-	},
-	POWER_OFF_ITEM,
-};
 
 static const struct ui_screen_info diagnostics_memory_quick_screen = {
 	.id = UI_SCREEN_DIAGNOSTICS_MEMORY_QUICK,
 	.name = "Memory check (quick)",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "diag_memory_quick_title.bmp",
-	.menu = UI_MENU(diagnostics_memory_items),
 	.init = diagnostics_memory_init_quick,
 	.exit = diagnostics_test_exit,
-	.action = diagnostics_memory_update_quick,
+	.action = diagnostics_memory_action_quick,
 	.draw_desc = draw_log_desc,
 	.mesg = "Memory check (quick)",
-	.page_up_item = DIAGNOSTICS_MEMORY_ITEM_PAGE_UP,
-	.page_down_item = DIAGNOSTICS_MEMORY_ITEM_PAGE_DOWN,
-	.back_item = DIAGNOSTICS_MEMORY_ITEM_BACK,
+	.no_footer = 1,
+	.is_fullview = 1,
 };
 
 static const struct ui_screen_info diagnostics_memory_full_screen = {
@@ -2564,15 +2465,13 @@ static const struct ui_screen_info diagnostics_memory_full_screen = {
 	.name = "Memory check (full)",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "diag_memory_full_title.bmp",
-	.menu = UI_MENU(diagnostics_memory_items),
 	.init = diagnostics_memory_init_full,
 	.exit = diagnostics_test_exit,
-	.action = diagnostics_memory_update_full,
+	.action = diagnostics_memory_action_full,
 	.draw_desc = draw_log_desc,
 	.mesg = "Memory check (full)",
-	.page_up_item = DIAGNOSTICS_MEMORY_ITEM_PAGE_UP,
-	.page_down_item = DIAGNOSTICS_MEMORY_ITEM_PAGE_DOWN,
-	.back_item = DIAGNOSTICS_MEMORY_ITEM_BACK,
+	.no_footer = 1,
+	.is_fullview = 1,
 };
 
 /******************************************************************************/

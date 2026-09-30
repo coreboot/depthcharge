@@ -108,8 +108,6 @@ localized_files:
   # log screen
   btn_page_up: button
   btn_page_down: button
-  page_up_disabled_help: help
-  page_down_disabled_help: help
   # footer
   device: footer
   help_center: footer

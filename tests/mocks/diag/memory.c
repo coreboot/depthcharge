@@ -11,5 +11,6 @@ DiagTestResult memory_test_init(MemoryTestMode mode)
 
 DiagTestResult memory_test_run(const char **buf)
 {
+	*buf = "mock memory test log";
 	return mock();
 }

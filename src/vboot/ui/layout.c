@@ -453,6 +453,19 @@ static const struct {
 	{ NAV_KEY_SELECT, "btn_back.bmp" },
 };
 
+/*
+ * Get the text bitmap of a navigation tip. While a diagnostic test is
+ * running, the select key cancels the test.
+ */
+static const char *get_navigation_tip_file(const struct ui_state *state,
+					   int i)
+{
+	if (navigation_tips[i].key == NAV_KEY_SELECT &&
+	    state->test_state == UI_TEST_STATE_RUNNING)
+		return "btn_cancel.bmp";
+	return navigation_tips[i].file;
+}
+
 vb2_error_t ui_get_navigation_bar_width(const struct ui_state *state,
 					int32_t *width)
 {
@@ -466,8 +479,8 @@ vb2_error_t ui_get_navigation_bar_width(const struct ui_state *state,
 			*width += UI_NAVIGATION_BAR_ITEM_SPACING;
 		VB2_TRY(get_keycap_size(navigation_tips[i].key, &keycap_width,
 					&keycap_height));
-		VB2_TRY(ui_get_bitmap(navigation_tips[i].file, locale_code, 0,
-				      &bitmap));
+		VB2_TRY(ui_get_bitmap(get_navigation_tip_file(state, i),
+				      locale_code, 0, &bitmap));
 		VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
 					    &text_width));
 		*width += keycap_width + UI_KEYCAP_MARGIN_R + text_width;
@@ -503,8 +516,8 @@ static vb2_error_t draw_navigation_bar(const struct ui_state *state,
 		VB2_TRY(draw_keycap(navigation_tips[i].key, x, y_center,
 				    reverse));
 		x += keycap_width + UI_KEYCAP_MARGIN_R;
-		VB2_TRY(ui_get_bitmap(navigation_tips[i].file, locale_code, 0,
-				      &bitmap));
+		VB2_TRY(ui_get_bitmap(get_navigation_tip_file(state, i),
+				      locale_code, 0, &bitmap));
 		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
 					      UI_SIZE_AUTO, text_height,
 					      &ui_color_bg, &ui_color_fg,
@@ -513,6 +526,10 @@ static vb2_error_t draw_navigation_bar(const struct ui_state *state,
 		VB2_TRY(ui_get_bitmap_width(&bitmap, text_height, &text_width));
 		x += text_width;
 	}
+
+	/* Clear the rest of the bar, in case the previous tips were wider. */
+	VB2_TRY(ui_draw_box(x, y, UI_SCALE - UI_MARGIN_H - x,
+			    UI_NAVIGATION_BAR_HEIGHT, &ui_color_bg, reverse));
 
 	return VB2_SUCCESS;
 }
@@ -605,8 +622,7 @@ vb2_error_t ui_get_h1_button_width(const struct ui_menu_item *item,
 vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 			      const struct ui_state *state,
 			      int32_t x, int32_t y, int32_t height,
-			      int focused, int disabled,
-			      int clear_help)
+			      int focused, int disabled)
 {
 	struct ui_bitmap bitmap;
 	int32_t width;
@@ -653,39 +669,6 @@ vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 	} else {
 		UI_ERROR("No button image filename or text\n");
 		return VB2_ERROR_UI_DRAW_FAILURE;
-	}
-
-	/* Draw disabled help text if the disabled button is on focus;
-	   clear the area only if needed. */
-	if (item->disabled_help_text_file) {
-		const int32_t x_help = x + width + UI_H1_BUTTON_HELP_TEXT_MARGIN_L;
-		int32_t help_text_width;
-		if (disabled && focused) {
-			VB2_TRY(ui_get_bitmap(
-					item->disabled_help_text_file,
-					locale_code, 0, &bitmap));
-			VB2_TRY(ui_draw_mapped_bitmap(
-					&bitmap,
-					x_help, y_center,
-					UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
-					&ui_color_bg, &ui_color_button_help_fg,
-					PIVOT_H_LEFT | PIVOT_V_CENTER,
-					reverse));
-		} else if (clear_help) {
-			VB2_TRY(ui_get_bitmap(
-					item->disabled_help_text_file,
-					locale_code, 0, &bitmap));
-			VB2_TRY(ui_get_bitmap_width(
-					&bitmap,
-					UI_BUTTON_TEXT_HEIGHT,
-					&help_text_width));
-			VB2_TRY(ui_draw_box(
-					x_help,
-					y_center - UI_BUTTON_TEXT_HEIGHT / 2,
-					help_text_width, UI_BUTTON_TEXT_HEIGHT,
-					&ui_color_bg,
-					reverse));
-		}
 	}
 
 	return VB2_SUCCESS;
@@ -1104,29 +1087,10 @@ vb2_error_t ui_get_textbox_chars_per_line(uint32_t *chars_per_line)
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_get_textbox_lines_per_page(enum ui_screen screen,
-					  const char *locale_code, int32_t y,
-					  uint32_t *lines_per_page)
+vb2_error_t ui_get_textbox_lines_per_page(int32_t y, uint32_t *lines_per_page)
 {
-	const struct ui_screen_info *screen_info;
-	int32_t textbox_height, footer_y;
-
-	screen_info = ui_get_screen_info(screen);
-
-	/* Calculate textbox height by subtracting the height of other items
-	   from UI_SCALE. */
-	if (screen_info->is_fullview) {
-		/* The textbox extends to the bottom margin of the screen. */
-		textbox_height = UI_SCALE - UI_BOX_MARGIN_BOTTOM - y;
-	} else {
-		VB2_TRY(get_footer_y(locale_code, &footer_y));
-		/* TODO(503252263): It would be better to calculate it based on screen menu */
-		textbox_height = footer_y - y -
-			/* Page up, page down, back, and power off button */
-			(UI_H1_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V) * 4 -
-			UI_DESC_MARGIN_BOTTOM -
-			UI_FOOTER_MARGIN_TOP;
-	}
+	/* The textbox extends to the bottom margin of the screen. */
+	const int32_t textbox_height = UI_SCALE - UI_BOX_MARGIN_BOTTOM - y;
 
 	*lines_per_page = (textbox_height - UI_BOX_PADDING_V * 2 +
 			   UI_BOX_TEXT_LINE_SPACING) /
@@ -1148,22 +1112,13 @@ vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
 	screen_info = ui_get_screen_info(screen);
 	VB2_TRY(ui_get_bitmap(screen_info->title, locale_code, 0, &bitmap));
 
-	/* Calculate textbox height by subtracting the height of other items
-	   from UI_SCALE. */
+	/* Log screens use the full view layout. */
 	title_height = ui_get_text_block_height(&bitmap, UI_TITLE_TEXT_HEIGHT,
 						UI_TITLE_TEXT_LINE_HEIGHT);
-	if (screen_info->is_fullview) {
-		above_textbox_height = UI_MARGIN_TOP +
-			UI_TITLE_MARGIN_V * 2 + title_height +
-			UI_NAVIGATION_BAR_HEIGHT;
-	} else {
-		above_textbox_height = UI_MARGIN_TOP +
-			UI_LANG_MARGIN_V * 2 + UI_H2_BUTTON_HEIGHT +
-			UI_TITLE_MARGIN_V * 2 + title_height;
-	}
+	above_textbox_height = UI_MARGIN_TOP + UI_TITLE_MARGIN_V * 2 +
+		title_height + UI_NAVIGATION_BAR_HEIGHT;
 
-	VB2_TRY(ui_get_textbox_lines_per_page(screen, locale_code,
-					      above_textbox_height,
+	VB2_TRY(ui_get_textbox_lines_per_page(above_textbox_height,
 					      lines_per_page));
 
 	return ui_get_textbox_chars_per_line(chars_per_line);
@@ -1177,24 +1132,17 @@ vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
 	uint32_t lines_per_page;
 	uint32_t chars_per_line;
 	const int32_t y_base = *y;
-	int32_t box_height, scrollbar_y, scrollbar_height;
-	int32_t min_height = 0;
+	const int32_t box_height = UI_SCALE - UI_BOX_MARGIN_BOTTOM - y_base;
+	int32_t scrollbar_y, scrollbar_height;
 	const int32_t log_box_width = UI_SCALE - UI_MARGIN_H * 2;
 
-	VB2_TRY(ui_get_textbox_lines_per_page(state->screen->id,
-					      state->locale->code, *y,
-					      &lines_per_page));
+	VB2_TRY(ui_get_textbox_lines_per_page(*y, &lines_per_page));
 	VB2_TRY(ui_get_textbox_chars_per_line(&chars_per_line));
-	/* In full view, extend the textbox to the bottom margin of the screen. */
-	if (state->screen->is_fullview)
-		min_height = UI_SCALE - UI_BOX_MARGIN_BOTTOM - *y;
 	if (wrap_lines)
 		VB2_TRY(ui_draw_auto_wrap_textbox(str, n, y, lines_per_page,
-						  chars_per_line, min_height));
+						  chars_per_line, box_height));
 	else
-		VB2_TRY(ui_draw_textbox(str, y, lines_per_page, min_height));
-
-	box_height = *y - y_base;
+		VB2_TRY(ui_draw_textbox(str, y, lines_per_page, box_height));
 
 	/* Align the scrollbar with the text. */
 	scrollbar_y = y_base + UI_BOX_PADDING_V;
@@ -1299,10 +1247,7 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 {
 	int i;
 	int32_t x;
-	int clear_help;
 	const struct ui_menu_state *ms = &state->menu_state;
-	const struct ui_menu_state *prev_ms = prev_state ?
-		&prev_state->menu_state : NULL;
 
 	*out_focused_item_y = 0;
 
@@ -1327,14 +1272,10 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 		bool is_focused = is_menu_item_focused(state, i);
 
 		if (item->type == UI_MENU_ITEM_TYPE_H1) {
-			clear_help = prev_ms &&
-				     prev_ms->focused_item == i &&
-				     UI_GET_BIT(prev_ms->disabled_item_mask, i);
 			VB2_TRY(ui_draw_h1_button(item, state, x, y,
 						  UI_H1_BUTTON_HEIGHT,
 						  is_focused,
-						  UI_GET_BIT(ms->disabled_item_mask, i),
-						  clear_help));
+						  UI_GET_BIT(ms->disabled_item_mask, i)));
 		} else {
 			bool is_expanded = is_dropdown_expanded(state, i);
 			VB2_TRY(ui_draw_h2_dropdown(item, state, x, y,

@@ -209,7 +209,7 @@ static vb2_error_t show_error_box(const struct ui_error_message *error,
 				  state,
 				  x, y,
 				  UI_H1_BUTTON_HEIGHT,
-				  1, 0, 0));
+				  1, 0));
 
 	return rv;
 }
