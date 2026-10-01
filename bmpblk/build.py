@@ -140,7 +140,7 @@ def run_pango_view(
     output_file,
     locale,
     font,
-    height,
+    font_pt,
     width_pt,
     dpi,
     bgcolor,
@@ -155,11 +155,7 @@ def run_pango_view(
 
     if markup:
         command += ['--markup']
-    # Font size should be proportional to the height. Here we use 2 as the
-    # divisor so that setting dpi to 96 (pango-view's default) in boards.yaml
-    # will be roughly equivalent to setting the screen resolution to 1366x768.
-    font_size = height / 2
-    font_spec = f'{font} {font_size!r}'
+    font_spec = f'{font} {font_pt!r}'
     command += ['--font', font_spec]
 
     if width_pt:
@@ -211,6 +207,8 @@ class Converter:
             depthcharge. For example, if SCALE_BASE is 1000, then height = 200
             means 20% of the screen height. Also see the 'styles' section in
             format.yaml.
+        LINE_HEIGHT_RATIO (float): Line height of the default font relative to
+            its font size.
         SPRITE_ASSUMED_RESOLUTION (int): Screen resolution to decide the size of
             sprite images.
         GLYPH_ASSUMED_RESOLUTION (int): Screen resolution to decide the size of
@@ -221,6 +219,10 @@ class Converter:
     """
 
     SCALE_BASE = 1000
+
+    # Line height (ascent + descent) of the default font (Roboto) relative to
+    # its font size.
+    LINE_HEIGHT_RATIO = 1.172
 
     # Assumed screen resolutions for sprite and glyph images, which should be
     # good enough to render the images clearly on the screen, while not taking
@@ -567,13 +569,24 @@ class Converter:
         png_file = os.path.join(stage_dir, name + '.png')
         png_file_one_line = os.path.join(one_line_dir, name + '.png')
 
+        # Font size should be proportional to the height. The ratio is chosen
+        # so that a bitmap rendered at dpi 96 (pango-view's default) matches
+        # its displayed size on a screen of height 768, that is, in pixels,
+        #
+        #     font_pt * 96 / 72 * LINE_HEIGHT_RATIO  (rendered line height)
+        #   = height * 768 / SCALE_BASE              (displayed line height)
+        #
+        font_pt = (
+            height * 768 / self.SCALE_BASE * 72 / 96 / self.LINE_HEIGHT_RATIO
+        )
+
         if use_svg:
             run_pango_view(
                 input_file,
                 svg_file,
                 locale,
                 font,
-                height,
+                font_pt,
                 0,
                 dpi,
                 bgcolor,
@@ -595,7 +608,7 @@ class Converter:
             png_file_one_line,
             locale,
             font,
-            height,
+            font_pt,
             0,
             dpi,
             bgcolor,
@@ -610,7 +623,7 @@ class Converter:
                 png_file,
                 locale,
                 font,
-                height,
+                font_pt,
                 width_pt,
                 dpi,
                 bgcolor,
