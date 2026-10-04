@@ -151,6 +151,41 @@ int memory_range_init_and_get_unused(Ranges *ranges)
 	return 0;
 }
 
+struct range_check_ctx {
+	uint64_t target_start;
+	uint64_t target_end;
+	bool is_unused;
+};
+
+static void check_range_unused(uint64_t start, uint64_t end, void *data)
+{
+	struct range_check_ctx *ctx = data;
+
+	if (start <= ctx->target_start && ctx->target_end <= end)
+		ctx->is_unused = true;
+}
+
+bool memory_range_is_unused(uint64_t start, uint64_t end)
+{
+	if (start >= end)
+		return false;
+
+	Ranges ranges;
+	if (memory_range_init_and_get_unused(&ranges)) {
+		ranges_teardown(&ranges);
+		return false;
+	}
+
+	struct range_check_ctx ctx = {
+		.target_start = start,
+		.target_end = end,
+		.is_unused = false,
+	};
+	ranges_for_each(&ranges, &check_range_unused, &ctx);
+	ranges_teardown(&ranges);
+	return ctx.is_unused;
+}
+
 int memory_wipe_unused(void)
 {
 	// Do not exclude the memory used in payload. We would like to wipe

@@ -23,6 +23,7 @@
 #include "base/ranges.h"
 
 int memory_range_init_and_get_unused(Ranges *ranges);
+bool memory_range_is_unused(uint64_t start, uint64_t end);
 int memory_wipe_unused(void);
 void memory_mark_used(uint64_t start, uint64_t end);
 bool memory_has_tag_storage(void);
