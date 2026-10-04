@@ -158,6 +158,12 @@ int vboot_select_and_boot_kernel(void)
 	struct vb2_context *ctx = vboot_get_context();
 	static char bootconfig_cmdline[2 * KiB];
 
+	if (!memory_range_is_unused((uintptr_t)_kernel_start,
+				    (uintptr_t)_kernel_end)) {
+		printf("WARNING: Kernel buffer [%p, %p) overlaps with reserved memory!\n",
+		       _kernel_start, _kernel_end);
+	}
+
 	struct vb2_kernel_params kparams = {
 		.kernel_buffer = _kernel_start,
 		.kernel_buffer_size = _kernel_end - _kernel_start,
