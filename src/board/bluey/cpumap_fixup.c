@@ -3,13 +3,15 @@
  * Copyright 2026 Google LLC
  *
  * Disable defective Canim CPU nodes and remove their PSCI power domains.
- * The fixup runs only when soc_id identifies the SoC as Canim.
+ * The fixup runs only when the fw_config SOC_ID field identifies the SoC
+ * as Canim.
  */
 
 #include <commonlib/list.h>
 #include <libpayload.h>
 
 #include "base/device_tree.h"
+#include "base/fw_config.h"
 #include "base/init_funcs.h"
 #include "drivers/soc/qcom_chipinfo.h"
 #include "drivers/soc/x1p42100.h"
@@ -125,7 +127,7 @@ static int bluey_fixup_defective_cores(struct device_tree_fixup *fixup,
 
 	(void)fixup;
 
-	if (lib_sysinfo.soc_id != CANIM_SOC_ID)
+	if (!fw_config_probe(FW_CONFIG(SOC_ID, CANIM)))
 		return 0;
 
 	num_clusters = canim_cpu_fuse.num_clusters;
