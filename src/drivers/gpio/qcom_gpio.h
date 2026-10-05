@@ -26,6 +26,8 @@
 #include "x1p42100.h"
 #elif CONFIG(DRIVER_SOC_CALYPSO)
 #include "calypso.h"
+#elif CONFIG(DRIVER_SOC_DOUGIE)
+#include "dougie.h"
 #endif
 
 #define GPIO(num)	((GpioSpec){.addr = GPIO##num##_ADDR})
