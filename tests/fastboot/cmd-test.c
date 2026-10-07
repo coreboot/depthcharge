@@ -69,6 +69,7 @@ int android_misc_bcb_read(BlockDev *disk, GptData *gpt, struct bootloader_messag
 {
 	assert_ptr_equal(disk, &test_disk);
 	assert_ptr_equal(gpt, &test_gpt);
+	memset(bcb, 0, sizeof(*bcb));
 
 	return mock();
 }
@@ -699,6 +700,19 @@ static void test_fb_cmd_reboot_fastbootd(void **state)
 	assert_int_equal(fb->state, REBOOT);
 }
 
+static void test_fb_cmd_reboot_bootloader(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "reboot-bootloader";
+
+	WILL_READ_BCB(0);
+	WILL_WRITE_BCB("bootonce-bootloader", "", 0);
+	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, REBOOT);
+}
+
 static void test_fb_cmd_reboot_unknown_target(void **state)
 {
 	struct FastbootOps *fb = *state;
@@ -884,6 +898,28 @@ static void test_fb_cmd_flash_spi_nor_img_bigger_than_area(void **state)
 	assert_int_equal(fb->state, COMMAND);
 }
 
+static void test_fb_cmd_flash_spi_nor_area_bigger_than_download_size(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "flash:spi-nor:WP_RO";
+	FmapArea area = {
+		.offset = 0x10,
+		.size = FASTBOOT_MAX_DOWNLOAD_SIZE + 1,
+		.name = {'W', 'P', '_', 'R', 'O', },
+	};
+
+	fb->has_staged_data = true;
+	fb->memory_buffer_len = mock_fmap_area.size;
+
+	set_mock_fmap_area(&area, mock_fmap_area_buf);
+	will_return(fmap_find_area, 0);
+	expect_string(fmap_find_area, name, "WP_RO");
+	WILL_SEND_FAIL(fb);
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
 static void test_fb_cmd_flash_spi_nor_rewrite_fail(void **state)
 {
 	struct FastbootOps *fb = *state;
@@ -934,6 +970,22 @@ static void test_fb_cmd_set_active(void **state)
 	WILL_UPDATE_KERNEL_ENTRY(&kernel_entry, GPT_UPDATE_ENTRY_ACTIVE, 0);
 	WILL_SAVE_GPT(fb, 0);
 	WILL_SEND_PREFIX(fb, "OKAY");
+
+	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
+	assert_int_equal(fb->state, COMMAND);
+}
+
+static void test_fb_cmd_set_active_fail_save_gpt(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char cmd[] = "set_active:b";
+	GptEntry kernel_entry;
+
+	WILL_GET_KERNEL_FOR_SLOT('b', &kernel_entry);
+	WILL_DISABLE_ALL_SLOTS;
+	WILL_UPDATE_KERNEL_ENTRY(&kernel_entry, GPT_UPDATE_ENTRY_ACTIVE, 0);
+	WILL_SAVE_GPT(fb, -1);
+	WILL_SEND_FAIL_WITH_LOGS(fb);
 
 	fastboot_handle_packet(fb, cmd, sizeof(cmd) - 1);
 	assert_int_equal(fb->state, COMMAND);
@@ -1189,7 +1241,7 @@ static void test_fb_cmd_get_cmdline(void **state)
 {
 	struct FastbootOps *fb = *state;
 	char cmd[] = "oem cmdline get";
-	char cmdline[] = "param param2=test param_dq=\"val' ue\" param_q='va lue' ";
+	char cmdline[] = "param  param2=test param_dq=\"val' ue\" param_q='va lue' ";
 
 	WILL_READ_CMDLINE(0);
 	WILL_GET_CMDLINE(cmdline);
@@ -2925,6 +2977,7 @@ int main(void)
 		TEST(test_fb_cmd_reboot_recovery_write_fail),
 		TEST(test_fb_cmd_reboot_recovery_read_fail),
 		TEST(test_fb_cmd_reboot_fastbootd),
+		TEST(test_fb_cmd_reboot_bootloader),
 		TEST(test_fb_cmd_reboot_unknown_target),
 		TEST(test_fb_cmd_erase),
 		TEST(test_fb_cmd_flash_no_download),
@@ -2936,10 +2989,12 @@ int main(void)
 		TEST(test_fb_cmd_flash_spi_nor_img_smaller_than_area),
 		TEST(test_fb_cmd_flash_spi_nor_no_area),
 		TEST(test_fb_cmd_flash_spi_nor_img_bigger_than_area),
+		TEST(test_fb_cmd_flash_spi_nor_area_bigger_than_download_size),
 		TEST(test_fb_cmd_flash_spi_nor_rewrite_fail),
 		TEST(test_fb_cmd_getvar),
 		TEST(test_fb_cmd_set_active_no_slot),
 		TEST(test_fb_cmd_set_active),
+		TEST(test_fb_cmd_set_active_fail_save_gpt),
 		TEST(test_fb_cmd_set_cmdline),
 		TEST(test_fb_cmd_set_cmdline_fail_read),
 		TEST(test_fb_cmd_set_cmdline_fail_set),
