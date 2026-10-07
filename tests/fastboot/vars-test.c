@@ -551,6 +551,20 @@ static void test_fb_getvar_partition_size_at_index_last(void **state)
 	test_fb_getvar_partition_at_index_last(state, VAR_PARTITION_SIZE);
 }
 
+static void test_fb_getvar_partition_size_at_index_truncated(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char var_buf[4];
+	GptEntry *part = (void *)0xcafe;
+
+	WILL_GET_NUMBER_OF_PARTITIONS(5);
+	WILL_GET_PARTITION(3, part);
+	WILL_GET_ENTRY_NAME(part, "part3");
+	assert_int_equal(fastboot_getvar(fb, VAR_PARTITION_SIZE, NULL, 3,
+					 var_buf, sizeof(var_buf)),
+			 STATE_OVERFLOW);
+}
+
 static void test_fb_getvar_partition_type(void **state)
 {
 	GptEntry *part = (void *)0xcafe;
@@ -1047,6 +1061,15 @@ static void test_fb_getvar_has_slot_in_arg(void **state)
 	TEST_FASTBOOT_GETVAR_ERR(VAR_HAS_SLOT, "part_a", STATE_UNKNOWN_VAR);
 }
 
+static void test_fb_getvar_has_slot_too_long_name(void **state)
+{
+	const char *long_name = "this_partition_name_is_way_too_long_for_gpt";
+
+	WILL_GET_SLOT_FOR_PARTITION_NAME(long_name, 0);
+	WILL_FIND_PARTITION(long_name, NULL);
+	TEST_FASTBOOT_GETVAR_ERR(VAR_HAS_SLOT, (char *)long_name, STATE_UNKNOWN_VAR);
+}
+
 static void test_fb_getvar_has_slot_a_at_index(void **state)
 {
 	GptEntry *part = (void *)0xcafe;
@@ -1100,6 +1123,11 @@ static void test_fb_getvar_total_block_count(void **state)
 	test_disk.block_count = 0x1000;
 
 	TEST_FASTBOOT_GETVAR_OK(VAR_TOTAL_BLOCK_COUNT, "", "0x1000");
+}
+
+static void test_fb_getvar_unknown_var(void **state)
+{
+	TEST_FASTBOOT_GETVAR_ERR((fastboot_var_t)999, "", STATE_UNKNOWN_VAR);
 }
 
 /* fastboot_cmd_getvar tests */
@@ -1393,6 +1421,30 @@ static void test_fb_cmd_getvar_undefined(void **state)
 	WILL_SEND_EXACT(fb, "FAILUnknown variable");
 
 	fastboot_cmd_getvar(fb, "this-var-doesn't-exist");
+}
+
+static void test_fb_cmd_getvar_unknown_var_arg(void **state)
+{
+	struct FastbootOps *fb = *state;
+
+	WILL_FIND_PARTITION("nonexistent", NULL);
+	WILL_SEND_EXACT(fb, "FAILUnknown variable");
+
+	fastboot_cmd_getvar(fb, "partition-size:nonexistent");
+}
+
+static void test_fb_cmd_getvar_truncated(void **state)
+{
+	struct FastbootOps *fb = *state;
+	char long_fw_id[FASTBOOT_MSG_LEN_WO_PREFIX + 1];
+
+	memset(long_fw_id, 'A', FASTBOOT_MSG_LEN_WO_PREFIX);
+	long_fw_id[FASTBOOT_MSG_LEN_WO_PREFIX] = '\0';
+
+	WILL_GET_ACTIVE_FW_ID(long_fw_id);
+	WILL_SEND_PREFIX(fb, "FAILgetvar truncated: AAAA");
+
+	fastboot_cmd_getvar(fb, "version-bootloader");
 }
 
 /* fastboot_cmd_getvar all tests */
@@ -1760,6 +1812,7 @@ int main(void)
 		TEST(test_fb_getvar_partition_size_at_index_not_exist),
 		TEST(test_fb_getvar_partition_size_at_index_no_name),
 		TEST(test_fb_getvar_partition_size_at_index_last),
+		TEST(test_fb_getvar_partition_size_at_index_truncated),
 		TEST(test_fb_getvar_partition_type),
 		TEST(test_fb_getvar_partition_type_no_entry),
 		TEST(test_fb_getvar_partition_type_at_index),
@@ -1815,6 +1868,7 @@ int main(void)
 		TEST(test_fb_getvar_has_no_slot),
 		TEST(test_fb_getvar_has_slot_no_partition),
 		TEST(test_fb_getvar_has_slot_in_arg),
+		TEST(test_fb_getvar_has_slot_too_long_name),
 		TEST(test_fb_getvar_has_slot_a_at_index),
 		TEST(test_fb_getvar_has_slot_b_at_index),
 		TEST(test_fb_getvar_has_no_slot_at_index),
@@ -1822,6 +1876,7 @@ int main(void)
 		TEST(test_fb_getvar_has_slot_at_index_no_name),
 		TEST(test_fb_getvar_has_slot_at_index_last),
 		TEST(test_fb_getvar_total_block_count),
+		TEST(test_fb_getvar_unknown_var),
 		TEST(test_fb_cmd_getvar_current_slot),
 		TEST(test_fb_cmd_getvar_download_size),
 		TEST(test_fb_cmd_getvar_max_fetch_size),
@@ -1847,6 +1902,8 @@ int main(void)
 		TEST(test_fb_cmd_getvar_no_args),
 		TEST(test_fb_cmd_getvar_prefix_of_var_name),
 		TEST(test_fb_cmd_getvar_undefined),
+		TEST(test_fb_cmd_getvar_unknown_var_arg),
+		TEST(test_fb_cmd_getvar_truncated),
 		TEST(test_fb_cmd_getvar_all),
 		TEST(test_fb_cmd_getvar_all_fail_get_var),
 	};
