@@ -1319,7 +1319,7 @@ static uint32_t block_ufs_self_test_support(void)
 
 static int ufs_add_device(UfsCtlr *ufs, uint32_t lun)
 {
-	UfsDevice *ufs_dev;
+	UfsDevice *ufs_dev = NULL;
 	char name[20];
 	int rc;
 
