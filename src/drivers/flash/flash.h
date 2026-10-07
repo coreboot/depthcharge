@@ -77,6 +77,9 @@ int flash_is_wp_enabled(void);
 int flash_set_wp_enabled(void);
 JedecFlashId flash_read_id(void);
 
+/* Create stream over flash backed by flash_ops */
+struct StreamOps *flash_get_new_stream(uint64_t offset, uint64_t size);
+
 /* Functions operating on passed in ops */
 int __must_check flash_read_ops(FlashOps *ops, void *buffer, uint32_t offset,
 				uint32_t size);

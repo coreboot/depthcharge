@@ -18,6 +18,7 @@
 #include <libpayload.h>
 
 #include "drivers/flash/flash.h"
+#include "drivers/storage/stream.h"
 
 int __must_check flash_read_ops(FlashOps *ops, void *buffer, uint32_t offset,
 				uint32_t size)
@@ -200,4 +201,66 @@ int flash_set_wp_enabled(void)
 	}
 
 	return -1;
+}
+
+struct SpiStreamOps {
+	struct StreamOps stream;
+	uint32_t offset;
+	uint32_t size;
+};
+
+static uint64_t flash_stream_read(struct StreamOps *me, uint64_t count, void *buffer)
+{
+	struct SpiStreamOps *stream = container_of(me, struct SpiStreamOps, stream);
+	int ret;
+
+	count = MIN(count, stream->size - stream->offset);
+	ret = flash_read(buffer, stream->offset, count);
+	if (ret < 0)
+		return 0;
+
+	stream->offset += ret;
+
+	return ret;
+}
+
+static uint64_t flash_stream_skip(struct StreamOps *me, uint64_t count)
+{
+	struct SpiStreamOps *stream = container_of(me, struct SpiStreamOps, stream);
+	uint64_t skip = MIN(count, stream->size - stream->offset);
+
+	stream->offset += skip;
+
+	return skip;
+}
+
+static void flash_stream_close(struct StreamOps *me)
+{
+	struct SpiStreamOps *stream = container_of(me, struct SpiStreamOps, stream);
+
+	free(stream);
+}
+
+struct StreamOps *flash_get_new_stream(uint64_t offset, uint64_t size)
+{
+	struct SpiStreamOps *ops;
+
+	if (offset > UINT32_MAX || size > UINT32_MAX || offset + size > UINT32_MAX) {
+		printf("FlashOps supports size and offset up to uint32_max\n");
+		return NULL;
+	}
+
+	ops = malloc(sizeof(struct SpiStreamOps));
+	if (!ops) {
+		printf("Failed to allocate SpiStreamOps\n");
+		return NULL;
+	}
+
+	ops->stream.close = flash_stream_close;
+	ops->stream.read = flash_stream_read;
+	ops->stream.skip = flash_stream_skip;
+	ops->offset = offset;
+	ops->size = size + offset;
+
+	return &ops->stream;
 }
