@@ -1118,6 +1118,29 @@ static vb2_error_t draw_fastboot_log(
 	return draw_err;
 }
 
+/*
+ * Get the number of leading characters of |text| that fit in |max_width|
+ * when drawn with |height|.
+ */
+static vb2_error_t get_fitting_text_len(const char *text, int32_t height,
+					int32_t max_width, size_t *len)
+{
+	int32_t width = 0;
+	size_t n;
+
+	for (n = 0; text[n]; n++) {
+		int32_t char_width;
+
+		VB2_TRY(ui_get_ntext_width(&text[n], 1, height, &char_width));
+		if (width + char_width > max_width)
+			break;
+		width += char_width;
+	}
+
+	*len = n;
+	return VB2_SUCCESS;
+}
+
 static vb2_error_t draw_fastboot_desc(
 	struct ui_context *ui,
 	const struct ui_state *prev_state,
@@ -1147,12 +1170,18 @@ static vb2_error_t draw_fastboot_desc(
 	serial = fb_session && fb_session->serial ? fb_session->serial : "";
 	if (*serial) {
 		const int32_t line_height = UI_NAVIGATION_BAR_TEXT_LINE_HEIGHT;
+		size_t serial_len;
 
+		/* Truncate a long serial (e.g. a USB serial number) to fit. */
+		VB2_TRY(get_fitting_text_len(serial, UI_BUTTON_TEXT_HEIGHT,
+					     UI_SCALE - UI_MARGIN_H - x,
+					     &serial_len));
 		VB2_TRY(draw_fastboot_desc_bitmap(state, x,
 						  y_center - line_height / 2));
-		VB2_TRY(ui_draw_text(serial, x, y_center + line_height / 2,
-				     UI_BUTTON_TEXT_HEIGHT, &ui_color_bg,
-				     &ui_color_fg, flags, reverse));
+		VB2_TRY(ui_draw_ntext(serial, serial_len, x,
+				      y_center + line_height / 2,
+				      UI_BUTTON_TEXT_HEIGHT, &ui_color_bg,
+				      &ui_color_fg, flags, reverse));
 	} else {
 		VB2_TRY(draw_fastboot_desc_bitmap(state, x, y_center));
 	}

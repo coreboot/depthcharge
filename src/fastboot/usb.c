@@ -30,6 +30,11 @@
 /* Wait 100ms for transaction. If it timeouts, probably other side doesn't send anything. */
 #define BULK_POLL_TIMEOUT_US 100000
 
+/* Language ID of English (United States) for USB string descriptors */
+#define USB_LANGID_EN_US 0x0409
+/* Maximum length of a USB string descriptor (bLength is a single byte) */
+#define USB_STRING_DESC_MAX_LEN 255
+
 typedef struct UsbFastbootDevice {
 	struct list_node list_node;
 	struct FastbootOps fb_session;
@@ -39,6 +44,8 @@ typedef struct UsbFastbootDevice {
 	enum fastboot_transport_state state;
 	/* Sending timed out, so drop the rest of the response */
 	bool timed_out;
+	/* Serial number string, or NULL if not read yet */
+	char *serial;
 } UsbFastbootDevice;
 
 static bool is_usb_fastboot_in_use(UsbFastbootDevice *usb_fb_dev)
@@ -93,6 +100,7 @@ static void usb_fastboot_release(struct FastbootOps *fb)
 
 	if (usb_fb_dev->usb_dev == NULL) {
 		/* Device is no longer present, free the whole structure */
+		free(usb_fb_dev->serial);
 		free(usb_fb_dev);
 	} else {
 		/* Mark the device as not in use */
@@ -168,6 +176,52 @@ static int usb_fastboot_init_endpoints(usbdev_t *dev, UsbFastbootDevice *usb_fb_
 	return 1;
 }
 
+static int usb_fastboot_get_string_desc(usbdev_t *dev, uint8_t index, uint8_t *buf, int len)
+{
+	dev_req_t dr = {
+		.data_dir = device_to_host,
+		.req_type = standard_type,
+		.req_recp = dev_recp,
+		.bRequest = GET_DESCRIPTOR,
+		.wValue = DT_STR << 8 | index,
+		.wIndex = USB_LANGID_EN_US,
+		.wLength = len,
+	};
+
+	return dev->controller->control(dev, IN, sizeof(dr), &dr, len, buf);
+}
+
+/*
+ * Read the serial number string descriptor of the USB device as an ASCII
+ * string. For the Alink cable, it's the same serial number seen by the host on
+ * the other side (e.g. listed by `adb devices`). Return a newly allocated
+ * string, or NULL on failure.
+ */
+static char *usb_fastboot_read_serial(usbdev_t *dev)
+{
+	device_descriptor_t *dd = (device_descriptor_t *)dev->descriptor;
+	/* uint16_t for the alignment of the UTF-16 characters after the header */
+	uint16_t desc[(USB_STRING_DESC_MAX_LEN + 1) / 2];
+	uint8_t *buf = (uint8_t *)desc;
+	int len;
+
+	if (!dd->iSerialNumber)
+		return NULL;
+
+	/* Read the descriptor header first to get the full length */
+	len = usb_fastboot_get_string_desc(dev, dd->iSerialNumber, buf, 2);
+	if (len != 2 || buf[1] != DT_STR || buf[0] < 4)
+		return NULL;
+
+	/* Both reads must have at least one character (2-byte header + 2 bytes) */
+	len = usb_fastboot_get_string_desc(dev, dd->iSerialNumber, buf, buf[0]);
+	len = MIN(len, buf[0]);
+	if (len < 4 || buf[1] != DT_STR)
+		return NULL;
+
+	return utf16le_to_ascii(&desc[1], (len - 2) / 2);
+}
+
 /* List of all Alink devices probed */
 static struct list_node alink_devices;
 
@@ -181,7 +235,22 @@ static struct FastbootOps *usb_fastboot_get_dev(void)
 			continue;
 
 		if (!usb_fastboot_init_endpoints(list_dev->usb_dev, list_dev)){
-			/* This Alink seems to be OK */
+			/*
+			 * This Alink seems to be OK. If the serial can't be read, leave
+			 * it empty so that only the connection status is shown, and try
+			 * again on the next session.
+			 */
+			if (!list_dev->serial) {
+				list_dev->serial =
+					usb_fastboot_read_serial(list_dev->usb_dev);
+				if (list_dev->serial)
+					list_dev->fb_session.serial = list_dev->serial;
+			}
+			if (!list_dev->serial)
+				printf("USBFB: Failed to read the Alink serial\n");
+			else
+				printf("USBFB: Using Alink with serial: %s\n",
+				       list_dev->serial);
 			return &list_dev->fb_session;
 		}
 	}
@@ -211,7 +280,8 @@ static int usb_fastboot_probe(GenericUsbDevice *dev)
 	usb_fb_dev->fb_session.send_packet = usb_fastboot_send;
 	usb_fb_dev->fb_session.release = usb_fastboot_release;
 	usb_fb_dev->fb_session.type = FASTBOOT_USB_CONN;
-	usb_fb_dev->fb_session.serial = "USB";
+	/* Empty until the serial is read when the device is used for fastboot */
+	usb_fb_dev->fb_session.serial = "";
 
 	list_insert_after(&usb_fb_dev->list_node, &alink_devices);
 
@@ -232,6 +302,7 @@ static void usb_fastboot_remove(GenericUsbDevice *dev)
 		usb_fb_dev->bulk_out = NULL;
 		usb_fb_dev->usb_dev = NULL;
 	} else {
+		free(usb_fb_dev->serial);
 		free(usb_fb_dev);
 	}
 }

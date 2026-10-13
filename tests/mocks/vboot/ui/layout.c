@@ -88,6 +88,13 @@ vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
 	return VB2_SUCCESS;
 }
 
+vb2_error_t ui_get_ntext_width(const char *text, size_t n, int32_t height,
+			       int32_t *width)
+{
+	*width = 0;
+	return VB2_SUCCESS;
+}
+
 vb2_error_t ui_draw_ntext(const char *text, size_t n,
 			  int32_t x, int32_t y, int32_t height,
 			  const struct rgb_color *bg_color,
