@@ -190,17 +190,17 @@ styles:
     # to ensure the size of the generated bitmap will be proportional to the
     # size that it is displayed at. For text, this is the height of each line,
     # that is, the font size in the design times LINE_HEIGHT_RATIO in build.py.
-    height: 23
+    height: 25
     # Maximum width of the bitmap for wrapping lines. Unit is the same as the
     # "height" option.
     max_width: null
     max_num_lines: null
   _GLYPH_:
-    height: 20
+    height: 23
   title:
     bgcolor: *surface_container
     fgcolor: *on_surface
-    height: 59
+    height: 63
     # UI_SCALE = 1080
     # UI_MARGIN_H = 72
     # UI_SCALE - UI_MARGIN_H * 2
@@ -215,18 +215,18 @@ styles:
     fgcolor: *on_surface
     # Same text size as the navigation bar labels (button), since the text
     # is drawn on the right of the navigation bar.
-    height: 21
+    height: 23
     # No max_width, so that the bitmap is not padded to the full width
     # when drawn on the right of the navigation bar.
   desc_url:
     bgcolor: *surface_container
     fgcolor: *on_surface
   button:
-    height: 21
+    height: 23
   footer:
     bgcolor: *surface_container
     fgcolor: *on_surface
-    height: 21
+    height: 23
     # UI_FOOTER_COL_PADDING_INNER = 24
     # UI_FOOTER_QR_BOX_SIZE = 102
     # UI_FOOTER_QR_BOX_MARGIN_R = 20
@@ -236,11 +236,11 @@ styles:
   footer_url:
     bgcolor: *surface_container
     fgcolor: *primary
-    height: 21
+    height: 23
   footer_nav:
     bgcolor: *surface_container
     fgcolor: *on_surface
-    height: 21
+    height: 23
     # UI_KEYCAP_SIZE = 40
     # UI_KEYCAP_SPACING = 6
     # UI_KEYCAP_MARGIN_R = 10
@@ -248,17 +248,17 @@ styles:
     # - UI_KEYCAP_SIZE * 2 - UI_KEYCAP_SPACING - UI_KEYCAP_MARGIN_R
     max_width: 348
   keycap:
-    height: 21
+    height: 23
   error:
     bgcolor: *surface_container_high
     fgcolor: *on_surface_variant
-    height: 21
+    height: 23
     # UI_ERROR_BOX_WIDTH - UI_ERROR_BOX_PADDING * 2
     max_width: 392
   error_url:
     bgcolor: *surface_container_high
     fgcolor: *on_surface_variant
-    height: 21
+    height: 23
   # sprite bitmaps
   ic_language:
     height: 24
@@ -275,25 +275,30 @@ styles:
 
 # Font of each locale
 fonts:
-  _DEFAULT_: 'Roboto'
-  _GLYPH_: 'Cousine'
-  # The following contains all the locales 'Roboto' doesn't support. All
-  # the supported locales can be found by
-  #   fc-match -f "%{lang}\n" "Roboto"
-  ar:     'Noto Sans Arabic UI'
-  bn:     'Noto Sans Bengali UI'
-  fa:     'Noto Sans Arabic UI'
-  gu:     'Noto Sans Gujarati UI'
-  he:     'Noto Sans Hebrew'
-  hi:     'Noto Sans Devanagari UI'
+  _DEFAULT_: 'Google Sans Flex'
+  _GLYPH_: 'Google Sans Code'
+  # The following contains all the locales 'Google Sans Flex' doesn't support.
+  # All the supported locales can be found by
+  #   fc-match -f "%{lang}\n" "Google Sans Flex"
+  ar:     'Google Sans'
+  bg:     'Google Sans'
+  bn:     'Google Sans'
+  el:     'Google Sans'
+  fa:     'Google Sans'
+  gu:     'Google Sans'
+  he:     'Google Sans'
+  hi:     'Google Sans'
   ja:     'Noto Sans CJK JP'
-  kn:     'Noto Sans Kannada UI'
+  kn:     'Google Sans'
   ko:     'Noto Sans CJK KR'
-  ml:     'Noto Sans Malayalam UI'
-  mr:     'Noto Sans Devanagari UI'
-  ta:     'Noto Sans Tamil UI'
-  te:     'Noto Sans Telugu UI'
-  th:     'Noto Sans Thai UI'
+  ml:     'Google Sans'
+  mr:     'Google Sans'
+  ru:     'Google Sans'
+  sr:     'Google Sans'
+  ta:     'Google Sans'
+  te:     'Google Sans'
+  th:     'Google Sans'
+  uk:     'Google Sans'
   zh-CN:  'Noto Sans CJK SC'
   zh-TW:  'Noto Sans CJK TC'
 

@@ -92,7 +92,9 @@
 /*
  * For each type of text:
  * - *_TEXT_HEIGHT is the height of each line of the text bitmap, which
- *   determines the size of the drawn text.
+ *   determines the size of the drawn text. It is the font size in the design
+ *   times 1.252, the line height (ascent + descent) of Google Sans Flex,
+ *   Google Sans and Google Sans Code relative to the font size.
  * - *_TEXT_LINE_HEIGHT is the line height in the design, which determines the
  *   space taken up by the text in the layout.
  * The text bitmap is vertically centered in that space. If *_TEXT_HEIGHT is
@@ -101,16 +103,16 @@
  */
 
 /* For title and descriptions */
-#define UI_TITLE_TEXT_HEIGHT			59
+#define UI_TITLE_TEXT_HEIGHT			63
 #define UI_TITLE_TEXT_LINE_HEIGHT		54
 #define UI_TITLE_MARGIN_V			20
-#define UI_DESC_TEXT_HEIGHT			23
+#define UI_DESC_TEXT_HEIGHT			25
 #define UI_DESC_TEXT_LINE_HEIGHT		28
 #define UI_DESC_TEXT_LINE_SPACING		10
 #define UI_DESC_MARGIN_BOTTOM			48
 
 /* For buttons */
-#define UI_BUTTON_TEXT_HEIGHT			21
+#define UI_BUTTON_TEXT_HEIGHT			23
 #define UI_BUTTON_PADDING_H			16
 #define UI_BUTTON_FOCUS_RING_THICKNESS		2
 #define UI_BUTTON_MARGIN_V			16
@@ -144,7 +146,7 @@
 /* For keycaps */
 #define UI_KEYCAP_SIZE				40
 #define UI_KEYCAP_ICON_SIZE			22
-#define UI_KEYCAP_TEXT_HEIGHT			21
+#define UI_KEYCAP_TEXT_HEIGHT			23
 #define UI_KEYCAP_TEXT_LINE_HEIGHT		24
 #define UI_KEYCAP_PADDING_H			16
 #define UI_KEYCAP_PADDING_V			10
@@ -166,10 +168,8 @@
  * UI_FOOTER_COL_PADDING_INNER.
  */
 #define UI_FOOTER_COL_PADDING_INNER		24
-#define UI_FOOTER_TEXT_HEIGHT			21
+#define UI_FOOTER_TEXT_HEIGHT			23
 #define UI_FOOTER_TEXT_LINE_HEIGHT		24
-/* Device name drawn with glyph bitmaps (Cousine, 1.135 * font size) */
-#define UI_FOOTER_DEVICE_TEXT_HEIGHT		20
 #define UI_FOOTER_ROW_PADDING_V			4
 #define UI_FOOTER_ROW_SPACING			6
 #define UI_FOOTER_PARA_SPACING			10
@@ -184,7 +184,7 @@
 #define UI_ERROR_BOX_PADDING			24
 #define UI_ERROR_BOX_ICON_HEIGHT		40
 #define UI_ERROR_BOX_ICON_MARGIN_BOTTOM		16
-#define UI_ERROR_BOX_TEXT_HEIGHT		21
+#define UI_ERROR_BOX_TEXT_HEIGHT		23
 #define UI_ERROR_BOX_TEXT_LINE_HEIGHT		24
 #define UI_ERROR_BOX_TEXT_MARGIN_BOTTOM		24
 
@@ -199,7 +199,7 @@
  * (1) a fallback message in the case of a broken screen, and
  * (2) a main UI element for viewing a large body of text.
  */
-#define UI_BOX_TEXT_HEIGHT			20
+#define UI_BOX_TEXT_HEIGHT			23
 #define UI_BOX_TEXT_LINE_HEIGHT			24
 #define UI_BOX_MARGIN_V				275
 #define UI_BOX_PADDING_H			16

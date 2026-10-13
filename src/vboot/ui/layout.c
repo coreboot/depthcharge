@@ -371,7 +371,7 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	VB2_TRY(draw_footer_text(&bitmap, x, y + h / 2, reverse));
 	y += h;
 	VB2_TRY(ui_draw_text(device, x, y + line_height / 2,
-			     UI_FOOTER_DEVICE_TEXT_HEIGHT,
+			     UI_FOOTER_TEXT_HEIGHT,
 			     &ui_color_bg, &ui_color_footer_fg,
 			     PIVOT_H_LEFT | PIVOT_V_CENTER, reverse));
 	y += line_height + UI_FOOTER_PARA_SPACING;

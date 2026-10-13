@@ -220,9 +220,9 @@ class Converter:
 
     SCALE_BASE = 1080
 
-    # Line height (ascent + descent) of the default font (Roboto) relative to
-    # its font size.
-    LINE_HEIGHT_RATIO = 1.172
+    # Line height (ascent + descent) of the default font (Google Sans Flex)
+    # relative to its font size.
+    LINE_HEIGHT_RATIO = 1.252
 
     # Assumed screen resolutions for sprite and glyph images, which should be
     # good enough to render the images clearly on the screen, while not taking
