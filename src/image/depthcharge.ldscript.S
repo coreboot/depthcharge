@@ -100,8 +100,12 @@ SECTIONS
 		. = ALIGN(16);
 		_heap = .;
 		. += CONFIG_HEAP_SIZE;
-		. = ALIGN(16);
+		. = ALIGN(4K);
 		_eheap = .;
+
+		_guard = .;
+		. += 4K;
+		_eguard = .;
 
 		_stack = .;
 		. += CONFIG_STACK_SIZE;
@@ -125,4 +129,7 @@ SECTIONS
 		*(.note*)
 		*(.GCC.*)
 	}
+
+	_ = ASSERT(_guard == (_guard & 0xFFFFF000) && _guard < 0xFFFFFFFF,
+		   "x86 page table code depends on guard page being 4K-aligned and below 4GB.");
 }
