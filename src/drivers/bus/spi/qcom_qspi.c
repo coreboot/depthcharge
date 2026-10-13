@@ -143,7 +143,6 @@ static void queue_bounce_data(QcomQspi *qspi_bus, uint8_t *data,
 static void flush_chain(QcomQspi *qspi_bus)
 {
 	QcomQspiDescriptor *desc = qspi_bus->first_descriptor;
-	uint8_t *data_addr = (void *)(uintptr_t)desc->data_address;
 	QcomQspiDescriptor *curr_desc;
 	uint8_t *src;
 	uint8_t *dst;
@@ -151,6 +150,8 @@ static void flush_chain(QcomQspi *qspi_bus)
 	dma_transfer_chain(qspi_bus, desc);
 
 	while (desc) {
+		uint8_t *data_addr = (void *)(uintptr_t)desc->data_address;
+
 		if (desc->direction == MASTER_READ) {
 			if (desc->bounce_length == 0)
 				dcache_invalidate_by_mva(data_addr,
