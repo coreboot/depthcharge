@@ -235,8 +235,14 @@ static int send_command_proto3_work(CrosEc *me, int cmd, int cmd_version, const 
 	 * support a repeated call.
 	 */
 	while (retry_attempt_counter < 3) {
+		memset(me->proto3_response, 0, sizeof(struct ec_host_response));
 		rv = me->bus->send_packet(me->bus, me->proto3_request, out_bytes,
 					  me->proto3_response, in_bytes);
+		/* send_packet() only checks bus transport; decode the v3
+		   response header to get the EC result code. */
+		if (rv >= 0)
+			rv = handle_proto3_response(me->proto3_response, dinp,
+						    din_len);
 
 		if (rv == -EC_RES_BUSY) {
 			/* EC reports it is busy. Re-send the host command after
@@ -259,11 +265,7 @@ static int send_command_proto3_work(CrosEc *me, int cmd, int cmd_version, const 
 		}
 	}
 
-	if (rv < 0)
-		return rv;
-
-	/* Process the response */
-	return handle_proto3_response(me->proto3_response, dinp, din_len);
+	return rv;
 }
 
 static int send_command_proto3(CrosEc *me, int cmd, int cmd_version, const void *dout,
