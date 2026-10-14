@@ -90,11 +90,13 @@ static int mkbp_old_cmd_read_event(struct ec_response_get_next_event_v3 *event)
 	return EC_KEY_MATRIX_OFFSET + sizeof(scan.data);
 }
 
+#define MAX_MKBP_EVENTS 64
+
 static int mkbp_new_cmd_read_event(struct ec_response_get_next_event_v3 *event)
 {
 	int rv;
 
-	while (1) {
+	for (int i = 0; i < MAX_MKBP_EVENTS; i++) {
 		rv = cros_ec_get_next_event(event);
 		if (rv == -EC_RES_UNAVAILABLE)
 			return -1;
@@ -113,6 +115,9 @@ static int mkbp_new_cmd_read_event(struct ec_response_get_next_event_v3 *event)
 		if (!(event->event_type & EC_MKBP_HAS_MORE_EVENTS))
 			return -1;
 	}
+
+	printf("Exceeded max MKBP events (%d)\n", MAX_MKBP_EVENTS);
+	return -1;
 }
 
 /*
@@ -463,7 +468,7 @@ static void more_keys(void)
 	Modifier modifiers;
 
 	// Keep searching through states until we find a valid key press.
-	while (!fifo_size) {
+	for (int i = 0; !fifo_size && i < MAX_MKBP_EVENTS; i++) {
 		int count = read_scancodes(&modifiers, scancodes, KeyFifoSize);
 		if (count < 0)
 			return;	// EC has no more key states buffered.
@@ -567,6 +572,9 @@ static void more_keys(void)
 			add_key(ascii);
 		}
 	}
+
+	if (!fifo_size)
+		printf("Exceeded max MKBP key scans (%d)\n", MAX_MKBP_EVENTS);
 }
 
 static int mkbp_keyboard_havekey(void)
