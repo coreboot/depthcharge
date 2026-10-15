@@ -313,7 +313,6 @@ vb2_error_t ui_display(struct ui_context *ui,
 		ms->disabled_item_mask, ms->hidden_item_mask,
 		state->timer_disabled, state->current_page, state->error_code);
 
-	int32_t y = UI_BOX_MARGIN_V;
 	const struct ui_screen_info *screen = state->screen;
 	const struct ui_error_message *error = NULL;
 
@@ -343,6 +342,8 @@ vb2_error_t ui_display(struct ui_context *ui,
 		rv = ui_draw_default(ui, prev_state);
 
 	if (rv) {
+		int32_t y = UI_FALLBACK_BOX_MARGIN_TOP;
+
 		UI_ERROR("Drawing screen %#x failed: %#x\n", screen->id, rv);
 		/* Print fallback message if drawing failed. */
 		if (screen->mesg)

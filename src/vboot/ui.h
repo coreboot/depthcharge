@@ -201,14 +201,14 @@
  */
 #define UI_BOX_TEXT_HEIGHT			23
 #define UI_BOX_TEXT_LINE_HEIGHT			24
-#define UI_BOX_MARGIN_V				275
 #define UI_BOX_PADDING_H			16
 #define UI_BOX_PADDING_V			16
 #define UI_BOX_RADIUS				12
 /* Margin below the textbox in full view */
 #define UI_BOX_MARGIN_BOTTOM			12
 
-/* For fallback colored stripes */
+/* For fallback message and colored stripes */
+#define UI_FALLBACK_BOX_MARGIN_TOP		275
 #define UI_FALLBACK_STRIPE_HEIGHT		10
 
 /* Indicate width or height is automatically set based on the other value */
