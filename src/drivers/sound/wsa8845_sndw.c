@@ -6,7 +6,7 @@
 #include <delay.h>
 #include <drivers/bus/soundwire/qcom/qcom_swrm.h>
 #include <drivers/bus/soundwire/soundwire.h>
-#include <drivers/soc/x1p42100.h>
+#include <drivers/soc/qcom_soc.h>
 #include <drivers/sound/wsa8845_sndw.h>
 #include <libpayload.h>
 

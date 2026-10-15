@@ -5,7 +5,7 @@
 
 #include <delay.h>
 #include <libpayload.h>
-#include <drivers/soc/x1p42100.h>
+#include <drivers/soc/qcom_soc.h>
 #include <drivers/bus/soundwire/soundwire.h>
 #include <drivers/bus/soundwire/qcom/sdw-slave.h>
 
@@ -201,6 +201,7 @@ static void qcom_init_swrm(void *sndwlinkaddr){
 	configure_lpaif_irq();
 	configure_rx_paths();
 	configure_boost_and_cb();
+	mdelay(10);
 
 	swrm->CMD_FIFO_CFG = SWRM_CMD_FIFO_RESET_ENABLE;
 	LPASS_WSA_CLK_RST->rst_ctrl_mclk = WSA_MCLK_ENABLE;

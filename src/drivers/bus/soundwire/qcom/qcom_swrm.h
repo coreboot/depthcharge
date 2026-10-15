@@ -6,6 +6,7 @@
 #ifndef __DRIVERS_BUS_SOUNDWIRE_QCOM_SWRM_H__
 #define __DRIVERS_BUS_SOUNDWIRE_QCOM_SWRM_H__
 
+#include <drivers/soc/qcom_soc.h>
 #include <stdint.h>
 
 typedef struct {
@@ -135,7 +136,7 @@ typedef struct {
 	uint8_t _pad2[0x18];
 	uint32_t LPASS_AUDIO_CC_TX_MCLK_2X_WSA_CBCR;
 	uint32_t LPASS_AUDIO_CC_TX_MCLK_WSA_CBCR;
-	uint8_t _pad3[0x8];
+	uint8_t _pad3[LPASS_CC_WSA_MCLK_PAD3_SIZE];
 	uint32_t LPASS_AUDIO_CC_WSA_MCLK_MODE_MUXSEL;
 } lpass_audio_cc_wsa_mclk;
 
@@ -214,9 +215,6 @@ typedef struct {
 #define RX_PATH_CFG3_DEFAULT	0x00000003
 #define RX_VOL_LVL	0xFFFFFFE8
 #define RX_PATH_ON	0x00000014
-
-#define SWRM_DPN_BASE_OFFSET	0x1000UL
-#define SWRM_DPN_STRIDE	0x100UL
 
 #define SWRM_POLL_TIMEOUT_US	500000
 
@@ -349,9 +347,6 @@ typedef struct {
 /* MCLK disable */
 #define WSA_MCLK_DISABLE	0x00000000
 
-/* WSA LPAIF RD DMA base addresses */
-#define WSA_RDDMA_B0_BASE_ADDR	0x06C80000
-
 /* WSA reset enable */
 #define WSA_SWR_RESET_ENABLE	0x00000001
 
@@ -362,13 +357,6 @@ typedef struct {
 /* WSA LPAIF RD DMA control */
 #define WSA_RDDMA_CTL_PREPARE	0x0020000E
 #define WSA_RDDMA_CTL_ENABLE	0x0020000F
-
-/* CODEC interface values */
-#define WSA_CODEC_INTF_B0_BASE	0x00010000
-#define WSA_CODEC_INTF_B0_ENABLE	0x00010003
-
-#define WSA_CODEC_INTF_B0_FLUSH	0x80010003
-#define WSA_CODEC_INTF_B0_RUN	0x40010003
 
 /* RX path mix control */
 #define RX_PATH_CTL_ENABLE_MIX	0x00000024
