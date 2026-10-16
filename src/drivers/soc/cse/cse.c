@@ -3,7 +3,6 @@
 #include "cse_internal.h"
 #include "cse.h"
 #include "drivers/ec/cros/ec.h"
-#include "drivers/soc/common/iomap.h"
 #include "me.h"
 
 #define MAX_HECI_MESSAGE_RETRY_COUNT 5
@@ -59,23 +58,6 @@
 #define ETR				0x1048
 #define   CF9_LOCK				(1 << 31)
 #define   CF9_GLB_RST			(1 << 20)
-
-#define PM1_CNT         0x04
-#define   SLP_EN        (1 << 13)
-#define   SLP_TYP       (7 << 10)
-#define   SLP_TYP_S0    (0 << 10)
-#define   SLP_TYP_S1    (1 << 10)
-#define   SLP_TYP_S3    (5 << 10)
-#define   SLP_TYP_S4    (6 << 10)
-#define   SLP_TYP_S5    (7 << 10)
-
-bool acpi_get_sleep_type_s3(void)
-{
-	uint32_t reg32 = inl(ACPI_BASE_ADDRESS + PM1_CNT);
-	if ((reg32 & SLP_TYP) == SLP_TYP_S3)
-		return true;
-	return false;
-}
 
 /* Get HECI BAR 0 from PCI configuration space */
 static uintptr_t get_cse_bar(pcidev_t dev)

@@ -222,11 +222,6 @@ static void do_send_end_of_post(bool wait_for_completion)
 		return;
 	}
 
-	if (acpi_get_sleep_type_s3()) {
-		printk(BIOS_INFO, "Skip sending EOP during S3 resume\n");
-		return;
-	}
-
 	/*
 	 * If CSE is already hidden then accessing CSE registers would be wrong and will
 	 * receive junk, hence, return as CSE is already disabled.
@@ -338,4 +333,3 @@ static int intel_cse_finalize_install(void)
 }
 
 INIT_FUNC(intel_cse_finalize_install);
-

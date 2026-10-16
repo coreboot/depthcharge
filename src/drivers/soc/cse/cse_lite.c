@@ -1549,9 +1549,6 @@ static void cse_store_ish_version(void)
 
 static void payload_cse_misc_ops(void *unused)
 {
-	if (acpi_get_sleep_type_s3())
-		return;
-
 	cse_fw_sync();
 
 	/*
