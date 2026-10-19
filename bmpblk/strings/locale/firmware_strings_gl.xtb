@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="gl">
+<translation id="1201402288615127009">Seguinte</translation>
+<translation id="1428255359211557126">Comprobación rápida da memoria</translation>
+<translation id="1483971085438511843">Utiliza a tecla Intro para seleccionar unha opción.</translation>
+<translation id="1995660704900986789">Apagar</translation>
+<translation id="2022309272630265316">Non se detectou ningunha imaxe válida</translation>
+<translation id="2164852388827548816">Rexistro do firmware</translation>
+<translation id="3174560100798162637">Recomendámosche que conectes o dispositivo a unha fonte de alimentación.</translation>
+<translation id="3294574173405124634">As funcións experimentais de GBB non permiten volver ao modo seguro.</translation>
+<translation id="3697087251845525042">Proba automática breve do almacenamento</translation>
+<translation id="385051799172605136">Atrás</translation>
+<translation id="4002335453596341558">Avanzar páxina</translation>
+<translation id="4410491068110727276">Utiliza os botóns de volume para desprazarte cara arriba ou cara abaixo.</translation>
+<translation id="4773280894882892048">Información de depuración</translation>
+<translation id="4815374450404670311">Comprobación completa da memoria</translation>
+<translation id="4986594717579135906">Estase completando unha actualización no teu dispositivo. Esta acción pode tardar 1 ou 2 minutos.
+Non apagues o dispositivo.</translation>
+<translation id="5232488980254489397">Iniciar diagnóstico</translation>
+<translation id="5477875595374685515">Non se puido obter o rexistro do firmware.</translation>
+<translation id="5592705604979238266">Centro de axuda:</translation>
+<translation id="6172915643608608639">Arrancar desde o disco interno</translation>
+<translation id="635783852215913562">Utiliza as teclas das frechas para desprazarte cara arriba ou cara abaixo.</translation>
+<translation id="65237697078188559">Shell do firmware</translation>
+<translation id="6972383785688794804">Retroceder páxina</translation>
+<translation id="7065553583078443466">Seleccionar cargador de arranque alternativo</translation>
+<translation id="7126032376876878896">Utiliza o botón de acendido para seleccionar unha opción.</translation>
+<translation id="7321387134821904291">Información sobre o estado do almacenamento</translation>
+<translation id="7332672207700801967">Recuperación de Internet (versión anterior)</translation>
+<translation id="7342794948394983731">Ferramentas de diagnóstico</translation>
+<translation id="7352651011704765696">Produciuse un erro</translation>
+<translation id="7658239707568436148">Cancelar</translation>
+<translation id="7939062555109487992">Opcións avanzadas</translation>
+<translation id="8011335065515332253">Tras o tempo de espera, o dispositivo iniciarase automaticamente desde o que selecciones abaixo.</translation>
+<translation id="8116993605321079294">Produciuse un erro ao iniciar o cargador de arranque alternativo. Para obter máis información, consulta o rexistro do firmware.</translation>
+<translation id="8131740175452115882">Confirmar</translation>
+<translation id="8377165353588213941">Chegaches ao final</translation>
+<translation id="8569584079758810124">Non se puido obter a información de depuración.</translation>
+<translation id="8720490351198901261">Chegaches ao comezo</translation>
+<translation id="8878311588372127478">Proba automática completa do almacenamento</translation>
+<translation id="8975826224585429326">Non se atopou ningún cargador de arranque alternativo. Para obter información acerca de como instalar un, consulta:</translation>
+<translation id="9004305007436435169">Non se puido obter información de diagnóstico.</translation>
+</translationbundle>

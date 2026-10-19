@@ -1,0 +1,439 @@
+# ChromeOS firmware bitmap block - board configuration.
+#
+# name1,name2,...:
+#   key1: value ...
+#   key2: value ...
+#   ...
+#
+# name: List of board names for this configuration, separated by comma.
+# keys are as follows:
+#
+# sdcard: Presence of SD/MMC Card Reader that can boot in recovery mode
+# dpi: The DPI used when generating PNG files. With higher DPI, the generated
+#   bitmaps will be larger and hence will take up more space in RO CBFS. To
+#   avoid generating over-sized bitmaps (which will be downscaled in runtime),
+#   the specified DPI should not be larger than the following values per screen
+#   resolution (defined as MIN(resolution_width, resolution_height)):
+#
+#     RESOLUTION  DPI
+#            768   90
+#            850   99
+#           1080  129
+#           1200  144
+#           1440  171
+#           1504  182
+#           1536  183
+#           1600  186
+#           1700  204
+#           2160  261
+#           2400  291
+#
+#   For example, for a 1920x1080 screen, the maximum suggested DPI is 129. When
+#   adding a new board, please try the maximum DPI first, based on the screen
+#   resolution. If chromeos-bootimage fails to build because of bitmap size
+#   issue, binary-search for the best-fitting DPI value.
+# locales: List of locales to include
+# rtl: List of right-to-left locales
+# rw_override: List of names of localized bitmaps to be stored in both RW
+#   and RO sections. This field is designed to allow late RW updates to change
+#   or add bitmaps of firmware screens in RW. Currently, there is no support
+#   for updating locale-independent bitmaps in vbgfx.bin and font.bin.
+# split_ratio: This setting allows you to specify the ratio of bitmaps that can
+#   be stored in a separate read-write (RW) CBFS partition. By default
+#   (value 0), all bitmaps are placed in the read-only (RO) CBFS.
+#   There's currently only one supported override value: 100. This means all
+#   bitmaps listed in the rw_only list will be stored in the RW CBFS,
+#   minimizing the footprint on the write-protected (WP_RO) SPI flash.
+#
+# Note the locale should be supported (and named) by Chrome browser:
+# https://chromium.googlesource.com/chromium/chromium/+/trunk/ui/base/l10n/l10n_util.cc
+# In other words, iw should be 'he', and no should be 'nb'.
+
+# Default configuration
+# These are the values used unless set otherwise in the board specific config
+_DEFAULT_:
+  sdcard:      True
+  dpi: 192
+  # The complete locales we have to support can be found by
+  #  ../../platform2/regions/regions.py --format=json | \
+  #    jq -rS '[.[].locales[]]|unique[]'
+  # The order of locales determines the order in the language menu. Aside from
+  # 'en', which is placed at the beginning of the list, the remaining order is
+  # consistent with the Chromebook Help Center
+  # (https://support.google.com/chromebook).
+  # Please modify this with care.
+  locales:     [en, bn, ca, da, de, et, es, es-419, fil, fr, hr, id, it, lv, lt,
+                hu, ms, nl, nb, pl, pt-PT, pt-BR, ro, sk, sl, fi, sv, vi, tr,
+                cs, el, bg, ru, sr, uk, he, ar, fa, mr, hi, gu, ta, te, kn, ml,
+                th, zh-CN, zh-TW, ja, ko]
+  rtl:         [he, ar, fa]
+  rw_override:  []
+  split_ratio: 0
+
+# Used by depthcharge's `make screenshot`. Not a real board.
+screenshot:
+
+asurada:
+  # 1920x1080, boots recovery image on USB ports or SD card.
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+nyan,nyan_big:
+
+veyron_pinky,veyron_jerry:
+  # Using built-in graphics mode 1366x768.
+  # Boots recovery image on any SD card and USB ports.
+
+peach_pit,peach_pit-freon:
+  # 1366x768, boots recovery image on any SD card or USB ports.
+  # Using old U-Boot firmware with smaller size so the locale list is limited.
+
+falco,peppy,wolf,leon,banjo,orco,gandof,heli:
+  # WARNING: VESA graphics mode is no longer supported for these boards.
+  # Bitmaps will be stretched at runtime.
+  dpi: 90  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  # With card reader. USB3 ports will run in USB2 mode for recovery boot.
+
+squawks,glimmer,clapper,enguarde,expresso,kip,gnawty,winky,quawks,swanky,candy:
+  # WARNING: VESA graphics mode is no longer supported for these boards.
+  # Bitmaps will be stretched at runtime.
+  dpi: 90  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  # With card reader. All USB ports can boot in recovery mode.
+
+auron_paine,auron_yuna,cid,lulu,reks,lars:
+  # WARNING: VESA graphics mode is no longer supported for these boards.
+  # Bitmaps will be stretched at runtime.
+  dpi: 90  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  # With card reader. All USB ports can boot in recovery mode.
+
+elm,hana:
+  # Elm and hana do not have enough space to support all the locales. Only build
+  # English language to ensure that ToT can build the bootimage for these boards.
+  dpi: 90  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  locales: [en]
+  rtl: []
+
+chell,glados:
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+fizz,guado,kalista,mccloud,ninja,panther,rikku,tidus,tricky,zako:
+  # WARNING: VESA graphics mode is no longer supported for these boards.
+  # Bitmaps will be stretched at runtime.
+  # A chromebox without built-in panel/keyboard.
+  # Assume the display is a modern 16:9 (1920x1080) monitor.
+  # With card reader and physical recovery switch.
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+endeavour:
+  # WARNING: VESA graphics mode is no longer supported for these boards.
+  # Bitmaps will be stretched at runtime.
+  # A chromebox without built-in panel/keyboard.
+  # Assume the display is a modern 16:9 (1920x1080) monitor.
+  # With physical recovery switch, without card reader.
+  sdcard:   False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+ambassador:
+  # External monitor, boots recovery image on USB ports.
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+monroe,sumo:
+  # WARNING: VESA graphics mode is no longer supported for these boards.
+  # Bitmaps will be stretched at runtime.
+  # A chromestation with built-in panel, without built-in keyboard.
+  # Display is a modern 16:9 (1920x1080) monitor.
+  # With physical recovery switch, without card reader.
+  dpi: 129  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  sdcard:   False
+
+buddy:
+  # WARNING: VESA graphics mode is no longer supported for these boards.
+  # Bitmaps will be stretched at runtime.
+  # A chromestation with built-in panel, without built-in keyboard.
+  # Display is a modern 16:9 (1920x1080) monitor.
+  # With physical recovery switch, with card reader.
+  dpi: 129  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+parrot,butterfly,stout:
+  # WARNING: VESA graphics mode is no longer supported for these boards.
+  # Bitmaps will be stretched at runtime.
+  # Can only boot recovery by USB. (No card reader, or not able to recover
+  # from card reader.)
+  dpi: 90  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  sdcard:   False
+
+kahlee:
+  # WARNING: VESA graphics mode is no longer supported for these boards.
+  # Bitmaps will be stretched at runtime.
+  # With card reader. All USB ports can boot in recovery mode.
+  dpi: 90  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+grunt:
+  # WARNING: VESA graphics mode is no longer supported for these boards.
+  # Bitmaps will be stretched at runtime.
+  # All USB ports and the SD card reader can be used for recovery.
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+link:
+  # Can boot recovery by USB and SD card readers.
+  # Note its firmware can not contain all default locales so the shipping locale
+  # list is specified.
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+stumpy:
+  # There's no standard panel size for Stumpy -- depends on the monitor user has
+  # attached. Let's assume it's a modern LCD panel with 1920x1080 dimension.
+  dpi: 129  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  sdcard:   False
+
+lumpy:
+  # Lumpy was shipped with old firmware bitmaps and caused its resolution to be
+  # 800x600.
+  dpi: 90  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+veyron_mickey:
+  # A chromebit with external display only, use low-res "safe" mode.
+  # With physical recovery switch, without card reader.
+  dpi: 129  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  sdcard:   False
+
+kevin,kevin-tpm2:
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  dpi: 186  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+scarlet:
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  # 1536x2048, "detachable", boots recovery image on any SD card or USB ports.
+
+eve:
+  # 2400x1600, boots recovery image on USB ports.
+  sdcard:   False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+samus:
+  # 1280x850, boots recovery image on any SD card or USB ports.
+  dpi: 99  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+poppy:
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  dpi: 186  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+soraka:
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+dragonegg:
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  dpi: 186  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+zoombini:
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  dpi: 186  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+nautilus:
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+meowth:
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  dpi: 186  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+nami:
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+atlas:
+  # 3840x2160, boots recovery image on USB ports.
+  sdcard:   False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+nocturne:
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+rammus:
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+sarien,deltaur,drallion:
+  # 1920x1080, boots recovery image on USB ports.
+  sdcard:   False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+hatch,palkia:
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+puff:
+  # External monitor, boots recovery image on USB ports.
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+mushu:
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+flapjack,kukui:
+  # 1920x1200, boots recovery image on USB ports.
+  sdcard:   False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+volteer:
+  # 3840x2160, boots recovery image on USB ports.
+  sdcard:   False
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+zork:
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+dedede,shotzo,dibbi:
+  # 2400x1600, boots recovery image on USB ports.
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+keeby:
+  # 2400x1600, boots recovery image on USB ports.
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+jacuzzi:
+  # 1366x768, boots recovery image on USB ports or SD card.
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+tglrvp:
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+trogdor:
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+herobrine:
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+villager:
+  # 1920x1200, boots recovery image on any SD card or USB ports.
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+senor:
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+strongbad:
+  # 2160x1440, boots recovery image on any SD card or USB ports.
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+brask:
+  # External monitor, boots recovery image on USB ports.
+  sdcard:   False
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+brya:
+  # 3840x2160, boots recovery image on USB ports.
+  sdcard:   False
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+cherry:
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+guybrush:
+  # 1920x1080
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+nissa,dirks:
+  # 1920x1080, boots recovery image on any USB ports.
+  sdcard:   False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+rex:
+  # 3840x2160, boots recovery image on USB ports.
+  sdcard:   False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+ovis:
+  # External monitor, boots recovery image on USB ports.
+  sdcard:   False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+corsola:
+  # 1366x768, boots recovery image on any SD card or USB ports.
+  dpi: 90  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+skyrim:
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  dpi: 129  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+geralt:
+  # 1920x1200
+  dpi: 104 # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+staryu:
+  sdcard: False
+  dpi: 104 # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+myst:
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+brox:
+  dpi: 144  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  # 1920x1200
+  split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+trulo:
+  # 1920x1080, boots recovery image on any USB ports.
+  sdcard:   False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+fatcat:
+  # 3840x2160, boots recovery image on USB ports.
+  locales: [en, de, es, es-419, fr, it, nb, pt-BR, ar, hi, zh-CN, ja, ko]
+  rtl: [ar]
+  sdcard: False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+rauru:
+  dpi: 88  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+skywalker:
+  sdcard: False
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+ocelot:
+  # 3840x2160, boots recovery image on USB ports.
+  locales: [en, de, es, es-419, fr, it, nb, pt-BR, ar, hi, zh-CN, ja, ko]
+  rtl: [ar]
+  sdcard: False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+bluey:
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  # Do not have enough space to support all the locales. Only build
+  # with essential languages to ensure that ToT can build the bootimage for these boards.
+  locales: [en, de, es, es-419, fr, it, nb, pt-BR, ar, hi, zh-CN, ja, ko]
+  rtl: [ar]
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+calypso:
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  locales: [en, de, es, es-419, fr, it, nb, pt-BR, ar, hi, zh-CN, ja, ko]
+  rtl: [ar]
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+sapphire:
+  locales: [en, de, es, es-419, fr, it, nb, pt-BR, ar, hi, zh-CN, ja, ko]
+  rtl: [ar]
+  sdcard: False
+
+atria:
+  locales: [en, de, es, es-419, fr, it, nb, pt-BR, ar, hi, zh-CN, ja, ko]
+  rtl: [ar]
+  sdcard: False
+  dpi: 72
+  split_ratio: 100

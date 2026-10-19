@@ -1,0 +1,7 @@
+# Don't delete this file if you want to keep keyword_check enabled even if it's
+# empty.
+#
+# See repohooks/README.md for more details.
+
+# 'he' is the ISO 639-1 language code for Hebrew.
+\bhe\b

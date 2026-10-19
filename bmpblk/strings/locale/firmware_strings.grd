@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit base_dir="." latest_public_release="0" current_release="1"
+      source_lang_id="en-US" enc_check="möl">
+  <outputs>
+    <!-- Generate output in chrome_message_json format. The resulting JSON
+         files are processed by make_images to render the translated message
+         text to PNG image files. These are used by the recovery installer
+         script to display messages on screen. -->
+    <output filename="ar.json" type="chrome_messages_json" lang="ar" />
+    <output filename="bg.json" type="chrome_messages_json" lang="bg" />
+    <output filename="bn.json" type="chrome_messages_json" lang="bn" />
+    <output filename="ca.json" type="chrome_messages_json" lang="ca" />
+    <output filename="cs.json" type="chrome_messages_json" lang="cs" />
+    <output filename="da.json" type="chrome_messages_json" lang="da" />
+    <output filename="de.json" type="chrome_messages_json" lang="de" />
+    <output filename="el.json" type="chrome_messages_json" lang="el" />
+    <output filename="en.json" type="chrome_messages_json" lang="en" />
+    <output filename="es.json" type="chrome_messages_json" lang="es" />
+    <output filename="es-419.json" type="chrome_messages_json" lang="es-419" />
+    <output filename="et.json" type="chrome_messages_json" lang="et" />
+    <output filename="fa.json" type="chrome_messages_json" lang="fa" />
+    <output filename="fi.json" type="chrome_messages_json" lang="fi" />
+    <output filename="fil.json" type="chrome_messages_json" lang="fil" />
+    <output filename="fr.json" type="chrome_messages_json" lang="fr" />
+    <output filename="gu.json" type="chrome_messages_json" lang="gu" />
+    <output filename="hi.json" type="chrome_messages_json" lang="hi" />
+    <output filename="hr.json" type="chrome_messages_json" lang="hr" />
+    <output filename="hu.json" type="chrome_messages_json" lang="hu" />
+    <output filename="id.json" type="chrome_messages_json" lang="id" />
+    <output filename="it.json" type="chrome_messages_json" lang="it" />
+    <output filename="he.json" type="chrome_messages_json" lang="iw" />
+    <output filename="ja.json" type="chrome_messages_json" lang="ja" />
+    <output filename="kn.json" type="chrome_messages_json" lang="kn" />
+    <output filename="ko.json" type="chrome_messages_json" lang="ko" />
+    <output filename="lt.json" type="chrome_messages_json" lang="lt" />
+    <output filename="lv.json" type="chrome_messages_json" lang="lv" />
+    <output filename="ml.json" type="chrome_messages_json" lang="ml" />
+    <output filename="mr.json" type="chrome_messages_json" lang="mr" />
+    <output filename="ms.json" type="chrome_messages_json" lang="ms" />
+    <output filename="nl.json" type="chrome_messages_json" lang="nl" />
+    <output filename="nb.json" type="chrome_messages_json" lang="no" />
+    <output filename="pl.json" type="chrome_messages_json" lang="pl" />
+    <output filename="pt-BR.json" type="chrome_messages_json" lang="pt-BR" />
+    <output filename="pt-PT.json" type="chrome_messages_json" lang="pt-PT" />
+    <output filename="ro.json" type="chrome_messages_json" lang="ro" />
+    <output filename="ru.json" type="chrome_messages_json" lang="ru" />
+    <output filename="sk.json" type="chrome_messages_json" lang="sk" />
+    <output filename="sl.json" type="chrome_messages_json" lang="sl" />
+    <output filename="sr.json" type="chrome_messages_json" lang="sr" />
+    <output filename="sv.json" type="chrome_messages_json" lang="sv" />
+    <output filename="sw.json" type="chrome_messages_json" lang="sw" />
+    <output filename="ta.json" type="chrome_messages_json" lang="ta" />
+    <output filename="te.json" type="chrome_messages_json" lang="te" />
+    <output filename="th.json" type="chrome_messages_json" lang="th" />
+    <output filename="tr.json" type="chrome_messages_json" lang="tr" />
+    <output filename="uk.json" type="chrome_messages_json" lang="uk" />
+    <output filename="vi.json" type="chrome_messages_json" lang="vi" />
+    <output filename="zh-CN.json" type="chrome_messages_json" lang="zh-CN" />
+    <output filename="zh-TW.json" type="chrome_messages_json" lang="zh-TW" />
+  </outputs>
+  <translations>
+    <file path="firmware_strings_ar.xtb" lang="ar" />
+    <file path="firmware_strings_bg.xtb" lang="bg" />
+    <file path="firmware_strings_bn.xtb" lang="bn" />
+    <file path="firmware_strings_ca.xtb" lang="ca" />
+    <file path="firmware_strings_cs.xtb" lang="cs" />
+    <file path="firmware_strings_da.xtb" lang="da" />
+    <file path="firmware_strings_de.xtb" lang="de" />
+    <file path="firmware_strings_el.xtb" lang="el" />
+    <file path="firmware_strings_es.xtb" lang="es" />
+    <file path="firmware_strings_es-419.xtb" lang="es-419" />
+    <file path="firmware_strings_et.xtb" lang="et" />
+    <file path="firmware_strings_fa.xtb" lang="fa" />
+    <file path="firmware_strings_fi.xtb" lang="fi" />
+    <file path="firmware_strings_fil.xtb" lang="fil" />
+    <file path="firmware_strings_fr.xtb" lang="fr" />
+    <file path="firmware_strings_gu.xtb" lang="gu" />
+    <file path="firmware_strings_hi.xtb" lang="hi" />
+    <file path="firmware_strings_hr.xtb" lang="hr" />
+    <file path="firmware_strings_hu.xtb" lang="hu" />
+    <file path="firmware_strings_id.xtb" lang="id" />
+    <file path="firmware_strings_it.xtb" lang="it" />
+    <file path="firmware_strings_iw.xtb" lang="iw" />
+    <file path="firmware_strings_ja.xtb" lang="ja" />
+    <file path="firmware_strings_kn.xtb" lang="kn" />
+    <file path="firmware_strings_ko.xtb" lang="ko" />
+    <file path="firmware_strings_lt.xtb" lang="lt" />
+    <file path="firmware_strings_lv.xtb" lang="lv" />
+    <file path="firmware_strings_ml.xtb" lang="ml" />
+    <file path="firmware_strings_mr.xtb" lang="mr" />
+    <file path="firmware_strings_ms.xtb" lang="ms" />
+    <file path="firmware_strings_nl.xtb" lang="nl" />
+    <file path="firmware_strings_no.xtb" lang="no" />
+    <file path="firmware_strings_pl.xtb" lang="pl" />
+    <file path="firmware_strings_pt-BR.xtb" lang="pt-BR" />
+    <file path="firmware_strings_pt-PT.xtb" lang="pt-PT" />
+    <file path="firmware_strings_ro.xtb" lang="ro" />
+    <file path="firmware_strings_ru.xtb" lang="ru" />
+    <file path="firmware_strings_sk.xtb" lang="sk" />
+    <file path="firmware_strings_sl.xtb" lang="sl" />
+    <file path="firmware_strings_sr.xtb" lang="sr" />
+    <file path="firmware_strings_sv.xtb" lang="sv" />
+    <file path="firmware_strings_sw.xtb" lang="sw" />
+    <file path="firmware_strings_ta.xtb" lang="ta" />
+    <file path="firmware_strings_te.xtb" lang="te" />
+    <file path="firmware_strings_th.xtb" lang="th" />
+    <file path="firmware_strings_tr.xtb" lang="tr" />
+    <file path="firmware_strings_uk.xtb" lang="uk" />
+    <file path="firmware_strings_vi.xtb" lang="vi" />
+    <file path="firmware_strings_zh-CN.xtb" lang="zh-CN" />
+    <file path="firmware_strings_zh-TW.xtb" lang="zh-TW" />
+  </translations>
+  <release seq="1">
+    <messages fallback_to_english="true">
+      <message name="firmware_sync_title" desc="Title of screen shown when device is updating the firmware on the embedded chip.">
+Updating your device
+      </message>
+      <message name="firmware_sync_desc" desc="Description of screen shown when device is updating the firmware on the embedded chip.">
+Keep your device turned on. This may take a moment.
+      </message>
+      <message name="broken_title" desc="Title of screen shown when device is in broken screen.">
+Something went wrong
+      </message>
+      <message name="broken_desc0" desc="Description string0 for screen shown when device is in broken screen.">
+To fix this issue, start the recovery process.
+      </message>
+      <message name="broken_desc1" desc="Description string1 for screen shown when device is in broken screen.">
+1. Remove all connected devices.
+      </message>
+      <message name="broken_desc2" desc="Description string2 for screen shown when device is in broken screen.">
+2. Hold Esc + Refresh ( ⟳ ) + Power ( ⏻ ).
+      </message>
+      <message name="broken_desc2_phyrec" desc="Description string2 for screen shown when device with physical recovery button is in broken screen.">
+2. While holding the Recovery button, press and release the Power button ( ⏻ ), then release the Recovery button.
+      </message>
+      <message name="broken_desc2_detach" desc="Description string2 for screen shown when detachable is in broken screen.">
+2. Hold down Volume Up + Volume Down + Power button ( ⏻ ) for at least 10 seconds.
+      </message>
+      <message name="adv_options_title" desc="Title for the advanced options screen.">
+Advanced options
+      </message>
+      <message name="btn_dev_mode" desc="String for button to initiate the transition of the device into developer mode">
+Unlock bootloader
+      </message>
+      <message name="btn_debug_info" desc="String for button to view the logs of debug info.">
+Debug info
+      </message>
+      <message name="btn_fastboot" desc="Button for entering fastboot.">
+Bootloader fastboot
+      </message>
+      <message name="btn_firmware_log" desc="String for button to view the firmware log.">
+Firmware log
+      </message>
+      <message name="btn_firmware_shell" desc="String for button to view the firmware shell">
+Firmware shell
+      </message>
+      <message name="debug_info_title" desc="Title for the debug info screen.">
+Debug info
+      </message>
+      <message name="firmware_log_title" desc="Title for the firmware log screen.">
+Firmware log
+      </message>
+      <message name="fastboot_title" desc="Title for the fastboot screen.">
+You're in bootloader fastboot mode
+      </message>
+      <message name="fastboot_wait_conn_desc" desc="Description of screen when fastboot isn't connected yet.">
+Waiting for connection...
+      </message>
+      <message name="fastboot_tcp_conn_desc" desc="Description of screen when fastboot uses network.">
+Connected via TCP
+      </message>
+      <message name="fastboot_usb_conn_desc" desc="Description of screen when fastboot uses H2H (Alink) cable.">
+Connected via USB
+      </message>
+      <message name="btn_page_up" desc="String for the page up button (please translate this)." meaning="verb">
+Page up
+      </message>
+      <message name="btn_page_down" desc="String for the page down button (please translate this)." meaning="verb">
+Page down
+      </message>
+      <message name="page_up_disabled_help" desc="Help string which shows next to the page up button when the user is already at the first page">
+You have reached the top
+      </message>
+      <message name="page_down_disabled_help" desc="Help string which shows next to the page down button when the user is already at the last page">
+You have reached the end
+      </message>
+      <message name="rec_sel_title" desc="Title for the recovery screen (after user presses three finger salute, ie: ctrl + refresh + power).">
+Start the recovery process
+      </message>
+      <message name="rec_sel_desc0" desc="Description string0 for the recovery screen (after user presses three finger salute, ie: ctrl + refresh + power).">
+Choose a recovery method to get started.
+      </message>
+      <message name="btn_rec_by_disk" desc="Button to select recovery through external disk.">
+Use USB drive or SD card
+      </message>
+      <message name="btn_rec_by_disk_no_sd" desc="Button to select recovery through external disk when no SD card available on the device.">
+Use USB drive
+      </message>
+      <message name="btn_rec_by_internet" desc="Button to select internet connection recovery.">
+Use internet connection
+      </message>
+      <message name="btn_rec_by_internet_old" desc="Button to select internet connection recovery.">
+Internet recovery (older version)
+      </message>
+      <message name="rec_disk_step1_title" desc="Title for Step1 in the recovery process.">
+Get ready to recover your device
+      </message>
+      <message name="rec_disk_step1_desc0" desc="Description string0 for step1 in the recovery process.">
+To create a recovery drive, you'll need:
+      </message>
+      <message name="rec_disk_step1_desc1" desc="Description string1 for step1 in the recovery process.">
+1. A USB drive or SD card
+      </message>
+      <message name="rec_disk_step1_desc1_no_sd" desc="Description string1 for step1 in the recovery process when no SD card is present on the device.">
+1. A USB drive
+      </message>
+      <message name="rec_disk_step1_desc2" desc="Description string2 for step1 in the recovery process.">
+2. Another device with internet connection
+      </message>
+      <message name="rec_disk_step1_desc3" desc="String3 for Step1 in the recovery process.">
+Connecting your device to a power source is recommended.
+      </message>
+      <message name="rec_disk_step1_desc3_low_bat" desc="String3 for Step1 in the recovery process.  This is shown when the device has low battery">
+Your device battery is low. Connect to a power source to continue.
+      </message>
+      <message name="rec_disk_step2_title" desc="Title for step2 in the recovery process.">
+Set up your recovery drive
+      </message>
+      <message name="rec_disk_step2_desc0" desc="Description string0 for step2 in the recovery process.">
+1. Go to <ph name="REC_URL">{msg[rec_url]}<ex>goo.gle/android_laptop_recovery</ex></ph> on your other device
+      </message>
+      <message name="rec_disk_step2_desc1" desc="Description string1 for step2 in the recovery process.">
+2. Follow instructions on your other device
+      </message>
+      <message name="rec_disk_step2_desc2" desc="Description string2 for step2 in the recovery process.">
+When your recovery drive is ready, plug it into this device to start the recovery process.
+      </message>
+      <message name="rec_learn_more_at_desc" desc="Description for recovery failure screens. A URL will be shown below this line.">
+Learn more at:
+      </message>
+      <message name="rec_invalid_title" desc="Title for invalid disk plugged inserted.">
+No valid image detected
+      </message>
+      <message name="rec_invalid_desc" desc="Description for invalid disk plugged inserted.">
+Make sure your recovery drive has a valid image and try again.
+      </message>
+      <message name="rec_rollback_error_title" desc="Title for recovery rollback error.">
+Outdated recovery image
+      </message>
+      <message name="rec_rollback_error_desc" desc="Description for recovery rollback_error.">
+This recovery image is too old for your device. Download a new recovery image and try again.
+      </message>
+      <message name="rec_to_dev_title" desc="Title for transition to dev mode.">
+Unlock bootloader?
+      </message>
+      <message name="rec_to_dev_desc0" desc="String0 for transition to dev mode.">
+This will erase all data from your device. Device security will be disabled.
+      </message>
+      <message name="rec_to_dev_desc1_phyrec" desc="String1 for transition to dev mode for devices with physical recovery button.">
+Press the Recovery button on your device to unlock the bootloader, or select Cancel to remain protected.
+      </message>
+      <message name="btn_rec_to_dev" desc="Button that unlocks the bootloader.">
+Unlock
+      </message>
+      <message name="dev_title" desc="Title for the developer warning screen.">
+Bootloader is unlocked
+      </message>
+      <message name="dev_desc0" desc="String0 for developer warning screen.">
+Your device is not secure while the bootloader is unlocked. To restore device security, lock the bootloader.
+      </message>
+      <message name="dev_desc1" desc="String1 for developer warning screen.">
+After timeout, the device will automatically boot from the selection below.
+      </message>
+      <message name="btn_secure_mode" desc="Button for going back to secure mode.">
+Lock bootloader
+      </message>
+      <message name="btn_int_disk" desc="Button for booting into internal disk.">
+Boot from internal disk
+      </message>
+      <message name="btn_ext_disk" desc="Button for booting into the external drive.">
+Boot from external drive
+      </message>
+      <message name="btn_alt_bootloader" desc="Button for selecting an alternate bootloader.">
+Select alternate bootloader
+      </message>
+      <message name="dev_to_norm_title" desc="Title for screen for transition from developer to normal mode.">
+Lock bootloader?
+      </message>
+      <message name="dev_to_norm_desc0" desc="String0 for screen for transition from developer to normal mode.">
+This will lock the bootloader and restore your device to its original state.
+      </message>
+      <message name="dev_to_norm_desc1" desc="String1 for screen for transition from developer to normal mode.">
+User data will be wiped in the process.
+      </message>
+      <message name="btn_lock" desc="Button for going back to secure mode.">
+Lock
+      </message>
+      <message name="dev_boot_ext_title" desc="Title for screen instructing user to plug in their USB/SD card containing an OS recovery image.">
+No external drive detected
+      </message>
+      <message name="dev_boot_ext_desc0" desc="String1 for screen instructing user to plug in their USB/SD card containing an OS recovery image.">
+Plug in an external drive with an OS image. Your device will boot automatically.
+      </message>
+      <message name="dev_invalid_disk_title" desc="Title for screen that appears when user plugs in a USB/SD card with an invalid image on it.">
+No valid image detected
+      </message>
+      <message name="dev_invalid_disk_desc0" desc="String1 for screen that appears when user plugs in a USB/SD card with an invalid image on it.">
+Make sure your external drive has a valid OS image, and re-insert it when it's ready.
+      </message>
+      <message name="btn_launch_diag" desc="String for the button to enter diagnostics.">
+Launch diagnostics
+      </message>
+      <message name="dev_select_bootloader_title" desc="Title for screen to select alternate bootloader.">
+Select alternate bootloader
+      </message>
+      <message name="diag_menu_title" desc="Title for diagnostic entry menu. This menu provides several self-diagnostic tools including information about storage status and memory tests.">
+Diagnostic tools
+      </message>
+      <message name="diag_menu_desc0" desc="String for diagnostic entry menu. This menu provides several self-diagnostic tools including information about storage status and memory tests. This string shows directly under the title of the menu and guides the user to select the desired tool.">
+Select a test to run
+      </message>
+      <message name="diag_storage_health_title" desc="Title for storage diagnostic screen. This screen will retrieve health information about the storage (disks) on this device.">
+Storage health info
+      </message>
+      <message name="diag_storage_srt_test_title" desc="Title for storage self-test screen. This screen provides storage self-test status of the storage (disks) on this device. Short self-test usually completes in 2 minutes.">
+Storage self-test (short)
+      </message>
+      <message name="diag_storage_ext_test_title" desc="Title for storage self-test screen. This screen provides storage self-test status of the storage (disks) on this device. Extended self-test may spend from several minutes to hours to complete.">
+Storage self-test (extended)
+      </message>
+      <message name="diag_memory_quick_title" desc="Title for quick memory diagnostic screen. This screen will verify memory is functioning correctly, and report the results to the user. This quick memory test takes about several seconds to complete.">
+Memory check (quick)
+      </message>
+      <message name="diag_memory_full_title" desc="Title for full memory diagnostic screen. This screen will verify memory is functioning correctly, and report the results to the user. This full memory test takes about few minutes to complete.">
+Memory check (full)
+      </message>
+      <message name="btn_diag_storage_health" desc="Menu item to retrieve health information about the storage (disks) on this devices.">
+Storage health info
+      </message>
+      <message name="btn_diag_storage_short_test" desc="Menu item for short storage self-test. This will start a storage self-test and will show the status on the screen. Short self-test usually completes in 2 minutes.">
+Storage self-test (short)
+      </message>
+      <message name="btn_diag_storage_ext_test" desc="Menu item for extended storage self-test. This will start a storage self-test and will show the status on the screen. Extended self-test may spend from several minutes to hours to complete.">
+Storage self-test (extended)
+      </message>
+      <message name="btn_diag_memory_quick" desc="Menu item to make a device in 'service mode' run a verification of the memory components inside it, and report the results to the user. This quick memory test takes about several seconds to complete.">
+Memory check (quick)
+      </message>
+      <message name="btn_diag_memory_full" desc="Menu item to make a device in 'service mode' run a verification of the memory components inside it, and report the results to the user. This full memory test takes about few minutes to complete.">
+Memory check (full)
+      </message>
+      <message name="btn_next" desc="String for the next button.">
+Next
+      </message>
+      <message name="btn_back" desc="String for the back button.">
+Back
+      </message>
+      <message name="btn_confirm" desc="String for the confirm button.">
+Confirm
+      </message>
+      <message name="btn_cancel" desc="String for the canel button.">
+Cancel
+      </message>
+      <message name="btn_adv_options" desc="String for the advanced options button.">
+Advanced options
+      </message>
+      <message name="btn_power_off" desc="String for the power off button.">
+Power off
+      </message>
+      <message name="device" desc="String for the device name.">
+Device:
+      </message>
+      <message name="help_center" desc="String for the help center label.">
+Help center:
+      </message>
+      <message name="navigate0" desc="Instruction0 for navigating on a device.">
+Use the arrow keys to navigate up or down.
+      </message>
+      <message name="navigate1" desc="Instruction1 for navigating on a device.">
+Use the enter key to select an option.
+      </message>
+      <message name="navigate0_tablet" desc="Instruction0 for navigating on a tablet or detachable.">
+Use the volume buttons to navigate up or down.
+      </message>
+      <message name="navigate1_tablet" desc="Instruction1 for navigating on a tablet or detachable.">
+Use the power button to select an option.
+      </message>
+      <message name="error_dev_mode_enabled" desc="Error message when developer mode is already turned on">
+Bootloader is already unlocked.
+      </message>
+      <message name="error_untrusted_confirm"
+               desc="Error for untrusted confirmation for turning on developer mode">
+You cannot use an external keyboard to unlock the bootloader. Use the built-in keyboard.
+      </message>
+      <message name="error_untrusted_confirm_detach"
+               desc="Error for untrusted confirmation for turning on developer mode on a tablet or detachable">
+You cannot use a keyboard to unlock the bootloader. Use the Power button ( ⏻ ).
+      </message>
+      <message name="error_to_norm_not_allowed" desc="Error when to-norm transition is not allowed">
+Returning to secure mode disallowed by GBB flags.
+      </message>
+      <message name="error_dev_boot_not_allowed" desc="Error when booting in developer mode is not allowed">
+Booting with an unlocked bootloader is not allowed. Learn more at:
+      </message>
+      <message name="error_int_boot_failed"
+               desc="Error when internal boot failed. 'Advanced options' is refering to adv_options_title. 'Firmware log' is refering to btn_firmware_log. '&gt;' symbol shows the path through the menu, that user should take, so replace it with '&lt;' for RTL languages.">
+Something went wrong booting from the internal disk. For details, go to Advanced options > Firmware log.
+      </message>
+      <message name="error_ext_boot_disabled"
+               desc="Error when external boot is disabled. A URL will be shown below this line.">
+Booting from an external drive is disabled. Learn more at:
+      </message>
+      <message name="error_alt_boot_disabled"
+               desc="Error when alternate bootloaders are disabled. A URL will be shown below this line.">
+Alternate bootloaders are disabled. Learn more at:
+      </message>
+      <message name="error_no_alt_bootloader"
+               desc="Error when no alternate bootloader is found. A URL will be shown below this line.">
+Could not find an alternate bootloader. To learn how to install one, visit:
+      </message>
+      <message name="error_alt_boot_failed" desc="Error when alternate boot failed">
+Something went wrong launching the alternate bootloader. View firmware log for details.
+      </message>
+      <message name="error_debug_info" desc="Error of showing debug info">
+Could not get debug info.
+      </message>
+      <message name="error_firmware_log" desc="Error of showing firmware log">
+Could not get firmware log.
+      </message>
+      <message name="error_diagnostics" desc="Error of showing diagnostic information">
+Could not get diagnostic information.
+      </message>
+      <message name="error_internet_recovery" desc="Error of using internet recovery">
+Internet recovery partition is corrupted or missing. Use a USB drive or SD card instead.
+      </message>
+      <message name="error_internet_recovery_no_sd" desc="Error of using internet recovery when no SD card available on the device">
+Internet recovery partition is corrupted or missing. Use a USB drive instead.
+      </message>
+      <message name="error_dev_mode_oem_lock" desc="Error message when developer mode is blocked by OEM lock">
+Booting with an unlocked bootloader is disabled. To enable it, reboot to the OS and enable OEM unlocking in Developer options. Learn more at:
+      </message>
+      <message name="memory_training_desc" desc="WARNING: The translation for this string is subject to strict character set limitations. Please read all instructions in go/t9n-guide-cros-early-stage-firmware-screens carefully before translating this string.">
+Your device is finishing an update. This may take 1-2 minutes.
+Please do not turn off your device.
+      </message>
+    </messages>
+  </release>
+</grit>

@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="en-GB">
+<translation id="1201402288615127009">Next</translation>
+<translation id="1428255359211557126">Memory check (quick)</translation>
+<translation id="1483971085438511843">Use the enter key to select an option.</translation>
+<translation id="1995660704900986789">Power off</translation>
+<translation id="2022309272630265316">No valid image detected</translation>
+<translation id="2164852388827548816">Firmware log</translation>
+<translation id="3174560100798162637">Connecting your device to a power source is recommended.</translation>
+<translation id="3294574173405124634">Returning to secure mode disallowed by GBB flags.</translation>
+<translation id="3697087251845525042">Storage self-test (short)</translation>
+<translation id="385051799172605136">Back</translation>
+<translation id="4002335453596341558">Page down</translation>
+<translation id="4410491068110727276">Use the volume buttons to navigate up or down.</translation>
+<translation id="4773280894882892048">Debug info</translation>
+<translation id="4815374450404670311">Memory check (full)</translation>
+<translation id="4986594717579135906">Your device is finishing an update. This may take 1-2 minutes.
+Please do not turn off your device.</translation>
+<translation id="5232488980254489397">Launch diagnostics</translation>
+<translation id="5477875595374685515">Could not get firmware log.</translation>
+<translation id="5592705604979238266">Help Centre:</translation>
+<translation id="6172915643608608639">Boot from internal disk</translation>
+<translation id="635783852215913562">Use the arrow keys to navigate up or down.</translation>
+<translation id="65237697078188559">Firmware shell</translation>
+<translation id="6972383785688794804">Page up</translation>
+<translation id="7065553583078443466">Select alternate bootloader</translation>
+<translation id="7126032376876878896">Use the power button to select an option.</translation>
+<translation id="7321387134821904291">Storage health info</translation>
+<translation id="7332672207700801967">Internet recovery (older version)</translation>
+<translation id="7342794948394983731">Diagnostic tools</translation>
+<translation id="7352651011704765696">Something went wrong</translation>
+<translation id="7658239707568436148">Cancel</translation>
+<translation id="7939062555109487992">Advanced options</translation>
+<translation id="8011335065515332253">After timeout, the device will automatically boot from the selection below.</translation>
+<translation id="8116993605321079294">Something went wrong launching the alternative bootloader. View firmware log for details.</translation>
+<translation id="8131740175452115882">Confirm</translation>
+<translation id="8377165353588213941">You have reached the end</translation>
+<translation id="8569584079758810124">Could not get debug info.</translation>
+<translation id="8720490351198901261">You have reached the top</translation>
+<translation id="8878311588372127478">Storage self-test (extended)</translation>
+<translation id="8975826224585429326">Could not find an alternative bootloader. To learn how to install one, visit:</translation>
+<translation id="9004305007436435169">Could not get diagnostic information.</translation>
+</translationbundle>
