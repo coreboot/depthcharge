@@ -854,9 +854,10 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines,
 	vb2_error_t rv = VB2_SUCCESS;
 	int32_t x;
 	int32_t y_base = *y;
-	int32_t max_height = UI_BOX_TEXT_HEIGHT;
+	int32_t text_height = UI_BOX_TEXT_HEIGHT;
+	int32_t line_height = UI_BOX_TEXT_LINE_HEIGHT;
 	int num_lines;
-	int32_t max_content_height, content_width, line_spacing = 0;
+	int32_t max_content_height, content_width;
 	int32_t box_width, box_height;
 	char *buf, *end, *line, *ptr;
 
@@ -880,16 +881,16 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines,
 
 	 /* Simply ensure that the textbox won't exceed the screen. */
 	max_content_height = UI_SCALE - *y - 2 * UI_BOX_PADDING_V;
-	line_spacing = UI_BOX_TEXT_LINE_SPACING * (num_lines - 1);
-
-	if (max_height * num_lines + line_spacing > max_content_height)
-		max_height = (max_content_height - line_spacing) / num_lines;
+	if (line_height * num_lines > max_content_height) {
+		line_height = max_content_height / num_lines;
+		text_height = UI_BOX_TEXT_HEIGHT * line_height /
+			UI_BOX_TEXT_LINE_HEIGHT;
+	}
 
 	x = UI_MARGIN_H;
 	box_width = UI_SCALE - UI_MARGIN_H * 2;
 	content_width = box_width - UI_BOX_PADDING_H * 2;
-	box_height = max_height * num_lines + line_spacing +
-		UI_BOX_PADDING_V * 2;
+	box_height = line_height * num_lines + UI_BOX_PADDING_V * 2;
 	box_height = MAX(box_height, min_height);
 
 	/* Clear printing area. */
@@ -906,9 +907,9 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines,
 	while ((line = strsep(&end, "\n"))) {
 		vb2_error_t line_rv;
 		int32_t line_width;
-		int32_t line_height = max_height;
+		int32_t h = text_height;
 		/* Ensure the text width is no more than box width */
-		line_rv = ui_get_text_width(line, line_height, &line_width);
+		line_rv = ui_get_text_width(line, h, &line_width);
 		if (line_rv) {
 			/* Save the first error in rv */
 			if (rv == VB2_SUCCESS)
@@ -916,11 +917,11 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines,
 			continue;
 		}
 		if (line_width > content_width)
-			line_height = line_height * content_width / line_width;
-		line_rv = ui_draw_text(line, x, *y, line_height,
+			h = h * content_width / line_width;
+		line_rv = ui_draw_text(line, x, *y + line_height / 2, h,
 				       &ui_color_textbox_bg, &ui_color_fg,
-				       PIVOT_H_LEFT | PIVOT_V_TOP, 0);
-		*y += line_height + UI_BOX_TEXT_LINE_SPACING;
+				       PIVOT_H_LEFT | PIVOT_V_CENTER, 0);
+		*y += line_height;
 		/* Save the first error in rv */
 		if (line_rv && rv == VB2_SUCCESS)
 			rv = line_rv;
@@ -938,24 +939,25 @@ vb2_error_t ui_draw_auto_wrap_textbox(const char *str, size_t str_len, int32_t *
 	vb2_error_t rv = VB2_SUCCESS;
 	int32_t x;
 	int32_t y_base = *y;
-	int32_t max_height = UI_BOX_TEXT_HEIGHT;
-	int32_t max_content_height, content_width, line_spacing = 0;
+	int32_t text_height = UI_BOX_TEXT_HEIGHT;
+	int32_t line_height = UI_BOX_TEXT_LINE_HEIGHT;
+	int32_t max_content_height, content_width;
 	int32_t box_width, box_height;
 	const char *line;
 	const char *end = str + str_len;
 
 	/* Simply ensure that the textbox won't exceed the screen. */
 	max_content_height = UI_SCALE - *y - 2 * UI_BOX_PADDING_V;
-	line_spacing = UI_BOX_TEXT_LINE_SPACING * (num_lines - 1);
-
-	if (max_height * num_lines + line_spacing > max_content_height)
-		max_height = (max_content_height - line_spacing) / num_lines;
+	if (line_height * num_lines > max_content_height) {
+		line_height = max_content_height / num_lines;
+		text_height = UI_BOX_TEXT_HEIGHT * line_height /
+			UI_BOX_TEXT_LINE_HEIGHT;
+	}
 
 	x = UI_MARGIN_H;
 	box_width = UI_SCALE - UI_MARGIN_H * 2;
 	content_width = box_width - UI_BOX_PADDING_H * 2;
-	box_height = max_height * num_lines + line_spacing +
-		UI_BOX_PADDING_V * 2;
+	box_height = line_height * num_lines + UI_BOX_PADDING_V * 2;
 	box_height = MAX(box_height, min_height);
 
 	/* Clear printing area. */
@@ -971,7 +973,7 @@ vb2_error_t ui_draw_auto_wrap_textbox(const char *str, size_t str_len, int32_t *
 	for (line = str; str < end && *str && num_lines; line = str, num_lines--) {
 		vb2_error_t line_rv;
 		int32_t line_width;
-		int32_t line_height = max_height;
+		int32_t h = text_height;
 		size_t n;
 		for (n = 0; n < chars_per_line; n++, str++) {
 			if (str >= end || *str == '\0')
@@ -986,7 +988,7 @@ vb2_error_t ui_draw_auto_wrap_textbox(const char *str, size_t str_len, int32_t *
 			str++;
 
 		/* Ensure the text width is no more than box width */
-		line_rv = ui_get_ntext_width(line, n, line_height, &line_width);
+		line_rv = ui_get_ntext_width(line, n, h, &line_width);
 		if (line_rv) {
 			/* Save the first error in rv */
 			if (rv == VB2_SUCCESS)
@@ -994,11 +996,11 @@ vb2_error_t ui_draw_auto_wrap_textbox(const char *str, size_t str_len, int32_t *
 			continue;
 		}
 		if (line_width > content_width)
-			line_height = line_height * content_width / line_width;
-		line_rv = ui_draw_ntext(line, n, x, *y, line_height,
+			h = h * content_width / line_width;
+		line_rv = ui_draw_ntext(line, n, x, *y + line_height / 2, h,
 					&ui_color_textbox_bg, &ui_color_fg,
-					PIVOT_H_LEFT | PIVOT_V_TOP, 0);
-		*y += line_height + UI_BOX_TEXT_LINE_SPACING;
+					PIVOT_H_LEFT | PIVOT_V_CENTER, 0);
+		*y += line_height;
 		/* Save the first error in rv */
 		if (line_rv && rv == VB2_SUCCESS)
 			rv = line_rv;
@@ -1025,9 +1027,8 @@ vb2_error_t ui_get_textbox_lines_per_page(int32_t y, uint32_t *lines_per_page)
 	/* The textbox extends to the bottom margin of the screen. */
 	const int32_t textbox_height = UI_SCALE - UI_BOX_MARGIN_BOTTOM - y;
 
-	*lines_per_page = (textbox_height - UI_BOX_PADDING_V * 2 +
-			   UI_BOX_TEXT_LINE_SPACING) /
-			  (UI_BOX_TEXT_HEIGHT + UI_BOX_TEXT_LINE_SPACING);
+	*lines_per_page = (textbox_height - UI_BOX_PADDING_V * 2) /
+			  UI_BOX_TEXT_LINE_HEIGHT;
 
 	return VB2_SUCCESS;
 }

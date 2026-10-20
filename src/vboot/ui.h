@@ -200,7 +200,7 @@
  * (2) a main UI element for viewing a large body of text.
  */
 #define UI_BOX_TEXT_HEIGHT			20
-#define UI_BOX_TEXT_LINE_SPACING		4
+#define UI_BOX_TEXT_LINE_HEIGHT			24
 #define UI_BOX_MARGIN_V				275
 #define UI_BOX_PADDING_H			16
 #define UI_BOX_PADDING_V			16
