@@ -5,7 +5,7 @@
 #include <vboot/ui.h>
 
 vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
-			       const struct ui_state *state,
+			       struct ui_state *state,
 			       const struct ui_state *prev_state,
 			       int32_t y,
 			       int32_t *out_focused_item_y)

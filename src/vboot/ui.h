@@ -137,6 +137,19 @@
 #define UI_SUB_MENU_PADDING_V			10
 #define UI_SUB_MENU_BORDER_RADIUS		24
 
+/* For list */
+#define UI_LIST_WIDTH				700
+#define UI_LIST_MARGIN_TOP			20
+#define UI_LIST_MARGIN_BOTTOM			51
+#define UI_LIST_MAX_ITEMS			4
+#define UI_LIST_ITEM_HEIGHT			70
+#define UI_LIST_ITEM_SPACING			2
+#define UI_LIST_ITEM_PADDING_H			24
+/* Radius of the outer corners of the list, and the other corners of items */
+#define UI_LIST_BORDER_RADIUS			24
+#define UI_LIST_ITEM_RADIUS			4
+#define UI_LIST_TEXT_HEIGHT			25
+
 /* For H3 buttons */
 #define UI_H3_BUTTON_HEIGHT			44
 #define UI_H3_BUTTON_ICON_SIZE			24
@@ -428,6 +441,11 @@ enum ui_menu_item_type {
 	UI_MENU_ITEM_TYPE_LANGUAGE,
 	/* H2 dropdown menu trigger. */
 	UI_MENU_ITEM_TYPE_H2_DROPDOWN,
+	/*
+	 * List item. Consecutive list items are drawn as a list in a container
+	 * card, with the item name in monospace font.
+	 */
+	UI_MENU_ITEM_TYPE_LIST,
 };
 
 enum ui_menu_item_flag {
@@ -505,8 +523,10 @@ struct ui_menu_state {
 	/*
 	 * Position of the first shown item in the scrollable list of this menu,
 	 * counting only the non-hidden items of the list. For a sub-menu, the
-	 * list is the whole sub-menu. UI_SCROLL_BEGIN_UNSET until the list is
-	 * first drawn. Updated when the list is drawn.
+	 * list is the whole sub-menu. For a root menu, it is the consecutive
+	 * UI_MENU_ITEM_TYPE_LIST items (at most one list per menu).
+	 * UI_SCROLL_BEGIN_UNSET until the list is first drawn. Updated when the
+	 * list is drawn.
 	 */
 	uint32_t scroll_begin;
 };
@@ -1269,7 +1289,7 @@ vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
  * @return VB2_SUCCESS on success, non-zero on error.
  */
 vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
-			       const struct ui_state *state,
+			       struct ui_state *state,
 			       const struct ui_state *prev_state,
 			       int32_t y,
 			       int32_t *out_focused_item_y);

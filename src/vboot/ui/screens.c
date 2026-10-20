@@ -1870,6 +1870,7 @@ static const struct ui_menu_item developer_select_altfw_items_before[] = {
 };
 
 static const struct ui_menu_item developer_select_altfw_items_after[] = {
+	ADVANCED_OPTIONS_ITEM,
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
@@ -2016,6 +2017,7 @@ static const struct ui_menu *get_bootloader_menu(struct ui_context *ui)
 		}
 		items[i] = (struct ui_menu_item){
 			.name = name,
+			.type = UI_MENU_ITEM_TYPE_LIST,
 			.action = developer_boot_altfw_id_action,
 		};
 		i++;

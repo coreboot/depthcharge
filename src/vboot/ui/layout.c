@@ -1184,6 +1184,169 @@ static void update_scroll_begin(uint32_t *begin, size_t total,
 	*begin = MIN(*begin, total - items_per_page);
 }
 
+/*
+ * Draw a filled box with different corner radii at the top and the bottom.
+ *
+ * @param x		x-coordinate of the top-left corner.
+ * @param y		y-coordinate of the top-left corner.
+ * @param width		Width of the box.
+ * @param height	Height of the box.
+ * @param rgb		Color of the box.
+ * @param radius_top	Radius of the top corners.
+ * @param radius_bottom	Radius of the bottom corners.
+ * @param reverse	Whether to reverse the x-coordinate relative to the
+ *			canvas.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+static vb2_error_t draw_list_item_box(int32_t x, int32_t y,
+				      int32_t width, int32_t height,
+				      const struct rgb_color *rgb,
+				      int32_t radius_top, int32_t radius_bottom,
+				      int reverse)
+{
+	const int32_t radius = MAX(radius_top, radius_bottom);
+	const int32_t half = height / 2;
+
+	/*
+	 * Draw the box with the larger radius, and then cover the half with
+	 * the smaller radius.
+	 */
+	VB2_TRY(ui_draw_rounded_box(x, y, width, height, rgb, 0, radius,
+				    reverse));
+	if (radius_top < radius)
+		VB2_TRY(ui_draw_rounded_box(x, y, width, half, rgb, 0,
+					    radius_top, reverse));
+	else if (radius_bottom < radius)
+		VB2_TRY(ui_draw_rounded_box(x, y + half, width, height - half,
+					    rgb, 0, radius_bottom, reverse));
+	return VB2_SUCCESS;
+}
+
+/*
+ * Draw the list of the consecutive UI_MENU_ITEM_TYPE_LIST items starting from
+ * the item at `*index`.
+ *
+ * At most UI_LIST_MAX_ITEMS items are shown. The focused item is kept in view,
+ * and a scrollbar is drawn if not all the items are shown.
+ *
+ * @param menu			Menu.
+ * @param state			UI state.
+ * @param index			Pointer to the index of the first list item in
+ *				the menu, which must not be hidden. On return,
+ *				the value will be the index of the last list
+ *				item.
+ * @param y			Pointer to the y-coordinate of the top of the
+ *				list. On return, the value will be the bottom of
+ *				the list.
+ * @param out_focused_item_y	On return, the y-coordinate of the focused item
+ *				if it is in the list.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+static vb2_error_t draw_list(const struct ui_menu *menu,
+			     struct ui_state *state, int *index,
+			     int32_t *y, int32_t *out_focused_item_y)
+{
+	const int first = *index;
+	struct ui_menu_state *ms = &state->menu_state;
+	const int reverse = state->locale->rtl;
+	const int32_t x = UI_MARGIN_H;
+	const int32_t w = UI_LIST_WIDTH;
+	const int32_t h = UI_LIST_ITEM_HEIGHT;
+	const int32_t pitch = h + UI_LIST_ITEM_SPACING;
+	const int32_t t = UI_BUTTON_FOCUS_RING_THICKNESS;
+	const int32_t max_text_width = w - UI_LIST_ITEM_PADDING_H * 2;
+	size_t total = 0, focused_pos = 0;
+	bool focused_in_list = false;
+	int end, i;
+
+	for (end = first; end < menu->num_items; end++) {
+		if (menu->items[end].type != UI_MENU_ITEM_TYPE_LIST)
+			break;
+		if (UI_GET_BIT(ms->hidden_item_mask, end))
+			continue;
+		if (end == ms->focused_item) {
+			focused_pos = total;
+			focused_in_list = true;
+		}
+		total++;
+	}
+	*index = end - 1;
+
+	const size_t items_per_page = MIN(total, (size_t)UI_LIST_MAX_ITEMS);
+	const int32_t list_h = pitch * items_per_page - UI_LIST_ITEM_SPACING;
+
+	/*
+	 * If the focused item is not in the list (e.g. below the list), keep
+	 * the list where it was, or show it from the top when it is first
+	 * shown.
+	 */
+	if (!focused_in_list)
+		focused_pos = ms->scroll_begin == UI_SCROLL_BEGIN_UNSET ?
+			0 : MIN((size_t)ms->scroll_begin, total - 1);
+	update_scroll_begin(&ms->scroll_begin, total, items_per_page,
+			    focused_pos);
+	const size_t id_begin = ms->scroll_begin;
+
+	/* Clear the list area, including the gaps between items. */
+	VB2_TRY(ui_draw_box(x, *y,
+			    w + UI_SCROLLBAR_MARGIN_LEFT + UI_SCROLLBAR_WIDTH,
+			    list_h, &ui_color_bg, reverse));
+
+	size_t pos = 0, slot = 0;
+	for (i = first; i < end && slot < items_per_page; i++) {
+		if (UI_GET_BIT(ms->hidden_item_mask, i))
+			continue;
+		if (pos++ < id_begin)
+			continue;
+
+		const struct ui_menu_item *item = &menu->items[i];
+		const int32_t item_y = *y + pitch * slot;
+		const int32_t r_top = slot == 0 ?
+			UI_LIST_BORDER_RADIUS : UI_LIST_ITEM_RADIUS;
+		const int32_t r_bottom = slot == items_per_page - 1 ?
+			UI_LIST_BORDER_RADIUS : UI_LIST_ITEM_RADIUS;
+		int32_t text_height = UI_LIST_TEXT_HEIGHT;
+		int32_t text_width;
+
+		if (is_menu_item_focused(state, i)) {
+			*out_focused_item_y = item_y;
+			VB2_TRY(draw_list_item_box(
+				x, item_y, w, h, &ui_color_button_focus_ring,
+				r_top, r_bottom, reverse));
+			VB2_TRY(draw_list_item_box(
+				x + t, item_y + t, w - t * 2, h - t * 2,
+				&ui_color_sub_menu_bg, r_top - t, r_bottom - t,
+				reverse));
+		} else {
+			VB2_TRY(draw_list_item_box(x, item_y, w, h,
+						   &ui_color_sub_menu_bg,
+						   r_top, r_bottom, reverse));
+		}
+
+		/* Shrink the text if it is too wide. */
+		VB2_TRY(ui_get_text_width(item->name, text_height,
+					  &text_width));
+		if (text_width > max_text_width)
+			text_height = text_height * max_text_width /
+				text_width;
+		VB2_TRY(ui_draw_text(item->name, x + UI_LIST_ITEM_PADDING_H,
+				     item_y + h / 2, text_height,
+				     &ui_color_sub_menu_bg, &ui_color_fg,
+				     PIVOT_H_LEFT | PIVOT_V_CENTER, reverse));
+		slot++;
+	}
+
+	if (total > items_per_page)
+		VB2_TRY(ui_draw_scrollbar(x + w, *y, list_h, id_begin, total,
+					  items_per_page,
+					  &ui_color_scrollbar_track, reverse));
+
+	*y += list_h;
+	return VB2_SUCCESS;
+}
+
 static vb2_error_t ui_draw_dev_signed_warning(void)
 {
 	struct vb2_context *ctx = vboot_get_context();
@@ -1211,7 +1374,7 @@ static vb2_error_t ui_draw_dev_signed_warning(void)
 }
 
 vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
-			       const struct ui_state *state,
+			       struct ui_state *state,
 			       const struct ui_state *prev_state,
 			       int32_t y,
 			       int32_t *out_focused_item_y)
@@ -1230,6 +1393,16 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 			continue;
 
 		const struct ui_menu_item *item = &menu->items[i];
+		if (item->type == UI_MENU_ITEM_TYPE_LIST) {
+			/* Draw the consecutive list items at once. */
+			y += UI_LIST_MARGIN_TOP;
+			VB2_TRY(draw_list(menu, state, &i, &y,
+					  out_focused_item_y));
+			y += UI_LIST_MARGIN_BOTTOM;
+			prev_is_h1 = false;
+			continue;
+		}
+
 		if (item->type != UI_MENU_ITEM_TYPE_H1 &&
 		    item->type != UI_MENU_ITEM_TYPE_H2_DROPDOWN)
 			continue;
@@ -1653,18 +1826,20 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	}
 
 	/* Description */
-	if (screen->draw_desc)
+	if (screen->draw_desc) {
 		VB2_TRY(screen->draw_desc(ui, prev_state, &y));
-	else
+		y += UI_DESC_MARGIN_BOTTOM;
+	} else if (screen->desc.count > 0) {
 		VB2_TRY(ui_draw_desc(&screen->desc, state, &y));
-	y += UI_DESC_MARGIN_BOTTOM;
+		y += UI_DESC_MARGIN_BOTTOM;
+	}
 
 	/* Menu buttons */
 	if (screen->draw_menu_items) {
 		VB2_TRY(screen->draw_menu_items(ui, prev_state));
 	} else {
 		int32_t focused_item_y = 0;
-		VB2_TRY(ui_draw_menu_items(menu, state, prev_state, y,
+		VB2_TRY(ui_draw_menu_items(menu, ui->state, prev_state, y,
 					   &focused_item_y));
 
 		if (has_lang_dropdown && ms->focused_item == 0)
