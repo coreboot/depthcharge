@@ -1377,7 +1377,7 @@ static const struct ui_screen_info recovery_disk_step2_screen = {
 	.desc = UI_DESC(recovery_disk_step2_desc),
 	.menu = UI_MENU(recovery_disk_step2_items),
 	.mesg = "Set up your recovery drive\n"
-		"1. Go to goo.gle/android_laptop_recovery on your other device\n"
+		"1. Go to goo.gle/mydevice_recovery on your other device\n"
 		"2. Follow instructions on your other device\n"
 		"When your recovery drive is ready, plug it into this device\n"
 		"to start the recovery process.",
