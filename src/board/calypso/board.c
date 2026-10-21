@@ -17,6 +17,7 @@
 #include <libpayload.h>
 #include "base/fw_config.h"
 #include "base/init_funcs.h"
+#include "base/late_init_funcs.h"
 #include "boot/commandline.h"
 #include "boot/fit.h"
 #include "drivers/bus/i2c/qcom_qupv3_i2c.h"
@@ -32,12 +33,15 @@
 #include "drivers/power/psci.h"
 #include "drivers/soc/qcom_spmi.h"
 #include "drivers/soc/calypso.h"
+#include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/qcom_ufs.h"
 #include "drivers/tpm/google/i2c.h"
+#include <lp_vboot.h>
 #include <pci.h>
 #include <pci/pci.h>
 #include "variant.h"
+#include <vb2_api.h>
 #include "vboot/util/flag.h"
 
 static const VpdDeviceTreeMap vpd_dt_map[] = {
@@ -199,3 +203,18 @@ static int board_setup(void)
 }
 
 INIT_FUNC(board_setup);
+
+/*
+ * Probe fixed storage before the recovery UI starts.
+ * TODO (b/575659824): Remove this when recovery image supports UFS probing
+ */
+static int recovery_init_fixed_storage(LateInitFunc *init)
+{
+	if (vboot_get_context()->boot_mode != VB2_BOOT_MODE_MANUAL_RECOVERY)
+		return 0;
+
+	get_all_bdevs(BLOCKDEV_FIXED, NULL);
+
+	return 0;
+}
+LATE_INIT_FUNC(recovery_init_fixed_storage);
