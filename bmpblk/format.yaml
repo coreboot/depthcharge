@@ -151,7 +151,7 @@ localized_files:
 
 sprite_files:
   # language menu
-  ic_globe: ic_globe
+  ic_language: ic_language
   ic_arrow_down: ic_arrow
   ic_arrow_up: ic_arrow
   # icons
@@ -160,7 +160,6 @@ sprite_files:
   ic_construction: screen_icon
   # button icons
   ic_search: button_icon
-  ic_settings: button_icon
   ic_power: button_icon
   # QR code
   qr_rec: qr_rec
@@ -261,7 +260,7 @@ styles:
     fgcolor: *on_surface_variant
     height: 21
   # sprite bitmaps
-  ic_globe:
+  ic_language:
     height: 24
   ic_arrow:
     height: 24

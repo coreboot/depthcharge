@@ -57,7 +57,7 @@
 #define LANGUAGE_SELECT_ITEM ((struct ui_menu_item){	\
 	.name = "Language selection",			\
 	.get_file = get_language_file,			\
-	.icon_file = "ic_globe.bmp",			\
+	.icon_file = "ic_language.bmp",			\
 	.type = UI_MENU_ITEM_TYPE_LANGUAGE,		\
 	.flags = UI_MENU_ITEM_FLAG_GENERIC_ARCHIVE,	\
 	.get_sub_menu = get_language_menu,		\
