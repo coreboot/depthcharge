@@ -29,7 +29,7 @@ LOG_FILE ?=
 override LOG_FILE := \"$(LOG_FILE)\"
 
 # Unless BMP_PATH is specified, bitmaps are generated from bmpblk.
-BMPBLK_SOURCE ?= $(abspath $(src)/../bmpblk)
+BMPBLK_SOURCE ?= $(src)/bmpblk
 BMPBLK_BOARD ?= screenshot
 bmpblk-out := $(testobj)/bmpblk
 bmpblk-stamp := $(bmpblk-out)/.stamp
