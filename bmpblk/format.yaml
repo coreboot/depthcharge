@@ -195,12 +195,20 @@ styles:
     # "height" option.
     max_width: null
     max_num_lines: null
+    # Font weight appended to the font family in the Pango font description,
+    # such as "Medium". Null for the regular weight.
+    font_weight: null
+    # Font variations passed to Pango, in addition to the optical size (opsz)
+    # set by build.py. ROND=100 rounds the stroke ends of 'Google Sans Flex' as
+    # in the design. Fonts without the axis ignore it.
+    font_variations: ROND=100
   _GLYPH_:
     height: 23
   title:
     bgcolor: *surface_container
     fgcolor: *on_surface
     height: 63
+    font_weight: Medium
     # UI_SCALE = 1080
     # UI_MARGIN_H = 72
     # UI_SCALE - UI_MARGIN_H * 2
@@ -223,6 +231,7 @@ styles:
     fgcolor: *on_surface
   button:
     height: 23
+    font_weight: Medium
   footer:
     bgcolor: *surface_container
     fgcolor: *on_surface
@@ -249,6 +258,7 @@ styles:
     max_width: 348
   keycap:
     height: 23
+    font_weight: Medium
   error:
     bgcolor: *surface_container_high
     fgcolor: *on_surface_variant

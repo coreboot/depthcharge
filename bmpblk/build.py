@@ -49,6 +49,8 @@ KEY_FGCOLOR = 'fgcolor'
 KEY_HEIGHT = 'height'
 KEY_MAX_WIDTH = 'max_width'
 KEY_MAX_NUM_LINES = 'max_num_lines'
+KEY_FONT_WEIGHT = 'font_weight'
+KEY_FONT_VARIATIONS = 'font_variations'
 KEY_FONTS = 'fonts'
 KEY_RW_ONLY = 'rw_only'
 
@@ -139,8 +141,7 @@ def run_pango_view(
     input_file,
     output_file,
     locale,
-    font,
-    font_pt,
+    font_spec,
     width_pt,
     dpi,
     bgcolor,
@@ -155,7 +156,6 @@ def run_pango_view(
 
     if markup:
         command += ['--markup']
-    font_spec = f'{font} {font_pt!r}'
     command += ['--font', font_spec]
 
     if width_pt:
@@ -531,6 +531,8 @@ class Converter:
         use_svg=False,
         max_num_lines=None,
         pango_markup=False,
+        font_weight=None,
+        font_variations=None,
     ):
         """Converts text file `input_file` into image file.
 
@@ -556,6 +558,10 @@ class Converter:
             use_svg: If set to True, generate SVG file. Otherwise, generate PNG
                 file.
             max_num_lines: Maximum number of text lines that image can have.
+            font_weight: Font weight appended to the font family, such as
+                "Medium". None for the regular weight.
+            font_variations: Font variations other than the optical size, such
+                as "ROND=100". None for the default values.
 
         Returns:
             The width in points passed to pango-view, or `None` when not
@@ -580,13 +586,24 @@ class Converter:
             height * 768 / self.SCALE_BASE * 72 / 96 / self.LINE_HEIGHT_RATIO
         )
 
+        # Set the optical size (opsz) to the font size in the design (in
+        # pixels, relative to SCALE_BASE), so that the glyph shapes match the
+        # design. Otherwise, Pango sets the optical size to `font_pt`. Fonts
+        # without the opsz axis ignore it.
+        opsz = round(height / self.LINE_HEIGHT_RATIO)
+        variations = f'opsz={opsz}'
+        if font_variations:
+            variations += f',{font_variations}'
+        font_desc = f'{font} {font_weight}' if font_weight else font
+        # Pango requires the font variations after the font size.
+        font_spec = f'{font_desc} {font_pt!r} @{variations}'
+
         if use_svg:
             run_pango_view(
                 input_file,
                 svg_file,
                 locale,
-                font,
-                font_pt,
+                font_spec,
                 0,
                 dpi,
                 bgcolor,
@@ -607,8 +624,7 @@ class Converter:
             input_file,
             png_file_one_line,
             locale,
-            font,
-            font_pt,
+            font_spec,
             0,
             dpi,
             bgcolor,
@@ -622,8 +638,7 @@ class Converter:
                 input_file,
                 png_file,
                 locale,
-                font,
-                font_pt,
+                font_spec,
                 width_pt,
                 dpi,
                 bgcolor,
@@ -752,6 +767,8 @@ class Converter:
                 dpi=dpi,
                 bgcolor=style[KEY_BGCOLOR],
                 fgcolor=style[KEY_FGCOLOR],
+                font_weight=style[KEY_FONT_WEIGHT],
+                font_variations=style[KEY_FONT_VARIATIONS],
             )
 
     def build_locale(self, locale, names, generic):
@@ -805,8 +822,14 @@ class Converter:
             height = style[KEY_HEIGHT]
             max_width = style[KEY_MAX_WIDTH]
             max_num_lines = style[KEY_MAX_NUM_LINES]
+            font_weight = style[KEY_FONT_WEIGHT]
+            font_variations = style[KEY_FONT_VARIATIONS]
             width_pt_counter = (
-                width_pt_counters[(height, max_width)] if max_width else None
+                width_pt_counters[
+                    (height, max_width, font_weight, font_variations)
+                ]
+                if max_width
+                else None
             )
             if width_pt_counter:
                 # Similarly, find the most frequently used `width_pt`. In case
@@ -831,6 +854,8 @@ class Converter:
                 fgcolor=style[KEY_FGCOLOR],
                 max_num_lines=max_num_lines,
                 pango_markup=True,
+                font_weight=font_weight,
+                font_variations=font_variations,
             )
             if width_pt:
                 width_pt_counter[width_pt] += 1
@@ -934,6 +959,8 @@ class Converter:
                         height=height,
                         screen_resolution=self.GLYPH_ASSUMED_RESOLUTION,
                         use_svg=True,
+                        font_weight=style[KEY_FONT_WEIGHT],
+                        font_variations=style[KEY_FONT_VARIATIONS],
                     )
                 )
             for future in futures:
