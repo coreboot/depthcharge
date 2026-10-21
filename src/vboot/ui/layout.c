@@ -1357,10 +1357,9 @@ static vb2_error_t ui_draw_dev_signed_warning(void)
 	if (!vb2api_is_developer_signed(ctx))
 		return VB2_SUCCESS;
 
+	/* Draw the warning above the language dropdown. */
 	const int32_t x = UI_MARGIN_H;
-	const int32_t y = UI_MARGIN_TOP + UI_LANG_MARGIN_V +
-		UI_H2_BUTTON_HEIGHT +
-		(UI_LANG_MARGIN_V + UI_TITLE_MARGIN_V) / 2;
+	const int32_t y = (UI_MARGIN_TOP + UI_LANG_MARGIN_V) / 2;
 
 	VB2_TRY(ui_draw_text("This firmware is developer-signed. "
 			     "MP-signed recovery images will not work!",
