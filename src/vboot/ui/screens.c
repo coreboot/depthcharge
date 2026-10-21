@@ -1132,7 +1132,7 @@ static vb2_error_t draw_fastboot_desc(
 		VB2_TRY(draw_fastboot_desc_bitmap(state, x,
 						  y_center - line_height / 2));
 		VB2_TRY(ui_draw_text(serial, x, y_center + line_height / 2,
-				     UI_BOX_TEXT_HEIGHT, &ui_color_bg,
+				     UI_BUTTON_TEXT_HEIGHT, &ui_color_bg,
 				     &ui_color_fg, flags, reverse));
 	} else {
 		VB2_TRY(draw_fastboot_desc_bitmap(state, x, y_center));
