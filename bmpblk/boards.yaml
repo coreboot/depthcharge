@@ -437,3 +437,11 @@ atria:
   sdcard: False
   dpi: 72
   split_ratio: 100
+
+dougie:
+  # 1920x1080, boots recovery image on USB ports.
+  locales: [en, de, es, es-419, fr, it, nb, pt-BR, ar, hi, zh-CN, ja, ko]
+  rtl: [ar]
+  sdcard: False
+  dpi: 144
+  split_ratio: 100
