@@ -71,6 +71,13 @@ vb2_error_t ui_screen_change(struct ui_context *ui, enum ui_screen id)
 		return VB2_REQUEST_UI_CONTINUE;
 	}
 
+	/*
+	 * Close the sub-menu when leaving the screen, so that it is closed when
+	 * going back to the screen.
+	 */
+	if (ui->state && ui->state->is_sub_menu_active)
+		VB2_TRY(ui_menu_close_sub_menu(ui));
+
 	/* Check to see if the screen state already exists in our stack. */
 	cur_state = ui->state;
 	while (cur_state != NULL) {

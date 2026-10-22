@@ -112,6 +112,25 @@ static void test_screen_change_screen_without_init(void **state)
 			    0);
 }
 
+static void test_screen_change_close_sub_menu(void **state)
+{
+	struct ui_context *ui = *state;
+
+	mock_screen_base.init = mock_action_base;
+	expect_function_call(mock_action_base);
+
+	ui_screen_change(ui, MOCK_SCREEN_ROOT);
+	ui_screen_change(ui, MOCK_SCREEN_BASE);
+	ui->state->is_sub_menu_active = true;
+	ui_screen_change(ui, MOCK_SCREEN_MENU);
+	assert_false(ui->state->is_sub_menu_active);
+
+	assert_int_equal(ui_screen_back(ui), VB2_REQUEST_UI_CONTINUE);
+	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_BASE, MOCK_IGNORE,
+			    MOCK_IGNORE);
+	assert_false(ui->state->is_sub_menu_active);
+}
+
 #define UI_TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup_common)
 
@@ -125,6 +144,7 @@ int main(void)
 		UI_TEST(test_screen_change_with_vb2_try),
 		UI_TEST(test_screen_change_to_state_in_stack),
 		UI_TEST(test_screen_change_screen_without_init),
+		UI_TEST(test_screen_change_close_sub_menu),
 	};
 
 	return cmocka_run_group_tests(tests, NULL, NULL);

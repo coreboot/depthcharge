@@ -266,7 +266,8 @@ static void test_firmware_log(void **state)
 		WILL_PRESS_KEY(UI_BUTTON_POWER_SHORT_PRESS, 0);
 	else
 		WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_BROKEN, 1, 3);
+	/* The dropdown is closed after going back */
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, 1);
 
 	will_return_maybe(ui_keyboard_read, 0);
 
@@ -291,7 +292,9 @@ static void test_firmware_log_again_reacquire_new_one(void **state)
 	/* Back */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 
-	/* Firmware log again */
+	/* Firmware log again (the dropdown is closed after going back) */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();

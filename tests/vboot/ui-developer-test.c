@@ -1137,27 +1137,39 @@ static void test_developer_screen_advanced_options(void **state)
 	/* #5 -> #1: Debug info (#0: Enable dev mode is hidden) */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO);
-	/* #5 -> #2: Fastboot */
+	/* #5 -> #2: Fastboot (the dropdown is closed after going back) */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);
 	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 1);
 	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 2);
 	EXPECT_UI_DISPLAY(UI_SCREEN_FASTBOOT);
 	/* #5 -> #3: Firmware log */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 1);
 	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 2);
 	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 3);
 	EXPECT_UI_DISPLAY(UI_SCREEN_FIRMWARE_LOG);
-	/* Return from Firmware log into open sub-menu */
+	/* Return from Firmware log with the dropdown closed */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
-	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 3);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);
 	/* #5 -> #5: Firmware shell (#4: Internet recovery is hidden) */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	expect_function_call(dc_dev_enter_firmware_shell);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 1);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 2);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 3);
 	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 5);
 	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 5);
 	/* Close dropdown and navigate to Power off (#6) */
@@ -1228,7 +1240,8 @@ static void test_developer_screen_fastboot(void **state)
 	will_return(fastboot_is_finished, true);
 	expect_value(fastboot_release, fb_session, &mock_fb_session);
 	will_return(fastboot_release, FINISHED);
-	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 2);
+	/* Back from fastboot with the dropdown closed */
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);
 
 	will_return_maybe(ui_keyboard_read, 0);
 
@@ -1276,7 +1289,8 @@ static void test_developer_screen_fastboot_key_exit(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	expect_value(fastboot_release, fb_session, &mock_fb_session);
 	will_return(fastboot_release, DISCONNECTED);
-	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 2);
+	/* Back from fastboot with the dropdown closed */
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);
 
 	will_return_maybe(ui_keyboard_read, 0);
 
