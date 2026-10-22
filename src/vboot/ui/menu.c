@@ -25,6 +25,7 @@ vb2_error_t ui_menu_state_init(struct ui_context *ui,
 {
 	memset(ms, 0, sizeof(*ms));
 	ms->menu = menu;
+	ms->scroll_begin = UI_SCROLL_BEGIN_UNSET;
 
 	if (menu && menu->init)
 		return menu->init(ui);

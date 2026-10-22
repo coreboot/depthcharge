@@ -502,7 +502,17 @@ struct ui_menu_state {
 	 * 'idx' is hidden. A hidden menu item is invisible on the screen.
 	 */
 	uint32_t hidden_item_mask;
+	/*
+	 * Position of the first shown item in the scrollable list of this menu,
+	 * counting only the non-hidden items of the list. For a sub-menu, the
+	 * list is the whole sub-menu. UI_SCROLL_BEGIN_UNSET until the list is
+	 * first drawn. Updated when the list is drawn.
+	 */
+	uint32_t scroll_begin;
 };
+
+/* Value of ui_menu_state.scroll_begin before the list is first drawn. */
+#define UI_SCROLL_BEGIN_UNSET UINT32_MAX
 
 /* Icon type. */
 enum ui_icon_type {

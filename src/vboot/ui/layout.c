@@ -1147,6 +1147,43 @@ vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
 	return VB2_SUCCESS;
 }
 
+/*
+ * Update the position of the first shown item in a scrollable list.
+ *
+ * When the list is first shown (the position is UI_SCROLL_BEGIN_UNSET), the
+ * focused item is placed at the center if possible. After that, the list only
+ * scrolls when the focused item would otherwise be out of view.
+ *
+ * @param begin			Pointer to the position of the first shown
+ *				item. On return, the value will be updated.
+ * @param total			Number of the items in the list, excluding
+ *				hidden ones.
+ * @param items_per_page	Maximum number of the items shown at the same
+ *				time.
+ * @param focused_pos		Position of the focused item among the items, in
+ *				the range [0, total).
+ */
+static void update_scroll_begin(uint32_t *begin, size_t total,
+				size_t items_per_page, size_t focused_pos)
+{
+	if (items_per_page == 0 || total <= items_per_page) {
+		*begin = 0;
+		return;
+	}
+
+	if (*begin == UI_SCROLL_BEGIN_UNSET) {
+		const size_t target_pos = (items_per_page - 1) / 2;
+		*begin = focused_pos > target_pos ? focused_pos - target_pos : 0;
+	} else if (focused_pos < *begin) {
+		*begin = focused_pos;
+	} else if (focused_pos >= *begin + items_per_page) {
+		*begin = focused_pos - items_per_page + 1;
+	}
+
+	/* Keep the last page full, e.g. after items are hidden. */
+	*begin = MIN(*begin, total - items_per_page);
+}
+
 static vb2_error_t ui_draw_dev_signed_warning(void)
 {
 	struct vb2_context *ctx = vboot_get_context();
@@ -1357,7 +1394,7 @@ static vb2_error_t ui_get_sub_menu_width(const struct ui_menu *menu,
 }
 
 static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
-				    const struct ui_menu_state *menu_state,
+				    struct ui_menu_state *menu_state,
 				    int32_t focused_item_y)
 {
 	if (!menu_state || !menu_state->menu || menu_state->menu->num_items == 0) {
@@ -1405,16 +1442,11 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 
 	/*
 	 * Calculate the visible window [id_begin, id_begin + items_per_page)
-	 * of items to display. The focused item is kept in view and placed
-	 * at the center if possible.
+	 * of items to display.
 	 */
-	size_t id_begin = 0;
-	if (total_items > items_per_page) {
-		size_t target_pos = (items_per_page - 1) / 2;
-		if (focused_pos > target_pos)
-			id_begin = MIN(focused_pos - target_pos,
-				       total_items - items_per_page);
-	}
+	update_scroll_begin(&menu_state->scroll_begin, total_items,
+			    items_per_page, focused_pos);
+	const size_t id_begin = menu_state->scroll_begin;
 
 	/* Background container card */
 	VB2_TRY(ui_draw_rounded_box(box_x, box_y, box_w, box_h,
@@ -1640,7 +1672,7 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 
 		/* Sub-menu */
 		if (state->is_sub_menu_active)
-			VB2_TRY(ui_draw_sub_menu(ui, &state->sub_menu_state,
+			VB2_TRY(ui_draw_sub_menu(ui, &ui->state->sub_menu_state,
 						 focused_item_y));
 	}
 
