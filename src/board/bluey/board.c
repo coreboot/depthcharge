@@ -134,6 +134,15 @@ static void audio_setup(void)
 	GpioAmpCodec *speaker_amp0 = new_gpio_amp_codec(amp0_enable);
 	list_insert_after(&speaker_amp0->component.list_node,
 			&sound_route->components);
+
+	/* Enable the second speaker amplifier GPIO when present. */
+	GpioOps *amp1_enable = sysinfo_lookup_gpio("Speaker 1 enable", 1,
+				new_gpio_output_from_coreboot);
+	if (amp1_enable) {
+		GpioAmpCodec *speaker_amp1 = new_gpio_amp_codec(amp1_enable);
+		list_insert_after(&speaker_amp1->component.list_node,
+				&sound_route->components);
+	}
 	sound_set_ops(&sound_route->ops);
 }
 
