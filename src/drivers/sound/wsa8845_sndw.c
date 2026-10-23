@@ -115,13 +115,25 @@ static void wsa8845_play_beep(void)
 	LPASS_WSA_LPAIF_RD_DMA_B0->codec_intf = WSA_CODEC_INTF_B0_RUN;
 }
 
-static void wsa8845_stop_beep(void)
+/* Send FIFO stop commands to disable output on a single WSA8845 slave */
+static void wsa8845_stop_slave(uint32_t dev)
 {
+	LPASS_WSA_CPUN->CPUn_CMD_FIFO_WR_CMD = CPUN_CMD_FIFO_WR_STOP_B0(dev);
+	LPASS_WSA_CPUN->CPUn_CMD_FIFO_RD_CMD = CPUN_CMD_FIFO_RD_STOP_B0(dev);
+}
+
+static void wsa8845_stop_beep(void *sndwlinkaddr, uint32_t deviceindex)
+{
+	uintptr_t swrm_base = (uintptr_t)sndwlinkaddr;
+
 	LPASS_WSA_LPAIF_IRQ->LPAIF_IRQ2_ENa = LPAIF_IRQ_DISABLE;
 	LPASS_WSA_LPAIF_IRQ->LPAIF_IRQ3_ENa = LPAIF_IRQ_DISABLE;
 
-	LPASS_WSA_CPUN->CPUn_CMD_FIFO_WR_CMD = CPUN_CMD_FIFO_WR_STOP_B0;
-	LPASS_WSA_CPUN->CPUn_CMD_FIFO_RD_CMD = CPUN_CMD_FIFO_RD_STOP_B0;
+	/* Stop the primary codec slave and the second slave if attached */
+	wsa8845_stop_slave(deviceindex);
+	if (deviceindex != SWRM_SLAVE_DEV_SECOND &&
+	    swrm_dev_attached(swrm_base, SWRM_SLAVE_DEV_SECOND))
+		wsa8845_stop_slave(SWRM_SLAVE_DEV_SECOND);
 
 	LPASS_WSA_LPAIF_RD_DMA_B0->rddma_ctl = WSA_RDDMA_CTL_STOP;
 	LPASS_WSA_LPAIF_RD_DMA_B0->rddma_ctl = WSA_RDDMA_DISABLE;
@@ -144,7 +156,7 @@ static int wsa8845_beep(SndwOps *sndw, void *sndwlinkaddr, uint32_t deviceindex,
 	/* Wait for the duration */
 	mdelay(beep_duration);
 
-	wsa8845_stop_beep();
+	wsa8845_stop_beep(sndwlinkaddr, deviceindex);
 
 	printf("%s: Done\n", __func__);
 	return 0;
@@ -162,8 +174,11 @@ static int wsa8845sndw_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 		return -1;
 	}
 
-	/* Verify Codec ID matches WSA8845 */
-	for (int i = 0; i < SNDW_DEV_ID_NUM; i++) {
+	/*
+	 * Verify Codec ID matches WSA8845 (skip byte 0, which encodes the
+	 * SoundWire version and per-slave instance ID, e.g. 0x20 vs 0x21).
+	 */
+	for (int i = 1; i < SNDW_DEV_ID_NUM; i++) {
 		if (wsa8845_id.id[i] != info.codecid.id[i]) {
 			printf("WSA8845: Codec ID mismatch at byte %d.\n", i);
 			return -1;

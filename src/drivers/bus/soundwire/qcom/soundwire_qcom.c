@@ -45,10 +45,27 @@ static inline void swrm_dpn_cfg(uintptr_t base, uint8_t dpn, uint32_t bank0, uin
 	dp->DPn_HCONTROL_BANK_m = 0x00000001;
 }
 
-static void swrm_send_cmd_table(volatile CPUn *cpun, const u32 *cmds, size_t num_cmds)
+/*
+ * swrm_send_cmd_table - Send a table of SWRM FIFO commands to a target slave.
+ * swrm_base - Base address of the SWRM controller.
+ * cmds - Pointer to the command table.
+ * num_cmds - Number of commands in the table.
+ * dev - Target SoundWire slave device index.
+ */
+static void swrm_send_cmd_table(uintptr_t swrm_base, const u32 *cmds,
+				size_t num_cmds, uint32_t dev)
 {
 	for (size_t i = 0; i < num_cmds; i++) {
-		cpun->CPUn_CMD_FIFO_WR_CMD = cmds[i];
+		u32 cmd = cmds[i];
+
+		/*
+		 * Override the destination device field [23:20] with the target
+		 * slave index while leaving broadcast (SWRM_DEV_BROADCAST)
+		 * commands unchanged.
+		 */
+		if (SWRM_CMD_GET_DEV(cmd) != SWRM_DEV_BROADCAST)
+			cmd = SWRM_CMD_SET_DEV(cmd, dev);
+		swrm_write(swrm_base, SWRM_CMD_FIFO_WR_CMD, cmd);
 		mdelay(5);
 	}
 }
@@ -187,11 +204,21 @@ static void swrm_configure_frame_ctrl(volatile lpass_wsa_swrm *swrm)
 	swrm->MCP_FRAME_CTRL_BANK_m1 = MCP_FRAME_CTRL1_ENABLE;
 }
 
-static void qcom_init_swrm(void *sndwlinkaddr){
+bool swrm_dev_attached(uintptr_t swrm_base, uint32_t dev)
+{
+	uintptr_t dev_offset = SWRM_DEV_ID_STRIDE * dev;
+	uint32_t dev_id_1 = read32p(swrm_base + SWRM_DEV_ID_1_OFFSET + dev_offset);
+	uint32_t dev_id_2 = read32p(swrm_base + SWRM_DEV_ID_2_OFFSET + dev_offset);
 
+	return dev_id_1 != 0 || dev_id_2 != 0;
+}
+
+static void qcom_init_swrm(void *sndwlinkaddr, uint32_t dev)
+{
 	uintptr_t swrm_base = (uintptr_t)sndwlinkaddr;
 	volatile lpass_wsa_swrm *swrm = (volatile lpass_wsa_swrm *)swrm_base;
 	volatile CPUn *cpun = (volatile CPUn *)(swrm_base + SWRM_CPUN_OFFSET);
+	bool dev2_attached;
 
 	LPASS_AUDIO_CC_WSA_MCLK->LPASS_AUDIO_CC_WSA_MCLK_MODE_MUXSEL = 0x00000000;
 	mdelay(1);
@@ -222,12 +249,38 @@ static void qcom_init_swrm(void *sndwlinkaddr){
 	cpun->CPUn_INTERRUPT_CLEAR = CPUN_INTERRUPT_STATUS_CHANGE;
 	LPASS_WSA_CLK_RST->rst_ctrl_mclk = WSA_MCLK_ENABLE;
 
-	swrm_send_cmd_table(cpun, wsa_dp1_cmds, ARRAY_SIZE(wsa_dp1_cmds));
+	/* Check if a second amplifier slave enumerated on the same SWRM bus */
+	dev2_attached = (dev != SWRM_SLAVE_DEV_SECOND) &&
+			swrm_dev_attached(swrm_base, SWRM_SLAVE_DEV_SECOND);
+
+	/*
+	 * Configure Data Port 1 (DP1) registers on the primary slave (and the
+	 * second slave if attached) before committing the frame bank switch.
+	 */
+	swrm_send_cmd_table(swrm_base, wsa_dp1_cmds, ARRAY_SIZE(wsa_dp1_cmds), dev);
+	if (dev2_attached)
+		swrm_send_cmd_table(swrm_base, wsa_dp1_cmds,
+				    ARRAY_SIZE(wsa_dp1_cmds),
+				    SWRM_SLAVE_DEV_SECOND);
+
 	swrm_dpn_cfg(swrm_base, 1, 0x01000000, 0x01000007, 0x01000107, 0x01000107);
-	cpun->CPUn_CMD_FIFO_WR_CMD = SWRM_CMD(0x0F, 0xF, 0x2, 0x0070);
+	swrm_write(swrm_base, SWRM_CMD_FIFO_WR_CMD,
+		   SWRM_CMD(0x0F, SWRM_DEV_BROADCAST, 0x2, 0x0070));
 	mdelay(20);
-	swrm_send_cmd_table(cpun, wsa_tuning_cmds, ARRAY_SIZE(wsa_tuning_cmds));
-	cpun->CPUn_CMD_FIFO_WR_CMD = SWRM_CMD(0x0F, 0xF, 0xD, 0x0070);
+
+	/*
+	 * Apply WSA8845 amplifier tuning sequence to all attached slaves and
+	 * commit via broadcast.
+	 */
+	swrm_send_cmd_table(swrm_base, wsa_tuning_cmds,
+			    ARRAY_SIZE(wsa_tuning_cmds), dev);
+	if (dev2_attached)
+		swrm_send_cmd_table(swrm_base, wsa_tuning_cmds,
+				    ARRAY_SIZE(wsa_tuning_cmds),
+				    SWRM_SLAVE_DEV_SECOND);
+
+	swrm_write(swrm_base, SWRM_CMD_FIFO_WR_CMD,
+		   SWRM_CMD(0x0F, SWRM_DEV_BROADCAST, 0xD, 0x0070));
 	mdelay(20);
 }
 
@@ -297,7 +350,8 @@ static int qcom_swrm_enable(SndwOps *me, sndw_codec_info *codecinfo)
 	uintptr_t base = (uintptr_t)bus->sndwlinkaddr;
 
 	printk(BIOS_INFO, "SWRM%d: Initializing Master at 0x%p\n", bus->sndwlinkindex, (void *)base);
-	qcom_init_swrm(bus->sndwlinkaddr);
+	qcom_init_swrm(bus->sndwlinkaddr,
+		       codecinfo ? codecinfo->deviceindex : SWRM_SLAVE_DEV_PRIMARY);
 
 	if (codecinfo)
 		read_endpointid(bus->sndwlinkaddr, codecinfo->deviceindex, codecinfo);

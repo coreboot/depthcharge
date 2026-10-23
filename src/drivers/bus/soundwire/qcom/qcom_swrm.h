@@ -7,6 +7,7 @@
 #define __DRIVERS_BUS_SOUNDWIRE_QCOM_SWRM_H__
 
 #include <drivers/soc/qcom_soc.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef struct {
@@ -210,6 +211,11 @@ typedef struct {
 #define SWRM_DEV_ID_2_OFFSET	0x0534UL
 #define SWRM_DEV_ID_STRIDE	0x8UL
 
+/* SWRM slave device indices and broadcast address */
+#define SWRM_SLAVE_DEV_PRIMARY	1U
+#define SWRM_SLAVE_DEV_SECOND	2U
+#define SWRM_DEV_BROADCAST	0xFU
+
 #define RX_PATH_ENABLE		0x00000002
 #define RX_PATH_CFG1_DEFAULT	0x0000006C
 #define RX_PATH_CFG3_DEFAULT	0x00000003
@@ -218,11 +224,27 @@ typedef struct {
 
 #define SWRM_POLL_TIMEOUT_US	500000
 
+/* SWRM command FIFO bitfields: [31:24]=data, [23:20]=dev, [19:16]=id, [15:0]=addr */
+#define SWRM_CMD_DATA_SHIFT	24
+#define SWRM_CMD_DATA_MASK	0xFFUL
+#define SWRM_CMD_DEV_SHIFT	20
+#define SWRM_CMD_DEV_MASK	0xFUL
+#define SWRM_CMD_ID_SHIFT	16
+#define SWRM_CMD_ID_MASK	0xFUL
+#define SWRM_CMD_ADDR_MASK	0xFFFFUL
+
+#define SWRM_CMD_GET_DEV(cmd) \
+	(((cmd) >> SWRM_CMD_DEV_SHIFT) & SWRM_CMD_DEV_MASK)
+
+#define SWRM_CMD_SET_DEV(cmd, dev) \
+	(((cmd) & ~(SWRM_CMD_DEV_MASK << SWRM_CMD_DEV_SHIFT)) | \
+	 (((uint32_t)(dev) & SWRM_CMD_DEV_MASK) << SWRM_CMD_DEV_SHIFT))
+
 #define SWRM_CMD(data, dev, id, addr) \
-	( (((uint32_t)(data) & 0xFF) << 24) | \
-	  (((uint32_t)(dev) & 0xF) << 20) | \
-	  (((uint32_t)(id) & 0xF) << 16) | \
-	  (((uint32_t)(addr) & 0xFFFF)) )
+	( (((uint32_t)(data) & SWRM_CMD_DATA_MASK) << SWRM_CMD_DATA_SHIFT) | \
+	  (((uint32_t)(dev) & SWRM_CMD_DEV_MASK) << SWRM_CMD_DEV_SHIFT) | \
+	  (((uint32_t)(id) & SWRM_CMD_ID_MASK) << SWRM_CMD_ID_SHIFT) | \
+	  (((uint32_t)(addr) & SWRM_CMD_ADDR_MASK)) )
 
 /* CPUn interrupt bits */
 #define CPUN_IRQ_NEW_SLAVE	BIT(1)
@@ -371,8 +393,8 @@ typedef struct {
 #define LPAIF_IRQ_DISABLE	0x00000000
 
 /* CPUn FIFO commands */
-#define CPUN_CMD_FIFO_WR_STOP_B0	0x00273430
-#define CPUN_CMD_FIFO_RD_STOP_B0	0x01273430
+#define CPUN_CMD_FIFO_WR_STOP_B0(dev)	SWRM_CMD(0x00, (dev), 0x7, 0x3430)
+#define CPUN_CMD_FIFO_RD_STOP_B0(dev)	SWRM_CMD(0x01, (dev), 0x7, 0x3430)
 
 /* WSA RDDMA stop/reset */
 #define WSA_RDDMA_CTL_STOP	0x8020000F
@@ -385,5 +407,7 @@ typedef struct {
 #define SWRM_MCP_BUS_ENABLE	BIT(0)
 #define SWRM_COMP_ENABLE	BIT(0)
 #define SWRM_LINK_MANAGER_ENABLE	BIT(0)
+
+bool swrm_dev_attached(uintptr_t swrm_base, uint32_t dev);
 
 #endif  /* __DRIVERS_BUS_SOUNDWIRE_QCOM_SWRM_H__ */
