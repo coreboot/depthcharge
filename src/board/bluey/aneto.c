@@ -14,6 +14,7 @@
  */
 
 #include <libpayload.h>
+#include "base/fw_config.h"
 #include "drivers/soc/x1p42100.h"
 #include "variant.h"
 
@@ -32,4 +33,18 @@ uintptr_t variant_get_ec_spi_base()
 uintptr_t variant_get_gsc_i2c_base()
 {
 	return QUP_SERIAL10_BASE;
+}
+
+bool variant_nvme_supported(void)
+{
+	if (fw_config_probe(FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_UNKNOWN)) ||
+	    fw_config_probe(FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_NVME)))
+		return true;
+
+	return false;
+}
+
+bool variant_ufs_supported(void)
+{
+	return fw_config_probe(FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_UFS));
 }
