@@ -15,6 +15,7 @@
 
 #include <assert.h>
 #include <libpayload.h>
+#include "base/cleanup_funcs.h"
 #include "base/fw_config.h"
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
@@ -32,6 +33,7 @@
 #include "drivers/power/chromeec.h"
 #include "drivers/power/psci.h"
 #include "drivers/soc/qcom_spmi.h"
+#include "drivers/soc/qcom_spmi_defs.h"
 #include "drivers/soc/calypso.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/route.h"
@@ -55,6 +57,97 @@ static const VpdDeviceTreeMap vpd_dt_map[] = {
 	{ "wifi_mac0", "wifi0/local-mac-address" },
 	{}
 };
+
+#define MDP_INTF_TIMING_ENGINE_ADDR 0x0AE3A000
+#define EDP_SW_RESET_ADDR 0xAF6C010
+#define DISP_CC_CORE_GDSCR_ADDR 0xAF09000
+
+/*
+ * In Qualcomm platforms (such as Snapdragon X Elite):
+ * Secondary PMICs (e.g., PMC8380, PM8550 where sid > 0):
+ *    The GPIO peripheral block begins at 0x8800.
+ * Primary PMK PMIC (e.g., PMK8550 / PMK8850 at sid == 0):
+ *     The GPIO peripheral block is mapped starting at 0xB800 (0x8800 + 0x3000).
+ *
+ * (In fact, this exact 0x8800 vs 0xB800 offset discrepancy on PMK8550 was a known
+ *  issue in the Linux kernel device tree (pmk8550.dtsi), where pmk8550_gpios had
+ *  to be corrected from 0x8800 to 0xB800).
+ */
+
+#define SPMI_ADDR(sid, reg) (((sid) << 16) | (reg))
+
+#define PMIC_GPIO_BASE_OFFSET(sid) ((sid) == 0 ? 0xB800 : 0x8800)
+
+#define PMIC_GPIO_BASE(sid, gpio_num) \
+    (PMIC_GPIO_BASE_OFFSET(sid) + (((gpio_num) - 1) * 0x100))
+
+#define PMIC_GPIO_REG(sid, gpio_num, reg) \
+    (SPMI_ADDR((sid), PMIC_GPIO_BASE((sid), (gpio_num))) + (reg))
+
+#define PMIC_GPIO_DIG_OUT_SOURCE_CTL 0x44
+
+#define BACKLIGHT_PWM_PMIC_SID   0x00
+#define BACKLIGHT_PWM_PMIC_GPIO  5
+
+#define BACKLIGHT_PWM_DIG_OUT_SOURCE_CTL \
+    PMIC_GPIO_REG(BACKLIGHT_PWM_PMIC_SID, BACKLIGHT_PWM_PMIC_GPIO, PMIC_GPIO_DIG_OUT_SOURCE_CTL)
+
+#define GPIO_OUTPUT_HIGH 0x80
+#define GPIO_OUTPUT_LOW 0x00
+
+#define GPIO_PANEL_BACKLIGHT_EN GPIO(18)
+#define GPIO_PANEL_BACKLIGHT_PWR GPIO(19)
+#define GPIO_PANEL_POWER_ON GPIO(70)
+
+__weak void variant_display_teardown(void)
+{
+	/* Disable panel power */
+	gpio_set(&new_gpio_output(GPIO_PANEL_POWER_ON)->ops, 0);
+
+	/* Disable panel backlight */
+	gpio_set(&new_gpio_output(GPIO_PANEL_BACKLIGHT_EN)->ops, 0);
+
+	/* Disable panel backlight power */
+	gpio_set(&new_gpio_output(GPIO_PANEL_BACKLIGHT_PWR)->ops, 0);
+
+	return;
+}
+
+/* TODO: Remove it once SMMU issue is fixed */
+static int display_teardown(struct CleanupFunc *cleanup, CleanupType type)
+{
+	QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
+			    PMIC_REG_CHAN0_ADDR,
+			    PMIC_REG_LAST_CHAN_ADDR - PMIC_REG_FIRST_CHAN_ADDR);
+
+	uint8_t value = pmic_spmi->read8(pmic_spmi, BACKLIGHT_PWM_DIG_OUT_SOURCE_CTL);
+
+	if (value == GPIO_OUTPUT_HIGH) {
+		printf("Tearing down the display\n");
+
+		/* Call the variant's display power-down logic */
+		variant_display_teardown();
+
+		/* Disable backlight */
+		pmic_spmi->write8(pmic_spmi, BACKLIGHT_PWM_DIG_OUT_SOURCE_CTL, GPIO_OUTPUT_LOW);
+
+		/* Disable TE */
+		write32p(MDP_INTF_TIMING_ENGINE_ADDR, 0x0);
+
+		/* wait for a vsync pulse */
+		mdelay(20);
+
+		/* Reset eDP */
+		write32p(EDP_SW_RESET_ADDR, 0x1);
+		mdelay(20);
+		write32p(EDP_SW_RESET_ADDR, 0x0);
+
+		/* Disable DPU GDSC */
+		write32p(DISP_CC_CORE_GDSCR_ADDR, 0x222f801);
+	}
+	free(pmic_spmi);
+	return 0;
+}
 
 static void usb_setup(void)
 {
@@ -169,7 +262,12 @@ static void audio_setup(void)
 
 static void display_setup(void)
 {
-	/* placeholder */
+	static CleanupFunc dev = {
+		&display_teardown,
+		CleanupOnHandoff | CleanupOnLegacy,
+		NULL
+	};
+	list_insert_after(&dev.list_node, &cleanup_funcs);
 }
 
 static int board_setup(void)
