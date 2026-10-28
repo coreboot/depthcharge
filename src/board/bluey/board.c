@@ -15,6 +15,7 @@
 
 #include <assert.h>
 #include <libpayload.h>
+#include "base/cleanup_funcs.h"
 #include "base/init_funcs.h"
 #include "boot/commandline.h"
 #include "boot/fit.h"
@@ -67,6 +68,28 @@ __weak bool variant_nvme_supported(void)
 __weak bool variant_ufs_supported(void)
 {
 	return true;
+}
+
+__weak void variant_display_teardown(void)
+{
+	return;
+}
+
+/* TODO: Remove once seamless splash is supported on all variants */
+static int display_teardown(struct CleanupFunc *cleanup, CleanupType type)
+{
+	variant_display_teardown();
+	return 0;
+}
+
+static void display_setup(void)
+{
+	static CleanupFunc dev = {
+		&display_teardown,
+		CleanupOnHandoff | CleanupOnLegacy,
+		NULL
+	};
+	list_insert_after(&dev.list_node, &cleanup_funcs);
 }
 
 static void storage_setup(void)
@@ -183,6 +206,8 @@ static int board_setup(void)
 		tpm_setup();
 
 	audio_setup();
+
+	display_setup();
 
 	if (board_boot_in_no_battery_mode()) {
 		commandline_append("cpufreq.default_governor=powersave");

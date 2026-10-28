@@ -25,4 +25,6 @@ uintptr_t variant_get_gsc_i2c_base(void);
 bool variant_nvme_supported(void);
 bool variant_ufs_supported(void);
 
+void variant_display_teardown(void);
+
 #endif // _BOARD_BLUEY_VARIANT_H_
