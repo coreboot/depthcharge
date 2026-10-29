@@ -528,6 +528,9 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 	if (image_size > region_size)
 		return VB2_ERROR_INVALID_PARAMETER;
 
+	if (cros_ec_wait_for_stable_power())
+		printf("EC sync: power wait timed out; proceeding\n");
+
 	/*
 	 * Erase the entire region, so that the EC doesn't see any garbage
 	 * past the new image if it's smaller than the current image.

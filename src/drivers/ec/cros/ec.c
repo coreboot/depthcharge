@@ -1273,6 +1273,98 @@ bool cros_ec_is_battery_present(void)
 	return false;
 }
 
+#define EC_POWER_STABLE_WINDOW_US (1000 * USECS_PER_MSEC)
+#define EC_POWER_WAIT_TIMEOUT_US (5000 * USECS_PER_MSEC)
+#define EC_POWER_POLL_DELAY_MS 50
+#define EC_PD_MIN_VOLTAGE_MV 5000
+#define EC_PD_MIN_POWER_MW 15000
+
+static bool cros_ec_is_battery_providing_power(void)
+{
+	uint8_t flags = 0;
+	uint32_t volt = 0;
+
+	if (!read_memmap(EC_MEMMAP_BATT_FLAG, sizeof(flags), &flags) &&
+	    (flags & EC_BATT_FLAG_BATT_PRESENT) &&
+	    !(flags & (EC_BATT_FLAG_INVALID_DATA | EC_BATT_FLAG_LEVEL_CRITICAL)) &&
+	    !cros_ec_read_batt_volt(&volt) && volt > 0)
+		return true;
+
+	struct ec_params_battery_dynamic_info params = {
+		.index = 0,
+	};
+	struct ec_response_battery_dynamic_info resp = {};
+
+	if (ec_cmd_battery_get_dynamic(cros_ec_get(), &params, &resp) == sizeof(resp) &&
+	    (resp.flags & EC_BATT_FLAG_BATT_PRESENT) &&
+	    !(resp.flags & (EC_BATT_FLAG_INVALID_DATA | EC_BATT_FLAG_LEVEL_CRITICAL)) &&
+	    resp.actual_voltage > 0)
+		return true;
+
+	return false;
+}
+
+int cros_ec_wait_for_stable_power(void)
+{
+	if (cros_ec_is_battery_providing_power())
+		return 0;
+
+	if (cros_ec_cmd_version_supported(EC_CMD_USB_PD_POWER_INFO, 0) <= 0)
+		return 0;
+
+	struct ec_params_usb_pd_power_info params = {
+		.port = PD_POWER_CHARGING_PORT,
+	};
+	struct ec_response_usb_pd_power_info resp = {};
+	uint16_t prev_mv = 0, prev_ma = 0;
+	uint64_t stable_start = 0;
+
+	for (uint64_t wait_start = timer_us(0);
+	     timer_us(wait_start) < EC_POWER_WAIT_TIMEOUT_US;
+	     mdelay(EC_POWER_POLL_DELAY_MS)) {
+		if (ec_command(cros_ec_get(), EC_CMD_USB_PD_POWER_INFO, 0,
+			       &params, sizeof(params), &resp,
+			       sizeof(resp)) != sizeof(resp) ||
+		    (resp.role != USB_PD_PORT_POWER_SINK &&
+		     resp.role != USB_PD_PORT_POWER_SINK_NOT_CHARGING)) {
+			stable_start = 0;
+			continue;
+		}
+
+		if (resp.type == USB_CHG_TYPE_DEDICATED &&
+		    resp.meas.voltage_max > 0) {
+			printf("EC sync: dedicated barrel jack power present (%u mV)\n",
+			       resp.meas.voltage_max);
+			return 0;
+		}
+
+		if (resp.type != USB_CHG_TYPE_PD ||
+		    resp.meas.voltage_max < EC_PD_MIN_VOLTAGE_MV ||
+		    resp.meas.current_max == 0 ||
+		    resp.max_power < EC_PD_MIN_POWER_MW) {
+			stable_start = 0;
+			continue;
+		}
+
+		if (!stable_start || resp.meas.voltage_max != prev_mv ||
+		    resp.meas.current_max != prev_ma) {
+			prev_mv = resp.meas.voltage_max;
+			prev_ma = resp.meas.current_max;
+			stable_start = timer_us(0);
+			continue;
+		}
+
+		if (timer_us(stable_start) >= EC_POWER_STABLE_WINDOW_US) {
+			printf("EC sync: PD %u mV / %u mA (%u mW)\n",
+			       resp.meas.voltage_max, resp.meas.current_max,
+			       resp.max_power);
+			return 0;
+		}
+	}
+
+	return -1;
+}
+
 void cros_ec_post_code(uint16_t code)
 {
 	CrosEc *ec = cros_ec_get();

@@ -579,6 +579,14 @@ int cros_ec_ap_print(const char *fmt, ...) __attribute__((format(printf, 1, 2)))
 bool cros_ec_is_battery_present(void);
 
 /**
+ * Wait until a stable power source (battery, barrel jack, or settled USB-PD
+ * contract) is providing power before starting an EC firmware update.
+ *
+ * @return 0 if stable power is confirmed, -1 on timeout
+ */
+int cros_ec_wait_for_stable_power(void);
+
+/**
  * Send a post code to ChromeOS EC.
  *
  * @param code		Post code to send
