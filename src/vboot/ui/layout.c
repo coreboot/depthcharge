@@ -1750,6 +1750,39 @@ static vb2_error_t ui_draw_sub_menu(struct ui_context *ui,
 	return VB2_SUCCESS;
 }
 
+/*
+ * Draw the battery icon at the top-right corner of the screen.
+ *
+ * Nothing is drawn if the battery status is not available.
+ *
+ * @param battery	Battery status.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+static vb2_error_t ui_draw_battery(const struct ui_battery *battery)
+{
+	const struct ui_battery_icon *icon = ui_battery_get_icon(battery);
+	const int32_t x_center = UI_SCALE - UI_BATTERY_MARGIN_RIGHT -
+				 UI_BATTERY_WIDTH / 2;
+	const int32_t y_center = UI_BATTERY_MARGIN_TOP + UI_BATTERY_HEIGHT / 2;
+	struct ui_bitmap bitmap;
+
+	/* Clear the icon drawn before, in case the battery disappears. */
+	if (!icon)
+		return ui_draw_box(x_center - UI_BATTERY_ICON_SIZE / 2,
+				   y_center - UI_BATTERY_ICON_SIZE / 2,
+				   UI_BATTERY_ICON_SIZE, UI_BATTERY_ICON_SIZE,
+				   &ui_color_bg, 0);
+
+	VB2_TRY(ui_get_bitmap(icon->file, NULL, 0, &bitmap));
+	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x_center, y_center,
+				      UI_SIZE_AUTO, UI_BATTERY_ICON_SIZE,
+				      &ui_color_bg, icon->color,
+				      PIVOT_H_CENTER | PIVOT_V_CENTER, 0));
+
+	return VB2_SUCCESS;
+}
+
 vb2_error_t ui_draw_default(struct ui_context *ui,
 			    const struct ui_state *prev_state)
 {
@@ -1813,6 +1846,15 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	/* Warning if we are in recovery and using dev signed keys. */
 	if (!screen->is_fullview)
 		VB2_TRY(ui_draw_dev_signed_warning());
+
+	/*
+	 * Battery icon. Always draw it, because the screen may be redrawn only
+	 * for a battery status change, which is not tracked in the state. The
+	 * icon is optional (for example, with an old bmpblk without the battery
+	 * icons), so ignore the error.
+	 */
+	if (ui_draw_battery(&ui->battery))
+		UI_WARN("Drawing battery icon failed\n");
 
 	/* Language dropdown header */
 	if (has_lang_dropdown) {

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 
+tests-y += battery-test
 tests-y += menu-test
 tests-y += menu-detachable-test
 tests-y += navigation-test
@@ -9,6 +10,10 @@ tests-y += loop-test
 tests-y += loop-detachable-test
 tests-y += screens-test
 tests-y += bitmap-test
+
+battery-test-srcs += tests/vboot/ui/battery-test.c
+battery-test-srcs += src/vboot/ui/battery.c
+battery-test-config += CONFIG_DRIVER_EC_CROS=1
 
 menu-test-srcs += tests/vboot/ui/menu-test.c
 menu-test-srcs += tests/vboot/ui/mock_screens.c
@@ -31,6 +36,7 @@ loop-test-srcs += tests/mocks/ui_display.c
 loop-test-srcs += tests/mocks/vb2api.c
 loop-test-srcs += tests/mocks/vboot/ui/archive.c
 loop-test-srcs += tests/mocks/vboot/ui/beep.c
+loop-test-srcs += src/vboot/ui/battery.c
 loop-test-srcs += src/vboot/ui/navigation.c
 loop-test-srcs += src/vboot/ui/menu.c
 loop-test-mocks += ui_keyboard_read

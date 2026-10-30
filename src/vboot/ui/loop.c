@@ -174,6 +174,9 @@ static vb2_error_t ui_loop_impl(
 	while (1) {
 		start_time_ms = vb2ex_mtime();
 
+		/* Update the battery icon periodically. */
+		ui_battery_update(ui, start_time_ms);
+
 		/* Draw if there are state changes. */
 		if (memcmp(&prev_state, ui->state, sizeof(*ui->state)) ||
 		    /* Beep. */

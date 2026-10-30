@@ -90,6 +90,16 @@
 #define UI_ICON_MARGIN_V			6
 
 /*
+ * For battery icon. The battery glyph is centered in the icon, and its height
+ * is half of the icon size.
+ */
+#define UI_BATTERY_WIDTH			32
+#define UI_BATTERY_HEIGHT			18
+#define UI_BATTERY_MARGIN_TOP			14
+#define UI_BATTERY_MARGIN_RIGHT			16
+#define UI_BATTERY_ICON_SIZE			(UI_BATTERY_HEIGHT * 2)
+
+/*
  * For each type of text:
  * - *_TEXT_HEIGHT is the height of each line of the text bitmap, which
  *   determines the size of the drawn text. It is the font size in the design
@@ -241,6 +251,8 @@
 #define DEV_DELAY_SHORT_MS (2 * MSECS_PER_SEC)		/* 2 seconds */
 #define DEV_DELAY_NORMAL_MS (30 * MSECS_PER_SEC)	/* 30 seconds */
 #define DEV_DELAY_BEEP1_MS (20 * MSECS_PER_SEC)		/* 20 seconds */
+/* Interval between battery status updates */
+#define UI_BATTERY_UPDATE_INTERVAL_MS (5 * MSECS_PER_SEC)	/* 5 seconds */
 #define DEV_DELAY_BEEP2_MS (20 * MSECS_PER_SEC + 500)	/* 20.5 seconds */
 
 /* Key code for CTRL + letter */
@@ -364,6 +376,7 @@ static const struct rgb_color ui_color_keycap_fg	= { 0xc4, 0xc7, 0xc5 };
 static const struct rgb_color ui_color_qr_bg		= { 0xff, 0xff, 0xff };
 static const struct rgb_color ui_color_qr_fg		= { 0x00, 0x00, 0x00 };
 static const struct rgb_color ui_color_icon		= { 0xa8, 0xc7, 0xfa };
+static const struct rgb_color ui_color_battery_alert	= { 0xf2, 0xb8, 0xb5 };
 static const struct rgb_color ui_color_sub_menu_bg	= { 0x37, 0x39, 0x3b };
 static const struct rgb_color ui_color_button		= { 0xa8, 0xc7, 0xfa };
 static const struct rgb_color ui_color_button_fg	= { 0x06, 0x2e, 0x6f };
@@ -750,6 +763,24 @@ enum ui_power_button {
 	UI_POWER_BUTTON_PRESSED,  /* Must have been previously released */
 };
 
+/* Battery status */
+struct ui_battery {
+	/* Whether the battery status is available. */
+	bool present;
+	/* Battery state of charge in percentage, in the range [0, 100]. */
+	uint32_t level;
+	/* Whether the battery is charging or fully charged on AC power. */
+	bool charging;
+};
+
+/* Battery icon */
+struct ui_battery_icon {
+	/* Bitmap filename. */
+	const char *file;
+	/* Color of the icon. */
+	const struct rgb_color *color;
+};
+
 struct ui_context {
 	struct vb2_context *ctx;
 	struct ui_state *state;
@@ -795,6 +826,11 @@ struct ui_context {
 
 	/* For indicating dcache clean is required after test exit. */
 	enum ui_dcache_state dcache_state;
+
+	/* For battery icon. */
+	struct ui_battery battery;
+	bool battery_updated;
+	uint32_t battery_update_time_ms;
 };
 
 static inline struct ui_menu_state *ui_active_menu_state(struct ui_state *state)
@@ -1538,6 +1574,30 @@ int ui_is_physical_presence_pressed(void);
  * @param frequency	Sound frequency in Hz.
  */
 void ui_beep(uint32_t msec, uint32_t frequency);
+
+/******************************************************************************/
+/* battery.c */
+
+/*
+ * Get the battery icon for the battery status.
+ *
+ * @param battery	Battery status.
+ *
+ * @return The battery icon, or NULL if the battery status is not available.
+ */
+const struct ui_battery_icon *ui_battery_get_icon(
+		const struct ui_battery *battery);
+
+/*
+ * Update the battery status if it has not been updated in the last
+ * UI_BATTERY_UPDATE_INTERVAL_MS milliseconds.
+ *
+ * If the battery status changes, ui->force_display is set to redraw the screen.
+ *
+ * @param ui		UI context.
+ * @param now_ms	Current time in milliseconds.
+ */
+void ui_battery_update(struct ui_context *ui, uint32_t now_ms);
 
 /******************************************************************************/
 /* loop.c */

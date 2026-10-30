@@ -50,6 +50,12 @@ int main(int argc, char *argv[])
 	state->error_code = __ERROR_CODE__;
 	state->current_page = __PAGE__;
 
+	if (__BATTERY_LEVEL__ >= 0) {
+		ui.battery.present = true;
+		ui.battery.level = __BATTERY_LEVEL__;
+		ui.battery.charging = __BATTERY_CHARGING__;
+	}
+
 	if (__SUB_MENU_OPEN__) {
 		const struct ui_menu *menu = ui_get_menu(&ui);
 		if (state->menu_state.focused_item >= menu->num_items) {

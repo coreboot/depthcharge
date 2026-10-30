@@ -23,6 +23,9 @@ DISABLED_ITEM_MASK ?= 0
 HIDDEN_ITEM_MASK ?= 0
 ERROR_CODE ?= UI_ERROR_NONE
 PAGE ?= 0
+# Battery level in percentage; -1 for no battery icon
+BATTERY_LEVEL ?= -1
+BATTERY_CHARGING ?= 0
 LOG ?=
 override LOG := \"$(LOG)\"
 LOG_FILE ?=
@@ -45,6 +48,7 @@ SCREENSHOT_OPTIONS += WIDTH HEIGHT SCREEN ITEM
 SCREENSHOT_OPTIONS += SUB_MENU_OPEN SUB_ITEM SUB_TRIGGER_FOCUSED
 SCREENSHOT_OPTIONS += DISABLED_ITEM_MASK HIDDEN_ITEM_MASK
 SCREENSHOT_OPTIONS += ERROR_CODE PAGE LOG LOG_FILE BMP_PATH
+SCREENSHOT_OPTIONS += BATTERY_LEVEL BATTERY_CHARGING
 
 $(foreach opt, $(SCREENSHOT_OPTIONS), \
 	$(eval UI_FLAGS += -D__$(opt)__=$($(opt))))
@@ -71,6 +75,7 @@ screenshot-srcs += screenshot/stubs/load_kernel.c
 screenshot-srcs += screenshot/stubs/vpd_util.c
 screenshot-srcs += src/debug/stubs.c
 screenshot-srcs += src/fastboot/fastboot_stubs.c
+screenshot-srcs += src/vboot/ui/battery.c
 screenshot-srcs += src/vboot/ui/bitmap.c
 screenshot-srcs += src/vboot/ui/display.c
 screenshot-srcs += src/vboot/ui/draw.c
@@ -154,6 +159,8 @@ test-screenshot: screenshot
 	$(MAKE) screenshot SCREEN=UI_SCREEN_RECOVERY_SELECT ITEM=3 SUB_MENU_OPEN=1 SUB_ITEM=1 \
 		OUTPUT=$(screenshotobj)/UI_SCREEN_RECOVERY_SELECT_advanced_options.bmp
 	$(MAKE) screenshot SCREEN=UI_SCREEN_DIAGNOSTICS_MEMORY_QUICK
+	$(MAKE) screenshot BATTERY_LEVEL=50 \
+		OUTPUT=$(screenshotobj)/UI_SCREEN_RECOVERY_SELECT_battery.bmp
 
 clean-screenshot:
 	rm -rf $(testobj)
