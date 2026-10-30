@@ -167,6 +167,13 @@ sprite_files:
   ic_volume_up: ic_arrow
   ic_volume_down: ic_arrow
   ic_power_settings_new: ic_arrow
+  # battery icons
+  ic_battery_android_3: battery_icon
+  ic_battery_android_4: battery_icon
+  ic_battery_android_5: battery_icon
+  ic_battery_android_full: battery_icon
+  ic_battery_android_bolt: battery_icon
+  ic_battery_android_alert: battery_icon
 
 # Google Material 3 (GM3) dark theme colors
 # See https://carbon.googleplex.com/google-material-3/pages/static/gm3-baseline.
@@ -282,6 +289,8 @@ styles:
     height: 24
   qr_rec:
     height: 86
+  battery_icon:
+    height: 36
 
 # Font of each locale
 fonts:
