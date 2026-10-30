@@ -699,20 +699,29 @@ int cros_ec_read_batt_state_of_charge(uint32_t *state)
 	return cros_ec_read_batt_state_of_charge_cmd(state);
 }
 
-bool cros_ec_is_battery_present(void)
+int cros_ec_read_batt_flags(uint32_t *flags)
 {
 	struct ec_params_battery_dynamic_info params = {
 		.index = 0,
 	};
 	struct ec_response_battery_dynamic_info resp;
 
-	if (ec_cmd_battery_get_dynamic(cros_ec_get(), &params, &resp) == sizeof(resp)) {
-		/* Check if battery is present */
-		if (resp.flags & EC_BATT_FLAG_BATT_PRESENT)
-			return true;
-	}
+	if (ec_cmd_battery_get_dynamic(cros_ec_get(), &params, &resp) !=
+	    sizeof(resp))
+		return -1;
 
-	return false;
+	*flags = (uint16_t)resp.flags;
+	return 0;
+}
+
+bool cros_ec_is_battery_present(void)
+{
+	uint32_t flags;
+
+	if (cros_ec_read_batt_flags(&flags))
+		return false;
+
+	return !!(flags & EC_BATT_FLAG_BATT_PRESENT);
 }
 
 int cros_ec_set_motion_sense_activity(uint32_t activity, uint32_t value)

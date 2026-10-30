@@ -320,6 +320,14 @@ int cros_ec_read_batt_volt(uint32_t *volt);
 int cros_ec_read_batt_state_of_charge(uint32_t *state);
 
 /**
+ * Read the flags of the battery.
+ *
+ * @param flags		Buffer to read the battery flags (EC_BATT_FLAG_*).
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_read_batt_flags(uint32_t *flags);
+
+/**
  * Check if battery is present
  *
  * @return true if present, false if not present
