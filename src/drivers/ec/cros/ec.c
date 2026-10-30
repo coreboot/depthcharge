@@ -591,6 +591,23 @@ int cros_ec_clear_host_events(uint32_t events)
 	return 0;
 }
 
+static int read_memmap(uint8_t offset, uint8_t size, void *dest)
+{
+	struct ec_params_read_memmap params;
+
+	params.offset = offset;
+	params.size = size;
+
+	CrosEc *ec = cros_ec_get();
+
+	if (ec->bus->read)
+		ec->bus->read(dest, EC_LPC_ADDR_MEMMAP + offset, size);
+	else if (ec_command(ec, EC_CMD_READ_MEMMAP, 0, &params, sizeof(params), dest, size) < 0)
+		return -1;
+
+	return 0;
+}
+
 int cros_ec_battery_cutoff(uint8_t flags)
 {
 	struct ec_params_battery_cutoff p;
@@ -631,6 +648,73 @@ int cros_ec_battery_sustain(unsigned char lower, unsigned char upper)
 	return rv;
 }
 
+int cros_ec_read_batt_volt(uint32_t *volt)
+{
+	return read_memmap(EC_MEMMAP_BATT_VOLT, sizeof(*volt), volt);
+}
+
+int cros_ec_read_batt_state_of_charge_cmd(uint32_t *state)
+{
+	struct ec_params_charge_state params;
+	struct ec_response_charge_state resp;
+
+	params.cmd = CHARGE_STATE_CMD_GET_STATE;
+
+	if (ec_cmd_charge_state(cros_ec_get(), &params, &resp) < 0)
+		return -1;
+
+	*state = resp.get_state.batt_state_of_charge;
+	return 0;
+}
+
+int cros_ec_read_batt_state_of_charge_raw(uint32_t *state)
+{
+	struct ec_params_battery_dynamic_info params = {
+		.index = 0,
+	};
+	struct ec_response_battery_dynamic_info resp;
+
+	if (ec_cmd_battery_get_dynamic(cros_ec_get(), &params, &resp) < 0)
+		return -1;
+
+	if (resp.full_capacity <= 0)
+		return -1;
+
+	uint32_t soc = (uint32_t)resp.remaining_capacity * 100 / (uint32_t)resp.full_capacity;
+
+	/* Clamp the value to 100% (some fuel gauges report slight overflows) */
+	if (soc > 100)
+		soc = 100;
+
+	*state = soc;
+
+	return 0;
+}
+
+int cros_ec_read_batt_state_of_charge(uint32_t *state)
+{
+	if (CONFIG(CROS_EC_BATTERY_SOC_DYNAMIC))
+		return cros_ec_read_batt_state_of_charge_raw(state);
+
+	return cros_ec_read_batt_state_of_charge_cmd(state);
+}
+
+bool cros_ec_is_battery_present(void)
+{
+	struct ec_params_battery_dynamic_info params = {
+		.index = 0,
+	};
+	struct ec_response_battery_dynamic_info resp;
+
+	if (ec_cmd_battery_get_dynamic(cros_ec_get(), &params, &resp) == sizeof(resp)) {
+		/* Check if battery is present */
+		if (resp.flags & EC_BATT_FLAG_BATT_PRESENT)
+			return true;
+	}
+
+	return false;
+}
+
 int cros_ec_set_motion_sense_activity(uint32_t activity, uint32_t value)
 {
 	struct ec_params_motion_sense params;
@@ -644,28 +728,6 @@ int cros_ec_set_motion_sense_activity(uint32_t activity, uint32_t value)
 		return -1;
 
 	return 0;
-}
-
-static int read_memmap(uint8_t offset, uint8_t size, void *dest)
-{
-	struct ec_params_read_memmap params;
-
-	params.offset = offset;
-	params.size = size;
-
-	CrosEc *ec = cros_ec_get();
-
-	if (ec->bus->read)
-		ec->bus->read(dest, EC_LPC_ADDR_MEMMAP + offset, size);
-	else if (ec_command(ec, EC_CMD_READ_MEMMAP, 0, &params, sizeof(params), dest, size) < 0)
-		return -1;
-
-	return 0;
-}
-
-int cros_ec_read_batt_volt(uint32_t *volt)
-{
-	return read_memmap(EC_MEMMAP_BATT_VOLT, sizeof(*volt), volt);
 }
 
 int cros_ec_read_lid_switch(int *lid)
@@ -792,52 +854,6 @@ int cros_ec_read_limit_power_request(int *limit_power)
 
 	*limit_power = r.get_param.value;
 	return 0;
-}
-
-int cros_ec_read_batt_state_of_charge_cmd(uint32_t *state)
-{
-	struct ec_params_charge_state params;
-	struct ec_response_charge_state resp;
-
-	params.cmd = CHARGE_STATE_CMD_GET_STATE;
-
-	if (ec_cmd_charge_state(cros_ec_get(), &params, &resp) < 0)
-		return -1;
-
-	*state = resp.get_state.batt_state_of_charge;
-	return 0;
-}
-
-int cros_ec_read_batt_state_of_charge_raw(uint32_t *state)
-{
-	struct ec_params_battery_dynamic_info params = {
-		.index = 0,
-	};
-	struct ec_response_battery_dynamic_info resp;
-
-	if (ec_cmd_battery_get_dynamic(cros_ec_get(), &params, &resp) < 0)
-		return -1;
-
-	if (resp.full_capacity <= 0)
-		return -1;
-
-	uint32_t soc = (uint32_t)resp.remaining_capacity * 100 / (uint32_t)resp.full_capacity;
-
-	/* Clamp the value to 100% (some fuel gauges report slight overflows) */
-	if (soc > 100)
-		soc = 100;
-
-	*state = soc;
-
-	return 0;
-}
-
-int cros_ec_read_batt_state_of_charge(uint32_t *state)
-{
-	if (CONFIG(CROS_EC_BATTERY_SOC_DYNAMIC))
-		return cros_ec_read_batt_state_of_charge_raw(state);
-
-	return cros_ec_read_batt_state_of_charge_cmd(state);
 }
 
 int cros_ec_reboot(uint8_t flags)
@@ -1255,22 +1271,6 @@ int cros_ec_ap_print(const char *fmt, ...)
 	va_end(args);
 
 	return ret;
-}
-
-bool cros_ec_is_battery_present(void)
-{
-	struct ec_params_battery_dynamic_info params = {
-		.index = 0,
-	};
-	struct ec_response_battery_dynamic_info resp;
-
-	if (ec_cmd_battery_get_dynamic(cros_ec_get(), &params, &resp) == sizeof(resp)) {
-		/* Check if battery is present */
-		if (resp.flags & EC_BATT_FLAG_BATT_PRESENT)
-			return true;
-	}
-
-	return false;
 }
 
 #define EC_POWER_STABLE_WINDOW_US (1000 * USECS_PER_MSEC)

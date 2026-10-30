@@ -320,6 +320,13 @@ int cros_ec_read_batt_volt(uint32_t *volt);
 int cros_ec_read_batt_state_of_charge(uint32_t *state);
 
 /**
+ * Check if battery is present
+ *
+ * @return true if present, false if not present
+ */
+bool cros_ec_is_battery_present(void);
+
+/**
  * Read limit power request from the EC
  *
  * @param limit_power	Pointer to result destination
@@ -570,13 +577,6 @@ int cros_ec_print(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
  * @return 0 if ok, negative on error
  */
 int cros_ec_ap_print(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
-
-/**
- * Check if battery is present
- *
- * @return true if present, false if not prsent
- */
-bool cros_ec_is_battery_present(void);
 
 /**
  * Wait until a stable power source (battery, barrel jack, or settled USB-PD
