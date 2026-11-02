@@ -253,6 +253,77 @@ static void test_manual_ui_boot_invalid_remove_valid(void **state)
 	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
 }
 
+static void test_manual_ui_invalid_back_unplug(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+	WILL_CLOSE_LID_IN(8);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* External disk recovery */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* Next */
+	WILL_PRESS_KEY(0, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* Back */
+	will_return_maybe(ui_keyboard_read, 0);
+	WILL_LOAD_EXTERNAL_COUNT(VB2_ERROR_LK_NO_DISK_FOUND, 2);
+	WILL_LOAD_EXTERNAL_COUNT(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 3);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_ERROR_LK_NO_DISK_FOUND);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_DISK_STEP1);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_DISK_STEP2);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_INVALID, MOCK_IGNORE, 1);
+	/* Stay on step 2 with the drive still plugged in, then removed. */
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_DISK_STEP2);
+
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
+static void test_manual_ui_rollback_unplug(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+	WILL_CLOSE_LID_IN(6);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* External disk recovery */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* Next */
+	will_return_maybe(ui_keyboard_read, 0);
+	WILL_LOAD_EXTERNAL_COUNT(VB2_ERROR_LK_NO_DISK_FOUND, 2);
+	WILL_LOAD_EXTERNAL(VB2_ERROR_LK_ROLLBACK);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_ERROR_LK_NO_DISK_FOUND);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_DISK_STEP1);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_DISK_STEP2);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_ROLLBACK_ERROR);
+	/* Return to step 2, not the recovery select screen. */
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_DISK_STEP2);
+
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
+static void test_manual_ui_invalid_to_rollback_back(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+	WILL_CLOSE_LID_IN(5);
+	WILL_PRESS_KEY(0, 0);
+	WILL_PRESS_KEY(0, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* Back */
+	will_return_maybe(ui_keyboard_read, 0);
+	/* With two drives, the result changes without "no disk" between. */
+	WILL_LOAD_EXTERNAL(VB2_ERROR_LK_INVALID_KERNEL_FOUND);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_ERROR_LK_ROLLBACK);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_INVALID);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_ROLLBACK_ERROR, MOCK_IGNORE, 1);
+	/* The invalid screen is no longer in the stack. */
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
+
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
 static void test_manual_ui_keyboard_to_dev_and_cancel(void **state)
 {
 	if (!CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
@@ -846,6 +917,9 @@ int main(void)
 		UI_TEST(test_manual_ui_boot_with_valid_image),
 		UI_TEST(test_manual_ui_boot_with_valid_image_later),
 		UI_TEST(test_manual_ui_boot_invalid_remove_valid),
+		UI_TEST(test_manual_ui_invalid_back_unplug),
+		UI_TEST(test_manual_ui_rollback_unplug),
+		UI_TEST(test_manual_ui_invalid_to_rollback_back),
 		UI_TEST(test_manual_ui_keyboard_to_dev_and_cancel),
 		UI_TEST(test_manual_ui_keyboard_to_dev_and_cancel_chromebox),
 		UI_TEST(test_manual_ui_cancel_to_dev),

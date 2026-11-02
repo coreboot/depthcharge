@@ -1412,6 +1412,7 @@ static const char *const recovery_invalid_desc[] = {
 
 static const struct ui_menu_item recovery_invalid_items[] = {
 	LANGUAGE_SELECT_ITEM,
+	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
 
@@ -1436,6 +1437,7 @@ static const char *const recovery_rollback_error_desc[] = {
 
 static const struct ui_menu_item recovery_rollback_error_items[] = {
 	LANGUAGE_SELECT_ITEM,
+	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
 

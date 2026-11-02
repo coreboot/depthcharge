@@ -19,6 +19,27 @@ static vb2_error_t ui_broken_screen_action(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
+/*
+ * Leave the recovery disk error screen if it's in the stack, by going back to
+ * the screen below it.
+ */
+static vb2_error_t ui_leave_recovery_disk_error(struct ui_context *ui)
+{
+	struct ui_state *state;
+	enum ui_screen id;
+
+	for (state = ui->state; state; state = state->prev) {
+		id = state->screen->id;
+		if (id == UI_SCREEN_RECOVERY_INVALID ||
+		    id == UI_SCREEN_RECOVERY_ROLLBACK_ERROR)
+			break;
+	}
+	if (!state || !state->prev)
+		return VB2_REQUEST_UI_CONTINUE;
+
+	return ui_screen_change(ui, state->prev->screen->id);
+}
+
 static vb2_error_t ui_manual_recovery_action(struct ui_context *ui)
 {
 	/* See if we have a recovery kernel available yet. */
@@ -29,23 +50,29 @@ static vb2_error_t ui_manual_recovery_action(struct ui_context *ui)
 
 	/* If disk validity state changed, switch to appropriate screen. */
 	if (ui->recovery_rv != rv) {
-		enum ui_screen id;
+		vb2_error_t ret;
 		UI_INFO("Recovery vboot_load_kernel %#x --> %#x\n",
 			ui->recovery_rv, rv);
 		ui->recovery_rv = rv;
+
+		/*
+		 * Keep at most one disk error screen in the stack, so that
+		 * going back from it always returns to the screen the user
+		 * was on.
+		 */
+		ret = ui_leave_recovery_disk_error(ui);
+		if (ret != VB2_REQUEST_UI_CONTINUE)
+			return ret;
+
 		switch (rv) {
 		case VB2_ERROR_LK_NO_DISK_FOUND:
-			id = UI_SCREEN_RECOVERY_SELECT;
-			break;
+			return VB2_REQUEST_UI_CONTINUE;
 		case VB2_ERROR_LK_ROLLBACK:
-			id = UI_SCREEN_RECOVERY_ROLLBACK_ERROR;
-			break;
+			return ui_screen_change(
+				ui, UI_SCREEN_RECOVERY_ROLLBACK_ERROR);
 		default:
-			id = UI_SCREEN_RECOVERY_INVALID;
-			break;
+			return ui_screen_change(ui, UI_SCREEN_RECOVERY_INVALID);
 		}
-
-		return ui_screen_change(ui, id);
 	}
 
 	/* Manual recovery keyboard shortcuts */
