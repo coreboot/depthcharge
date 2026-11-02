@@ -17,8 +17,10 @@
 #include "drivers/gpio/qcom_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/chromeec.h"
-#include "drivers/power/psci.h"
+#include "drivers/power/power.h"
 #include "drivers/soc/dougie.h"
+#include "drivers/soc/qcom_spmi.h"
+#include "drivers/soc/qcom_spmi_defs.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/qcom_ufs.h"
 #include "drivers/storage/sdhci_msm.h"
@@ -31,6 +33,19 @@
 struct dougie_display {
 	DisplayOps ops;
 	GpioOps *backlight_gpio;
+	QcomSpmi *spmi;
+};
+
+/* ponytail: PS_HOLD reset, switch to psci_power_ops once BL31 is enabled */
+static int dougie_pshold_reset(PowerOps *me)
+{
+	write32(AOSS_PS_HOLD, 0);
+	halt();
+}
+
+static PowerOps dougie_pshold_power_ops = {
+	.reboot = &dougie_pshold_reset,
+	.power_off = &dougie_pshold_reset,
 };
 
 static const VpdDeviceTreeMap vpd_dt_map[] = {
@@ -127,12 +142,38 @@ static void tpm_setup(void)
 				 GSC_I2C_ADDR, tpm_irq_status)->base.ops);
 }
 
+static void pmic_gpio_output(QcomSpmi *spmi, unsigned int gpio, bool high)
+{
+	uint32_t base = PMIC_GPIO_BASE(PMIC_BL_SLAVE_ID, gpio);
+
+	spmi->write8(spmi, base + PMIC_GPIO_REG_DIG_VIN_CTL, 0x00);
+	spmi->write8(spmi, base + PMIC_GPIO_REG_DIG_PULL_CTL, PMIC_GPIO_PULL_DISABLE);
+	spmi->write8(spmi, base + PMIC_GPIO_REG_DIG_OUT_DRV_CTL,
+		     PMIC_GPIO_OUT_STRENGTH_LOW);
+	spmi->write8(spmi, base + PMIC_GPIO_REG_MODE_CTL,
+		     PMIC_GPIO_MODE_DIGITAL_OUTPUT);
+	spmi->write8(spmi, base + PMIC_GPIO_REG_DIG_OUT_SRC_CTL,
+		     high ? PMIC_GPIO_OUTPUT_HIGH : PMIC_GPIO_OUTPUT_LOW);
+	spmi->write8(spmi, base + PMIC_GPIO_REG_EN_CTL, PMIC_GPIO_MASTER_EN);
+}
+
 static int dougie_backlight_update(DisplayOps *me, bool enable)
 {
 	struct dougie_display *display = container_of(me, struct dougie_display, ops);
 
-	if (display->backlight_gpio)
+	if (display->backlight_gpio) {
 		gpio_set(display->backlight_gpio, enable);
+	} else if (display->spmi) {
+		if (enable) {
+			pmic_gpio_output(display->spmi, PMIC_GPIO_BL_REG_EN, true);
+			pmic_gpio_output(display->spmi, PMIC_GPIO_BL_EN, true);
+			pmic_gpio_output(display->spmi, PMIC_GPIO_BL_PWM, true);
+		} else {
+			pmic_gpio_output(display->spmi, PMIC_GPIO_BL_PWM, false);
+			pmic_gpio_output(display->spmi, PMIC_GPIO_BL_EN, false);
+			pmic_gpio_output(display->spmi, PMIC_GPIO_BL_REG_EN, false);
+		}
+	}
 
 	return 0;
 }
@@ -171,6 +212,12 @@ static void display_setup(void)
 	if (CONFIG(DRIVER_VIDEO_EC_PWM_BACKLIGHT)) {
 		display->backlight_gpio = new_ec_pwm_backlight();
 		display->ops.backlight_update = dougie_backlight_update;
+	} else if (CONFIG(DRIVER_SOC_QCOM_SPMI)) {
+		display->spmi = new_qcom_spmi(
+			PMIC_CORE_REGISTERS_ADDR,
+			PMIC_REG_CHAN0_ADDR,
+			PMIC_REG_LAST_CHAN_ADDR - PMIC_REG_FIRST_CHAN_ADDR);
+		display->ops.backlight_update = dougie_backlight_update;
 	}
 
 	display_set_ops(&display->ops);
@@ -188,7 +235,7 @@ static int board_setup(void)
 	if (CONFIG(DRIVER_POWER_CHROMEEC))
 		power_set_ops(&chromec_power_ops);
 	else
-		power_set_ops(&psci_power_ops);
+		power_set_ops(&dougie_pshold_power_ops);
 
 	usb_setup();
 	dt_register_vpd_mac_fixup(vpd_dt_map);
