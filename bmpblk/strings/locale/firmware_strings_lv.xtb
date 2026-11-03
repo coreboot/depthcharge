@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Kamēr operētājsistēmu ielādes rīks ir atbloķēts, ierīce nav aizsargāta. Lai atjaunotu ierīces drošību, bloķējiet operētājsistēmu ielādes rīku.</translation>
 <translation id="1851498512110506461">Procesa laikā tiks notīrīti lietotāja dati.</translation>
 <translation id="1880493276474218432">Lai izveidotu atkopšanas disku, jums būs nepieciešams tālāk norādītais.</translation>
+<translation id="194344289147253846">Iepriekšējā lapa / nākamā lapa</translation>
 <translation id="1995660704900986789">Izslēgt</translation>
 <translation id="2022309272630265316">Nav noteikts neviens derīgs attēls</translation>
 <translation id="2164852388827548816">Aparātprogrammatūras žurnāls</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Atkopšanas procesa sākšana</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3931222419141306012">Novecojis atkopšanas attēls</translation>
-<translation id="4002335453596341558">Pāriet vienu lapu uz leju</translation>
 <translation id="4228286289437521015">Tādējādi tiks dzēsti visi dati no jūsu ierīces. Ierīces drošība tiks atspējota.</translation>
 <translation id="4231467600151418708">2. Turiet nospiestu taustiņu kombināciju Esc+Refresh ( ⟳)+Power ( ⏻).</translation>
 <translation id="4521842502554138285">Lai pārietu uz augšu vai leju, izmantojiet bulttaustiņus.</translation>
@@ -67,10 +67,10 @@ Neizsl. datoru.</translation>
 <translation id="6602196104287361867">Lai atlasītu opciju, izmantojiet taustiņu Enter.</translation>
 <translation id="6870233504224262352">Ierīcei ir jābūt ieslēgtai. Tas var ilgt kādu brīdi.</translation>
 <translation id="6933530204467815794">Savienojums izveidots, izmantojot TCP</translation>
-<translation id="6972383785688794804">Pāriet vienu lapu uz augšu</translation>
 <translation id="7065553583078443466">Atlasīt alternatīvu operētājsistēmu ielādes rīku</translation>
 <translation id="7071202423630761214">Savienojums izveidots, izmantojot USB</translation>
 <translation id="714708458581824276">Interneta atkopšanas nodalījums ir bojāts vai tā trūkst. Tā vietā izmantojiet USB disku vai SD karti.</translation>
+<translation id="7171353208088046858">Iziet no šī skata</translation>
 <translation id="7321387134821904291">Informācija par krātuves stāvokli</translation>
 <translation id="7332672207700801967">Interneta atkopšana (vecāka versija)</translation>
 <translation id="7342794948394983731">Diagnostikas rīki</translation>
@@ -91,11 +91,9 @@ Neizsl. datoru.</translation>
 <translation id="8131740175452115882">Apstiprināt</translation>
 <translation id="8182314305006465525">Jūs izmantojat operētājsistēmu ielādes rīka ātrās palaišanas režīmu</translation>
 <translation id="8315682102205416794">Izmantot USB disku vai SD karti</translation>
-<translation id="8377165353588213941">Ir sasniegtas beigas</translation>
 <translation id="8547898031669202422">Palaišana no ārēja diska ir atspējota. Uzziniet vairāk tīmekļa vietnē</translation>
 <translation id="8569584079758810124">Nevarēja iegūt atkļūdošanas informāciju.</translation>
 <translation id="8609689706517017461">Interneta atkopšanas nodalījums ir bojāts vai tā trūkst. Tā vietā izmantojiet USB disku.</translation>
-<translation id="8720490351198901261">Ir sasniegts sākums</translation>
 <translation id="8738563743369620892">Operētājsistēmu ielādes rīka atbloķēšanai nevar izmantot tastatūru. Izmantojiet barošanas pogu ( ⏻).</translation>
 <translation id="8856927881878864573">2. Nospiediet un vismaz 10 sekundes turiet skaļuma palielināšanas, skaļuma samazināšanas un barošanas pogu ( ⏻).</translation>
 <translation id="8878311588372127478">Krātuves pašpārbaude (detalizēta)</translation>

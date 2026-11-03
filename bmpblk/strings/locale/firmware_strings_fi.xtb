@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Laite ei ole turvallinen, kun käynnistysohjelman lukitus on avattu. Jos haluat palauttaa laitteen suojauksen, lukitse käynnistysohjelma.</translation>
 <translation id="1851498512110506461">Käyttäjädata pyyhkiytyy prosessin aikana.</translation>
 <translation id="1880493276474218432">Palautusaseman luomiseen tarvitset seuraavat:</translation>
+<translation id="194344289147253846">Sivu alas/ylös</translation>
 <translation id="1995660704900986789">Virta pois</translation>
 <translation id="2022309272630265316">Kelvollista kuvaa ei havaittu</translation>
 <translation id="2164852388827548816">Laiteohjelmiston loki</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Aloita palautusprosessi</translation>
 <translation id="385051799172605136">Takaisin</translation>
 <translation id="3931222419141306012">Vanhentunut palautusnäköistiedosto</translation>
-<translation id="4002335453596341558">Sivu alas</translation>
 <translation id="4228286289437521015">Kaikki data poistuu laitteelta. Laitteen suojaus poistuu käytöstä.</translation>
 <translation id="4231467600151418708">2. Paina pitkään Esc-, päivitys ( ⟳ )- ja virtapainikkeita ( ⏻ ).</translation>
 <translation id="4521842502554138285">Siirry ylös tai alas nuolinäppäimillä</translation>
@@ -67,10 +67,10 @@
 <translation id="6602196104287361867">Valitse vaihtoehto Enter-painikkeella</translation>
 <translation id="6870233504224262352">Pidä laite päällä. Tässä voi mennä hetki.</translation>
 <translation id="6933530204467815794">Yhdistetty TCP:n kautta</translation>
-<translation id="6972383785688794804">Sivu ylös</translation>
 <translation id="7065553583078443466">Valitse vaihtoehtoinen käynnistysohjelma</translation>
 <translation id="7071202423630761214">Yhdistetty USB:n kautta</translation>
 <translation id="714708458581824276">Internetpalautusosio puuttuu tai on vioittunut. Käytä sen sijaan USB-muistia tai SD-korttia.</translation>
+<translation id="7171353208088046858">Poistu tästä näkymästä</translation>
 <translation id="7321387134821904291">Tietoja tallennustilan kunnosta</translation>
 <translation id="7332672207700801967">Internet-palautus (vanhempi versio)</translation>
 <translation id="7342794948394983731">Diagnostiikkatyökalut</translation>
@@ -91,11 +91,9 @@
 <translation id="8131740175452115882">Vahvista</translation>
 <translation id="8182314305006465525">Olet käynnistysohjelman fastboot-tilassa</translation>
 <translation id="8315682102205416794">Käytä USB-muistia tai SD-korttia</translation>
-<translation id="8377165353588213941">Alemmas ei pääse</translation>
 <translation id="8547898031669202422">Ulkoiselta asemalta käynnistäminen on poistettu käytöstä. Lue lisää:</translation>
 <translation id="8569584079758810124">Virheenkorjaustietojen noutaminen ei onnistunut.</translation>
 <translation id="8609689706517017461">Internetpalautusosio puuttuu tai on vioittunut. Käytä sen sijaan USB-muistia.</translation>
-<translation id="8720490351198901261">Ylemmäs ei pääse</translation>
 <translation id="8738563743369620892">Käynnistysohjelmaa ei voi avata näppäimistöllä. Käytä virtapainiketta ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Pidä äänenvoimakkuuden lisäys- ja vähennyspainikkeita sekä virtapainiketta ( ⏻ ) painettuina vähintään 10 sekuntia.</translation>
 <translation id="8878311588372127478">Tallennustilan testaus (laajennettu)</translation>

@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Enheten din er ikke sikker mens oppstartsinnlasteren er opplåst. For å gjenopprette enhetssikkerheten, lås oppstartsinnlasteren.</translation>
 <translation id="1851498512110506461">Brukerdataene slettes i denne prosessen.</translation>
 <translation id="1880493276474218432">For å opprette en gjenopprettingsstasjon trenger du</translation>
+<translation id="194344289147253846">Side ned/opp</translation>
 <translation id="1995660704900986789">Slå av</translation>
 <translation id="2022309272630265316">Fant ingen gyldig avbildning</translation>
 <translation id="2164852388827548816">Fastvarelogg</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Start gjenopprettingsprosessen</translation>
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="3931222419141306012">Utdatert gjenopprettingsavbildning</translation>
-<translation id="4002335453596341558">Ned en side</translation>
 <translation id="4228286289437521015">Dette sletter alle data fra enheten. Enhetssikkerheten blir deaktivert.</translation>
 <translation id="4231467600151418708">2. Hold inne Esc + Last inn på nytt ( ⟳ ) + av/på-knappen ( ⏻ ).</translation>
 <translation id="4521842502554138285">Bruk piltastene for å navigere opp eller ned</translation>
@@ -67,10 +67,10 @@ Ikke slå av enheten.</translation>
 <translation id="6602196104287361867">Bruk Enter-tasten for å velge et alternativ</translation>
 <translation id="6870233504224262352">La enheten være på. Dette kan ta en stund.</translation>
 <translation id="6933530204467815794">Tilkoblet via TCP</translation>
-<translation id="6972383785688794804">Opp en side</translation>
 <translation id="7065553583078443466">Velg en annen oppstartsinnlaster</translation>
 <translation id="7071202423630761214">Tilkoblet via USB</translation>
 <translation id="714708458581824276">Partisjonen for gjenoppretting via internett er skadet eller mangler. Bruk en USB-stasjon eller et SD-kort i stedet.</translation>
+<translation id="7171353208088046858">Avslutt denne visningen</translation>
 <translation id="7321387134821904291">Informasjon om lagringshelse</translation>
 <translation id="7332672207700801967">Internettgjenoppretting (eldre versjon)</translation>
 <translation id="7342794948394983731">Diagnostikkverktøy</translation>
@@ -91,11 +91,9 @@ Ikke slå av enheten.</translation>
 <translation id="8131740175452115882">Bekreft</translation>
 <translation id="8182314305006465525">Du er i fastbootmodus for oppstartsinnlasteren</translation>
 <translation id="8315682102205416794">Bruk USB-stasjon eller SD-kort</translation>
-<translation id="8377165353588213941">Du har nådd slutten</translation>
 <translation id="8547898031669202422">Oppstart fra ekstern stasjon er slått av. Finn ut mer her:</translation>
 <translation id="8569584079758810124">Kunne ikke hente feilsøkingsinformasjon.</translation>
 <translation id="8609689706517017461">Partisjonen for gjenoppretting via internett er skadet eller mangler. Bruk en USB-stasjon i stedet.</translation>
-<translation id="8720490351198901261">Du har nådd toppen</translation>
 <translation id="8738563743369620892">Du kan ikke låse opp oppstartsinnlasteren med et tastatur. Bruk av/på-knappen ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Hold inne volum opp + volum ned + av/på-knappen ( ⏻ ) i minst ti sekunder.</translation>
 <translation id="8878311588372127478">Egenkontroll av lagring (utvidet)</translation>

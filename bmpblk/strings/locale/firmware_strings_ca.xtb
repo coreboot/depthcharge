@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">El dispositiu no és segur mentre el bootloader està desbloquejat. Per restaurar la seguretat del dispositiu, bloqueja el bootloader.</translation>
 <translation id="1851498512110506461">Les dades d'usuari es netejaran durant el procés.</translation>
 <translation id="1880493276474218432">Per crear una unitat de recuperació, necessitaràs:</translation>
+<translation id="194344289147253846">Pàgina avall o amunt</translation>
 <translation id="1995660704900986789">Apaga</translation>
 <translation id="2022309272630265316">No s'ha detectat cap imatge vàlida</translation>
 <translation id="2164852388827548816">Registre de microprogramari</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Inicia el procés de recuperació</translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="3931222419141306012">Imatge de recuperació obsoleta</translation>
-<translation id="4002335453596341558">Av Pàg</translation>
 <translation id="4228286289437521015">S'esborraran totes les dades del dispositiu. La seguretat del dispositiu es desactivarà.</translation>
 <translation id="4231467600151418708">2. Mantén premudes les tecles Esc + Actualitza ( ⟳ ) + Engegada ( ⏻ ).</translation>
 <translation id="4521842502554138285">Fes servir les tecles de fletxa per navegar cap amunt o cap avall</translation>
@@ -67,10 +67,10 @@ No l'apaguis.</translation>
 <translation id="6602196104287361867">Utilitza la tecla Retorn per seleccionar una opció</translation>
 <translation id="6870233504224262352">Mantén el dispositiu encès. Aquest procés pot tardar una estona.</translation>
 <translation id="6933530204467815794">Connectat mitjançant TCP</translation>
-<translation id="6972383785688794804">Re Pàg</translation>
 <translation id="7065553583078443466">Selecciona un bootloader alternatiu</translation>
 <translation id="7071202423630761214">Connectat per USB</translation>
 <translation id="714708458581824276">Falta la partició de recuperació d'Internet o està malmesa. Utilitza una unitat USB o una targeta SD.</translation>
+<translation id="7171353208088046858">Surt d'aquesta vista</translation>
 <translation id="7321387134821904291">Informació sobre l'estat de l'emmagatzematge</translation>
 <translation id="7332672207700801967">Recuperació d'Internet (versió antiga)</translation>
 <translation id="7342794948394983731">Eines de diagnòstic</translation>
@@ -91,11 +91,9 @@ No l'apaguis.</translation>
 <translation id="8131740175452115882">Confirma</translation>
 <translation id="8182314305006465525">Estàs en el mode Fastboot del bootloader</translation>
 <translation id="8315682102205416794">Utilitza una unitat USB o una targeta SD</translation>
-<translation id="8377165353588213941">Has arribat al final</translation>
 <translation id="8547898031669202422">L'inici des d'una unitat externa està desactivat. Més informació a:</translation>
 <translation id="8569584079758810124">No s'ha pogut obtenir informació de depuració.</translation>
 <translation id="8609689706517017461">Falta la partició de recuperació d'Internet o està malmesa. Utilitza una unitat USB.</translation>
-<translation id="8720490351198901261">Has arribat al principi</translation>
 <translation id="8738563743369620892">No pots utilitzar un teclat per desbloquejar el bootloader. Utilitza el botó d'engegada ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Mantén premuts el botó d'apujar el volum + el botó d'abaixar-lo + el botó d'engegada ( ⏻ ) durant almenys 10 segons.</translation>
 <translation id="8878311588372127478">Prova automàtica d'emmagatzematge (ampliada)</translation>

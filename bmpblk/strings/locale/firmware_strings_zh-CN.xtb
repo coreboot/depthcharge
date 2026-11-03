@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">引导加载程序处于解锁状态时，您的设备面临安全风险。为了恢复设备安全功能，请锁定引导加载程序。</translation>
 <translation id="1851498512110506461">此流程会擦除用户数据。</translation>
 <translation id="1880493276474218432">若要创建恢复驱动器，您需要：</translation>
+<translation id="194344289147253846">向下/向上翻页</translation>
 <translation id="1995660704900986789">关机</translation>
 <translation id="2022309272630265316">未检测到任何有效映像</translation>
 <translation id="2164852388827548816">固件日志</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">开始恢复流程</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3931222419141306012">恢复映像已过时</translation>
-<translation id="4002335453596341558">向下翻页</translation>
 <translation id="4228286289437521015">此操作将清除您设备中的所有数据。设备安全功能将被停用。</translation>
 <translation id="4231467600151418708">2. 同时按住 Esc 键 + 刷新键 ( ⟳ ) + 电源按钮 ( ⏻ )。</translation>
 <translation id="4521842502554138285">使用箭头键可向上/向下移动</translation>
@@ -67,10 +67,10 @@
 <translation id="6602196104287361867">使用 Enter 键可选择所需选项</translation>
 <translation id="6870233504224262352">请保持设备开机。此过程可能需要一些时间。</translation>
 <translation id="6933530204467815794">已通过 TCP 连接</translation>
-<translation id="6972383785688794804">向上翻页</translation>
 <translation id="7065553583078443466">选择备用的引导加载程序</translation>
 <translation id="7071202423630761214">已通过 USB 连接</translation>
 <translation id="714708458581824276">网络恢复分区已损坏或缺失。请改用 U 盘或 SD 卡。</translation>
+<translation id="7171353208088046858">退出此视图</translation>
 <translation id="7321387134821904291">存储设备状况信息</translation>
 <translation id="7332672207700801967">互联网恢复（旧版）</translation>
 <translation id="7342794948394983731">诊断工具</translation>
@@ -91,11 +91,9 @@
 <translation id="8131740175452115882">确认</translation>
 <translation id="8182314305006465525">您已进入引导加载程序 fastboot 模式</translation>
 <translation id="8315682102205416794">使用 U 盘或 SD 卡</translation>
-<translation id="8377165353588213941">您已到达最后一页</translation>
 <translation id="8547898031669202422">从外部驱动器启动功能处于停用状态。若要了解详情，请前往：</translation>
 <translation id="8569584079758810124">无法获取调试信息。</translation>
 <translation id="8609689706517017461">网络恢复分区已损坏或缺失。请改用 U 盘。</translation>
-<translation id="8720490351198901261">您已到达第一页</translation>
 <translation id="8738563743369620892">无法使用键盘来解锁引导加载程序。请使用电源按钮 ( ⏻ )。</translation>
 <translation id="8856927881878864573">2. 同时按住音量调高 + 音量调低 + 电源按钮 ( ⏻ ) 至少 10 秒钟。</translation>
 <translation id="8878311588372127478">存储空间自测（扩展）</translation>

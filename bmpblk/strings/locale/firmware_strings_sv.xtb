@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Enheten är inte säker när starthanteraren är olåst. Lås starthanteraren för att återställa enhetens säkerhet.</translation>
 <translation id="1851498512110506461">Användaruppgifter rensas från enheten under processen.</translation>
 <translation id="1880493276474218432">Du behöver följande för att skapa en återställningsenhet:</translation>
+<translation id="194344289147253846">Sida ned/upp</translation>
 <translation id="1995660704900986789">Stäng av</translation>
 <translation id="2022309272630265316">Ingen giltig avbildning identifierades</translation>
 <translation id="2164852388827548816">Loggfil för firmware</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Starta återställningsprocessen</translation>
 <translation id="385051799172605136">Föregående</translation>
 <translation id="3931222419141306012">Inaktuell återställningsavbildning</translation>
-<translation id="4002335453596341558">En sida ned</translation>
 <translation id="4228286289437521015">Detta raderar all data från enheten. Enhetssäkerhet inaktiveras.</translation>
 <translation id="4231467600151418708">2. Håll ned Esc + Uppdatera (⟳) + Av/på-knappen (⏻).</translation>
 <translation id="4521842502554138285">Navigera uppåt eller nedåt med piltangenterna</translation>
@@ -67,10 +67,10 @@ Stäng inte av enheten.</translation>
 <translation id="6602196104287361867">Använd returtangenten för att välja ett alternativ</translation>
 <translation id="6870233504224262352">Låt enheten vara påslagen. Det här kan ta en stund.</translation>
 <translation id="6933530204467815794">Ansluten via TCP</translation>
-<translation id="6972383785688794804">En sida upp</translation>
 <translation id="7065553583078443466">Välj en alternativ starthanterare</translation>
 <translation id="7071202423630761214">Ansluten via USB</translation>
 <translation id="714708458581824276">Partitionen för internetåterställning är skadad eller saknas. Använd en USB-enhet eller ett SD-kort i stället.</translation>
+<translation id="7171353208088046858">Stäng den här vyn</translation>
 <translation id="7321387134821904291">Lagringsutrymmets status</translation>
 <translation id="7332672207700801967">Internetåterställning (äldre version)</translation>
 <translation id="7342794948394983731">Verktyg för diagnostik</translation>
@@ -91,11 +91,9 @@ Stäng inte av enheten.</translation>
 <translation id="8131740175452115882">Bekräfta</translation>
 <translation id="8182314305006465525">Du är i fastboot-läget för starthanteraren</translation>
 <translation id="8315682102205416794">Använd USB-enhet eller SD-kort</translation>
-<translation id="8377165353588213941">Du har nått slutet av sidan</translation>
 <translation id="8547898031669202422">Start från en extern enhet har inaktiverats. Läs mer på:</translation>
 <translation id="8569584079758810124">Det gick inte att hämta felsökningsinformation.</translation>
 <translation id="8609689706517017461">Partitionen för internetåterställning är skadad eller saknas. Använd en USB-enhet i stället.</translation>
-<translation id="8720490351198901261">Du är högst upp på sidan</translation>
 <translation id="8738563743369620892">Du kan inte använda ett tangentbord för att låsa upp starthanteraren. Använd av/på-knappen (⏻).</translation>
 <translation id="8856927881878864573">2. Håll båda volymknapparna och av/på-knappen (⏻) nedtryckta i minst tio sekunder.</translation>
 <translation id="8878311588372127478">Självtest av lagringsutrymme (utökat)</translation>

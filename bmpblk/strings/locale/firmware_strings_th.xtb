@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">อุปกรณ์ของคุณจะไม่ปลอดภัยขณะที่ Bootloader ปลดล็อกอยู่ ล็อก Bootloader เพื่อคืนค่าความปลอดภัยของอุปกรณ์</translation>
 <translation id="1851498512110506461">ระบบจะล้างข้อมูลผู้ใช้ในระหว่างดำเนินการ</translation>
 <translation id="1880493276474218432">คุณจะต้องมีสิ่งต่อไปนี้เพื่อสร้างไดรฟ์การกู้คืน</translation>
+<translation id="194344289147253846">เลื่อนหน้าลง/ขึ้น</translation>
 <translation id="1995660704900986789">ปิดเครื่อง</translation>
 <translation id="2022309272630265316">ไม่พบอิมเมจที่ถูกต้อง</translation>
 <translation id="2164852388827548816">บันทึกเฟิร์มแวร์</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">เริ่มกระบวนการกู้คืน</translation>
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3931222419141306012">อิมเมจการกู้คืนที่ล้าสมัย</translation>
-<translation id="4002335453596341558">เลื่อนหน้าลง</translation>
 <translation id="4228286289437521015">การดำเนินการนี้จะลบข้อมูลทั้งหมดออกจากอุปกรณ์ ระบบรักษาความปลอดภัยของอุปกรณ์จะถูกปิดใช้</translation>
 <translation id="4231467600151418708">2. กด Esc + รีเฟรช ( ⟳ ) + เปิด/ปิด ( ⏻ ) ค้างไว้</translation>
 <translation id="4521842502554138285">ใช้แป้นลูกศรเพื่อเลื่อนขึ้นหรือลง</translation>
@@ -67,10 +67,10 @@
 <translation id="6602196104287361867">ใช้แป้น Enter เพื่อเลือกตัวเลือก</translation>
 <translation id="6870233504224262352">เปิดอุปกรณ์ไว้ การดำเนินการนี้อาจใช้เวลาสักครู่</translation>
 <translation id="6933530204467815794">เชื่อมต่อผ่าน TCP</translation>
-<translation id="6972383785688794804">เลื่อนหน้าขึ้น</translation>
 <translation id="7065553583078443466">เลือก Bootloader อื่น</translation>
 <translation id="7071202423630761214">เชื่อมต่อผ่าน USB</translation>
 <translation id="714708458581824276">พาร์ติชันการกู้คืนอินเทอร์เน็ตเสียหายหรือไม่มี โปรดใช้ไดรฟ์ USB หรือการ์ด SD แทน</translation>
+<translation id="7171353208088046858">ออกจากมุมมองนี้</translation>
 <translation id="7321387134821904291">ข้อมูลความสมบูรณ์ของพื้นที่เก็บข้อมูล</translation>
 <translation id="7332672207700801967">การกู้คืนอินเทอร์เน็ต (เวอร์ชันเก่า)</translation>
 <translation id="7342794948394983731">เครื่องมือวินิจฉัย</translation>
@@ -91,11 +91,9 @@
 <translation id="8131740175452115882">ยืนยัน</translation>
 <translation id="8182314305006465525">คุณอยู่ใน Fastboot Mode ของ Bootloader</translation>
 <translation id="8315682102205416794">ใช้ไดรฟ์ USB หรือการ์ด SD</translation>
-<translation id="8377165353588213941">มาถึงส่วนสุดท้ายแล้ว</translation>
 <translation id="8547898031669202422">ปิดใช้การเปิดเครื่องจากไดรฟ์ภายนอกอยู่ ดูข้อมูลเพิ่มเติมที่:</translation>
 <translation id="8569584079758810124">โหลดข้อมูลการแก้ไขข้อบกพร่องไม่ได้</translation>
 <translation id="8609689706517017461">พาร์ติชันการกู้คืนอินเทอร์เน็ตเสียหายหรือไม่มี ใช้ไดรฟ์ USB แทน</translation>
-<translation id="8720490351198901261">มาถึงส่วนบนสุดแล้ว</translation>
 <translation id="8738563743369620892">คุณใช้แป้นพิมพ์ปลดล็อก Bootloader ไม่ได้ ใช้ปุ่มเปิด/ปิด ( ⏻ )</translation>
 <translation id="8856927881878864573">2. กดปุ่มเพิ่มระดับเสียง + ลดระดับเสียง + ปุ่มเปิด/ปิด ( ⏻ ) ค้างไว้อย่างน้อย 10 วินาที</translation>
 <translation id="8878311588372127478">การทดสอบพื้นที่เก็บข้อมูลด้วยตนเอง (แบบใช้เวลานาน)</translation>

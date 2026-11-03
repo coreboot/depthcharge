@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Įrenginys nėra saugus, kai paleidyklė atrakinta. Jei norite atkurti įrenginio saugą, užrakinkite paleidyklę.</translation>
 <translation id="1851498512110506461">Vykdant procesą naudotojo duomenys bus išvalyti.</translation>
 <translation id="1880493276474218432">Norint sukurti atkūrimo diską, reikia turėti:</translation>
+<translation id="194344289147253846">Puslapiu žemyn ar aukštyn</translation>
 <translation id="1995660704900986789">Išjungti maitinimą</translation>
 <translation id="2022309272630265316">Neaptiktas joks galiojantis vaizdas</translation>
 <translation id="2164852388827548816">Programinės aparatinės įrangos žurnalas</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Pradėti atkūrimo procesą</translation>
 <translation id="385051799172605136">Atgal</translation>
 <translation id="3931222419141306012">Pasenęs atkūrimo vaizdas</translation>
-<translation id="4002335453596341558">Puslapiu žemyn</translation>
 <translation id="4228286289437521015">Bus ištrinti visi duomenys iš įrenginio. Įrenginio sauga bus išjungta.</translation>
 <translation id="4231467600151418708">2. Palaikykite paspaudę „Esc“, atnaujinimo (⟳) ir maitinimo (⏻) mygtukus.</translation>
 <translation id="4521842502554138285">Naršykite aukštyn arba žemyn rodyklių klavišais</translation>
@@ -67,10 +67,10 @@ Neišjunkite įrenginio.</translation>
 <translation id="6602196104287361867">Klavišu „Enter“ pasirinkite parinktį</translation>
 <translation id="6870233504224262352">Įrenginys turi būti įjungtas. Tai gali šiek tiek užtrukti.</translation>
 <translation id="6933530204467815794">Prisijungta per TCP</translation>
-<translation id="6972383785688794804">Puslapiu aukštyn</translation>
 <translation id="7065553583078443466">Pasirinkite alternatyvią paleidyklę</translation>
 <translation id="7071202423630761214">Prijungta USB laidu</translation>
 <translation id="714708458581824276">Nėra interneto atkūrimo skaidinio arba jis sugadintas. Vietoj to naudokite atmintuką arba SD kortelę.</translation>
+<translation id="7171353208088046858">Išeiti iš šio rodinio</translation>
 <translation id="7321387134821904291">Saugyklos būsenos informacija</translation>
 <translation id="7332672207700801967">Interneto atkūrimas (senesnė versija)</translation>
 <translation id="7342794948394983731">Diagnostikos įrankiai</translation>
@@ -91,11 +91,9 @@ Neišjunkite įrenginio.</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8182314305006465525">Įjungtas paleidyklės sparčiojo paleidimo įrankio režimas</translation>
 <translation id="8315682102205416794">Naudoti atmintuką arba SD kortelę</translation>
-<translation id="8377165353588213941">Pasiekėte paskutinį puslapį</translation>
 <translation id="8547898031669202422">Paleidimas iš išorinio disko išjungtas. Sužinokite daugiau šiuo adresu:</translation>
 <translation id="8569584079758810124">Nepavyko gauti derinimo informacijos.</translation>
 <translation id="8609689706517017461">Nėra interneto atkūrimo skaidinio arba jis sugadintas. Vietoj jo naudokite atmintuką.</translation>
-<translation id="8720490351198901261">Pasiekėte pirmąjį puslapį</translation>
 <translation id="8738563743369620892">Negalite atrakinti paleidyklės naudodami klaviatūrą. Naudokite maitinimo mygtuką (⏻).</translation>
 <translation id="8856927881878864573">2. Palaikykite paspaudę garsumo padidinimo, garsumo sumažinimo ir maitinimo (⏻) mygtukus bent dešimt sekundžių.</translation>
 <translation id="8878311588372127478">Saugyklos savarankiškas testavimas (išplėstas)</translation>

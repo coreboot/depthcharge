@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Thiết bị không được bảo mật khi trình tải khởi động được mở khoá. Để khôi phục tính năng bảo mật của thiết bị, hãy khoá trình tải khởi động.</translation>
 <translation id="1851498512110506461">Dữ liệu người dùng sẽ bị xoá sạch trong quá trình này.</translation>
 <translation id="1880493276474218432">Để tạo ổ đĩa khôi phục, bạn cần:</translation>
+<translation id="194344289147253846">Phím Page down/up</translation>
 <translation id="1995660704900986789">Tắt nguồn</translation>
 <translation id="2022309272630265316">Không phát hiện thấy hình ảnh hợp lệ</translation>
 <translation id="2164852388827548816">Nhật ký của chương trình cơ sở</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Bắt đầu quy trình khôi phục</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3931222419141306012">Hình ảnh khôi phục đã cũ</translation>
-<translation id="4002335453596341558">Trang dưới</translation>
 <translation id="4228286289437521015">Thao tác này sẽ xoá tất cả dữ liệu khỏi thiết bị. Tính năng bảo mật thiết bị sẽ bị tắt.</translation>
 <translation id="4231467600151418708">2. Nhấn và giữ phím Esc + Làm mới ( ⟳ ) + Nguồn ( ⏻ ).</translation>
 <translation id="4521842502554138285">Sử dụng các phím mũi tên để di chuyển lên hoặc xuống</translation>
@@ -67,10 +67,10 @@ Vui long khong tat may.</translation>
 <translation id="6602196104287361867">Dùng phím Enter để chọn một mục</translation>
 <translation id="6870233504224262352">Đừng tắt thiết bị. Quá trình này có thể mất chút thời gian.</translation>
 <translation id="6933530204467815794">Đã kết nối qua TCP</translation>
-<translation id="6972383785688794804">Trang trên</translation>
 <translation id="7065553583078443466">Chọn trình tải khởi động thay thế</translation>
 <translation id="7071202423630761214">Đã kết nối qua USB</translation>
 <translation id="714708458581824276">Phân vùng khôi phục qua Internet bị hỏng hoặc bị thiếu. Thay vào đó, hãy dùng ổ đĩa USB hoặc thẻ SD.</translation>
+<translation id="7171353208088046858">Thoát chế độ xem này</translation>
 <translation id="7321387134821904291">Thông tin về tình trạng bộ nhớ</translation>
 <translation id="7332672207700801967">Khôi phục bằng kết nối Internet (phiên bản cũ hơn)</translation>
 <translation id="7342794948394983731">Công cụ chẩn đoán</translation>
@@ -91,11 +91,9 @@ Vui long khong tat may.</translation>
 <translation id="8131740175452115882">Xác nhận</translation>
 <translation id="8182314305006465525">Bạn đang ở chế độ khởi động nhanh của trình tải khởi động</translation>
 <translation id="8315682102205416794">Sử dụng ổ đĩa USB hoặc thẻ SD</translation>
-<translation id="8377165353588213941">Bạn đã ở trang cuối cùng</translation>
 <translation id="8547898031669202422">Đã tắt chế độ khởi động từ ổ đĩa ngoài. Tìm hiểu thêm tại:</translation>
 <translation id="8569584079758810124">Không nhận được thông tin gỡ lỗi.</translation>
 <translation id="8609689706517017461">Phân vùng khôi phục qua Internet bị hỏng hoặc bị thiếu. Hãy sử dụng ổ đĩa USB.</translation>
-<translation id="8720490351198901261">Bạn đã ở trang đầu tiên</translation>
 <translation id="8738563743369620892">Bạn không thể dùng bàn phím để mở khoá trình tải khởi động. Hãy sử dụng nút Nguồn ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Nhấn và giữ nút Tăng âm lượng + Giảm âm lượng + Nguồn ( ⏻ ) trong ít nhất 10 giây.</translation>
 <translation id="8878311588372127478">Tự kiểm tra bộ nhớ (mở rộng)</translation>

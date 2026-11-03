@@ -433,18 +433,16 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 }
 
 /*
- * Navigation tips in the navigation bar of the full view layout.
- *
- * TODO(b/551743258): Show "Page down / up" next to the down and up keycaps,
- * and "Exit this view" next to the select keycap as in the design.
+ * Navigation tips in the navigation bar of the full view layout. Each tip
+ * consists of one or two keycaps, followed by a text.
  */
 static const struct {
-	enum nav_key key;
+	enum nav_key keys[2];
+	int num_keys;
 	const char *file;
 } navigation_tips[] = {
-	{ NAV_KEY_DOWN, "btn_page_down.bmp" },
-	{ NAV_KEY_UP, "btn_page_up.bmp" },
-	{ NAV_KEY_SELECT, "btn_back.bmp" },
+	{ { NAV_KEY_DOWN, NAV_KEY_UP }, 2, "page_down_up.bmp" },
+	{ { NAV_KEY_SELECT }, 1, "exit_view.bmp" },
 };
 
 /*
@@ -454,10 +452,29 @@ static const struct {
 static const char *get_navigation_tip_file(const struct ui_state *state,
 					   int i)
 {
-	if (navigation_tips[i].key == NAV_KEY_SELECT &&
+	if (navigation_tips[i].keys[0] == NAV_KEY_SELECT &&
 	    state->test_state == UI_TEST_STATE_RUNNING)
 		return "btn_cancel.bmp";
 	return navigation_tips[i].file;
+}
+
+/*
+ * Get the width of the keycaps of a navigation tip, including the spacing
+ * between them.
+ */
+static vb2_error_t get_navigation_tip_keycaps_width(int i, int32_t *width)
+{
+	int32_t keycap_width, keycap_height;
+
+	*width = 0;
+	for (int j = 0; j < navigation_tips[i].num_keys; j++) {
+		if (j > 0)
+			*width += UI_KEYCAP_SPACING;
+		VB2_TRY(get_keycap_size(navigation_tips[i].keys[j],
+					&keycap_width, &keycap_height));
+		*width += keycap_width;
+	}
+	return VB2_SUCCESS;
 }
 
 vb2_error_t ui_get_navigation_bar_width(const struct ui_state *state,
@@ -465,19 +482,18 @@ vb2_error_t ui_get_navigation_bar_width(const struct ui_state *state,
 {
 	const char *locale_code = state->locale->code;
 	struct ui_bitmap bitmap;
-	int32_t keycap_width, keycap_height, text_width;
+	int32_t keycaps_width, text_width;
 
 	*width = 0;
 	for (int i = 0; i < ARRAY_SIZE(navigation_tips); i++) {
 		if (i > 0)
 			*width += UI_NAVIGATION_BAR_ITEM_SPACING;
-		VB2_TRY(get_keycap_size(navigation_tips[i].key, &keycap_width,
-					&keycap_height));
+		VB2_TRY(get_navigation_tip_keycaps_width(i, &keycaps_width));
 		VB2_TRY(ui_get_bitmap(get_navigation_tip_file(state, i),
 				      locale_code, 0, &bitmap));
 		VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
 					    &text_width));
-		*width += keycap_width + UI_KEYCAP_MARGIN_R + text_width;
+		*width += keycaps_width + UI_KEYCAP_MARGIN_R + text_width;
 	}
 
 	return VB2_SUCCESS;
@@ -505,11 +521,17 @@ static vb2_error_t draw_navigation_bar(const struct ui_state *state,
 	for (int i = 0; i < ARRAY_SIZE(navigation_tips); i++) {
 		if (i > 0)
 			x += UI_NAVIGATION_BAR_ITEM_SPACING;
-		VB2_TRY(get_keycap_size(navigation_tips[i].key, &keycap_width,
-					&keycap_height));
-		VB2_TRY(draw_keycap(navigation_tips[i].key, x, y_center,
-				    reverse));
-		x += keycap_width + UI_KEYCAP_MARGIN_R;
+		for (int j = 0; j < navigation_tips[i].num_keys; j++) {
+			const enum nav_key key = navigation_tips[i].keys[j];
+
+			if (j > 0)
+				x += UI_KEYCAP_SPACING;
+			VB2_TRY(get_keycap_size(key, &keycap_width,
+						&keycap_height));
+			VB2_TRY(draw_keycap(key, x, y_center, reverse));
+			x += keycap_width;
+		}
+		x += UI_KEYCAP_MARGIN_R;
 		VB2_TRY(ui_get_bitmap(get_navigation_tip_file(state, i),
 				      locale_code, 0, &bitmap));
 		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,

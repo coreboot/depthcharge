@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Votre appareil n'est pas sécurisé tant que le bootloader est déverrouillé. Pour restaurer la sécurité de l'appareil, verrouillez le bootloader.</translation>
 <translation id="1851498512110506461">Les données utilisateur seront effacées lors de la procédure.</translation>
 <translation id="1880493276474218432">Pour créer une clé de restauration, vous aurez besoin des éléments suivants :</translation>
+<translation id="194344289147253846">Page suivante/précédente</translation>
 <translation id="1995660704900986789">Éteindre</translation>
 <translation id="2022309272630265316">Aucune image valide détectée</translation>
 <translation id="2164852388827548816">Journal du micrologiciel</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Lancez la restauration</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3931222419141306012">Image de restauration obsolète</translation>
-<translation id="4002335453596341558">Page suivante</translation>
 <translation id="4228286289437521015">Toutes les données de votre appareil seront effacées. La sécurité de l'appareil sera désactivée.</translation>
 <translation id="4231467600151418708">2. Appuyez sur Échap+Actualiser (⟳)+Marche/Arrêt (⏻).</translation>
 <translation id="4521842502554138285">Utilisez les touches fléchées pour vous déplacer vers le haut ou vers le bas</translation>
@@ -67,10 +67,10 @@ Veuillez ne pas l'éteindre.</translation>
 <translation id="6602196104287361867">Utilisez la touche Entrée pour sélectionner une option</translation>
 <translation id="6870233504224262352">Laissez votre appareil allumé. Cela peut prendre un moment.</translation>
 <translation id="6933530204467815794">Connecté via TCP</translation>
-<translation id="6972383785688794804">Page précédente</translation>
 <translation id="7065553583078443466">Sélectionner un autre bootloader</translation>
 <translation id="7071202423630761214">Connecté via USB</translation>
 <translation id="714708458581824276">La partition de restauration Internet est corrompue ou manquante. Utilisez plutôt une clé USB ou une carte SD.</translation>
+<translation id="7171353208088046858">Quitter cette vue</translation>
 <translation id="7321387134821904291">Infos sur l'état de l'espace de stockage</translation>
 <translation id="7332672207700801967">Récupération Internet (ancienne version)</translation>
 <translation id="7342794948394983731">Outils de diagnostic</translation>
@@ -91,11 +91,9 @@ Veuillez ne pas l'éteindre.</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8182314305006465525">Votre bootloader est en mode Fastboot</translation>
 <translation id="8315682102205416794">Utiliser une clé USB ou une carte SD</translation>
-<translation id="8377165353588213941">Vous avez atteint la dernière page</translation>
 <translation id="8547898031669202422">Le démarrage à partir d'un disque externe est désactivé. Pour plus d'informations, consultez :</translation>
 <translation id="8569584079758810124">Impossible d'obtenir les informations de débogage.</translation>
 <translation id="8609689706517017461">La partition de restauration Internet est corrompue ou manquante. Utilisez plutôt une clé USB.</translation>
-<translation id="8720490351198901261">Vous avez atteint la première page</translation>
 <translation id="8738563743369620892">Vous ne pouvez pas utiliser de clavier pour déverrouiller le bootloader. Utilisez le bouton Marche/Arrêt (⏻).</translation>
 <translation id="8856927881878864573">2. Appuyez sur les boutons volume+, volume- et Marche/Arrêt (⏻) pendant au moins 10 secondes.</translation>
 <translation id="8878311588372127478">Auto-test de l'espace de stockage (long)</translation>

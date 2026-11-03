@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">부트로더가 잠금 해제된 상태에서는 기기가 안전하지 않습니다. 기기 보안을 복원하려면 부트로더를 잠그세요.</translation>
 <translation id="1851498512110506461">이 과정에서 사용자 데이터가 삭제됩니다.</translation>
 <translation id="1880493276474218432">복구 드라이브를 만들려면 다음이 필요합니다.</translation>
+<translation id="194344289147253846">페이지 아래로/위로</translation>
 <translation id="1995660704900986789">끄기</translation>
 <translation id="2022309272630265316">감지된 유효한 이미지 없음</translation>
 <translation id="2164852388827548816">펌웨어 로그</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">복구 프로세스 시작</translation>
 <translation id="385051799172605136">뒤로</translation>
 <translation id="3931222419141306012">오래된 복구 이미지</translation>
-<translation id="4002335453596341558">페이지 아래로</translation>
 <translation id="4228286289437521015">기기에서 모든 데이터가 삭제됩니다. 기기 보안이 사용 중지됩니다.</translation>
 <translation id="4231467600151418708">2. Esc + 새로고침(⟳) + 전원(⏻)을 길게 누릅니다.</translation>
 <translation id="4521842502554138285">화살표 키를 사용하여 위아래로 이동하세요.</translation>
@@ -67,10 +67,10 @@ Please do not turn off your device.</translation>
 <translation id="6602196104287361867">Enter 키를 사용하여 옵션을 선택하세요.</translation>
 <translation id="6870233504224262352">기기를 켜 둔 상태로 유지하세요. 잠시만 기다려 주세요.</translation>
 <translation id="6933530204467815794">TCP를 통해 연결됨</translation>
-<translation id="6972383785688794804">페이지 위로</translation>
 <translation id="7065553583078443466">대체 부트로더 선택</translation>
 <translation id="7071202423630761214">USB를 통해 연결됨</translation>
 <translation id="714708458581824276">인터넷 복구 파티션이 손상되었거나 누락되었습니다. 대신 USB 드라이브 또는 SD 카드를 사용하세요.</translation>
+<translation id="7171353208088046858">이 뷰 종료</translation>
 <translation id="7321387134821904291">저장용량 상태 정보</translation>
 <translation id="7332672207700801967">인터넷 복구(이전 버전)</translation>
 <translation id="7342794948394983731">진단 도구</translation>
@@ -91,11 +91,9 @@ Please do not turn off your device.</translation>
 <translation id="8131740175452115882">확인</translation>
 <translation id="8182314305006465525">부트로더 빠른 부팅 모드 상태입니다</translation>
 <translation id="8315682102205416794">USB 드라이브 또는 SD 카드 사용</translation>
-<translation id="8377165353588213941">마지막 부분입니다.</translation>
 <translation id="8547898031669202422">외장 드라이브에서의 부팅이 사용 중지되었습니다. 다음 URL에서 자세히 알아보세요.</translation>
 <translation id="8569584079758810124">디버그 정보를 표시할 수 없습니다.</translation>
 <translation id="8609689706517017461">인터넷 복구 파티션이 손상되었거나 누락되었습니다. 대신 USB 드라이브를 사용하세요.</translation>
-<translation id="8720490351198901261">첫 부분입니다.</translation>
 <translation id="8738563743369620892">키보드를 사용하여 부트로더를 잠금 해제할 수 없습니다. 전원 버튼(⏻)을 사용하세요.</translation>
 <translation id="8856927881878864573">2. 볼륨 업 버튼 + 볼륨 다운 버튼 + 전원 버튼(⏻)을 10초 이상 길게 누릅니다.</translation>
 <translation id="8878311588372127478">확장된 저장용량 자동 테스트</translation>

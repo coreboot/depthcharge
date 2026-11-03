@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Dispozitivul nu este securizat cât timp bootloaderul este deblocat. Pentru a restabili securitatea dispozitivului, blocați bootloaderul.</translation>
 <translation id="1851498512110506461">Datele utilizatorului vor fi șterse în acest proces.</translation>
 <translation id="1880493276474218432">Pentru a crea o unitate de recuperare, veți avea nevoie de:</translation>
+<translation id="194344289147253846">O pagină în jos / sus</translation>
 <translation id="1995660704900986789">Oprește alimentarea</translation>
 <translation id="2022309272630265316">Nu s-a detectat nicio imagine validă</translation>
 <translation id="2164852388827548816">Jurnalul de firmware</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Începeți procesul de recuperare</translation>
 <translation id="385051799172605136">Înapoi</translation>
 <translation id="3931222419141306012">Imaginea de recuperare este învechită</translation>
-<translation id="4002335453596341558">O pagină mai jos</translation>
 <translation id="4228286289437521015">Această opțiune va șterge toate datele de pe dispozitiv. Securitatea dispozitivului va fi dezactivată.</translation>
 <translation id="4231467600151418708">2. Apăsați lung pe Esc + Actualizați ( ⟳ ) + Pornire ( ⏻ ).</translation>
 <translation id="4521842502554138285">Folosiți tastele săgeată pentru a naviga în sus sau în jos</translation>
@@ -67,10 +67,10 @@ Nu inchideti dispozitivul.</translation>
 <translation id="6602196104287361867">Folosiți tasta Enter pentru a selecta o opțiune</translation>
 <translation id="6870233504224262352">Țineți dispozitivul pornit. Poate dura puțin.</translation>
 <translation id="6933530204467815794">Conectat prin TCP</translation>
-<translation id="6972383785688794804">O pagină mai sus</translation>
 <translation id="7065553583078443466">Selectează un bootloader alternativ</translation>
 <translation id="7071202423630761214">Conectat prin USB</translation>
 <translation id="714708458581824276">Partiția de recuperare cu internet este deteriorată sau lipsește. Folosiți o unitate USB sau un card SD.</translation>
+<translation id="7171353208088046858">Ieșiți din această vizualizare</translation>
 <translation id="7321387134821904291">Informații despre starea dispozitivelor de stocare</translation>
 <translation id="7332672207700801967">Recuperare de pe internet (versiune mai veche)</translation>
 <translation id="7342794948394983731">Instrumente de diagnosticare</translation>
@@ -91,11 +91,9 @@ Nu inchideti dispozitivul.</translation>
 <translation id="8131740175452115882">Confirmați</translation>
 <translation id="8182314305006465525">Sunteți în Fastboot mode pentru bootloader</translation>
 <translation id="8315682102205416794">Folosiți unitatea USB sau cardul SD</translation>
-<translation id="8377165353588213941">Ai ajuns la final</translation>
 <translation id="8547898031669202422">Pornirea de pe o unitate externă este dezactivată. Aflați mai multe la:</translation>
 <translation id="8569584079758810124">Nu s-au putut obține informații de remediere a erorilor.</translation>
 <translation id="8609689706517017461">Partiția de recuperare cu internet este deteriorată sau lipsește. Folosiți o unitate USB.</translation>
-<translation id="8720490351198901261">Ai ajuns în partea de sus</translation>
 <translation id="8738563743369620892">Nu puteți folosi o tastatură pentru a debloca bootloaderul. Folosiți butonul de pornire ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Apăsați lung butonul de creștere a volumului + butonul de reducere a volumului + butonul de pornire ( ⏻ ) timp de cel puțin 10 secunde.</translation>
 <translation id="8878311588372127478">Autotest pentru stocare (extins)</translation>

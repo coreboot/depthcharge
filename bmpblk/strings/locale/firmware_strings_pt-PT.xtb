@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">O seu dispositivo não é seguro enquanto o carregador de arranque estiver desbloqueado. Para restaurar a segurança do dispositivo, bloqueie o carregador de arranque.</translation>
 <translation id="1851498512110506461">Os dados do utilizador vão ser limpos durante o processo.</translation>
 <translation id="1880493276474218432">Para criar uma unidade de recuperação, precisa de:</translation>
+<translation id="194344289147253846">Página para baixo/cima</translation>
 <translation id="1995660704900986789">Desligar</translation>
 <translation id="2022309272630265316">Não foi detetada nenhuma imagem válida</translation>
 <translation id="2164852388827548816">Registo de firmware</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Inicie o processo de recuperação</translation>
 <translation id="385051799172605136">Anterior</translation>
 <translation id="3931222419141306012">Imagem de recuperação desatualizada</translation>
-<translation id="4002335453596341558">Página para baixo</translation>
 <translation id="4228286289437521015">Esta ação apaga todos os dados do dispositivo. A segurança do dispositivo vai ser desativada.</translation>
 <translation id="4231467600151418708">2. Prima Esc + Atualizar ( ⟳ ) + Ligar/desligar ( ⏻ ).</translation>
 <translation id="4521842502554138285">Use as teclas de seta para navegar para cima ou para baixo</translation>
@@ -67,10 +67,10 @@ Tem de ficar ligado.</translation>
 <translation id="6602196104287361867">Use a tecla Enter para selecionar uma opção</translation>
 <translation id="6870233504224262352">Mantenha o dispositivo ligado. Esta ação pode demorar alguns instantes.</translation>
 <translation id="6933530204467815794">Ligado através de TCP</translation>
-<translation id="6972383785688794804">Página para cima</translation>
 <translation id="7065553583078443466">Selecionar carregador de arranque alternativo</translation>
 <translation id="7071202423630761214">Ligado por USB</translation>
 <translation id="714708458581824276">A partição de recuperação da Internet está corrompida ou em falta. Em alternativa, use uma unidade USB ou um cartão SD.</translation>
+<translation id="7171353208088046858">Sair desta vista</translation>
 <translation id="7321387134821904291">Informações sobre o estado de funcionamento do armazenamento</translation>
 <translation id="7332672207700801967">Recuperação da Internet (versão mais antiga)</translation>
 <translation id="7342794948394983731">Ferramentas de diagnóstico</translation>
@@ -91,11 +91,9 @@ Tem de ficar ligado.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8182314305006465525">Está no Modo de arranque rápido (Fastboot mode) do carregador de arranque</translation>
 <translation id="8315682102205416794">Usar unidade USB ou cartão SD</translation>
-<translation id="8377165353588213941">Chegou ao fim.</translation>
 <translation id="8547898031669202422">O arranque a partir de uma unidade externa está desativado. Saiba mais em:</translation>
 <translation id="8569584079758810124">Não foi possível obter as informações de depuração.</translation>
 <translation id="8609689706517017461">A partição de recuperação da Internet está corrompida ou em falta. Em alternativa, use uma unidade USB.</translation>
-<translation id="8720490351198901261">Chegou ao topo.</translation>
 <translation id="8738563743369620892">Não é possível usar um teclado para desbloquear o carregador de arranque. Use o botão ligar/desligar ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Prima sem soltar os botões Aumentar volume + Diminuir volume + Ligar/desligar ( ⏻ ) durante, pelo menos, 10 segundos.</translation>
 <translation id="8878311588372127478">Teste automático de armazenamento (alargado)</translation>

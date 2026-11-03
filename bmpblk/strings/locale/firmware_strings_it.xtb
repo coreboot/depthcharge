@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Il dispositivo non è sicuro quando il bootloader è sbloccato. Per ripristinare la sicurezza del dispositivo, blocca il bootloader.</translation>
 <translation id="1851498512110506461">I dati utente verranno cancellati durante la procedura.</translation>
 <translation id="1880493276474218432">Per creare un'unità di ripristino, ti servirà:</translation>
+<translation id="194344289147253846">Pagina giù/Pagina su</translation>
 <translation id="1995660704900986789">Spegni</translation>
 <translation id="2022309272630265316">Nessuna immagine valida rilevata</translation>
 <translation id="2164852388827548816">Log del firmware</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Avvia la procedura di ripristino</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="3931222419141306012">Immagine di ripristino non aggiornata</translation>
-<translation id="4002335453596341558">Pagina giù</translation>
 <translation id="4228286289437521015">Verranno cancellati tutti i dati dal dispositivo. La sicurezza del dispositivo verrà disattivata.</translation>
 <translation id="4231467600151418708">2. Tieni premuti Esc + Aggiorna ( ⟳ ) + Accensione ( ⏻ ).</translation>
 <translation id="4521842502554138285">Usa i tasti freccia per spostarti verso l'alto o verso il basso</translation>
@@ -67,10 +67,10 @@ Non spegnere il dispositivo.</translation>
 <translation id="6602196104287361867">Utilizza il tasto Invio per selezionare un'opzione</translation>
 <translation id="6870233504224262352">Mantieni il dispositivo acceso. L'operazione può richiedere alcuni istanti.</translation>
 <translation id="6933530204467815794">Connessione tramite TCP effettuata</translation>
-<translation id="6972383785688794804">Pagina su</translation>
 <translation id="7065553583078443466">Seleziona bootloader alternativo</translation>
 <translation id="7071202423630761214">Connesso tramite USB</translation>
 <translation id="714708458581824276">La partizione di ripristino di internet è danneggiata o mancante. Usa un'unità USB o una scheda SD.</translation>
+<translation id="7171353208088046858">Esci da questa visualizzazione</translation>
 <translation id="7321387134821904291">Informazioni sullo stato dello spazio di archiviazione</translation>
 <translation id="7332672207700801967">Ripristino Internet (versione precedente)</translation>
 <translation id="7342794948394983731">Strumenti di diagnostica</translation>
@@ -91,11 +91,9 @@ Non spegnere il dispositivo.</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8182314305006465525">Sei in modalità Fastboot del bootloader</translation>
 <translation id="8315682102205416794">Usa unità USB o scheda SD</translation>
-<translation id="8377165353588213941">Sei già all'ultima pagina</translation>
 <translation id="8547898031669202422">L'avvio da un'unità esterna è disattivato. Scopri di più all'indirizzo:</translation>
 <translation id="8569584079758810124">Impossibile recuperare le informazioni di debug.</translation>
 <translation id="8609689706517017461">La partizione di ripristino di internet è danneggiata o mancante. Utilizza invece un'unità USB.</translation>
-<translation id="8720490351198901261">Sei alla prima pagina</translation>
 <translation id="8738563743369620892">Non puoi usare una tastiera per sbloccare il bootloader. Usa il tasto di accensione ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Tieni premuti i tasti Alza il volume + Abbassa il volume + il tasto di accensione ( ⏻ ) per almeno 10 secondi.</translation>
 <translation id="8878311588372127478">Diagnostica automatica (estesa) dello spazio di archiviazione</translation>

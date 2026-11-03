@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Hindi secure ang iyong device habang naka-unlock ang bootloader. Para ma-restore ang seguridad ng device, i-lock ang bootloader.</translation>
 <translation id="1851498512110506461">Mawa-wipe ang data ng user habang isinasagawa ang proseso.</translation>
 <translation id="1880493276474218432">Para makagawa ng drive sa pag-recover, kakailanganin mo ng:</translation>
+<translation id="194344289147253846">Page down / up</translation>
 <translation id="1995660704900986789">I-off</translation>
 <translation id="2022309272630265316">Walang na-detect na valid na imahe</translation>
 <translation id="2164852388827548816">Log ng firmware</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Simulan ang proseso ng pag-recover</translation>
 <translation id="385051799172605136">Bumalik</translation>
 <translation id="3931222419141306012">Lumang imahe sa pag-recover</translation>
-<translation id="4002335453596341558">Page down</translation>
 <translation id="4228286289437521015">Buburahin nito ang lahat ng data sa iyong device. Madi-disable ang seguridad ng device.</translation>
 <translation id="4231467600151418708">2. Pindutin nang matagal ang Esc + Refresh ( ⟳ ) + Power ( ⏻ ).</translation>
 <translation id="4521842502554138285">Gamitin ang mga arrow key para mag-navigate pataas o pababa</translation>
@@ -67,10 +67,10 @@ Huwag i-off ang device.</translation>
 <translation id="6602196104287361867">Gamitin ang Enter key para pumili ng opsyon</translation>
 <translation id="6870233504224262352">Panatilihing naka-on ang iyong device. Posible itong abutin nang ilang sandali.</translation>
 <translation id="6933530204467815794">Nakakonekta sa pamamagitan ng TCP</translation>
-<translation id="6972383785688794804">Page up</translation>
 <translation id="7065553583078443466">Pumili ng alternatibong bootloader</translation>
 <translation id="7071202423630761214">Nakakonekta sa pamamagitan ng USB</translation>
 <translation id="714708458581824276">Na-corrupt o nawawala ang partition ng pag-recover sa pamamagitan ng internet. Gumamit na lang ng USB drive o SD card.</translation>
+<translation id="7171353208088046858">Lumabas sa view na ito</translation>
 <translation id="7321387134821904291">Impormasyon sa status ng storage</translation>
 <translation id="7332672207700801967">Pag-recover ng internet (mas lumang bersyon)</translation>
 <translation id="7342794948394983731">Mga diagnostic tool</translation>
@@ -91,11 +91,9 @@ Huwag i-off ang device.</translation>
 <translation id="8131740175452115882">Kumpirmahin</translation>
 <translation id="8182314305006465525">Nasa bootloader fastboot mode ka</translation>
 <translation id="8315682102205416794">Gumamit ng USB drive o SD card</translation>
-<translation id="8377165353588213941">Naabot mo na ang dulo</translation>
 <translation id="8547898031669202422">Naka-disable ang pag-boot mula sa external na drive. Matuto pa sa:</translation>
 <translation id="8569584079758810124">Hindi makuha ang impormasyon sa pag-debug.</translation>
 <translation id="8609689706517017461">Na-corrupt o nawawala ang partition ng pag-recover sa pamamagitan ng internet. Gumamit na lang ng USB drive.</translation>
-<translation id="8720490351198901261">Naabot mo na ang simula</translation>
 <translation id="8738563743369620892">Hindi ka puwedeng gumamit ng keyboard para i-unlock ang bootloader. Gamitin ang Power button ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Pindutin nang matagal ang Pataas na Volume + Pababang Volume + Power button ( ⏻ ) nang hindi bababa sa 10 segundo.</translation>
 <translation id="8878311588372127478">Self-test ng storage (pinalawak)</translation>

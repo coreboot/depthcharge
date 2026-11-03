@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">ブートローダーのロックが解除されている間、デバイスは安全ではありません。デバイスのセキュリティを復元するには、ブートローダーをロックしてください。</translation>
 <translation id="1851498512110506461">このプロセスではユーザーデータがすべて消去されます。</translation>
 <translation id="1880493276474218432">リカバリ ドライブを作成するには、次のものが必要です。</translation>
+<translation id="194344289147253846">PageDown / PageUp</translation>
 <translation id="1995660704900986789">電源を切る</translation>
 <translation id="2022309272630265316">有効なイメージがありません</translation>
 <translation id="2164852388827548816">ファームウェアのログ</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">復元プロセスを開始</translation>
 <translation id="385051799172605136">戻る</translation>
 <translation id="3931222419141306012">古いリカバリ イメージ</translation>
-<translation id="4002335453596341558">1 ページ分下に移動する</translation>
 <translation id="4228286289437521015">デバイスからすべてのデータが消去されます。デバイスのセキュリティが無効になります。</translation>
 <translation id="4231467600151418708">2. Esc キー、更新キー（⟳）、電源ボタン（⏻）を同時に長押しします。</translation>
 <translation id="4521842502554138285">矢印キーを使用して上または下に移動します</translation>
@@ -67,10 +67,10 @@ Please do not turn off your device.</translation>
 <translation id="6602196104287361867">Enter キーを使用してオプションを選択します</translation>
 <translation id="6870233504224262352">デバイスの電源をオンにしておいてください。しばらく時間がかかる場合があります。</translation>
 <translation id="6933530204467815794">TCP 経由で接続しました</translation>
-<translation id="6972383785688794804">1 ページ分上に移動する</translation>
 <translation id="7065553583078443466">別のブートローダーを選択</translation>
 <translation id="7071202423630761214">USB 経由で接続しました</translation>
 <translation id="714708458581824276">インターネット リカバリ パーティションは破損しているか見つかりません。代わりに USB ドライブまたは SD カードを使用してください。</translation>
+<translation id="7171353208088046858">このビューを終了</translation>
 <translation id="7321387134821904291">ストレージの健全性に関する情報</translation>
 <translation id="7332672207700801967">インターネット リカバリ（古いバージョン）</translation>
 <translation id="7342794948394983731">診断ツール</translation>
@@ -91,11 +91,9 @@ Please do not turn off your device.</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8182314305006465525">ブートローダー Fastboot モードです</translation>
 <translation id="8315682102205416794">USB ドライブまたは SD カードを使用</translation>
-<translation id="8377165353588213941">最後のページです</translation>
 <translation id="8547898031669202422">外部ドライブからの起動は無効になっています。詳細:</translation>
 <translation id="8569584079758810124">デバッグ情報を取得できませんでした。</translation>
 <translation id="8609689706517017461">インターネット リカバリ パーティションは破損しているか見つかりません。代わりに USB ドライブを使用してください。</translation>
-<translation id="8720490351198901261">最初のページです</translation>
 <translation id="8738563743369620892">キーボードを使用してブートローダーのロックを解除することはできません。電源ボタン（⏻）を使用してください。</translation>
 <translation id="8856927881878864573">2. 音量大、音量小、電源ボタン（⏻）を同時に 10 秒以上長押しします。</translation>
 <translation id="8878311588372127478">ストレージのセルフテスト（詳細）</translation>

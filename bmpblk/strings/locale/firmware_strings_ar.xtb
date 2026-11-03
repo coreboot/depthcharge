@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">يصبح جهازك غير آمن عندما يكون برنامج الإقلاع غير مقفل. ولاستعادة أمان الجهاز، يجب قفل برنامج الإقلاع.</translation>
 <translation id="1851498512110506461">سيتم محو بيانات المستخدمين أثناء العملية.</translation>
 <translation id="1880493276474218432">لإنشاء محرّك أقراص مخصّص لاسترداد نظام التشغيل، يجب توفُّر ما يلي:</translation>
+<translation id="194344289147253846">التمرير لأسفل / لأعلى</translation>
 <translation id="1995660704900986789">إطفاء</translation>
 <translation id="2022309272630265316">لم يتم رصد أيّ صورة صالحة</translation>
 <translation id="2164852388827548816">سجلّ البرامج الثابتة</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">بدء عملية الاسترداد</translation>
 <translation id="385051799172605136">رجوع</translation>
 <translation id="3931222419141306012">نسخة استرداد نظام التشغيل قديمة</translation>
-<translation id="4002335453596341558">صفحة للأسفل</translation>
 <translation id="4228286289437521015">سيؤدي هذا الإجراء إلى محو جميع البيانات من جهازك. وسيتم إيقاف ميزة "أمان الجهاز".</translation>
 <translation id="4231467600151418708">‫2. اضغط مع الاستمرار على مفتاح Esc + زر "إعادة التحميل" ( ⟳ ) + "زر التشغيل" ( ⏻ ).</translation>
 <translation id="4521842502554138285">استخدِم مفتاحَي الأسهم للتنقّل للأعلى أو للأسفل</translation>
@@ -67,10 +67,10 @@ Please do not turn off your device.</translation>
 <translation id="6602196104287361867">استخدِم مفتاح Enter لتحديد أحد الخيارات</translation>
 <translation id="6870233504224262352">يُرجى إبقاء جهازك مشغَّلاً. قد يستغرق هذا الإجراء بعض الوقت.</translation>
 <translation id="6933530204467815794">الشاشة متصلة عبر بروتوكول TCP</translation>
-<translation id="6972383785688794804">صفحة للأعلى</translation>
 <translation id="7065553583078443466">اختيار برنامج إقلاع بديل</translation>
 <translation id="7071202423630761214">الشاشة متصلة عبر USB</translation>
 <translation id="714708458581824276">قسم استرداد نظام التشغيل عبر الإنترنت تالف أو غير متوفّر. يُرجى استخدام محرّك أقراص USB أو بطاقة SD بدلاً من ذلك.</translation>
+<translation id="7171353208088046858">الخروج من هذا العرض</translation>
 <translation id="7321387134821904291">معلومات حول سلامة وحدة التخزين</translation>
 <translation id="7332672207700801967">استرداد النظام من خلال اتصال الإنترنت (إصدار قديم)</translation>
 <translation id="7342794948394983731">أدوات التشخيص</translation>
@@ -91,11 +91,9 @@ Please do not turn off your device.</translation>
 <translation id="8131740175452115882">التأكيد</translation>
 <translation id="8182314305006465525">أنت حاليًا في وضع Fastboot لبرنامج الإقلاع</translation>
 <translation id="8315682102205416794">استخدام محرّك أقراص USB أو بطاقة SD</translation>
-<translation id="8377165353588213941">لقد وصلت إلى آخر صفحة.</translation>
 <translation id="8547898031669202422">تم إيقاف ميزة التشغيل من محرّك أقراص خارجي. مزيد من المعلومات على:</translation>
 <translation id="8569584079758810124">تعذَّر العثور على معلومات تصحيح الأخطاء.</translation>
 <translation id="8609689706517017461">قسم استرداد نظام التشغيل عبر الإنترنت تالف أو غير متوفّر. يمكنك استخدام محرّك أقراص USB بدلاً من ذلك.</translation>
-<translation id="8720490351198901261">لقد وصلت إلى أول صفحة.</translation>
 <translation id="8738563743369620892">لا يمكنك فتح قفل برنامج الإقلاع باستخدام لوحة مفاتيح. استخدِم زر التشغيل ( ⏻ ).</translation>
 <translation id="8856927881878864573">‫2. اضغط مع الاستمرار على زر رفع الصوت + زر خفض الصوت + زر التشغيل ( ⏻ ) لعشر ثوانٍ على الأقل.</translation>
 <translation id="8878311588372127478">اختبار ذاتي موسَّع لوحدة التخزين</translation>

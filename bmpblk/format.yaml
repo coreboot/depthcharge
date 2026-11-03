@@ -106,8 +106,8 @@ localized_files:
   btn_adv_options: button
   btn_power_off: button
   # log screen
-  btn_page_up: button
-  btn_page_down: button
+  page_down_up: navigation_tip
+  exit_view: navigation_tip
   # footer
   navigate_header: footer_header
   navigate_header_tablet: footer_header
@@ -232,8 +232,8 @@ styles:
   one_line_desc:
     bgcolor: *surface_container
     fgcolor: *on_surface
-    # Same text size as the navigation bar labels (button), since the text
-    # is drawn on the right of the navigation bar.
+    # Same text style as the navigation bar labels (navigation_tip), since
+    # the text is drawn on the right of the navigation bar.
     height: 23
     # No max_width, so that the bitmap is not padded to the full width
     # when drawn on the right of the navigation bar.
@@ -243,6 +243,8 @@ styles:
   button:
     height: 23
     font_weight: Medium
+  navigation_tip:
+    height: 23
   footer:
     bgcolor: *surface_container
     fgcolor: *on_surface

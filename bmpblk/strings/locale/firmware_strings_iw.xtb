@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">כשתוכנת האתחול פתוחה, המכשיר לא מאובטח. כדי שהמכשיר יחזור להיות מאובטח, צריך לנעול את תוכנת האתחול.</translation>
 <translation id="1851498512110506461">נתוני המשתמש יימחקו בתהליך הזה.</translation>
 <translation id="1880493276474218432">כדי ליצור כונן שחזור, צריך:</translation>
+<translation id="194344289147253846">מעבר מעלה או מטה בדף</translation>
 <translation id="1995660704900986789">כיבוי</translation>
 <translation id="2022309272630265316">לא זוהתה תמונה חוקית</translation>
 <translation id="2164852388827548816">יומן הקושחה</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">התחלת תהליך השחזור</translation>
 <translation id="385051799172605136">חזרה</translation>
 <translation id="3931222419141306012">קובץ אימג' מיושן לשחזור מערכת ההפעלה</translation>
-<translation id="4002335453596341558">הזזת הדף למטה</translation>
 <translation id="4228286289437521015">הפעולה הזאת תגרום למחיקה של כל הנתונים במכשיר. אבטחת המכשיר תושבת.</translation>
 <translation id="4231467600151418708">2. צריך ללחוץ לחיצה ארוכה על Esc + רענון ( ⟳ ) + הפעלה ( ⏻ ).</translation>
 <translation id="4521842502554138285">כדי לנווט למעלה או למטה, צריך להשתמש במקשי החיצים</translation>
@@ -67,10 +67,10 @@
 <translation id="6602196104287361867">כדי לבחור באפשרות, צריך ללחוץ על מקש Enter</translation>
 <translation id="6870233504224262352">צריך להשאיר את המכשיר פועל. הפעולה תימשך כמה רגעים.</translation>
 <translation id="6933530204467815794">חיבור באמצעות TCP</translation>
-<translation id="6972383785688794804">הזזת הדף למעלה</translation>
 <translation id="7065553583078443466">בחירת תוכנת אתחול אחרת</translation>
 <translation id="7071202423630761214">חיבור באמצעות USB</translation>
 <translation id="714708458581824276">מחיצת שחזור האינטרנט לא תקינה או חסרה. במקומה, אפשר להשתמש בכונן USB או כרטיס SD.</translation>
+<translation id="7171353208088046858">יציאה מהתצוגה הזו</translation>
 <translation id="7321387134821904291">מידע על תקינות האחסון</translation>
 <translation id="7332672207700801967">שחזור אינטרנט (גרסה ישנה יותר)</translation>
 <translation id="7342794948394983731">כלי אבחון</translation>
@@ -91,11 +91,9 @@
 <translation id="8131740175452115882">אישור</translation>
 <translation id="8182314305006465525">הפעלת את מצב האתחול המהיר (Fastboot mode) של תוכנת האתחול</translation>
 <translation id="8315682102205416794">שימוש בכונן USB או כרטיס SD</translation>
-<translation id="8377165353588213941">הגעת לסוף</translation>
 <translation id="8547898031669202422">האפשרות לבצע הפעלה מכונן חיצוני מושבתת. למידע נוסף:</translation>
 <translation id="8569584079758810124">לא ניתן לקבל מידע על תוצאות ניפוי הבאגים.</translation>
 <translation id="8609689706517017461">מחיצת שחזור האינטרנט לא תקינה או חסרה. במקומה אפשר להשתמש בכונן USB.</translation>
-<translation id="8720490351198901261">הגעת לחלק העליון</translation>
 <translation id="8738563743369620892">אי אפשר להשתמש במקלדת כדי לפתוח את הנעילה של תוכנת האתחול. אפשר להשתמש בכפתור ההפעלה ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. צריך ללחוץ לחיצה ארוכה על הכפתורים להגברה והחלשה של עוצמת הקול ועל כפתור ההפעלה ( ⏻ ) במשך 10 שניות לפחות.</translation>
 <translation id="8878311588372127478">בדיקה עצמית של האחסון (מורחבת)</translation>

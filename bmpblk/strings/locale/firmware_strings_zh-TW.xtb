@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">系統啟動載入程式目前已解鎖，因此裝置不安全。請鎖定系統啟動載入程式，以恢復裝置安全。</translation>
 <translation id="1851498512110506461">使用者資料將在這項程序中抹除。</translation>
 <translation id="1880493276474218432">如要建立復原硬碟，請準備：</translation>
+<translation id="194344289147253846">向下/向上翻頁</translation>
 <translation id="1995660704900986789">關閉</translation>
 <translation id="2022309272630265316">未偵測到任何有效的映像檔</translation>
 <translation id="2164852388827548816">韌體記錄</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">開始復原程序</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3931222419141306012">復原映像檔過時</translation>
-<translation id="4002335453596341558">下一頁</translation>
 <translation id="4228286289437521015">這樣會清除裝置上的所有資料，裝置安全性將停用。</translation>
 <translation id="4231467600151418708">2. 按住 Esc 鍵、重新整理鍵 (⟳) 和電源鍵 (⏻)。</translation>
 <translation id="4521842502554138285">使用方向鍵向上或向下瀏覽</translation>
@@ -67,10 +67,10 @@
 <translation id="6602196104287361867">使用 Enter 鍵選取所需選項</translation>
 <translation id="6870233504224262352">請保持裝置開啟，並稍候片刻。</translation>
 <translation id="6933530204467815794">已透過 TCP 連線</translation>
-<translation id="6972383785688794804">上一頁</translation>
 <translation id="7065553583078443466">選取替代的系統啟動載入程式</translation>
 <translation id="7071202423630761214">已透過 USB 連線</translation>
 <translation id="714708458581824276">網際網路復原分區損毀或遺失，請改用 USB 隨身碟或 SD 卡。</translation>
+<translation id="7171353208088046858">離開此檢視畫面</translation>
 <translation id="7321387134821904291">儲存空間的健康狀態資訊</translation>
 <translation id="7332672207700801967">復原網際網路 (舊版)</translation>
 <translation id="7342794948394983731">診斷工具</translation>
@@ -91,11 +91,9 @@
 <translation id="8131740175452115882">確認</translation>
 <translation id="8182314305006465525">目前處於系統啟動載入程式快速系統啟動模式 (Fastboot mode)</translation>
 <translation id="8315682102205416794">使用 USB 隨身碟或 SD 卡</translation>
-<translation id="8377165353588213941">這已經是最後一頁</translation>
 <translation id="8547898031669202422">從外接硬碟啟動系統的功能已停用。詳情請參閱：</translation>
 <translation id="8569584079758810124">無法取得偵錯資訊。</translation>
 <translation id="8609689706517017461">網際網路復原分區損毀或遺失，請改用 USB 隨身碟。</translation>
-<translation id="8720490351198901261">這已經是第一頁</translation>
 <translation id="8738563743369620892">無法透過鍵盤解鎖系統啟動載入程式，請使用電源鍵 (⏻)。</translation>
 <translation id="8856927881878864573">2. 按住調高音量 + 調低音量鍵和電源鍵 (⏻) 至少 10 秒。</translation>
 <translation id="8878311588372127478">儲存空間自我測試 (較長)</translation>

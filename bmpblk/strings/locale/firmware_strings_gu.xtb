@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">બૂટલોડર અનલૉક કરેલું હોય ત્યારે તમારું ડિવાઇસ સુરક્ષિત હોતું નથી. ડિવાઇસની સુરક્ષા રિસ્ટોર કરવા માટે, બૂટલોડર લૉક કરો.</translation>
 <translation id="1851498512110506461">આ પ્રક્રિયામાં વપરાશકર્તાનો ડેટા વાઇપ કરવામાં આવશે.</translation>
 <translation id="1880493276474218432">કોઈ રિકવરી ડ્રાઇવ બનાવવા માટે, તમને આની જરૂર પડશે:</translation>
+<translation id="194344289147253846">પેજ નીચે / ઉપર</translation>
 <translation id="1995660704900986789">પાવર બંધ કરો</translation>
 <translation id="2022309272630265316">કોઈ માન્ય છબી જોવા મળી નથી</translation>
 <translation id="2164852388827548816">ફર્મવેયર લૉગ</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">રિકવરીની પ્રક્રિયા શરૂ કરો</translation>
 <translation id="385051799172605136">પાછળ</translation>
 <translation id="3931222419141306012">જૂની રિકવરી છબી</translation>
-<translation id="4002335453596341558">નીચેનું પેજ</translation>
 <translation id="4228286289437521015">આમ કરવાથી તમારા ડિવાઇસમાંથી બધો ડેટા કાઢી નાખવામાં આવશે. ડિવાઇસની સુરક્ષા બંધ કરવામાં આવશે.</translation>
 <translation id="4231467600151418708">2. Esc + રિફ્રેશ ( ⟳ ) + પાવર ( ⏻ ) દબાવી રાખો.</translation>
 <translation id="4521842502554138285">ઉપર અથવા નીચે નૅવિગેટ કરવા માટે ઍરો કીનો ઉપયોગ કરો</translation>
@@ -67,10 +67,10 @@ Please do not turn off your device.</translation>
 <translation id="6602196104287361867">કોઈ વિકલ્પ પસંદ કરવા માટે Enter કીનો ઉપયોગ કરો</translation>
 <translation id="6870233504224262352">તમારું ડિવાઇસ ચાલુ રાખો. આમાં થોડો સમય લાગી શકે છે.</translation>
 <translation id="6933530204467815794">TCP મારફતે કનેક્ટેડ</translation>
-<translation id="6972383785688794804">ઉપરનું પેજ</translation>
 <translation id="7065553583078443466">વૈકલ્પિક બૂટલોડર પસંદ કરો</translation>
 <translation id="7071202423630761214">USB મારફતે કનેક્ટેડ</translation>
 <translation id="714708458581824276">ઇન્ટરનેટ રિકવરીનું પાર્ટિશન દૂષિત છે અથવા ખૂટે છે. તેના બદલે USB ડ્રાઇવ અથવા SD કાર્ડનો ઉપયોગ કરો.</translation>
+<translation id="7171353208088046858">આ વ્યૂમાંથી બહાર નીકળો</translation>
 <translation id="7321387134821904291">સ્ટોરેજના સ્ટેટસ સંબંધિત માહિતી</translation>
 <translation id="7332672207700801967">ઇન્ટરનેટ રિકવરી (જૂનું વર્ઝન)</translation>
 <translation id="7342794948394983731">નિદાન માટેના સાધનો</translation>
@@ -91,11 +91,9 @@ Please do not turn off your device.</translation>
 <translation id="8131740175452115882">કન્ફર્મ કરો</translation>
 <translation id="8182314305006465525">તમે બૂટલોડર ફાસ્ટબૂટ મોડ (Fastboot mode)માં છો</translation>
 <translation id="8315682102205416794">USB ડ્રાઇવ અથવા SD કાર્ડનો ઉપયોગ કરો</translation>
-<translation id="8377165353588213941">તમે સમાપ્તિ પર પહોંચી ગયા છો</translation>
 <translation id="8547898031669202422">બાહ્ય ડ્રાઇવમાંથી બૂટ કરવાની સુવિધા બંધ કરવામાં આવી છે. અહીં વધુ જાણો:</translation>
 <translation id="8569584079758810124">ડિબગ માહિતી મેળવી શકાઈ નથી.</translation>
 <translation id="8609689706517017461">ઇન્ટરનેટ રિકવરીનું પાર્ટિશન દૂષિત છે અથવા ખૂટે છે. તેના બદલે USB ડ્રાઇવનો ઉપયોગ કરો.</translation>
-<translation id="8720490351198901261">તમે સૌથી ઉપર પહોંચી ગયા છો</translation>
 <translation id="8738563743369620892">બૂટલોડરને અનલૉક કરવા માટે, તમે કીબોર્ડનો ઉપયોગ કરી શકશો નહીં. પાવર બટન ( ⏻ )નો ઉપયોગ કરો.</translation>
 <translation id="8856927881878864573">2. ઓછામાં ઓછી 10 સેકન્ડ માટે વૉલ્યૂમ વધારો + વૉલ્યૂમ ઘટાડો + પાવર બટન ( ⏻ ) દબાવી રાખો.</translation>
 <translation id="8878311588372127478">સ્ટોરેજ દ્વારા પોતાનું પરીક્ષણ કરવાની સુવિધા (વધારવામાં આવેલી)</translation>

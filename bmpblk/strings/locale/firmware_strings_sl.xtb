@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Ko je zagonski nalagalnik odklenjen, naprava ni varna. Če želite obnoviti varnost naprave, zaklenite zagonski nalagalnik.</translation>
 <translation id="1851498512110506461">Podatki o uporabniku bodo pri tem izbrisani.</translation>
 <translation id="1880493276474218432">Če želite ustvariti pogon za obnovitev, potrebujete:</translation>
+<translation id="194344289147253846">Stran dol/gor</translation>
 <translation id="1995660704900986789">Izklop</translation>
 <translation id="2022309272630265316">Nobena veljavna slika ni zaznana</translation>
 <translation id="2164852388827548816">Dnevnik vdelane programske opreme</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Začetek postopka obnovitve</translation>
 <translation id="385051799172605136">Nazaj</translation>
 <translation id="3931222419141306012">Zastarel posnetek za obnovitev</translation>
-<translation id="4002335453596341558">Stran navzdol</translation>
 <translation id="4228286289437521015">S tem boste izbrisali vse podatke iz naprave. Varnost naprave bo onemogočena.</translation>
 <translation id="4231467600151418708">2. Pridržite tipko Esc + tipko za osvežitev (⟳) + tipko za vklop (⏻).</translation>
 <translation id="4521842502554138285">Uporabite puščične tipke, če se želite premikati gor ali dol</translation>
@@ -67,10 +67,10 @@ Ne izklopite naprave.</translation>
 <translation id="6602196104287361867">Uporabite tipko Enter, če želite izbirati možnosti</translation>
 <translation id="6870233504224262352">Naprava naj bo vklopljena. To lahko traja nekaj trenutkov.</translation>
 <translation id="6933530204467815794">Povezano prek protokola TCP</translation>
-<translation id="6972383785688794804">Stran navzgor</translation>
 <translation id="7065553583078443466">Izberi drugi zagonski nalagalnik</translation>
 <translation id="7071202423630761214">Povezano prek USB-ja</translation>
 <translation id="714708458581824276">Particija za obnovitev v internetu je poškodovana ali je ni. Namesto tega uporabite pogon USB ali kartico SD.</translation>
+<translation id="7171353208088046858">Zapri ta pogled</translation>
 <translation id="7321387134821904291">Podatki o zdravju shrambe</translation>
 <translation id="7332672207700801967">Obnovitev iz interneta (starejša različica)</translation>
 <translation id="7342794948394983731">Orodja za diagnostiko</translation>
@@ -91,11 +91,9 @@ Ne izklopite naprave.</translation>
 <translation id="8131740175452115882">Potrdi</translation>
 <translation id="8182314305006465525">Ste v načinu za hiter zagon zagonskega nalagalnika (Fastboot mode)</translation>
 <translation id="8315682102205416794">Uporabi pogon USB ali kartico SD</translation>
-<translation id="8377165353588213941">Prišli ste do konca</translation>
 <translation id="8547898031669202422">Zagon iz zunanjega pogona je onemogočen. Več informacij je na voljo na:</translation>
 <translation id="8569584079758810124">Ni bilo mogoče dobiti podatkov o odpravljanju napak.</translation>
 <translation id="8609689706517017461">Particija za obnovitev v internetu je poškodovana ali je ni. Namesto tega uporabite pogon USB.</translation>
-<translation id="8720490351198901261">Prišli ste na vrh</translation>
 <translation id="8738563743369620892">Zagonskega nalagalnika ni mogoče odkleniti s tipkovnico. Uporabite gumb za vklop (⏻).</translation>
 <translation id="8856927881878864573">2. Za vsaj 10 sekund pridržite gumbe za povečanje glasnosti, zmanjšanje glasnosti in vklop (⏻).</translation>
 <translation id="8878311588372127478">Samopreizkus shrambe (razširjen)</translation>

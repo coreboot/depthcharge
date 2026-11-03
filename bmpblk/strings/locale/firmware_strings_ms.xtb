@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Peranti anda tidak selamat semasa pemuat but tidak berkunci. Untuk memulihkan keselamatan peranti, kunci pemuat but.</translation>
 <translation id="1851498512110506461">Data pengguna akan dihapuskan dalam proses ini.</translation>
 <translation id="1880493276474218432">Untuk membuat pemacu pemulihan, anda memerlukan:</translation>
+<translation id="194344289147253846">Halaman ke bawah / atas</translation>
 <translation id="1995660704900986789">Matikan kuasa</translation>
 <translation id="2022309272630265316">Tiada imej yang sah dikesan</translation>
 <translation id="2164852388827548816">Log perisian tegar</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Mulakan proses pemulihan</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3931222419141306012">Imej pemulihan sudah lapuk</translation>
-<translation id="4002335453596341558">Ke bahagian bawah halaman</translation>
 <translation id="4228286289437521015">Tindakan ini akan memadamkan semua data daripada peranti anda. Keselamatan peranti akan dilumpuhkan.</translation>
 <translation id="4231467600151418708">2. Tahan Esc + Segar semula ( ⟳ ) + Kuasa ( ⏻ ).</translation>
 <translation id="4521842502554138285">Gunakan kekunci anak panah untuk menavigasi ke atas atau ke bawah</translation>
@@ -67,10 +67,10 @@ Jangan matikan peranti anda.</translation>
 <translation id="6602196104287361867">Gunakan kekunci Enter untuk memilih pilihan</translation>
 <translation id="6870233504224262352">Pastikan peranti anda dihidupkan. Proses ini mungkin mengambil sedikit masa.</translation>
 <translation id="6933530204467815794">Disambungkan melalui TCP</translation>
-<translation id="6972383785688794804">Ke bahagian atas halaman</translation>
 <translation id="7065553583078443466">Pilih pemuat but alternatif</translation>
 <translation id="7071202423630761214">Disambungkan melalui USB</translation>
 <translation id="714708458581824276">Petak pemulihan Internet rosak atau tiada. Gunakan pemacu USB atau kad SD.</translation>
+<translation id="7171353208088046858">Keluar daripada paparan ini</translation>
 <translation id="7321387134821904291">Maklumat kesihatan storan</translation>
 <translation id="7332672207700801967">Pemulihan Internet (versi lama)</translation>
 <translation id="7342794948394983731">Alatan diagnostik</translation>
@@ -91,11 +91,9 @@ Jangan matikan peranti anda.</translation>
 <translation id="8131740175452115882">Sahkan</translation>
 <translation id="8182314305006465525">Anda berada dalam mod but pantas pemuat but</translation>
 <translation id="8315682102205416794">Gunakan pemacu USB atau kad SD</translation>
-<translation id="8377165353588213941">Anda sudah sampai ke penghujung</translation>
 <translation id="8547898031669202422">Pengebutan daripada pemacu luaran dilumpuhkan. Ketahui maklumat lanjut melalui:</translation>
 <translation id="8569584079758810124">Gagal mendapatkan maklumat nyahpepijat.</translation>
 <translation id="8609689706517017461">Petak pemulihan Internet rosak atau tiada. Gunakan pemacu USB.</translation>
-<translation id="8720490351198901261">Anda sudah sampai ke bahagian teratas</translation>
 <translation id="8738563743369620892">Anda tidak boleh menggunakan papan kekunci untuk membuka kunci pemuat but. Gunakan butang Kuasa ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Tahan butang Naikkan Kelantangan + Kurangkan Kelantangan + Kuasa ( ⏻ ) selama sekurang-kurangnya 10 saat.</translation>
 <translation id="8878311588372127478">Swauji storan (lebih lama)</translation>

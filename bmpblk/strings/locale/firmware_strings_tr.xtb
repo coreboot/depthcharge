@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Bootloader'ın kilidi açıkken cihazınız güvenli değildir. Cihaz güvenliğini geri yüklemek için bootloader'ı kilitleyin.</translation>
 <translation id="1851498512110506461">Bu işlem kullanıcı verilerini temizler.</translation>
 <translation id="1880493276474218432">Kurtarma sürücüsü oluşturmak için şunlara ihtiyacınız olacaktır:</translation>
+<translation id="194344289147253846">Sayfa aşağı/yukarı</translation>
 <translation id="1995660704900986789">Kapat</translation>
 <translation id="2022309272630265316">Geçerli görüntü algılanmadı</translation>
 <translation id="2164852388827548816">Donanım yazılımı günlüğü</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Kurtarma işlemini başlatın</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="3931222419141306012">Kurtarma görüntüsü eski</translation>
-<translation id="4002335453596341558">Bir sayfa aşağı</translation>
 <translation id="4228286289437521015">Bu işlem, cihazınızdaki tüm verileri siler. Cihaz güvenliği devre dışı bırakılır.</translation>
 <translation id="4231467600151418708">2. Esc + Yenile (⟳) + Güç (⏻) düğmelerini basılı tutun.</translation>
 <translation id="4521842502554138285">Yukarı veya aşağı gitmek için ok tuşlarını kullanın</translation>
@@ -68,10 +68,10 @@ Lütfen cihazinizi kapatmayin.</translation>
 <translation id="6602196104287361867">Seçim yapmak için Enter tuşunu kullanın.</translation>
 <translation id="6870233504224262352">Cihazınızı açık tutun. Bu işlem biraz zaman alabilir.</translation>
 <translation id="6933530204467815794">TCP üzerinden bağlandı</translation>
-<translation id="6972383785688794804">Bir sayfa yukarı</translation>
 <translation id="7065553583078443466">Alternatif bootloader'ı seçin</translation>
 <translation id="7071202423630761214">USB üzerinden bağlandı</translation>
 <translation id="714708458581824276">İnternet kurtarma bölümü yok veya bozuk. Bunun yerine USB sürücü veya SD kart kullanın.</translation>
+<translation id="7171353208088046858">Bu görünümden çık</translation>
 <translation id="7321387134821904291">Depolama alanı durum bilgisi</translation>
 <translation id="7332672207700801967">İnternet üzerinden kurtarma (eski sürüm)</translation>
 <translation id="7342794948394983731">Teşhis araçları</translation>
@@ -92,11 +92,9 @@ Lütfen cihazinizi kapatmayin.</translation>
 <translation id="8131740175452115882">Onayla</translation>
 <translation id="8182314305006465525">Bootloader fastboot modundasınız</translation>
 <translation id="8315682102205416794">USB sürücü veya SD kart kullan</translation>
-<translation id="8377165353588213941">Son sayfadasınız</translation>
 <translation id="8547898031669202422">Harici sürücüden başlatma işlevi devre dışı durumda. Daha fazla bilgiyi aşağıdaki adreste bulabilirsiniz.</translation>
 <translation id="8569584079758810124">Hata ayıklama bilgileri alınamadı.</translation>
 <translation id="8609689706517017461">İnternet kurtarma bölümü yok veya bozuk. Bunun yerine USB sürücü kullanın.</translation>
-<translation id="8720490351198901261">İlk sayfadasınız</translation>
 <translation id="8738563743369620892">Bootloader'ın kilidini açmak için klavye kullanamazsınız. Güç düğmesini (⏻) kullanın.</translation>
 <translation id="8856927881878864573">2. Sesi artırma + Sesi azaltma + Güç (⏻) düğmelerini en az 10 saniye boyunca basılı tutun.</translation>
 <translation id="8878311588372127478">Depolama alanının kendi kendine testi (genişletilmiş)</translation>

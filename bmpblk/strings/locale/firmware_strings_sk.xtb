@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Keď je zavádzací program systému odomknutý, vaše zariadenie nie je zabezpečené. Ak chcete obnoviť jeho zabezpečenie, uzamknite zavádzací program systému.</translation>
 <translation id="1851498512110506461">V rámci procesu budú údaje používateľa trvale vymazané.</translation>
 <translation id="1880493276474218432">Na vytvorenie jednotky na obnovenie budete potrebovať:</translation>
+<translation id="194344289147253846">O stránku nadol alebo nahor</translation>
 <translation id="1995660704900986789">Vypnúť</translation>
 <translation id="2022309272630265316">Nebol rozpoznaný žiadny platný obraz</translation>
 <translation id="2164852388827548816">Denník firmvéru</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Spustenie procesu obnovenia</translation>
 <translation id="385051799172605136">Späť</translation>
 <translation id="3931222419141306012">Zastaraný obraz na obnovu</translation>
-<translation id="4002335453596341558">Posunúť o stranu nižšie</translation>
 <translation id="4228286289437521015">Týmto vymažete všetky údaje zo svojho zariadenia. Zabezpečenie zariadenia bude deaktivované.</translation>
 <translation id="4231467600151418708">2. Pridržte Esc, tlačidlo obnovenia ( ⟳ ) a vypínač ( ⏻ ).</translation>
 <translation id="4521842502554138285">Klávesmi so šípkami prechádzajte nahor a nadol</translation>
@@ -67,10 +67,10 @@ Nevypinajte zariadenie.</translation>
 <translation id="6602196104287361867">Klávesom Enter vyberte požadovanú možnosť.</translation>
 <translation id="6870233504224262352">Zariadenie nechajte zapnuté. Môže to chvíľu trvať.</translation>
 <translation id="6933530204467815794">Pripojené cez TCP</translation>
-<translation id="6972383785688794804">Posunúť o stranu vyššie</translation>
 <translation id="7065553583078443466">Vybrať alternatívny zavádzací program systému</translation>
 <translation id="7071202423630761214">Pripojené cez USB</translation>
 <translation id="714708458581824276">Oddiel internetového obnovenia je poškodený alebo chýba. Použite radšej kľúč USB alebo SD kartu.</translation>
+<translation id="7171353208088046858">Ukončiť toto zobrazenie</translation>
 <translation id="7321387134821904291">Informácie o stave ukladacieho priestoru</translation>
 <translation id="7332672207700801967">Internetové obnovenie (staršia verzia)</translation>
 <translation id="7342794948394983731">Diagnostické nástroje</translation>
@@ -91,11 +91,9 @@ Nevypinajte zariadenie.</translation>
 <translation id="8131740175452115882">Potvrdiť</translation>
 <translation id="8182314305006465525">Ste v režime rýchleho spustenia zavádzacieho programu systému</translation>
 <translation id="8315682102205416794">Použiť kľúč USB alebo SD kartu</translation>
-<translation id="8377165353588213941">Ste na konci</translation>
 <translation id="8547898031669202422">Zapínanie z externého disku je deaktivované. Viac sa dozviete na</translation>
 <translation id="8569584079758810124">Informácie o ladení sa nepodarilo získať.</translation>
 <translation id="8609689706517017461">Oddiel internetového obnovenia je poškodený alebo chýba. Použite namiesto toho kľúč USB.</translation>
-<translation id="8720490351198901261">Ste na začiatku</translation>
 <translation id="8738563743369620892">Zavádzací program systému nemôžete odomknúť pomocou klávesnice. Použite vypínač ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Pridržte aspoň desať sekúnd tlačidlá zvýšenia a zníženia hlasitosti spolu s vypínačom ( ⏻ ).</translation>
 <translation id="8878311588372127478">Autonómny test ukladacieho priestoru (rozšírený)</translation>

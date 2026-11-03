@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Tu dispositivo no está seguro mientras el bootloader está desbloqueado. Para restaurar la seguridad del dispositivo, bloquea el bootloader.</translation>
 <translation id="1851498512110506461">Los datos de usuario se borrarán durante el proceso.</translation>
 <translation id="1880493276474218432">Para crear una unidad de recuperación, necesitarás:</translation>
+<translation id="194344289147253846">Avanzar o retroceder página</translation>
 <translation id="1995660704900986789">Apagar</translation>
 <translation id="2022309272630265316">No se ha detectado ninguna imagen válida</translation>
 <translation id="2164852388827548816">Registro de firmware</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Iniciar el proceso de recuperación</translation>
 <translation id="385051799172605136">Volver</translation>
 <translation id="3931222419141306012">Imagen de recuperación obsoleta</translation>
-<translation id="4002335453596341558">Avanzar página</translation>
 <translation id="4228286289437521015">Se borrarán todos los datos de tu dispositivo. Se inhabilitará la seguridad del dispositivo.</translation>
 <translation id="4231467600151418708">2. Mantén pulsadas las teclas Esc y Actualizar (⟳), y el botón de encendido (⏻).</translation>
 <translation id="4521842502554138285">Usa las teclas de flecha para desplazarte hacia arriba o hacia abajo</translation>
@@ -67,10 +67,10 @@ No apagues el dispositivo.</translation>
 <translation id="6602196104287361867">Usa la tecla Intro para seleccionar una opción</translation>
 <translation id="6870233504224262352">Mantén el dispositivo encendido. Esta acción puede tardar un momento.</translation>
 <translation id="6933530204467815794">Conectado mediante TCP</translation>
-<translation id="6972383785688794804">Retroceder página</translation>
 <translation id="7065553583078443466">Seleccionar bootloader alternativo</translation>
 <translation id="7071202423630761214">Conectado mediante USB</translation>
 <translation id="714708458581824276">La partición de recuperación de Internet está dañada o no se encuentra. Usa una unidad USB o una tarjeta SD en su lugar.</translation>
+<translation id="7171353208088046858">Salir de esta vista</translation>
 <translation id="7321387134821904291">Información de salud de almacenamiento</translation>
 <translation id="7332672207700801967">Recuperación de Internet (versión antigua)</translation>
 <translation id="7342794948394983731">Herramientas de diagnóstico</translation>
@@ -91,11 +91,9 @@ No apagues el dispositivo.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8182314305006465525">Estás en el modo Fastboot del bootloader</translation>
 <translation id="8315682102205416794">Usar unidad USB o tarjeta SD</translation>
-<translation id="8377165353588213941">Has llegado al final</translation>
 <translation id="8547898031669202422">El inicio desde una unidad externa está inhabilitado. Consulta más información en:</translation>
 <translation id="8569584079758810124">No se ha podido obtener la información de depuración.</translation>
 <translation id="8609689706517017461">La partición de recuperación de Internet está dañada o no se encuentra. Usa una unidad USB en su lugar.</translation>
-<translation id="8720490351198901261">Has llegado al inicio</translation>
 <translation id="8738563743369620892">No puedes usar un teclado para desbloquear el bootloader. Usa el botón de encendido (⏻).</translation>
 <translation id="8856927881878864573">2. Mantén pulsados los botones de subir y bajar el volumen, y el botón de encendido (⏻) durante al menos 10 segundos.</translation>
 <translation id="8878311588372127478">Prueba automática de almacenamiento (ampliada)</translation>

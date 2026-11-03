@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Gdy program rozruchowy jest odblokowany, urządzenie nie jest bezpieczne. Aby przywrócić bezpieczeństwo urządzenia, zablokuj program rozruchowy.</translation>
 <translation id="1851498512110506461">Proces spowoduje usunięcie danych użytkownika.</translation>
 <translation id="1880493276474218432">Aby utworzyć dysk przywracania, potrzebujesz:</translation>
+<translation id="194344289147253846">Strona w dół / w górę</translation>
 <translation id="1995660704900986789">Wyłącz</translation>
 <translation id="2022309272630265316">Nie wykryto prawidłowego obrazu</translation>
 <translation id="2164852388827548816">Dziennik oprogramowania układowego</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Rozpocznij proces przywracania</translation>
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="3931222419141306012">Nieaktualny obraz przywracania systemu</translation>
-<translation id="4002335453596341558">Strona w dół</translation>
 <translation id="4228286289437521015">Spowoduje to usunięcie wszystkich danych z urządzenia. Zabezpieczenia urządzenia zostaną wyłączone.</translation>
 <translation id="4231467600151418708">2. Przytrzymaj Esc + Odśwież ( ⟳) + Zasilanie ( ⏻).</translation>
 <translation id="4521842502554138285">Użyj klawiszy strzałek, by przechodzić w górę lub w dół</translation>
@@ -67,10 +67,10 @@ Nie wylaczaj go.</translation>
 <translation id="6602196104287361867">Aby wybrać opcję, naciśnij Enter</translation>
 <translation id="6870233504224262352">Nie wyłączaj urządzenia. Może to chwilę potrwać.</translation>
 <translation id="6933530204467815794">Połączono przez TCP</translation>
-<translation id="6972383785688794804">Strona w górę</translation>
 <translation id="7065553583078443466">Wybierz inny program rozruchowy</translation>
 <translation id="7071202423630761214">Połączono przez USB</translation>
 <translation id="714708458581824276">Uszkodzona partycja przywracania za pomocą internetu lub jej brak. Zamiast tego użyj dysku USB lub karty SD.</translation>
+<translation id="7171353208088046858">Zamknij ten widok</translation>
 <translation id="7321387134821904291">Informacje o stanie pamięci</translation>
 <translation id="7332672207700801967">Odzyskiwanie za pomocą internetu (starsza wersja)</translation>
 <translation id="7342794948394983731">Narzędzia diagnostyczne</translation>
@@ -91,11 +91,9 @@ Nie wylaczaj go.</translation>
 <translation id="8131740175452115882">Potwierdź</translation>
 <translation id="8182314305006465525">Jesteś w trybie Fastboot Mode programu rozruchowego</translation>
 <translation id="8315682102205416794">Użyj dysku USB lub karty SD</translation>
-<translation id="8377165353588213941">To już koniec</translation>
 <translation id="8547898031669202422">Uruchamianie z dysku zewnętrznego jest wyłączone. Więcej informacji:</translation>
 <translation id="8569584079758810124">Nie udało się pobrać danych debugowania.</translation>
 <translation id="8609689706517017461">Uszkodzona partycja przywracania za pomocą internetu lub jej brak. Zamiast tego użyj dysku USB.</translation>
-<translation id="8720490351198901261">Jesteś na samej górze</translation>
 <translation id="8738563743369620892">Do odblokowania programu rozruchowego nie możesz użyć klawiatury. Użyj przycisku zasilania ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Przytrzymaj przyciski zwiększania głośności, zmniejszania głośności i zasilania ( ⏻ ) przez co najmniej 10 sekund.</translation>
 <translation id="8878311588372127478">Autotest pamięci (rozszerzony)</translation>

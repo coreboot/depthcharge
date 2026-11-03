@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Vaš uređaj nije siguran dok je pokretač operativnog sustava otključan. Da biste vratili sigurnost uređaja, zaključajte pokretač operativnog sustava.</translation>
 <translation id="1851498512110506461">Tijekom postupka korisnički podaci će se izbrisati.</translation>
 <translation id="1880493276474218432">Da biste izradili disk za oporavak, trebat će vam sljedeće:</translation>
+<translation id="194344289147253846">Stranica dolje/gore</translation>
 <translation id="1995660704900986789">Isključi</translation>
 <translation id="2022309272630265316">Nije otkrivena valjana slika</translation>
 <translation id="2164852388827548816">Zapisnik o firmwareu</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Pokrenite postupak oporavka</translation>
 <translation id="385051799172605136">Natrag</translation>
 <translation id="3931222419141306012">Zastarjela slika za oporavak</translation>
-<translation id="4002335453596341558">Stranica prema dolje</translation>
 <translation id="4228286289437521015">Time će se izbrisati svi podaci s vašeg uređaja. Sigurnost uređaja bit će onemogućena.</translation>
 <translation id="4231467600151418708">2. Pritisnite i zadržite tipke Esc, Refresh ( ⟳ ) i Power ( ⏻ ).</translation>
 <translation id="4521842502554138285">Za kretanje prema gore i dolje koristite se tipkama sa strelicama</translation>
@@ -67,10 +67,10 @@ Please do not turn off your device.</translation>
 <translation id="6602196104287361867">Za odabir opcije upotrijebite tipku Enter</translation>
 <translation id="6870233504224262352">Uređaj mora biti uključen. Ovo može potrajati.</translation>
 <translation id="6933530204467815794">Povezano putem TCP-a</translation>
-<translation id="6972383785688794804">Stranica prema gore</translation>
 <translation id="7065553583078443466">Odaberite zamjenski pokretač operativnog sustava</translation>
 <translation id="7071202423630761214">Povezano putem USB-a</translation>
 <translation id="714708458581824276">Particija za oporavak putem interneta oštećena je ili nedostaje. Umjesto toga upotrijebite USB disk ili SD karticu.</translation>
+<translation id="7171353208088046858">Napusti ovaj prikaz</translation>
 <translation id="7321387134821904291">Informacije o stanju pohrane</translation>
 <translation id="7332672207700801967">Oporavak interneta (starija verzija)</translation>
 <translation id="7342794948394983731">Dijagnostički alati</translation>
@@ -91,11 +91,9 @@ Please do not turn off your device.</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8182314305006465525">U načinu ste brzog podizanja pokretača operativnog sustava</translation>
 <translation id="8315682102205416794">Upotrijebite USB disk ili SD karticu</translation>
-<translation id="8377165353588213941">Stigli ste do kraja</translation>
 <translation id="8547898031669202422">Pokretanje s vanjskog diska je onemogućeno. Saznajte više na:</translation>
 <translation id="8569584079758810124">Dohvaćanje informacija o otklanjanju pogrešaka nije uspjelo.</translation>
 <translation id="8609689706517017461">Particija za oporavak putem interneta oštećena je ili nedostaje. Upotrijebite USB disk.</translation>
-<translation id="8720490351198901261">Stigli ste do vrha</translation>
 <translation id="8738563743369620892">Ne možete upotrijebiti tipkovnicu za otključavanje pokretača operativnog sustava. Upotrijebite tipku za uključivanje/isključivanje ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Pritisnite tipke za pojačavanje glasnoće, stišavanje glasnoće i uključivanje/isključivanje ( ⏻ ) i zadržite pritisak najmanje deset sekundi.</translation>
 <translation id="8878311588372127478">Samotestiranje pohrane (prošireno)</translation>

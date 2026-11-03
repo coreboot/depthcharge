@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Kui käivituslaadur on avatud, on seade mitteturvalises olekus. Seadme turvalisuse taastamiseks lukustage käivituslaadur.</translation>
 <translation id="1851498512110506461">Kasutajaandmed kustutatakse selle protsessi käigus.</translation>
 <translation id="1880493276474218432">Taasteketta loomiseks vajate järgmist.</translation>
+<translation id="194344289147253846">Lehe võrra alla/üles</translation>
 <translation id="1995660704900986789">Lülita välja</translation>
 <translation id="2022309272630265316">Ühtegi sobilikku kujutist ei tuvastatud</translation>
 <translation id="2164852388827548816">Püsivara logi</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Taastamise alustamine</translation>
 <translation id="385051799172605136">Tagasi</translation>
 <translation id="3931222419141306012">Aegunud taastekujutis</translation>
-<translation id="4002335453596341558">Lehe võrra alla</translation>
 <translation id="4228286289437521015">See kustutab teie seadmest kõik andmed. Seadme turbefunktsioonid lülituvad välja.</translation>
 <translation id="4231467600151418708">2. Hoidke all klahve Esc + Värskenda ( ⟳ ) + Toide ( ⏻ ).</translation>
 <translation id="4521842502554138285">Kasutage üles või alla liikumiseks nooleklahve</translation>
@@ -67,10 +67,10 @@
 <translation id="6602196104287361867">Kasutage valiku tegemiseks sisestusklahvi.</translation>
 <translation id="6870233504224262352">Ärge seadet välja lülitage. See võib veidi aega võtta.</translation>
 <translation id="6933530204467815794">Ühendatud TCP kaudu</translation>
-<translation id="6972383785688794804">Lehe võrra üles</translation>
 <translation id="7065553583078443466">Valige teine käivituslaadur</translation>
 <translation id="7071202423630761214">Ühendatud USB kaudu</translation>
 <translation id="714708458581824276">Internetist taastamiseks vajalik sektsioon on rikutud või puudub. Kasutage selle asemel USB-ketast või SD-kaarti.</translation>
+<translation id="7171353208088046858">Välju sellest vaatest</translation>
 <translation id="7321387134821904291">Salvestusruumi seisukord</translation>
 <translation id="7332672207700801967">Internetiga taastamine (vanem versioon)</translation>
 <translation id="7342794948394983731">Diagnostikatööriistad</translation>
@@ -91,11 +91,9 @@
 <translation id="8131740175452115882">Kinnita</translation>
 <translation id="8182314305006465525">Olete käivituslaadurilt alglaadimise kiirrežiimis</translation>
 <translation id="8315682102205416794">Kasuta USB-ketast või SD-kaarti</translation>
-<translation id="8377165353588213941">Jõudsite lõppu</translation>
 <translation id="8547898031669202422">Väliskettalt käivitamine on keelatud. Lisateave:</translation>
 <translation id="8569584079758810124">Silumisteavet ei õnnestunud hankida.</translation>
 <translation id="8609689706517017461">Internetist taastamiseks vajalik sektsioon on rikutud või puudub. Kasutage selle asemel USB-ketast.</translation>
-<translation id="8720490351198901261">Jõudsite algusesse</translation>
 <translation id="8738563743369620892">Klaviatuuri ei saa käivituslaaduri avamiseks kasutada. Kasutage toitenuppu ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Vajutage vähemalt 10 sekundit helitugevuse suurendamise nuppu + helitugevuse vähendamise nuppu + toitenuppu ( ⏻ ).</translation>
 <translation id="8878311588372127478">Salvestusruumi enesetest (laiendatud)</translation>

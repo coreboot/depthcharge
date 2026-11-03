@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Eszköze nem biztonságos, amíg a rendszerindító zárolása fel van oldva. Az eszköz biztonságának visszaállításához zárolja a rendszerindítót.</translation>
 <translation id="1851498512110506461">A felhasználói adatok törlődni fognak a folyamat során.</translation>
 <translation id="1880493276474218432">Helyreállítási meghajtó létrehozásához a következőkre lesz szüksége:</translation>
+<translation id="194344289147253846">Lapozás lefelé/felfelé</translation>
 <translation id="1995660704900986789">Kikapcsolás</translation>
 <translation id="2022309272630265316">Nem található érvényes rendszerkép</translation>
 <translation id="2164852388827548816">Firmware-napló</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">A helyreállítási folyamat elindítása</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="3931222419141306012">Elavult helyreállító képfájl</translation>
-<translation id="4002335453596341558">Lapozás lefelé</translation>
 <translation id="4228286289437521015">Ezzel törli az eszközön található összes adatot. Az eszközbiztonság ki lesz kapcsolva.</translation>
 <translation id="4231467600151418708">2. Tartsa lenyomva a következőket: Esc + Frissítés ( ⟳ ) + Bekapcsológomb ( ⏻ ).</translation>
 <translation id="4521842502554138285">A nyílbillentyűkkel navigálhat fel és le</translation>
@@ -67,10 +67,10 @@ Kérjük, ne kapcsolja ki eszközét.</translation>
 <translation id="6602196104287361867">Az Enter billentyűvel választhatja ki a kívánt lehetőséget</translation>
 <translation id="6870233504224262352">Tartsa bekapcsolva az eszközét. Kis türelmet kérünk.</translation>
 <translation id="6933530204467815794">TCP-n keresztül csatlakoztatva</translation>
-<translation id="6972383785688794804">Lapozás felfelé</translation>
 <translation id="7065553583078443466">Alternatív rendszerindító kiválasztása</translation>
 <translation id="7071202423630761214">USB-n keresztül csatlakoztatva</translation>
 <translation id="714708458581824276">Az internetes helyreállítási partíció sérült vagy hiányzik. Használjon inkább USB-meghajtót vagy SD-kártyát.</translation>
+<translation id="7171353208088046858">Kilépés ebből a nézetből</translation>
 <translation id="7321387134821904291">Tárhely állapotával kapcsolatos adatok</translation>
 <translation id="7332672207700801967">Internetes helyreállítás (régebbi verzió)</translation>
 <translation id="7342794948394983731">Diagnosztikai eszközök</translation>
@@ -91,11 +91,9 @@ Kérjük, ne kapcsolja ki eszközét.</translation>
 <translation id="8131740175452115882">Megerősítés</translation>
 <translation id="8182314305006465525">A rendszerindító gyorsindítási módban (fastboot mode) van</translation>
 <translation id="8315682102205416794">USB-meghajtó vagy SD-kártya használata</translation>
-<translation id="8377165353588213941">Elérte a lap alját</translation>
 <translation id="8547898031669202422">A külső meghajtóról való indítás le van tiltva. További információ:</translation>
 <translation id="8569584079758810124">Nem sikerült lekérni a hibakeresési információkat.</translation>
 <translation id="8609689706517017461">Az internetes helyreállítási partíció sérült vagy hiányzik. Használjon helyette USB-meghajtót.</translation>
-<translation id="8720490351198901261">Elérte a lap tetejét</translation>
 <translation id="8738563743369620892">Nem használhat billentyűzetet a rendszerindító feloldásához. Használja a bekapcsológombot ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Tartsa lenyomva a hangerő növelése, a hangerő csökkentése és a bekapcsológombot ( ⏻ ) legalább 10 másodpercig.</translation>
 <translation id="8878311588372127478">Tárhely önellenőrzése (kibővített)</translation>

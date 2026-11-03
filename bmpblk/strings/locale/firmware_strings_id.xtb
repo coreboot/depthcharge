@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Perangkat Anda tidak aman saat bootloader tidak dikunci. Untuk memulihkan keamanan perangkat, kunci bootloader.</translation>
 <translation id="1851498512110506461">Data pengguna akan dihapus total saat proses berlangsung.</translation>
 <translation id="1880493276474218432">Untuk membuat drive pemulihan, Anda memerlukan:</translation>
+<translation id="194344289147253846">Pindah ke halaman bawah/atas</translation>
 <translation id="1995660704900986789">Matikan perangkat</translation>
 <translation id="2022309272630265316">Tidak terdeteksi image yang valid</translation>
 <translation id="2164852388827548816">Log firmware</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Mulai proses pemulihan</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3931222419141306012">Image pemulihan sudah tidak berlaku</translation>
-<translation id="4002335453596341558">Halaman ke bawah</translation>
 <translation id="4228286289437521015">Tindakan ini akan menghapus semua data dari perangkat Anda. Keamanan perangkat akan dinonaktifkan.</translation>
 <translation id="4231467600151418708">2. Tekan lama Esc + Muat Ulang ( ⟳ ) + Daya ( ⏻ ).</translation>
 <translation id="4521842502554138285">Gunakan tombol panah untuk berpindah ke atas atau ke bawah</translation>
@@ -67,10 +67,10 @@ Harap jangan dimatikan.</translation>
 <translation id="6602196104287361867">Gunakan tombol Enter untuk memilih opsi</translation>
 <translation id="6870233504224262352">Pastikan perangkat Anda tetap aktif. Proses ini mungkin perlu waktu beberapa saat.</translation>
 <translation id="6933530204467815794">Terhubung melalui TCP</translation>
-<translation id="6972383785688794804">Halaman ke atas</translation>
 <translation id="7065553583078443466">Pilih bootloader alternatif</translation>
 <translation id="7071202423630761214">Terhubung melalui USB</translation>
 <translation id="714708458581824276">Partisi pemulihan internet rusak atau tidak ada. Gunakan drive USB atau kartu SD sebagai gantinya.</translation>
+<translation id="7171353208088046858">Keluar dari tampilan ini</translation>
 <translation id="7321387134821904291">Info performa penyimpanan</translation>
 <translation id="7332672207700801967">Pemulihan internet (versi yang lebih lama)</translation>
 <translation id="7342794948394983731">Alat diagnostik</translation>
@@ -91,11 +91,9 @@ Harap jangan dimatikan.</translation>
 <translation id="8131740175452115882">Konfirmasi</translation>
 <translation id="8182314305006465525">Anda berada dalam mode fastboot bootloader</translation>
 <translation id="8315682102205416794">Gunakan drive USB atau kartu SD</translation>
-<translation id="8377165353588213941">Anda telah mencapai halaman terakhir</translation>
 <translation id="8547898031669202422">Booting dari drive eksternal dinonaktifkan. Pelajari lebih lanjut di:</translation>
 <translation id="8569584079758810124">Tidak dapat memperoleh info debug.</translation>
 <translation id="8609689706517017461">Partisi pemulihan internet rusak atau tidak ada. Gunakan drive USB sebagai gantinya.</translation>
-<translation id="8720490351198901261">Anda berada di halaman teratas</translation>
 <translation id="8738563743369620892">Anda tidak dapat menggunakan keyboard untuk membuka kunci bootloader. Gunakan tombol Daya ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Tekan lama tombol Naikkan Volume + Turunkan Volume + Daya ( ⏻ ) setidaknya selama 10 detik.</translation>
 <translation id="8878311588372127478">Uji mandiri penyimpanan (diperluas)</translation>

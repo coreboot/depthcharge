@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Dokud je bootloader odemknutý, zařízení není zabezpečené. Pokud chcete obnovit zabezpečení zařízení, zamkněte bootloader.</translation>
 <translation id="1851498512110506461">Během procesu se vymažou uživatelská data.</translation>
 <translation id="1880493276474218432">K vytvoření disku pro obnovení budete potřebovat:</translation>
+<translation id="194344289147253846">Page Down / Page Up</translation>
 <translation id="1995660704900986789">Vypnout</translation>
 <translation id="2022309272630265316">Nebyl nalezen žádný platný obraz</translation>
 <translation id="2164852388827548816">Protokol firmwaru</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Spustit proces obnovení</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3931222419141306012">Zastaralý obraz pro obnovení systému</translation>
-<translation id="4002335453596341558">O stránku dolů</translation>
 <translation id="4228286289437521015">Ze zařízení se vymažou všechna data. Zabezpečení zařízení bude deaktivováno.</translation>
 <translation id="4231467600151418708">2. Podržte klávesy Esc + Obnovit ( ⟳ ) + vypínač ( ⏻ ).</translation>
 <translation id="4521842502554138285">Pomocí kláves se šipkami se pohybujte nahoru a dolů</translation>
@@ -67,10 +67,10 @@ Zarizeni nevypinejte.</translation>
 <translation id="6602196104287361867">Pomocí klávesy Enter vyberte možnost</translation>
 <translation id="6870233504224262352">Nechte zařízení zapnuté. Může to chvíli trvat.</translation>
 <translation id="6933530204467815794">Připojeno přes TCP</translation>
-<translation id="6972383785688794804">O stránku nahoru</translation>
 <translation id="7065553583078443466">Vybrat alternativní bootloader</translation>
 <translation id="7071202423630761214">Připojeno přes USB</translation>
 <translation id="714708458581824276">Internetový oddíl pro obnovení je poškozený nebo chybí. Použijte místo toho USB disk nebo SD kartu.</translation>
+<translation id="7171353208088046858">Ukončit toto zobrazení</translation>
 <translation id="7321387134821904291">Informace o stavu úložiště</translation>
 <translation id="7332672207700801967">Internetové obnovení (starší verze)</translation>
 <translation id="7342794948394983731">Diagnostické nástroje</translation>
@@ -91,11 +91,9 @@ Zarizeni nevypinejte.</translation>
 <translation id="8131740175452115882">Potvrdit</translation>
 <translation id="8182314305006465525">Jste v režimu rychlého spuštění (fastboot) pomocí bootloaderu</translation>
 <translation id="8315682102205416794">Použít jednotku USB nebo SD kartu</translation>
-<translation id="8377165353588213941">Jste na konci</translation>
 <translation id="8547898031669202422">Spuštění z externího disku je zakázáno. Další informace:</translation>
 <translation id="8569584079758810124">Informace o ladění nelze načíst.</translation>
 <translation id="8609689706517017461">Internetový oddíl pro obnovení je poškozený nebo chybí. Použijte jednotku USB.</translation>
-<translation id="8720490351198901261">Jste na začátku</translation>
 <translation id="8738563743369620892">Bootloader nelze odemknout pomocí klávesnice. Použijte vypínač ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Podržte minimálně 10 sekund tlačítka pro zvýšení a snížení hlasitosti a vypínač ( ⏻ ).</translation>
 <translation id="8878311588372127478">Autonomní test úložiště (rozšířený)</translation>

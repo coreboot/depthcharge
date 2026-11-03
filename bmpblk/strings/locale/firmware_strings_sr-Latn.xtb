@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Uređaj nije bezbedan dok je pokretački program otključan. Da biste uređaj vratili u bezbedan režim, zaključajte pokretački program.</translation>
 <translation id="1851498512110506461">Podaci korisnika će se izbrisati tokom procesa.</translation>
 <translation id="1880493276474218432">Da biste napravili disk za oporavak, treba vam:</translation>
+<translation id="194344289147253846">Stranica nadole ili nagore</translation>
 <translation id="1995660704900986789">Isključi</translation>
 <translation id="2022309272630265316">Nije otkrivena važeća slika</translation>
 <translation id="2164852388827548816">Evidencija firmvera</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Započnite postupak oporavka</translation>
 <translation id="385051799172605136">Nazad</translation>
 <translation id="3931222419141306012">Zastarela slika rezervne kopije sistema</translation>
-<translation id="4002335453596341558">Stranica nadole</translation>
 <translation id="4228286289437521015">Ovim ćete obrisati sve podatke sa uređaja. Bezbednost uređaja će biti onemogućena.</translation>
 <translation id="4231467600151418708">2. Zadržite Esc + Osveži ( ⟳ ) + dugme za uključivanje ( ⏻ ).</translation>
 <translation id="4521842502554138285">Koristite tastere sa strelicama da biste se kretali nagore ili nadole</translation>
@@ -67,10 +67,10 @@ Ne isključujte uređaj.</translation>
 <translation id="6602196104287361867">Koristite taster Enter da biste izabrali opciju</translation>
 <translation id="6870233504224262352">Neka uređaj bude uključen. Ovo može malo da potraje.</translation>
 <translation id="6933530204467815794">Povezano preko TCP-a</translation>
-<translation id="6972383785688794804">Stranica nagore</translation>
 <translation id="7065553583078443466">Izaberite alternativni pokretački program</translation>
 <translation id="7071202423630761214">Povezano preko USB-a</translation>
 <translation id="714708458581824276">Particija za oporavak pomoću interneta je oštećena ili nedostaje. Umesto toga koristite USB disk ili SD karticu.</translation>
+<translation id="7171353208088046858">Izađi iz ovog prikaza</translation>
 <translation id="7321387134821904291">Podaci o stanju memorijskog prostora</translation>
 <translation id="7332672207700801967">Vraćanje sadržaja pomoću interneta (starija verzija)</translation>
 <translation id="7342794948394983731">Dijagnostičke alatke</translation>
@@ -91,11 +91,9 @@ Ne isključujte uređaj.</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8182314305006465525">Nalazite se u režimu brzog pokretanja pokretačkog programa</translation>
 <translation id="8315682102205416794">Koristi USB disk ili SD karticu</translation>
-<translation id="8377165353588213941">Došli ste do kraja</translation>
 <translation id="8547898031669202422">Uključivanje sa spoljnog diska je onemogućeno. Saznajte više na:</translation>
 <translation id="8569584079758810124">Preuzimanje informacija o otklanjanju grešaka nije uspelo.</translation>
 <translation id="8609689706517017461">Particija za oporavak pomoću interneta je oštećena ili nedostaje. Koristite USB disk.</translation>
-<translation id="8720490351198901261">Došli ste do vrha</translation>
 <translation id="8738563743369620892">Ne možete da koristite tastaturu za otključavanje pokretačkog programa. Koristite dugme za uključivanje ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Zadržite dugmad za pojačavanje zvuka, smanjivanje zvuka i uključivanje ( ⏻ ) najmanje 10 sekundi.</translation>
 <translation id="8878311588372127478">Samostalno testiranje memorijskog prostora (prošireno)</translation>

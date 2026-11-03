@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Dein Gerät ist nicht sicher, solange der Bootloader entsperrt ist. Sperre den Bootloader, um die Gerätesicherheit wiederherzustellen.</translation>
 <translation id="1851498512110506461">Deine Nutzerdaten werden während des Vorgangs gelöscht.</translation>
 <translation id="1880493276474218432">Zum Erstellen eines Wiederherstellungslaufwerks benötigst du Folgendes:</translation>
+<translation id="194344289147253846">Bild-auf/Bild-ab</translation>
 <translation id="1995660704900986789">Ausschalten</translation>
 <translation id="2022309272630265316">Kein gültiges Image erkannt</translation>
 <translation id="2164852388827548816">Firmware-Protokoll</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Wiederherstellungsprozess starten</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3931222419141306012">Veraltetes Wiederherstellungsimage</translation>
-<translation id="4002335453596341558">Bildlauf nach unten</translation>
 <translation id="4228286289437521015">Dadurch werden alle Daten von deinem Gerät gelöscht. Die Gerätesicherheit wird deaktiviert.</translation>
 <translation id="4231467600151418708">2. Halte die Esc-Taste, die Taste „Aktualisieren“ (⟳) und die Ein/Aus-Taste (⏻) gedrückt.</translation>
 <translation id="4521842502554138285">Mit den Pfeiltasten kannst du nach oben oder unten gehen</translation>
@@ -68,10 +68,10 @@ Bitte schalte dein Gerät nicht aus.</translation>
 <translation id="6602196104287361867">Drücke die Eingabetaste, um eine Option auszuwählen</translation>
 <translation id="6870233504224262352">Lass dein Gerät eingeschaltet. Dies kann einen Moment dauern.</translation>
 <translation id="6933530204467815794">Über TCP verbunden</translation>
-<translation id="6972383785688794804">Bildlauf nach oben</translation>
 <translation id="7065553583078443466">Alternativen Bootloader auswählen</translation>
 <translation id="7071202423630761214">Über USB verbunden</translation>
 <translation id="714708458581824276">Die Partition zur Wiederherstellung über das Internet ist beschädigt oder nicht vorhanden. Verwende stattdessen einen USB-Speicher oder eine SD-Karte.</translation>
+<translation id="7171353208088046858">Diese Ansicht schließen</translation>
 <translation id="7321387134821904291">Informationen zum Zustand des Speichers</translation>
 <translation id="7332672207700801967">Wiederherstellung über das Internet (ältere Version)</translation>
 <translation id="7342794948394983731">Diagnose-Tools</translation>
@@ -92,11 +92,9 @@ Bitte schalte dein Gerät nicht aus.</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
 <translation id="8182314305006465525">Der Bootloader-Schnellstartmodus ist aktiviert</translation>
 <translation id="8315682102205416794">USB-Speicher oder SD-Karte verwenden</translation>
-<translation id="8377165353588213941">Dies ist die letzte Seite</translation>
 <translation id="8547898031669202422">Das Starten von einem externen Laufwerk ist deaktiviert. Weitere Informationen unter:</translation>
 <translation id="8569584079758810124">Informationen zur Fehlerbehebung konnten nicht geladen werden.</translation>
 <translation id="8609689706517017461">Die Partition zur Wiederherstellung über das Internet ist beschädigt oder nicht vorhanden. Verwende stattdessen einen USB-Speicher.</translation>
-<translation id="8720490351198901261">Dies ist die erste Seite</translation>
 <translation id="8738563743369620892">Der Bootloader kann nicht über eine Tastatur entsperrt werden. Verwende die Ein/Aus-Taste (⏻).</translation>
 <translation id="8856927881878864573">2. Halte die Lauter- und die Leisertaste sowie die Ein/Aus-Taste (⏻) mindestens 10 Sekunden lang gedrückt.</translation>
 <translation id="8878311588372127478">Speicherplatz prüfen (erweitert)</translation>

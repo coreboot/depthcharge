@@ -10,6 +10,7 @@
 <translation id="1618959600706780970">Je apparaat is niet beveiligd terwijl de bootloader is ontgrendeld. Vergrendel de bootloader om de apparaatbeveiliging te herstellen.</translation>
 <translation id="1851498512110506461">Je gebruikersgegevens worden gewist tijdens dit proces.</translation>
 <translation id="1880493276474218432">Als je een herstelschijf wilt maken, heb je het volgende nodig:</translation>
+<translation id="194344289147253846">Pagina omlaag/omhoog</translation>
 <translation id="1995660704900986789">Uitzetten</translation>
 <translation id="2022309272630265316">Geen geldige afbeelding gedetecteerd</translation>
 <translation id="2164852388827548816">Firmwarelogboek</translation>
@@ -29,7 +30,6 @@
 <translation id="3848046184877245923">Het herstelproces starten</translation>
 <translation id="385051799172605136">Terug</translation>
 <translation id="3931222419141306012">Verouderde herstelimage</translation>
-<translation id="4002335453596341558">Pagina omlaag</translation>
 <translation id="4228286289437521015">Hiermee worden alle gegevens van je apparaat gewist. Apparaatbeveiliging wordt uitgezet.</translation>
 <translation id="4231467600151418708">2. Houd Esc + Vernieuwen ( ⟳ ) + Aan/uit ( ⏻ ) ingedrukt.</translation>
 <translation id="4521842502554138285">Gebruik de pijltoetsen om omhoog of omlaag te navigeren</translation>
@@ -67,10 +67,10 @@ Zet je apparaat niet uit.</translation>
 <translation id="6602196104287361867">Gebruik de Enter-toets om een optie te selecteren</translation>
 <translation id="6870233504224262352">Laat je apparaat aanstaan. Dit kan even duren.</translation>
 <translation id="6933530204467815794">Verbonden via TCP</translation>
-<translation id="6972383785688794804">Pagina omhoog</translation>
 <translation id="7065553583078443466">Alternatieve bootloader selecteren</translation>
 <translation id="7071202423630761214">Verbonden via USB</translation>
 <translation id="714708458581824276">De partitie voor herstel via internet is beschadigd of ontbreekt. Gebruik in plaats daarvan een USB-drive of SD-kaart.</translation>
+<translation id="7171353208088046858">Deze weergave sluiten</translation>
 <translation id="7321387134821904291">Statusinformatie over opslag</translation>
 <translation id="7332672207700801967">Herstel via internet (oudere versie)</translation>
 <translation id="7342794948394983731">Diagnostische tools</translation>
@@ -91,11 +91,9 @@ Zet je apparaat niet uit.</translation>
 <translation id="8131740175452115882">Bevestigen</translation>
 <translation id="8182314305006465525">Je bevindt je in de Fastboot mode voor de bootloader</translation>
 <translation id="8315682102205416794">USB-drive of SD-kaart gebruiken</translation>
-<translation id="8377165353588213941">Je bent bij het einde</translation>
 <translation id="8547898031669202422">Opstarten vanaf een externe schijf staat uit. Ga voor meer informatie naar:</translation>
 <translation id="8569584079758810124">Kan foutopsporingsinfo niet ophalen.</translation>
 <translation id="8609689706517017461">De partitie voor herstel via internet is beschadigd of ontbreekt. Gebruik in plaats daarvan een USB-drive.</translation>
-<translation id="8720490351198901261">Je bent bij het begin</translation>
 <translation id="8738563743369620892">Je kunt geen toetsenbord gebruiken om de bootloader te ontgrendelen. Gebruik de aan/uit-knop ( ⏻ ).</translation>
 <translation id="8856927881878864573">2. Houd de knoppen Volume omhoog + Volume omlaag + Aan/uit ( ⏻ ) minimaal 10 seconden ingedrukt.</translation>
 <translation id="8878311588372127478">Zelfcontrole voor opslag (uitgebreid)</translation>

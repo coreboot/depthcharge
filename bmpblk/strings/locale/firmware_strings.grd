@@ -172,17 +172,13 @@ Connected via TCP
       <message name="fastboot_usb_conn_desc" desc="Description of screen when fastboot uses H2H (Alink) cable.">
 Connected via USB
       </message>
-      <message name="btn_page_up" desc="String for the page up button (please translate this)." meaning="verb">
-Page up
+      <message name="page_down_up"
+               desc="Instruction next to the down and up keys, which scroll the text down or up by one page.">
+Page down / up
       </message>
-      <message name="btn_page_down" desc="String for the page down button (please translate this)." meaning="verb">
-Page down
-      </message>
-      <message name="page_up_disabled_help" desc="Help string which shows next to the page up button when the user is already at the first page">
-You have reached the top
-      </message>
-      <message name="page_down_disabled_help" desc="Help string which shows next to the page down button when the user is already at the last page">
-You have reached the end
+      <message name="exit_view"
+               desc="Instruction next to the select key, which exits the text view and goes back to the previous screen.">
+Exit this view
       </message>
       <message name="rec_sel_title" desc="Title for the recovery screen (after user presses three finger salute, ie: ctrl + refresh + power).">
 Start the recovery process
