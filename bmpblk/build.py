@@ -285,6 +285,7 @@ class Converter:
             # detachables, but are still needed for the language dropdown.
             rename_map.update(
                 {
+                    'navigate_header_tablet': 'navigate_header',
                     'navigate0_tablet': 'navigate0',
                     'navigate1_tablet': 'navigate1',
                     'key_enter': None,
@@ -293,6 +294,7 @@ class Converter:
         else:
             rename_map.update(
                 {
+                    'navigate_header_tablet': None,
                     'navigate0_tablet': None,
                     'navigate1_tablet': None,
                     'ic_volume_up': None,

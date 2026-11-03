@@ -367,23 +367,35 @@ Advanced options
       <message name="btn_power_off" desc="String for the power off button.">
 Power off
       </message>
+      <message name="more_details_header"
+               desc="Heading above the device name and the help center URL.">
+More details
+      </message>
       <message name="device" desc="String for the device name.">
 Device:
       </message>
       <message name="help_center" desc="String for the help center label.">
-Help center:
+Help Center:
+      </message>
+      <message name="navigate_header"
+               desc="Heading above the instructions for navigating with the keyboard.">
+How to navigate with keyboard
       </message>
       <message name="navigate0" desc="Instruction0 for navigating on a device.">
-Use the arrow keys to navigate up or down.
+Use the arrow keys to navigate up or down
       </message>
       <message name="navigate1" desc="Instruction1 for navigating on a device.">
-Use the enter key to select an option.
+Use the Enter key to select an option
+      </message>
+      <message name="navigate_header_tablet"
+               desc="Heading above the instructions for navigating with the volume and power buttons on a tablet or detachable.">
+How to navigate
       </message>
       <message name="navigate0_tablet" desc="Instruction0 for navigating on a tablet or detachable.">
-Use the volume buttons to navigate up or down.
+Use the volume buttons to navigate up or down
       </message>
       <message name="navigate1_tablet" desc="Instruction1 for navigating on a tablet or detachable.">
-Use the power button to select an option.
+Use the power button to select an option
       </message>
       <message name="error_dev_mode_enabled" desc="Error message when developer mode is already turned on">
 Bootloader is already unlocked.

@@ -109,6 +109,9 @@ localized_files:
   btn_page_up: button
   btn_page_down: button
   # footer
+  navigate_header: footer_header
+  navigate_header_tablet: footer_header
+  more_details_header: footer_header
   device: footer
   help_center: footer
   navigate0: footer_nav
@@ -179,6 +182,7 @@ sprite_files:
 # See https://carbon.googleplex.com/google-material-3/pages/static/gm3-baseline.
 color_aliases:
   - &primary '#a8c7fa'
+  - &secondary '#7fcfff'
   - &surface_container '#1e1f20'
   - &surface_container_high '#282a2c'
   - &on_surface '#e3e3e3'
@@ -249,6 +253,13 @@ styles:
     # UI_SCALE / 2 - UI_MARGIN_H - UI_FOOTER_COL_PADDING_INNER
     # - UI_FOOTER_QR_BOX_SIZE - UI_FOOTER_QR_BOX_MARGIN_R
     max_width: 322
+  footer_header:
+    bgcolor: *surface_container
+    fgcolor: *secondary
+    height: 23
+    font_weight: SemiBold
+    # UI_SCALE / 2 - UI_MARGIN_H - UI_FOOTER_COL_PADDING_INNER
+    max_width: 444
   footer_url:
     bgcolor: *surface_container
     fgcolor: *primary
