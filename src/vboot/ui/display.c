@@ -58,7 +58,7 @@ static const struct ui_error_message errors[] = {
 	},
 	[UI_ERROR_DEV_MODE_ALREADY_ENABLED] = {
 		.file = "error_dev_mode_enabled.bmp",
-		.mesg = "Bootloader is already unlocked.",
+		.mesg = "Bootloader is already unlocked",
 	},
 	[UI_ERROR_UNTRUSTED_CONFIRMATION] = {
 		.file = "error_untrusted_confirm.bmp",
@@ -69,7 +69,7 @@ static const struct ui_error_message errors[] = {
 	},
 	[UI_ERROR_TO_NORM_NOT_ALLOWED] = {
 		.file = "error_to_norm_not_allowed.bmp",
-		.mesg = "Returning to secure mode disallowed by GBB flags.",
+		.mesg = "Returning to secure mode disallowed by GBB flags",
 	},
 	[UI_ERROR_DEV_BOOT_NOT_ALLOWED] = {
 		.file = "error_dev_boot_not_allowed.bmp",
@@ -107,15 +107,15 @@ static const struct ui_error_message errors[] = {
 	},
 	[UI_ERROR_DEBUG_LOG] = {
 		.file = "error_debug_info.bmp",
-		.mesg = "Could not get debug info.",
+		.mesg = "Could not get debug info",
 	},
 	[UI_ERROR_FIRMWARE_LOG] = {
 		.file = "error_firmware_log.bmp",
-		.mesg = "Could not get firmware log.",
+		.mesg = "Could not get firmware log",
 	},
 	[UI_ERROR_DIAGNOSTICS] = {
 		.file = "error_diagnostics.bmp",
-		.mesg = "Could not get diagnostic information.",
+		.mesg = "Could not get diagnostic information",
 	},
 	[UI_ERROR_DEV_MODE_OEM_LOCK] = {
 		.file = "error_dev_mode_oem_lock.bmp",

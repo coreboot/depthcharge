@@ -116,7 +116,7 @@
 Updating your device
       </message>
       <message name="firmware_sync_desc" desc="Description of screen shown when device is updating the firmware on the embedded chip.">
-Keep your device turned on. This may take a moment.
+Keep your device turned on. This may take a moment. Your device might restart several times during the process.
       </message>
       <message name="broken_title" desc="Title of screen shown when device is in broken screen.">
 Something went wrong
@@ -125,16 +125,16 @@ Something went wrong
 To fix this issue, start the recovery process.
       </message>
       <message name="broken_desc1" desc="Description string1 for screen shown when device is in broken screen.">
-1. Remove all connected devices.
+1. Remove all connected devices
       </message>
       <message name="broken_desc2" desc="Description string2 for screen shown when device is in broken screen.">
-2. Hold Esc + Refresh ( ⟳ ) + Power ( ⏻ ).
+2. Hold Esc + Refresh ( ⟳ ) + Power ( ⏻ )
       </message>
       <message name="broken_desc2_phyrec" desc="Description string2 for screen shown when device with physical recovery button is in broken screen.">
-2. While holding the Recovery button, press and release the Power button ( ⏻ ), then release the Recovery button.
+2. While holding the Recovery button, press and release the Power button ( ⏻ ), then release the Recovery button
       </message>
       <message name="broken_desc2_detach" desc="Description string2 for screen shown when detachable is in broken screen.">
-2. Hold down Volume Up + Volume Down + Power button ( ⏻ ) for at least 10 seconds.
+2. Hold down Volume Up + Volume Down + Power button ( ⏻ ) for at least 10 seconds
       </message>
       <message name="adv_options_title" desc="Title for the advanced options screen.">
 Advanced options
@@ -184,7 +184,7 @@ Exit this view
 Start the recovery process
       </message>
       <message name="rec_sel_desc0" desc="Description string0 for the recovery screen (after user presses three finger salute, ie: ctrl + refresh + power).">
-Choose a recovery method to get started.
+Choose a recovery method to get started
       </message>
       <message name="btn_rec_by_disk" desc="Button to select recovery through external disk.">
 Use USB drive or SD card
@@ -223,7 +223,7 @@ Your device battery is low. Connect to a power source to continue.
 Set up your recovery drive
       </message>
       <message name="rec_disk_step2_desc0" desc="Description string0 for step2 in the recovery process.">
-1. Go to <ph name="REC_URL">{msg[rec_url]}<ex>goo.gle/android_laptop_recovery</ex></ph> on your other device
+1. Go to <ph name="REC_URL">{msg[rec_url]}<ex>goo.gle/mydevice_recovery</ex></ph> on your other device
       </message>
       <message name="rec_disk_step2_desc1" desc="Description string1 for step2 in the recovery process.">
 2. Follow instructions on your other device
@@ -238,13 +238,13 @@ Learn more at:
 No valid image detected
       </message>
       <message name="rec_invalid_desc" desc="Description for invalid disk plugged inserted.">
-Make sure your recovery drive has a valid image and try again.
+Make sure your recovery drive has a valid image and try again
       </message>
       <message name="rec_rollback_error_title" desc="Title for recovery rollback error.">
 Outdated recovery image
       </message>
       <message name="rec_rollback_error_desc" desc="Description for recovery rollback_error.">
-This recovery image is too old for your device. Download a new recovery image and try again.
+The recovery image is too old for your device. Download a new recovery image and try again.
       </message>
       <message name="rec_to_dev_title" desc="Title for transition to dev mode.">
 Unlock bootloader?
@@ -265,7 +265,7 @@ Bootloader is unlocked
 Your device is not secure while the bootloader is unlocked. To restore device security, lock the bootloader.
       </message>
       <message name="dev_desc1" desc="String1 for developer warning screen.">
-After timeout, the device will automatically boot from the selection below.
+After timeout, your device will automatically boot from the selection below.
       </message>
       <message name="btn_secure_mode" desc="Button for going back to secure mode.">
 Lock bootloader
@@ -295,13 +295,13 @@ Lock
 No external drive detected
       </message>
       <message name="dev_boot_ext_desc0" desc="String1 for screen instructing user to plug in their USB/SD card containing an OS recovery image.">
-Plug in an external drive with an OS image. Your device will boot automatically.
+Plug in a drive with an OS image. Your device will boot automatically.
       </message>
       <message name="dev_invalid_disk_title" desc="Title for screen that appears when user plugs in a USB/SD card with an invalid image on it.">
 No valid image detected
       </message>
       <message name="dev_invalid_disk_desc0" desc="String1 for screen that appears when user plugs in a USB/SD card with an invalid image on it.">
-Make sure your external drive has a valid OS image, and re-insert it when it's ready.
+Make sure your drive has an OS image and try again
       </message>
       <message name="btn_launch_diag" desc="String for the button to enter diagnostics.">
 Launch diagnostics
@@ -394,7 +394,7 @@ Use the volume buttons to navigate up or down
 Use the power button to select an option
       </message>
       <message name="error_dev_mode_enabled" desc="Error message when developer mode is already turned on">
-Bootloader is already unlocked.
+Bootloader is already unlocked
       </message>
       <message name="error_untrusted_confirm"
                desc="Error for untrusted confirmation for turning on developer mode">
@@ -405,7 +405,7 @@ You cannot use an external keyboard to unlock the bootloader. Use the built-in k
 You cannot use a keyboard to unlock the bootloader. Use the Power button ( ⏻ ).
       </message>
       <message name="error_to_norm_not_allowed" desc="Error when to-norm transition is not allowed">
-Returning to secure mode disallowed by GBB flags.
+Returning to secure mode disallowed by GBB flags
       </message>
       <message name="error_dev_boot_not_allowed" desc="Error when booting in developer mode is not allowed">
 Booting with an unlocked bootloader is not allowed. Learn more at:
@@ -430,13 +430,13 @@ Could not find an alternate bootloader. To learn how to install one, visit:
 Something went wrong launching the alternate bootloader. View firmware log for details.
       </message>
       <message name="error_debug_info" desc="Error of showing debug info">
-Could not get debug info.
+Could not get debug info
       </message>
       <message name="error_firmware_log" desc="Error of showing firmware log">
-Could not get firmware log.
+Could not get firmware log
       </message>
       <message name="error_diagnostics" desc="Error of showing diagnostic information">
-Could not get diagnostic information.
+Could not get diagnostic information
       </message>
       <message name="error_internet_recovery" desc="Error of using internet recovery">
 Internet recovery partition is corrupted or missing. Use a USB drive or SD card instead.

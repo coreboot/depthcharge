@@ -417,7 +417,8 @@ static const struct ui_screen_info firmware_sync_screen = {
 	.desc = UI_DESC(firmware_sync_desc),
 	.no_footer = 1,
 	.mesg = "Updating your device.\n"
-		"Keep your device turned on. This may take a moment.",
+		"Keep your device turned on. This may take a moment.\n"
+		"Your device might restart several times during the process.",
 };
 
 /******************************************************************************/
@@ -659,7 +660,7 @@ static const struct ui_screen_info broken_screen = {
 	.menu = UI_MENU(broken_items),
 	.mesg = "Something went wrong\n"
 		"To fix the issue, start the recovery process.\n"
-		"1. Remove all connected devices.\n"
+		"1. Remove all connected devices\n"
 		"2. Depending on your device type:\n"
 		"* Laptop: Hold Escape, Refresh, and Power buttons\n"
 		"* Desktop: While holding the Recovery button,\n"
@@ -1305,7 +1306,7 @@ static const struct ui_screen_info recovery_select_screen = {
 	.menu = UI_MENU(recovery_select_items),
 	.init = recovery_select_init,
 	.mesg = "Start the recovery process\n"
-		"Choose a recovery method to get started.",
+		"Choose a recovery method to get started",
 };
 
 /******************************************************************************/
@@ -1428,7 +1429,7 @@ static const struct ui_screen_info recovery_rollback_error_screen = {
 	.menu = UI_MENU(recovery_rollback_error_items),
 	.draw_desc = draw_rec_url_desc,
 	.mesg = "Outdated recovery image.\n"
-		"This recovery image is too old for your device. Download\n"
+		"The recovery image is too old for your device. Download\n"
 		"a new recovery image and try again.",
 };
 
@@ -1687,7 +1688,7 @@ static const struct ui_screen_info developer_mode_screen = {
 		"Your device is not secure while the bootloader is unlocked.\n"
 		"To restore device security, lock the bootloader by selecting\n"
 		"\"Lock bootloader\"\n"
-		"After timeout, the device will automatically boot from\n"
+		"After timeout, your device will automatically boot from\n"
 		"the default boot target.",
 };
 
@@ -1814,8 +1815,8 @@ static const struct ui_screen_info developer_boot_external_screen = {
 	.reinit = developer_boot_external_init,
 	.action = ui_developer_mode_boot_external_action,
 	.mesg = "No external drive detected\n"
-		"Plug in an external drive with an OS image. Your device will\n"
-		"boot automatically.",
+		"Plug in a drive with an OS image. Your device will boot\n"
+		"automatically.",
 };
 
 /******************************************************************************/
@@ -1858,8 +1859,7 @@ static const struct ui_screen_info developer_invalid_disk_screen = {
 	.reinit = developer_invalid_disk_init,
 	.action = ui_developer_mode_boot_external_action,
 	.mesg = "No valid image detected\n"
-		"Make sure your external drive has a valid OS image,\n"
-		"and re-insert it when it's ready.",
+		"Make sure your drive has an OS image and try again",
 };
 
 /******************************************************************************/
