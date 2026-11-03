@@ -247,12 +247,41 @@ static vb2_error_t get_footer_left_height(const char *locale_code,
 	return VB2_SUCCESS;
 }
 
+/* Bitmaps of the column headers of the footer */
+static const char *const footer_left_header = "navigate_header.bmp";
+static const char *const footer_right_header = "more_details_header.bmp";
+
+/*
+ * Get the height of the column headers of the footer.
+ *
+ * This is the height of the taller header, so that the content of both columns
+ * starts at the same line.
+ *
+ * @param locale_code	Language code of locale.
+ * @param height	Height of the column headers to be returned.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+static vb2_error_t get_footer_header_height(const char *locale_code,
+					    int32_t *height)
+{
+	struct ui_bitmap bitmap;
+	int32_t left_height, right_height;
+
+	VB2_TRY(ui_get_bitmap(footer_left_header, locale_code, 0, &bitmap));
+	left_height = get_footer_text_block_height(&bitmap);
+	VB2_TRY(ui_get_bitmap(footer_right_header, locale_code, 0, &bitmap));
+	right_height = get_footer_text_block_height(&bitmap);
+	*height = MAX(left_height, right_height);
+	return VB2_SUCCESS;
+}
+
 /*
  * Get the y-coordinate of the top of the footer.
  *
  * The footer is anchored to the bottom of the screen, and its height is
- * determined by the taller column. Therefore, the footer grows upward when the
- * text wraps to too many lines.
+ * determined by the column headers and the taller column. Therefore, the footer
+ * grows upward when the text wraps to too many lines.
  *
  * @param locale_code	Language code of locale.
  * @param y		y-coordinate of the top of the footer to be returned.
@@ -262,7 +291,10 @@ static vb2_error_t get_footer_left_height(const char *locale_code,
 static vb2_error_t get_footer_y(const char *locale_code, int32_t *y)
 {
 	struct ui_bitmap bitmap;
-	int32_t left_height, right_height;
+	int32_t header_height, left_height, right_height;
+
+	/* Column headers */
+	VB2_TRY(get_footer_header_height(locale_code, &header_height));
 
 	/* Left column: keyboard navigation instructions */
 	VB2_TRY(get_footer_left_height(locale_code, &left_height));
@@ -277,8 +309,9 @@ static vb2_error_t get_footer_y(const char *locale_code, int32_t *y)
 	right_height = MAX(right_height, UI_FOOTER_QR_BOX_SIZE);
 
 	*y = UI_SCALE - UI_FOOTER_PADDING_BOTTOM -
-		MAX(left_height, right_height) - UI_FOOTER_PADDING_TOP -
-		UI_FOOTER_DIVIDER_THICKNESS;
+		MAX(left_height, right_height) -
+		UI_FOOTER_HEADER_MARGIN_BOTTOM - header_height -
+		UI_FOOTER_PADDING_TOP - UI_FOOTER_DIVIDER_THICKNESS;
 	return VB2_SUCCESS;
 }
 
@@ -311,9 +344,20 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 			    reverse));
 
 	/*
-	 * TODO(b/551743258): Draw the column headers ("How to navigate with
-	 * keyboard" and "More details") once the strings are translated.
+	 * Column headers. The content of both columns starts below the taller
+	 * header.
 	 */
+	VB2_TRY(ui_get_bitmap(footer_left_header, locale_code, 0, &bitmap));
+	h = get_footer_text_block_height(&bitmap);
+	VB2_TRY(draw_footer_text(&bitmap, UI_MARGIN_H, content_y + h / 2,
+				 reverse));
+	VB2_TRY(ui_get_bitmap(footer_right_header, locale_code, 0, &bitmap));
+	h = get_footer_text_block_height(&bitmap);
+	VB2_TRY(draw_footer_text(&bitmap,
+				 UI_SCALE / 2 + UI_FOOTER_COL_PADDING_INNER,
+				 content_y + h / 2, reverse));
+	VB2_TRY(get_footer_header_height(locale_code, &h));
+	content_y += h + UI_FOOTER_HEADER_MARGIN_BOTTOM;
 
 	/* Left column: keyboard navigation instructions */
 	x = UI_MARGIN_H;
