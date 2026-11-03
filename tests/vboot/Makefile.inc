@@ -94,6 +94,7 @@ ui-broken-detachable-test-config += CONFIG_DETACHABLE=1
 # ui-manual-test
 $(call copy-test,ui-test-common,ui-manual-test)
 ui-manual-test-srcs += tests/vboot/ui-manual-test.c
+ui-manual-test-srcs += src/vboot/ui.c
 ui-manual-test-srcs := $(filter-out tests/mocks/vboot/ui/archive.c, \
 	$(ui-manual-test-srcs))
 ui-manual-test-config += CONFIG_PHYSICAL_PRESENCE_KEYBOARD=1

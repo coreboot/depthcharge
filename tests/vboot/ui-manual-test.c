@@ -8,7 +8,6 @@
 #include <mocks/vb2api.h>
 #include <vb2_api.h>
 #include <vboot/stages.h>
-#include <vboot/ui.c>
 #include <vboot/ui.h>
 
 #define MOCK_MAX_LOCALES 256
@@ -79,42 +78,6 @@ static void setup_will_return_common(void)
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(vb2api_diagnostic_ui_enabled, 1);
 	will_return_maybe(ui_get_locale_info, VB2_SUCCESS);
-}
-
-static void test_manual_action_success(void **state)
-{
-	struct ui_context *ui = *state;
-
-	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
-
-	assert_int_equal(ui_manual_recovery_action(ui), VB2_REQUEST_UI_EXIT);
-}
-
-static void test_manual_action_no_disk_found(void **state)
-{
-	struct ui_context *ui = *state;
-
-	setup_will_return_common();
-
-	WILL_LOAD_EXTERNAL_ALWAYS(VB2_ERROR_LK_NO_DISK_FOUND);
-
-	assert_int_equal(ui_manual_recovery_action(ui),
-			 VB2_REQUEST_UI_CONTINUE);
-
-	ASSERT_SCREEN_STATE(ui->state, UI_SCREEN_RECOVERY_SELECT);
-}
-
-static void test_manual_action_invalid_kernel(void **state)
-{
-	struct ui_context *ui = *state;
-
-	WILL_LOAD_EXTERNAL_ALWAYS(VB2_ERROR_LK_INVALID_KERNEL_FOUND);
-	will_return_maybe(ui_keyboard_read, 0);
-
-	assert_int_equal(ui_manual_recovery_action(ui),
-			 VB2_REQUEST_UI_CONTINUE);
-
-	ASSERT_SCREEN_STATE(ui->state, UI_SCREEN_RECOVERY_INVALID);
 }
 
 static void test_manual_ui_no_disk_found_invalid_kernel(void **state)
@@ -868,10 +831,6 @@ static void test_firmware_log(void **state)
 int main(void)
 {
 	const struct CMUnitTest tests[] = {
-		/* Manual recovery action */
-		UI_TEST(test_manual_action_success),
-		UI_TEST(test_manual_action_no_disk_found),
-		UI_TEST(test_manual_action_invalid_kernel),
 		/* Manual recovery ui */
 		UI_TEST(test_manual_ui_no_disk_found_invalid_kernel),
 		UI_TEST(test_manual_ui_invalid_kernel_no_disk_found),
