@@ -169,7 +169,7 @@ Waiting for connection...
       <message name="fastboot_tcp_conn_desc" desc="Description of screen when fastboot uses network.">
 Connected via TCP
       </message>
-      <message name="fastboot_usb_conn_desc" desc="Description of screen when fastboot uses H2H (Alink) cable.">
+      <message name="fastboot_usb_conn_desc" desc="Description of screen when fastboot is connected over USB.">
 Connected via USB
       </message>
       <message name="page_down_up"
@@ -180,10 +180,10 @@ Page down / up
                desc="Instruction next to the select key, which exits the text view and goes back to the previous screen.">
 Exit this view
       </message>
-      <message name="rec_sel_title" desc="Title for the recovery screen (after user presses three finger salute, ie: ctrl + refresh + power).">
+      <message name="rec_sel_title" desc="Title for the screen to choose a recovery method.">
 Start the recovery process
       </message>
-      <message name="rec_sel_desc0" desc="Description string0 for the recovery screen (after user presses three finger salute, ie: ctrl + refresh + power).">
+      <message name="rec_sel_desc0" desc="Description for the screen to choose a recovery method.">
 Choose a recovery method to get started
       </message>
       <message name="btn_rec_by_disk" desc="Button to select recovery through external disk.">
@@ -291,16 +291,16 @@ User data will be wiped in the process.
       <message name="btn_lock" desc="Button for going back to secure mode.">
 Lock
       </message>
-      <message name="dev_boot_ext_title" desc="Title for screen instructing user to plug in their USB/SD card containing an OS recovery image.">
+      <message name="dev_boot_ext_title" desc="Title for screen instructing user to plug in an external drive with an OS image.">
 No external drive detected
       </message>
-      <message name="dev_boot_ext_desc0" desc="String1 for screen instructing user to plug in their USB/SD card containing an OS recovery image.">
+      <message name="dev_boot_ext_desc0" desc="String1 for screen instructing user to plug in an external drive with an OS image.">
 Plug in a drive with an OS image. Your device will boot automatically.
       </message>
-      <message name="dev_invalid_disk_title" desc="Title for screen that appears when user plugs in a USB/SD card with an invalid image on it.">
+      <message name="dev_invalid_disk_title" desc="Title for screen that appears when user plugs in an external drive without a valid OS image.">
 No valid image detected
       </message>
-      <message name="dev_invalid_disk_desc0" desc="String1 for screen that appears when user plugs in a USB/SD card with an invalid image on it.">
+      <message name="dev_invalid_disk_desc0" desc="String1 for screen that appears when user plugs in an external drive without a valid OS image.">
 Make sure your drive has an OS image and try again
       </message>
       <message name="btn_launch_diag" desc="String for the button to enter diagnostics.">
@@ -354,7 +354,7 @@ Back
       <message name="btn_confirm" desc="String for the confirm button.">
 Confirm
       </message>
-      <message name="btn_cancel" desc="String for the canel button.">
+      <message name="btn_cancel" desc="String for the cancel button.">
 Cancel
       </message>
       <message name="btn_adv_options" desc="String for the advanced options button.">
