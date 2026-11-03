@@ -183,11 +183,13 @@
 #define UI_FOOTER_COL_PADDING_INNER		24
 #define UI_FOOTER_TEXT_HEIGHT			23
 #define UI_FOOTER_TEXT_LINE_HEIGHT		24
-#define UI_FOOTER_HEADER_MARGIN_BOTTOM		20
+/* Margins between the column headers and the content of the columns */
+#define UI_FOOTER_LEFT_HEADER_MARGIN_BOTTOM	20
+#define UI_FOOTER_RIGHT_HEADER_MARGIN_BOTTOM	12
 #define UI_FOOTER_ROW_PADDING_V			4
 #define UI_FOOTER_ROW_SPACING			6
 #define UI_FOOTER_PARA_SPACING			10
-#define UI_FOOTER_QR_BOX_SIZE			102
+#define UI_FOOTER_QR_BOX_SIZE			114
 #define UI_FOOTER_QR_BOX_PADDING		8
 #define UI_FOOTER_QR_BOX_RADIUS			12
 #define UI_FOOTER_QR_BOX_MARGIN_R		20
@@ -359,8 +361,8 @@ static const struct rgb_color ui_color_bg		= { 0x1e, 0x1f, 0x20 };
 static const struct rgb_color ui_color_fg		= { 0xe3, 0xe3, 0xe3 };
 static const struct rgb_color ui_color_footer_fg	= { 0xe3, 0xe3, 0xe3 };
 static const struct rgb_color ui_color_keycap_fg	= { 0xc4, 0xc7, 0xc5 };
-static const struct rgb_color ui_color_qr_bg		= { 0xcc, 0xcc, 0xcc };
-static const struct rgb_color ui_color_qr_fg		= { 0x25, 0x26, 0x29 };
+static const struct rgb_color ui_color_qr_bg		= { 0xff, 0xff, 0xff };
+static const struct rgb_color ui_color_qr_fg		= { 0x00, 0x00, 0x00 };
 static const struct rgb_color ui_color_icon		= { 0xa8, 0xc7, 0xfa };
 static const struct rgb_color ui_color_sub_menu_bg	= { 0x37, 0x39, 0x3b };
 static const struct rgb_color ui_color_button		= { 0xa8, 0xc7, 0xfa };

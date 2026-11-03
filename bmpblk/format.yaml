@@ -248,11 +248,11 @@ styles:
     fgcolor: *on_surface
     height: 23
     # UI_FOOTER_COL_PADDING_INNER = 24
-    # UI_FOOTER_QR_BOX_SIZE = 102
+    # UI_FOOTER_QR_BOX_SIZE = 114
     # UI_FOOTER_QR_BOX_MARGIN_R = 20
     # UI_SCALE / 2 - UI_MARGIN_H - UI_FOOTER_COL_PADDING_INNER
     # - UI_FOOTER_QR_BOX_SIZE - UI_FOOTER_QR_BOX_MARGIN_R
-    max_width: 322
+    max_width: 310
   footer_header:
     bgcolor: *surface_container
     fgcolor: *secondary
@@ -299,7 +299,8 @@ styles:
   button_icon:
     height: 24
   qr_rec:
-    height: 86
+    # UI_FOOTER_QR_BOX_SIZE - UI_FOOTER_QR_BOX_PADDING * 2
+    height: 98
   battery_icon:
     height: 36
 

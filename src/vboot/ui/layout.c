@@ -309,9 +309,10 @@ static vb2_error_t get_footer_y(const char *locale_code, int32_t *y)
 	right_height = MAX(right_height, UI_FOOTER_QR_BOX_SIZE);
 
 	*y = UI_SCALE - UI_FOOTER_PADDING_BOTTOM -
-		MAX(left_height, right_height) -
-		UI_FOOTER_HEADER_MARGIN_BOTTOM - header_height -
-		UI_FOOTER_PADDING_TOP - UI_FOOTER_DIVIDER_THICKNESS;
+		MAX(UI_FOOTER_LEFT_HEADER_MARGIN_BOTTOM + left_height,
+		    UI_FOOTER_RIGHT_HEADER_MARGIN_BOTTOM + right_height) -
+		header_height - UI_FOOTER_PADDING_TOP -
+		UI_FOOTER_DIVIDER_THICKNESS;
 	return VB2_SUCCESS;
 }
 
@@ -357,11 +358,11 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 				 UI_SCALE / 2 + UI_FOOTER_COL_PADDING_INNER,
 				 content_y + h / 2, reverse));
 	VB2_TRY(get_footer_header_height(locale_code, &h));
-	content_y += h + UI_FOOTER_HEADER_MARGIN_BOTTOM;
+	content_y += h;
 
 	/* Left column: keyboard navigation instructions */
 	x = UI_MARGIN_H;
-	y = content_y;
+	y = content_y + UI_FOOTER_LEFT_HEADER_MARGIN_BOTTOM;
 
 	/* Row 1: down and up keys, aligned to the top of the footer */
 	VB2_TRY(ui_get_bitmap("navigate0.bmp", locale_code, 0, &bitmap));
@@ -391,7 +392,7 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 
 	/* Right column: QR code, device name and help center URL */
 	x = UI_SCALE / 2 + UI_FOOTER_COL_PADDING_INNER;
-	y = content_y;
+	y = content_y + UI_FOOTER_RIGHT_HEADER_MARGIN_BOTTOM;
 
 	/*
 	 * The QR code bitmap is white on black, without the quiet zone.
