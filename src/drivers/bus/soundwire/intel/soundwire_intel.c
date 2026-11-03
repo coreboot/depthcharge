@@ -275,18 +275,21 @@ static uint32_t sndwcodecstatus(Soundwire *bus, uint32_t *endpointstatus)
 	uint32_t status;
 	struct stopwatch sw;
 
-	stopwatch_init_usecs_expire(&sw, SNDW_POLL_TIME_US);
+	stopwatch_init_usecs_expire(&sw, SNDW_NOT_PRESENT_TIMEOUT_US);
 	do {
 		status = read32(bus->sndwlinkaddr + SNDW_MEM_ENDPOINTSTAT);
 		if (status != 0) {
 			*endpointstatus = status;
 			return 0;
-		} else {
-			udelay(SNDW_WAIT_PERIOD);
 		}
+
+		udelay(SNDW_POLL_INTERVAL_US);
+
 	} while (!stopwatch_expired(&sw));
 
-	printf("Sndw controller did not detect any codecs.\n");
+	printf("SoundWire codec detection timed out after %u us\n",
+		SNDW_NOT_PRESENT_TIMEOUT_US);
+
 	return -1;
 }
 

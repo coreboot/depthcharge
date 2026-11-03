@@ -75,6 +75,8 @@
 
 #define SNDW_POLL_TIME_US			4000
 #define SNDW_WAIT_PERIOD			1
+#define SNDW_NOT_PRESENT_TIMEOUT_US		40000
+#define SNDW_POLL_INTERVAL_US			1000
 
 /* ACE DSP specific */
 #define MTL_HFDSSCS				0x1000
