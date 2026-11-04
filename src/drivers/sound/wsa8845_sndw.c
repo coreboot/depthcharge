@@ -30,7 +30,7 @@ static volatile CPUn * const LPASS_WSA_CPUN = (volatile CPUn *)LPASS_WSA_CPUN_BA
 
 #define BEEP_SAMPLE_RATE 48000
 #define BEEP_FREQUENCY 375
-#define BEEP_AMPLITUDE 0x5000
+#define BEEP_AMPLITUDE 0x7FFF
 #define BEEP_LUT_SIZE 256
 
 static const int16_t sine_lut[BEEP_LUT_SIZE] = {
