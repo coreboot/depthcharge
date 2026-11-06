@@ -393,8 +393,18 @@ void board_rts545x_register(void)
 		.pid = 0x5081,
 		.new_chip_aux_fw_ops = new_rts545x_from_chip_info,
 	};
+	/*
+	 * Mace factory preflash GOOG0U00 16.6.4 contains the wrong PID 0x5018
+	 * instead of 0x5081.
+	 */
+	static CrosEcAuxfwChipInfo rts5452vb_old_info = {
+		.vid = CONFIG_DRIVER_EC_RTS545X_VID,
+		.pid = 0x5018,
+		.new_chip_aux_fw_ops = new_rts545x_from_chip_info,
+	};
 	list_insert_after(&rts5453_info.list_node, &ec_aux_fw_chip_list);
 	list_insert_after(&rts5452vb_info.list_node, &ec_aux_fw_chip_list);
+	list_insert_after(&rts5452vb_old_info.list_node, &ec_aux_fw_chip_list);
 }
 
 static void setup_ufs(void)
