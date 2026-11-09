@@ -99,6 +99,7 @@ TEST_CFLAGS += -include $(corebootsrc)/src/commonlib/bsd/include/commonlib/bsd/c
 # Only put conservative warnings here that really detect code that's obviously
 # unintentional.
 TEST_CFLAGS += -Wall -Werror -Wundef -Wstrict-prototypes -Wno-format-zero-length
+TEST_CFLAGS += -DCMOCKA_DISABLE_DEPRECATION_WARNINGS
 
 TEST_CFLAGS += -std=gnu11
 TEST_CFLAGS += -ffunction-sections -fdata-sections -fno-builtin
@@ -210,7 +211,7 @@ $(LIBPAYLOAD_DOTCONFIG):
 	printf '\nCONFIG_LP_ARCH_MOCK=y\n' >> $@;
 	printf '\nCONFIG_LP_VBOOT_LIB=y\n' >> $@;
 	printf '\nCONFIG_LP_VBOOT_TPM2_MODE=y\n' >> $@;
-	byte_order="x`python -c 'import sys; print(sys.byteorder)' 2>&1`"; \
+	byte_order="x`python3 -c 'import sys; print(sys.byteorder)' 2>&1`"; \
 	if [ "$$byte_order" == "xbig" ] ; then \
 		printf '\nCONFIG_LP_ARCH_MOCK_BIG_ENDIAN=y\n' >> $@; \
 	elif [ "$$byte_order" == "xlittle" ] ; then \

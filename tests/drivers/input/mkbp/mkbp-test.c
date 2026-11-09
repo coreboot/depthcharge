@@ -162,8 +162,8 @@ static size_t get_key_matrix_index(unsigned int col, unsigned int row,
 	size_t count = col * mkbp_keymatrix.rows + row;
 	size_t index = count / 8;
 	if (index >= MOCK_EC_KEY_MATRIX_SIZE)
-		fail_msg("key matrix index %d should be less than %d\n",
-			 index, MOCK_EC_KEY_MATRIX_SIZE);
+		fail_msg("key matrix index %zu should be less than %zu\n",
+			 index, (size_t)MOCK_EC_KEY_MATRIX_SIZE);
 	*bit = count % 8;
 	return index;
 }

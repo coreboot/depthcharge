@@ -25,7 +25,7 @@ const int fmap_find_area(const char *name, FmapArea *area)
 {
 	CHECK_FMAP_AREA_SET();
 	check_expected(name);
-	assert_string_equal(name, mock_area->name);
+	assert_string_equal(name, (const char *)mock_area->name);
 	*area = *mock_area;
 	return mock();
 }
