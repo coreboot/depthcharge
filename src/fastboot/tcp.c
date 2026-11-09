@@ -422,9 +422,15 @@ static enum fastboot_transport_state fastboot_tcp_poll(struct FastbootOps *fb)
 	tcp->link_state = FASTBOOT_TRANSPORT_IDLE;
 
 	switch (net_poll()) {
-	case NET_POLL_NO_DEV:
-		fb->state = DISCONNECTED;
+	case NET_POLL_NO_DEV: {
+		uint64_t start = timer_us(0);
+		while (net_wait_for_link(false) &&
+		       timer_us(start) < 5 * USECS_PER_SEC)
+			;
+		if (!net_get_device())
+			fb->state = DISCONNECTED;
 		break;
+	}
 	case NET_POLL_RX:
 		tcp->link_state = FASTBOOT_TRANSPORT_RX_IN_PROGRESS;
 		break;
