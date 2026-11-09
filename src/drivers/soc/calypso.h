@@ -124,7 +124,7 @@
 #define UFS_RCG_SRC_SEL			5
 #define UFS_RCG_DIV			3
 #define UFS_ICE_RCG_SRC_SEL		5
-#define UFS_GEAR_MASK			QPHY_G5
+#define UFS_GEAR_MASK			QPHY_BOTH
 
 /* SWRM */
 #define SWRM0_BASE_ADDRESS		0x06C80000

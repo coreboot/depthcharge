@@ -79,7 +79,7 @@
 #define UFS_RCG_SRC_SEL			6
 #define UFS_RCG_DIV			1
 #define UFS_ICE_RCG_SRC_SEL		6
-#define UFS_GEAR_MASK			QPHY_G4
+#define UFS_GEAR_MASK			QPHY_BOTH
 
 /* eMMC / SDHCI */
 #define SDC1_HC_BASE			0x007C4000
