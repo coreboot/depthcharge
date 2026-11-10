@@ -150,6 +150,9 @@ static int get_typec_hsl_sbu_orientation(bool mux_is_inverted, enum type_c_orien
 static int update_all_tcss_ports_states(void)
 {
 	static bool tcss_conn_req_res[MAX_TYPE_C_PORTS] = { 0 };
+	static bool tcss_port_ufp[MAX_TYPE_C_PORTS];
+	static bool tcss_ufp_valid[MAX_TYPE_C_PORTS];
+	static bool tcss_reconn_req[MAX_TYPE_C_PORTS];
 	const struct type_c_port_info *tcss_port_info;
 	const struct type_c_info *type_c_info;
 	struct pmc_ipc_buffer req = { 0 };
@@ -160,8 +163,9 @@ static int update_all_tcss_ports_states(void)
 	unsigned int usb2;
 	unsigned int usb3;
 	uint8_t mux_state;
+	bool role_changed;
 	bool usb_enabled;
-	int ufp, dbg_acc;
+	int ufp = 0, dbg_acc = 0;
 	uint32_t cmd;
 	int r = 0;
 
@@ -185,15 +189,35 @@ static int update_all_tcss_ports_states(void)
 		usb3 = tcss_port_info[ec_port].usb3_port_number;
 
 		bool is_usb_connected = is_port_connected((usb3-1), (usb2-1));
+		if (usb_enabled) {
+			r = cros_ec_get_usb_pd_control(ec_port, &ufp, &dbg_acc);
+			if (r < 0) {
+				error("port C%d: pd_control failed\n", ec_port);
+				return -1;
+			}
+			/* Disconnect first if PD data role changed. */
+			role_changed = tcss_ufp_valid[ec_port] &&
+				       (tcss_port_ufp[ec_port] != !!ufp);
+		} else {
+			role_changed = false;
+			tcss_reconn_req[ec_port] = false;
+			if (!is_usb_connected && !tcss_conn_req_res[ec_port])
+				tcss_ufp_valid[ec_port] = false;
+		}
 		/*
 		 * PMC-IPC encoding of port numbers is 1-based but SoC TypeC
 		 * port numbers are 0-based.
 		 */
-		if (is_usb_connected == usb_enabled) {
+		if (is_usb_connected == usb_enabled && !role_changed &&
+		    !tcss_reconn_req[ec_port]) {
 			/*
 			 * The TCSS USB port mux state matches the observed
 			 * state of the Type-C USB port.
 			 */
+			if (usb_enabled && !tcss_ufp_valid[ec_port]) {
+				tcss_port_ufp[ec_port] = !!ufp;
+				tcss_ufp_valid[ec_port] = true;
+			}
 			continue;
 		}
 
@@ -203,20 +227,16 @@ static int update_all_tcss_ports_states(void)
 		 * as an error scenario". Hence, we would need to avoid the back to
 		 * back 0xa7 IPC with CONN request.
 		 */
-		if (tcss_conn_req_res[ec_port] == true && usb_enabled) {
+		if (tcss_conn_req_res[ec_port] == true && usb_enabled &&
+		    !role_changed) {
 			continue;
 		}
 
-		debug("port C%d state: usb enable %d mux conn %d, usb2 %u, "
-				"usb3 %u\n", ec_port, usb_enabled, is_usb_connected, usb2, usb3);
+		debug("port C%d state: usb enable %d mux conn %d ufp %d, "
+				"usb2 %u, usb3 %u\n", ec_port, usb_enabled,
+				is_usb_connected, !!ufp, usb2, usb3);
 
-		r = cros_ec_get_usb_pd_control(ec_port, &ufp, &dbg_acc);
-		if (r < 0) {
-			error("port C%d: pd_control failed\n", ec_port);
-			return -1;
-		}
-
-		if (usb_enabled) {
+		if (usb_enabled && !role_changed) {
 			const bool mux_is_inverted = mux_state & USB_PD_MUX_POLARITY_INVERTED;
 			hsl = tcss_port_info[ec_port].data_orientation;
 			sbu = tcss_port_info[ec_port].sbu_orientation;
@@ -253,10 +273,17 @@ static int update_all_tcss_ports_states(void)
 
 		r = send_conn_disc_msg(&req, &res);
 		if (!r) {
-			if (GET_TCSS_CD_FIELD(USAGE, cmd) == TCSS_CONN_REQ_RES)
+			if (GET_TCSS_CD_FIELD(USAGE, cmd) ==
+			    TCSS_CONN_REQ_RES) {
 				tcss_conn_req_res[ec_port] = true;
-			else
+				tcss_port_ufp[ec_port] = !!ufp;
+				tcss_ufp_valid[ec_port] = true;
+				tcss_reconn_req[ec_port] = false;
+			} else {
 				tcss_conn_req_res[ec_port] = false;
+				tcss_ufp_valid[ec_port] = false;
+				tcss_reconn_req[ec_port] = role_changed;
+			}
 		}
 	}
 
