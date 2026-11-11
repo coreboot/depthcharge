@@ -188,7 +188,12 @@ void board_rts5453_get_image_paths(const char **image_path, const char **hash_pa
 void board_tps6699x_get_image_paths(const char **image_path, const char **hash_path,
 				    int ec_pd_id, struct ec_response_pd_chip_info_v2 *r)
 {
-	get_pdc_image_paths(image_path, hash_path, ec_pd_id, r, "tps6699x");
+	/*
+	 * TODO(b/582120593): Restore the TPS6699X firmware update once the PDC
+	 * firmware bug is fixed.
+	 */
+	*image_path = NULL;
+	*hash_path = NULL;
 }
 
 static int tpm_irq_status(void)
