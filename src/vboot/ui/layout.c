@@ -1145,9 +1145,9 @@ vb2_error_t ui_draw_textbox_with_scrollbar(const char *str, size_t n,
 	else
 		VB2_TRY(ui_draw_textbox(str, y, lines_per_page, box_height));
 
-	/* Align the scrollbar with the text. */
-	scrollbar_y = y_base + UI_BOX_PADDING_V;
-	scrollbar_height = box_height - UI_BOX_PADDING_V * 2;
+	/* Align the scrollbar track with the textbox. */
+	scrollbar_y = y_base;
+	scrollbar_height = box_height;
 
 	/* No scrollbar if there is only one page. Clear any previous scrollbar. */
 	if (total_items <= items_per_page) {
