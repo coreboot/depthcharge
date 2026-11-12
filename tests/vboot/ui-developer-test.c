@@ -1133,7 +1133,7 @@ static void test_developer_screen_advanced_options(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);
-	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 1, 0x0, 0x11);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 1, 0x0, 0x31);
 	/* #5 -> #1: Debug info (#0: Enable dev mode is hidden) */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO);
@@ -1160,7 +1160,10 @@ static void test_developer_screen_advanced_options(void **state)
 	/* Return from Firmware log with the dropdown closed */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);
-	/* #5 -> #5: Firmware shell (#4: Internet recovery is hidden) */
+	/*
+	 * #5 -> #6: Firmware shell (#4: Launch diagnostics and #5: Internet
+	 * recovery are hidden)
+	 */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -1170,8 +1173,8 @@ static void test_developer_screen_advanced_options(void **state)
 	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 1);
 	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 2);
 	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 3);
-	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 5);
-	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 5);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 6);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 6);
 	/* Close dropdown and navigate to Power off (#6) */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);

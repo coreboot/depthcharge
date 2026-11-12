@@ -535,8 +535,16 @@ static const struct ui_menu *get_language_menu(struct ui_context *ui)
 #define ADVANCED_OPTIONS_ITEM_DEBUG_INFO 1
 #define ADVANCED_OPTIONS_ITEM_ENTER_FASTBOOT 2
 #define ADVANCED_OPTIONS_ITEM_FIRMWARE_LOG 3
-#define ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY 4
-#define ADVANCED_OPTIONS_ITEM_FIRMWARE_SHELL 5
+#define ADVANCED_OPTIONS_ITEM_LAUNCH_DIAGNOSTICS 4
+#define ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY 5
+#define ADVANCED_OPTIONS_ITEM_FIRMWARE_SHELL 6
+
+/* Set VB2_NV_DIAG_REQUEST and reboot. */
+static vb2_error_t launch_diagnostics_action(struct ui_context *ui)
+{
+	vb2api_nv_set(ui->ctx, VB2_NV_DIAG_REQUEST, 1);
+	return VB2_REQUEST_REBOOT;
+}
 
 static vb2_error_t boot_nbr_impl(struct ui_context *ui, int non_active_only)
 {
@@ -576,6 +584,11 @@ static vb2_error_t advanced_options_menu_init(struct ui_context *ui)
 	if (!(ui->ctx->flags & VB2_CONTEXT_FASTBOOT_ALLOWED))
 		UI_SET_BIT(ms->hidden_item_mask,
 			   ADVANCED_OPTIONS_ITEM_ENTER_FASTBOOT);
+
+	if (ui->ctx->boot_mode != VB2_BOOT_MODE_MANUAL_RECOVERY ||
+	    !vb2api_diagnostic_ui_enabled(ui->ctx))
+		UI_SET_BIT(ms->hidden_item_mask,
+			   ADVANCED_OPTIONS_ITEM_LAUNCH_DIAGNOSTICS);
 
 	if (ui->ctx->boot_mode != VB2_BOOT_MODE_MANUAL_RECOVERY)
 		UI_SET_BIT(ms->hidden_item_mask,
@@ -618,6 +631,11 @@ static const struct ui_menu_item adv_options_items[] = {
 		.name = "Firmware log",
 		.file = "btn_firmware_log.bmp",
 		.target = UI_SCREEN_FIRMWARE_LOG,
+	},
+	[ADVANCED_OPTIONS_ITEM_LAUNCH_DIAGNOSTICS] = {
+		.name = "Launch diagnostics",
+		.file = "btn_launch_diag.bmp",
+		.action = launch_diagnostics_action,
 	},
 	[ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY] = {
 		.name = "Internet recovery (older version)",
@@ -1244,31 +1262,10 @@ static const struct ui_screen_info fastboot_screen = {
 #define RECOVERY_SELECT_ITEM_EXTERNAL_DISK 1
 #define RECOVERY_SELECT_ITEM_INTERNET 2
 #define RECOVERY_SELECT_ITEM_ADVANCED_OPTIONS 3
-#define RECOVERY_SELECT_ITEM_DIAGNOSTICS 4
-
-/* Set VB2_NV_DIAG_REQUEST and reboot. */
-static vb2_error_t launch_diagnostics_action(struct ui_context *ui)
-{
-	vb2api_nv_set(ui->ctx, VB2_NV_DIAG_REQUEST, 1);
-	return VB2_REQUEST_REBOOT;
-}
 
 vb2_error_t ui_recovery_mode_boot_nbr_action(struct ui_context *ui)
 {
 	return boot_nbr_impl(ui, 0);
-}
-
-vb2_error_t recovery_select_init(struct ui_context *ui)
-{
-	struct ui_menu_state *ms = &ui->state->menu_state;
-
-	ms->focused_item = RECOVERY_SELECT_ITEM_EXTERNAL_DISK;
-
-	if (!vb2api_diagnostic_ui_enabled(ui->ctx))
-		UI_SET_BIT(ms->hidden_item_mask,
-			   RECOVERY_SELECT_ITEM_DIAGNOSTICS);
-
-	return VB2_SUCCESS;
 }
 
 static const char *const recovery_select_desc[] = {
@@ -1288,13 +1285,6 @@ static const struct ui_menu_item recovery_select_items[] = {
 		.action = ui_recovery_mode_boot_nbr_action,
 	},
 	[RECOVERY_SELECT_ITEM_ADVANCED_OPTIONS] = ADVANCED_OPTIONS_ITEM,
-	[RECOVERY_SELECT_ITEM_DIAGNOSTICS] = {
-		.name = "Launch diagnostics",
-		.file = "btn_launch_diag.bmp",
-		.type = UI_MENU_ITEM_TYPE_H3,
-		.icon_file = "ic_search.bmp",
-		.action = launch_diagnostics_action,
-	},
 	POWER_OFF_ITEM,
 };
 
@@ -1304,7 +1294,6 @@ static const struct ui_screen_info recovery_select_screen = {
 	.title = "rec_sel_title.bmp",
 	.desc = UI_DESC(recovery_select_desc),
 	.menu = UI_MENU(recovery_select_items),
-	.init = recovery_select_init,
 	.mesg = "Start the recovery process\n"
 		"Choose a recovery method to get started",
 };

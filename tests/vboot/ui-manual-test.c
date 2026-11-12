@@ -165,7 +165,8 @@ static void test_manual_ui_internet_recovery_menu_old(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* #1: Enable developer mode */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #2: Debug info */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #3: Firmware log*/
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #4: Internet recovery */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #4: Launch diagnostics */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #5: Internet recovery */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_LOAD_EXTERNAL_MAYBE(VB2_ERROR_LK_NO_DISK_FOUND);
@@ -555,6 +556,11 @@ static void test_manual_ui_enter_diagnostics(void **state)
 
 	setup_will_return_common();
 	will_return_maybe(ui_is_lid_open, 1);
+	/* #3: Advanced options */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	/* #3 -> #4: Launch diagnostics (#0 is focused; #2 fastboot is hidden) */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -644,15 +650,13 @@ static void test_recovery_select_screen(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 3);
 	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_SELECT, 3, 0);
-	/* #4: Launch diagnostics */
+	/* #4: Power off */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 4);
 	/* End of menu */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);  /* Blocked */
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 5);
 
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_HAVE_NO_EXTERNAL();
@@ -675,7 +679,7 @@ static void test_advanced_options_disabled_and_hidden_mask(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_SELECT, 3, 0, 0x0, 0x24);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_SELECT, 3, 0, 0x0, 0x44);
 
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_HAVE_NO_EXTERNAL();

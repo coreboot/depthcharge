@@ -42,6 +42,7 @@ localized_files:
   btn_debug_info: button
   btn_fastboot: button
   btn_firmware_log: button
+  btn_launch_diag: button
   btn_firmware_shell: button
   btn_rec_by_internet_old: button
   # debug info and firmware log
@@ -136,7 +137,6 @@ localized_files:
   error_internet_recovery_no_sd: error
   error_dev_mode_oem_lock: error
   # diagnostic tools - menu
-  btn_launch_diag: button
   diag_menu_title: title
   diag_menu_desc0: desc
   btn_diag_storage_health: button
@@ -162,7 +162,6 @@ sprite_files:
   # screen icons
   ic_construction: screen_icon
   # button icons
-  ic_search: button_icon
   ic_power: button_icon
   # QR code
   qr_rec: qr_rec
