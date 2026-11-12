@@ -37,6 +37,8 @@ typedef struct UsbFastbootDevice {
 	endpoint_t *bulk_out;
 	usbdev_t *usb_dev;
 	enum fastboot_transport_state state;
+	/* Sending timed out, so drop the rest of the response */
+	bool timed_out;
 } UsbFastbootDevice;
 
 static bool is_usb_fastboot_in_use(UsbFastbootDevice *usb_fb_dev)
@@ -47,8 +49,24 @@ static bool is_usb_fastboot_in_use(UsbFastbootDevice *usb_fb_dev)
 static int usb_fastboot_send(struct FastbootOps *fb, void *buf, size_t len)
 {
 	UsbFastbootDevice *usb_fb_dev = container_of(fb, UsbFastbootDevice, fb_session);
+	int ret;
 
-	return usb_fb_dev->usb_dev->controller->bulk(usb_fb_dev->bulk_out, len, buf, 0) < 0;
+	/*
+	 * If a packet timed out, the host stopped reading the response (e.g. host fastboot
+	 * was killed). Each further packet would also block for the whole bulk transfer
+	 * timeout, which freezes the UI for minutes on long responses such as "getvar all".
+	 * Drop the rest of the response until the host sends something again.
+	 */
+	if (usb_fb_dev->timed_out)
+		return 1;
+
+	ret = usb_fb_dev->usb_dev->controller->bulk(usb_fb_dev->bulk_out, len, buf, 0);
+	if (ret == USB_TIMEOUT) {
+		printf("USBFB: Bulk write timed out, dropping the rest of the response\n");
+		usb_fb_dev->timed_out = true;
+	}
+
+	return ret < 0;
 }
 
 static int usb_fastboot_recv(UsbFastbootDevice *usb_fb_dev, void *buf, size_t *len,
@@ -114,6 +132,8 @@ static void usb_fastboot_dev_poll(usbdev_t *dev)
 	if (len == 0)
 		goto exit;
 
+	/* The host sent something, so it is reading responses again */
+	usb_fb_dev->timed_out = false;
 	fastboot_handle_packet(&usb_fb_dev->fb_session, packet_buffer, len);
 	/* We received something, assume that it is a good idea to check for more data */
 	usb_fb_dev->state = FASTBOOT_TRANSPORT_RX_IN_PROGRESS;
@@ -139,6 +159,7 @@ static int usb_fastboot_init_endpoints(usbdev_t *dev, UsbFastbootDevice *usb_fb_
 		if (in && out) {
 			usb_fb_dev->bulk_in = in;
 			usb_fb_dev->bulk_out = out;
+			usb_fb_dev->timed_out = false;
 			return 0;
 		}
 	}
