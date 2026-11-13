@@ -70,6 +70,27 @@ static const sndw_cmd alc721_beep_off_cmd = {
 		.regdata = RT721_TONE_GENERATOR_DISABLE,
 };
 
+/* Select the speaker gain control page (SCP_ADDRPAGE2 = 0x30). */
+static const sndw_cmd alc721_spk_gain_page2_cmd = {
+		.cmdtype = cmd_write,
+		.regaddr = RT721_SCP_ADDRPAGE2,
+		.regdata = RT721_SCP_ADDRPAGE2_SPEAKER_GAIN_CONTROL,
+};
+
+/* Speaker channel 1 gain (0x9081 = 12dB). */
+static const sndw_cmd alc721_spk_gain_ch1_cmd = {
+		.cmdtype = cmd_write,
+		.regaddr = RT721_SPK_GAIN_CH1,
+		.regdata = RT721_SPK_GAIN_DB,
+};
+
+/* Speaker channel 2 gain (0x9082 = 12dB). */
+static const sndw_cmd alc721_spk_gain_ch2_cmd = {
+		.cmdtype = cmd_write,
+		.regaddr = RT721_SPK_GAIN_CH2,
+		.regdata = RT721_SPK_GAIN_DB,
+};
+
 /*
  * sndw_beep - Function program the registers to turn on the tone generator
  * in the codec.
@@ -88,6 +109,41 @@ static int sndw_beep(SndwOps *sndw, void *sndwlinkaddr, uint32_t sndwendpointdev
 		printf("Failed to send the scp addr page1 command.\n");
 		return -1;
 	}
+
+	/* Set speaker channel gains per vendor timing:
+	 * write 0x0048 0x82 / write 0x0049 0x30 / write 0x9081 0x17
+	 * write 0x0048 0x82 / write 0x0049 0x30 / write 0x9082 0x17
+	 */
+	if (sndw->sndw_sendwack(sndwlinkaddr, alc721_spk_gain_page2_cmd,
+				sndwendpointdev, NULL)) {
+		printf("Failed to send the spk gain page2 command.\n");
+		return -1;
+	}
+
+	if (sndw->sndw_sendwack(sndwlinkaddr, alc721_spk_gain_ch1_cmd,
+				sndwendpointdev, NULL)) {
+		printf("Failed to set speaker CH1 gain.\n");
+		return -1;
+	}
+
+	if (sndw->sndw_sendwack(sndwlinkaddr, alc721_addr_page1_cmd,
+				sndwendpointdev, NULL)) {
+		printf("Failed to send the scp addr page1 command.\n");
+		return -1;
+	}
+
+	if (sndw->sndw_sendwack(sndwlinkaddr, alc721_spk_gain_page2_cmd,
+				sndwendpointdev, NULL)) {
+		printf("Failed to send the spk gain page2 command.\n");
+		return -1;
+	}
+
+	if (sndw->sndw_sendwack(sndwlinkaddr, alc721_spk_gain_ch2_cmd,
+				sndwendpointdev, NULL)) {
+		printf("Failed to set speaker CH2 gain.\n");
+		return -1;
+	}
+
 	/* Send the cmd to write to scp address page 2 register to access the tone generator */
 	if (sndw->sndw_sendwack(sndwlinkaddr, alc721_addr_page2_cmd,
 				sndwendpointdev, NULL)) {

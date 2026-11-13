@@ -18,6 +18,21 @@ enum {
 enum {
 	RT721_SCP_ADDRPAGE1_FUNC4_CONFIG           = 0x82,
 	RT721_SCP_ADDRPAGE2_TONE_GENERATOR_CONTROL = 0x10,
+	RT721_SCP_ADDRPAGE2_SPEAKER_GAIN_CONTROL   = 0x30,
+};
+
+/* RT721 Speaker channel gain registers (vendor private, TG23 CS30).
+ * Vendor timing: page1=0x82, page2=0x30, then 0x9081/0x9082.
+ * Value format: 0x17 = 0dB, range -34.5~12dB, 1.5dB/step.
+ */
+enum {
+	RT721_SPK_GAIN_CH1 = 0x9081,
+	RT721_SPK_GAIN_CH2 = 0x9082,
+};
+
+/* RT721_SPK_GAIN */
+enum {
+	RT721_SPK_GAIN_DB = 0x1f,
 };
 
 /* RT721_TONE_GENERATOR */
