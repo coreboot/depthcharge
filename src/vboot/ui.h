@@ -380,10 +380,6 @@ static const struct rgb_color ui_color_battery_alert	= { 0xf2, 0xb8, 0xb5 };
 static const struct rgb_color ui_color_sub_menu_bg	= { 0x37, 0x39, 0x3b };
 static const struct rgb_color ui_color_button		= { 0xa8, 0xc7, 0xfa };
 static const struct rgb_color ui_color_button_fg	= { 0x06, 0x2e, 0x6f };
-static const struct rgb_color ui_color_button_disabled_bg
-	= { 0x3c, 0x40, 0x43 };
-static const struct rgb_color ui_color_button_disabled_fg
-	= { 0x9a, 0xa0, 0xa6 };
 static const struct rgb_color ui_color_button_focus_ring
 	= { 0xa8, 0xc7, 0xfa };
 static const struct rgb_color ui_color_h2_button_bg	= { 0x00, 0x4a, 0x77 };
@@ -525,12 +521,6 @@ struct ui_menu_state {
 	uint32_t focused_item;
 	/* Whether focus is on the parent dropdown trigger button. */
 	bool trigger_focused;
-	/*
-	 * Mask for disabled menu items. Bit (1 << idx) indicates whether item
-	 * 'idx' is disabled. A disabled (greyed out) menu item is visible and
-	 * can be set focus on, but cannot be selected.
-	 */
-	uint32_t disabled_item_mask;
 	/*
 	 * Mask for hidden menu items. Bit (1 << idx) indicates whether item
 	 * 'idx' is hidden. A hidden menu item is invisible on the screen.
@@ -1140,14 +1130,13 @@ vb2_error_t ui_get_h1_button_width(const struct ui_menu_item *item,
  * @param y		y-coordinate of the top-left corner.
  * @param height	Height of the button.
  * @param focused	1 for focused and 0 for non-focused.
- * @param disabled	1 for disabled style and 0 for normal style.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
 vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 			      const struct ui_state *state,
 			      int32_t x, int32_t y, int32_t height,
-			      int focused, int disabled);
+			      int focused);
 
 /*
  * Get the width of the navigation bar of the full view layout.

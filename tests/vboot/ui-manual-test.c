@@ -675,15 +675,14 @@ static void test_manual_ui_broken_display(void **state)
 	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
 }
 
-static void test_recovery_select_screen_disabled_and_hidden_mask(void **state)
+static void test_recovery_select_screen_hidden_mask(void **state)
 {
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
 	WILL_CLOSE_LID_IN(2);
 	will_return_maybe(ui_keyboard_read, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, MOCK_IGNORE,
-			  0x0, 0x0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, MOCK_IGNORE, 0x0);
 	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
@@ -736,7 +735,7 @@ static void test_recovery_select_screen(void **state)
 			 VB2_REQUEST_SHUTDOWN);
 }
 
-static void test_advanced_options_disabled_and_hidden_mask(void **state)
+static void test_advanced_options_hidden_mask(void **state)
 {
 	struct ui_context *ui = *state;
 
@@ -750,7 +749,7 @@ static void test_advanced_options_disabled_and_hidden_mask(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_SELECT, 3, 0, 0x0, 0x44);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_RECOVERY_SELECT, 3, 0, 0x44);
 
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_HAVE_NO_EXTERNAL();
@@ -936,10 +935,10 @@ int main(void)
 		UI_TEST(test_manual_ui_locale_not_found),
 		UI_TEST(test_manual_ui_broken_display),
 		/* Recovery select screen */
-		UI_TEST(test_recovery_select_screen_disabled_and_hidden_mask),
+		UI_TEST(test_recovery_select_screen_hidden_mask),
 		UI_TEST(test_recovery_select_screen),
 		/* Advanced options */
-		UI_TEST(test_advanced_options_disabled_and_hidden_mask),
+		UI_TEST(test_advanced_options_hidden_mask),
 		UI_TEST(test_advanced_options),
 		/* Language select screen */
 		UI_TEST(test_language_ui_change_language),

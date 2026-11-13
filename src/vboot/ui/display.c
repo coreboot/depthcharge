@@ -215,7 +215,7 @@ static vb2_error_t show_error_box(const struct ui_error_message *error,
 	x = box_x + UI_ERROR_BOX_WIDTH - UI_ERROR_BOX_PADDING - button_width;
 	y = box_y + box_h - UI_ERROR_BOX_PADDING - UI_H1_BUTTON_HEIGHT;
 	VB2_TRY(ui_draw_h1_button(&back_item, state, x, y,
-				  UI_H1_BUTTON_HEIGHT, 1, 0));
+				  UI_H1_BUTTON_HEIGHT, 1));
 
 	return VB2_SUCCESS;
 }
@@ -306,12 +306,11 @@ vb2_error_t ui_display(struct ui_context *ui,
 	vb2_error_t rv;
 	const struct ui_state *state = ui->state;
 	const struct ui_menu_state *ms = &state->menu_state;
-	UI_INFO("screen=%#x, locale=%u, focused_item=%u, "
-		"disabled_item_mask=%#x, hidden_item_mask=%#x, "
+	UI_INFO("screen=%#x, locale=%u, focused_item=%u, hidden_item_mask=%#x, "
 		"timer_disabled=%d, current_page=%u, error=%#x\n",
 		state->screen->id, ui->state->locale->id, ms->focused_item,
-		ms->disabled_item_mask, ms->hidden_item_mask,
-		state->timer_disabled, state->current_page, state->error_code);
+		ms->hidden_item_mask, state->timer_disabled,
+		state->current_page, state->error_code);
 
 	const struct ui_screen_info *screen = state->screen;
 	const struct ui_error_message *error = NULL;

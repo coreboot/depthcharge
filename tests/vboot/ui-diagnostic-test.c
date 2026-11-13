@@ -105,13 +105,12 @@ static int setup_context(void **state)
 	return 0;
 }
 
-static void test_diagnostics_screen_disabled_and_hidden(void **state)
+static void test_diagnostics_screen_hidden(void **state)
 {
 	struct ui_context *ui = *state;
 
 	WILL_CLOSE_LID_IN(3);
-	EXPECT_UI_DISPLAY(UI_SCREEN_DIAGNOSTICS, MOCK_IGNORE, MOCK_IGNORE,
-			  0x0, 0x0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DIAGNOSTICS, MOCK_IGNORE, MOCK_IGNORE, 0x0);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_always(diag_storage_test_supported,
@@ -214,7 +213,7 @@ static void test_diagnostics_screen_no_storage_self_test(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DIAGNOSTICS, MOCK_IGNORE, MOCK_IGNORE,
-			  0x0, 0xc); /* 0xc = 0b1100 */
+			  0xc); /* 0xc = 0b1100 */
 	WILL_DUMP_REPORT(mock_report_data);
 	EXPECT_DIAG_DUMP_AND_ELOG();
 
@@ -232,7 +231,7 @@ static void test_diagnostics_screen_no_storage_extended_test(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DIAGNOSTICS, MOCK_IGNORE, MOCK_IGNORE,
-			  0x0, 0x8); /* 0x8 = 0b1000 */
+			  0x8); /* 0x8 = 0b1000 */
 	WILL_DUMP_REPORT(mock_report_data);
 	EXPECT_DIAG_DUMP_AND_ELOG();
 
@@ -274,7 +273,7 @@ static void test_diagnostics_screen_dcache_flush_after_ui_display(void **state)
 int main(void)
 {
 	const struct CMUnitTest tests[] = {
-		UI_TEST(test_diagnostics_screen_disabled_and_hidden),
+		UI_TEST(test_diagnostics_screen_hidden),
 		UI_TEST(test_diagnostics_screen),
 		UI_TEST(test_diagnostics_screen_no_storage_self_test),
 		UI_TEST(test_diagnostics_screen_no_storage_extended_test),

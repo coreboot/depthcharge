@@ -202,7 +202,7 @@ static void test_developer_ui_dev_disallowed_no_boot_altfw(void **state)
 	mock_close_lid_countdown = 5;
 	EXPECT_BEEP(250, 400);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_TO_NORM, MOCK_IGNORE, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE,
+			  MOCK_IGNORE, MOCK_IGNORE,
 			  UI_ERROR_DEV_BOOT_NOT_ALLOWED);
 
 	/* Cancel the error box */
@@ -228,7 +228,7 @@ static void test_developer_ui_dev_disallowed_no_boot_internal(void **state)
 	mock_close_lid_countdown = 5;
 	EXPECT_BEEP(250, 400);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_TO_NORM, MOCK_IGNORE, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE,
+			  MOCK_IGNORE, MOCK_IGNORE,
 			  UI_ERROR_DEV_BOOT_NOT_ALLOWED);
 
 	/* Cancel the error box */
@@ -290,7 +290,7 @@ static void test_developer_ui_dev_disallowed_to_norm_confirm(void **state)
 
 	ui->ctx->flags &= ~VB2_CONTEXT_DEV_BOOT_ALLOWED;
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_TO_NORM, MOCK_IGNORE, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE,
+			  MOCK_IGNORE, MOCK_IGNORE,
 			  UI_ERROR_DEV_BOOT_NOT_ALLOWED);
 	EXPECT_BEEP(250, 400);
 
@@ -819,13 +819,13 @@ static void test_developer_ui_select_to_norm_disallowed(void **state)
 
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 1,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE,
+			  MOCK_IGNORE, MOCK_IGNORE,
 			  UI_ERROR_TO_NORM_NOT_ALLOWED);
 	EXPECT_BEEP(250, 400, mock_time_ms);
 
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);  /* Cancel error box */
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 1,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE,
+			  MOCK_IGNORE, MOCK_IGNORE,
 			  UI_ERROR_NONE);
 
 	will_return_maybe(ui_keyboard_read, 0);
@@ -846,7 +846,7 @@ static void test_developer_ui_select_to_norm_keyboard_disallowed(void **state)
 
 	WILL_PRESS_KEY(UI_KEY_DEV_TO_NORM, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 2,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE,
+			  MOCK_IGNORE, MOCK_IGNORE,
 			  UI_ERROR_TO_NORM_NOT_ALLOWED);
 	EXPECT_BEEP(250, 400, mock_time_ms);
 
@@ -1001,7 +1001,7 @@ static void test_developer_screen_default_boot_altfw(void **state)
 							   ui->kparams));
 }
 
-static void test_developer_screen_disabled_and_hidden_altfw(void **state)
+static void test_developer_screen_hidden_altfw(void **state)
 {
 	struct ui_context *ui = *state;
 
@@ -1012,8 +1012,7 @@ static void test_developer_screen_disabled_and_hidden_altfw(void **state)
 	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE,
-			  0x0, 0x0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE, 0x0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -1021,7 +1020,7 @@ static void test_developer_screen_disabled_and_hidden_altfw(void **state)
 	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
 }
 
-static void test_developer_screen_disabled_and_hidden_force_dev(void **state)
+static void test_developer_screen_hidden_force_dev(void **state)
 {
 	struct ui_context *ui = *state;
 
@@ -1032,8 +1031,7 @@ static void test_developer_screen_disabled_and_hidden_force_dev(void **state)
 	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE,
-			  0x0, 0x0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE, 0x0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -1041,7 +1039,7 @@ static void test_developer_screen_disabled_and_hidden_force_dev(void **state)
 	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
 }
 
-static void test_developer_screen_disabled_and_hidden_only_altfw(void **state)
+static void test_developer_screen_hidden_only_altfw(void **state)
 {
 	struct ui_context *ui = *state;
 
@@ -1052,8 +1050,7 @@ static void test_developer_screen_disabled_and_hidden_only_altfw(void **state)
 	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE,
-			  0x0, 0x0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE, 0x0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -1133,7 +1130,7 @@ static void test_developer_screen_advanced_options(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);
-	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 1, 0x0, 0x31);
+	EXPECT_UI_DISPLAY_SUB_MENU(UI_SCREEN_DEVELOPER_MODE, 5, 1, 0x31);
 	/* #5 -> #1: Debug info (#0: Enable dev mode is hidden) */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO);
@@ -1380,9 +1377,9 @@ int main(void)
 		UI_TEST(test_developer_screen_default_boot_internal),
 		UI_TEST(test_developer_screen_default_boot_external),
 		UI_TEST(test_developer_screen_default_boot_altfw),
-		UI_TEST(test_developer_screen_disabled_and_hidden_altfw),
-		UI_TEST(test_developer_screen_disabled_and_hidden_force_dev),
-		UI_TEST(test_developer_screen_disabled_and_hidden_only_altfw),
+		UI_TEST(test_developer_screen_hidden_altfw),
+		UI_TEST(test_developer_screen_hidden_force_dev),
+		UI_TEST(test_developer_screen_hidden_only_altfw),
 		UI_TEST(test_developer_screen),
 		UI_TEST(test_developer_screen_external_default),
 		UI_TEST(test_developer_screen_advanced_options),

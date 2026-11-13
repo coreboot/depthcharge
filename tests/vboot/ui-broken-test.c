@@ -69,14 +69,13 @@ static void test_broken_ui_shortcuts_ignored(void **state)
 			 VB2_REQUEST_SHUTDOWN);
 }
 
-static void test_broken_ui_disabled_and_hidden_item_mask(void **state)
+static void test_broken_ui_hidden_item_mask(void **state)
 {
 	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	WILL_CLOSE_LID_IN(5);
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, MOCK_IGNORE,
-			  0x0, 0x0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, MOCK_IGNORE, 0x0);
 	will_return_always(ui_keyboard_read, 0);
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
@@ -180,7 +179,7 @@ static void test_debug_info_enter_failed(void **state)
 
 #define EXPECT_FIRMWARE_LOG_PAGE(page) \
 	EXPECT_UI_DISPLAY(UI_SCREEN_FIRMWARE_LOG, MOCK_IGNORE, MOCK_IGNORE, \
-			  MOCK_IGNORE, MOCK_IGNORE, page)
+			  MOCK_IGNORE, page)
 
 static void test_firmware_log(void **state)
 {
@@ -338,7 +337,7 @@ int main(void)
 	const struct CMUnitTest tests[] = {
 		/* Broken screen ui */
 		UI_TEST(test_broken_ui_shortcuts_ignored),
-		UI_TEST(test_broken_ui_disabled_and_hidden_item_mask),
+		UI_TEST(test_broken_ui_hidden_item_mask),
 		UI_TEST(test_broken_ui_screen),
 		UI_TEST(test_broken_ui_power_button_shutdown),
 		/* Debug info screen */

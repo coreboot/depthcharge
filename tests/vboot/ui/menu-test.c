@@ -53,18 +53,6 @@ static void test_prev_valid_action_with_hidden_mask(void **state)
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 0, MOCK_IGNORE);
 }
 
-static void test_prev_disable_mask_does_not_affect(void **state)
-{
-	struct ui_context *ui = *state;
-
-	ui->state->menu_state.focused_item = 2;
-	ui->state->menu_state.disabled_item_mask = 0x0a; /* 0b01010 */
-	ui->key = UI_KEY_UP;
-
-	ASSERT_VB2_SUCCESS(ui_menu_prev(ui));
-	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 1, MOCK_IGNORE);
-}
-
 static void test_prev_invalid_action_blocked(void **state)
 {
 	struct ui_context *ui = *state;
@@ -109,18 +97,6 @@ static void test_next_valid_action_with_hidden_mask(void **state)
 
 	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 4, MOCK_IGNORE);
-}
-
-static void test_next_disable_mask_does_not_affect(void **state)
-{
-	struct ui_context *ui = *state;
-
-	ui->state->menu_state.focused_item = 2;
-	ui->state->menu_state.disabled_item_mask = 0x0a; /* 0b01010 */
-	ui->key = UI_KEY_DOWN;
-
-	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
-	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 3, MOCK_IGNORE);
 }
 
 static void test_next_invalid_action_blocked(void **state)
@@ -189,17 +165,6 @@ static void test_select_item_with_no_target_and_action(void **state)
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 4, MOCK_IGNORE);
 }
 
-static void test_select_item_disabled(void **state)
-{
-	struct ui_context *ui = *state;
-
-	ui->state->menu_state.focused_item = 3;
-	ui->state->menu_state.disabled_item_mask = 0x08; /* 0b01000 */
-	ui->key = UI_KEY_ENTER;
-
-	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
-}
-
 static void test_select_item_with_sub_menu(void **state)
 {
 	struct ui_context *ui = *state;
@@ -266,13 +231,11 @@ int main(void)
 	const struct CMUnitTest tests[] = {
 		UI_TEST(test_prev_valid_action),
 		UI_TEST(test_prev_valid_action_with_hidden_mask),
-		UI_TEST(test_prev_disable_mask_does_not_affect),
 		UI_TEST(test_prev_invalid_action_blocked),
 		UI_TEST(test_prev_invalid_action_blocked_by_mask),
 
 		UI_TEST(test_next_valid_action),
 		UI_TEST(test_next_valid_action_with_hidden_mask),
-		UI_TEST(test_next_disable_mask_does_not_affect),
 		UI_TEST(test_next_invalid_action_blocked),
 		UI_TEST(test_next_invalid_action_blocked_by_mask),
 
@@ -280,7 +243,6 @@ int main(void)
 		UI_TEST(test_select_item_with_target),
 		UI_TEST(test_select_item_with_action),
 		UI_TEST(test_select_item_with_no_target_and_action),
-		UI_TEST(test_select_item_disabled),
 		UI_TEST_SCREEN(test_select_item_with_sub_menu, &mock_screen_sub_menu),
 		UI_TEST_SCREEN(test_select_item_with_sub_menu,
 			       &mock_screen_dynamic_sub_menu),

@@ -129,14 +129,6 @@ vb2_error_t ui_menu_select(struct ui_context *ui)
 
 	menu_item = &menu->items[ms->focused_item];
 
-	/* Cannot select a disabled menu item */
-	if (UI_GET_BIT(ms->disabled_item_mask,
-		       ms->focused_item)) {
-		UI_WARN("Menu item <%s> disabled; ignoring\n",
-			menu_item->name);
-		return VB2_SUCCESS;
-	}
-
 	const struct ui_menu *sub_menu = menu_item->sub_menu;
 	if (menu_item->get_sub_menu) {
 		sub_menu = menu_item->get_sub_menu(ui);

@@ -638,12 +638,13 @@ vb2_error_t ui_get_h1_button_width(const struct ui_menu_item *item,
 vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 			      const struct ui_state *state,
 			      int32_t x, int32_t y, int32_t height,
-			      int focused, int disabled)
+			      int focused)
 {
 	struct ui_bitmap bitmap;
 	int32_t width;
 	const uint32_t flags = PIVOT_H_CENTER | PIVOT_V_CENTER;
-	const struct rgb_color *bg_color, *fg_color;
+	const struct rgb_color *bg_color = &ui_color_button;
+	const struct rgb_color *fg_color = &ui_color_button_fg;
 	const char *file;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
@@ -652,15 +653,6 @@ vb2_error_t ui_draw_h1_button(const struct ui_menu_item *item,
 	VB2_TRY(ui_get_h1_button_width(item, state, &width));
 	const int32_t x_center = x + width / 2;
 	const int32_t y_center = y + height / 2;
-
-	/* Set button styles */
-	if (disabled) {
-		bg_color = &ui_color_button_disabled_bg;
-		fg_color = &ui_color_button_disabled_fg;
-	} else {
-		bg_color = &ui_color_button;
-		fg_color = &ui_color_button_fg;
-	}
 
 	/* Fill pill button area */
 	VB2_TRY(ui_draw_rounded_box(x, y, width, height, bg_color,
@@ -1484,8 +1476,7 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 		if (item->type == UI_MENU_ITEM_TYPE_H1) {
 			VB2_TRY(ui_draw_h1_button(item, state, x, y,
 						  UI_H1_BUTTON_HEIGHT,
-						  is_focused,
-						  UI_GET_BIT(ms->disabled_item_mask, i)));
+						  is_focused));
 		} else {
 			bool is_expanded = is_dropdown_expanded(state, i);
 			VB2_TRY(ui_draw_h2_dropdown(item, state, x, y,
