@@ -46,5 +46,9 @@ bool variant_nvme_supported(void)
 
 bool variant_ufs_supported(void)
 {
-	return fw_config_probe(FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_UFS));
+	if (fw_config_probe(FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_UNKNOWN)) ||
+	    fw_config_probe(FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_UFS)))
+		return true;
+
+	return false;
 }
