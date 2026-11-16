@@ -19,6 +19,16 @@
 
 #define NVME_PCI_DEV PCI_DEV(0x1, 0, 0)
 
+bool variant_nvme_supported(void)
+{
+	return false;
+}
+
+bool variant_ufs_supported(void)
+{
+	return true;
+}
+
 pcidev_t variant_get_nvme_pcidev()
 {
 	return NVME_PCI_DEV;

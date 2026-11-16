@@ -169,13 +169,18 @@ static void usb_setup(void)
 
 __weak bool variant_nvme_supported(void)
 {
+	if (!lib_sysinfo.pcie_ctrl_base)
+		return false;
+
 	return (!fw_config_is_provisioned() ||
+		fw_config_probe(FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_UNKNOWN)) ||
 		fw_config_probe(FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_NVME)));
 }
 
 __weak bool variant_ufs_supported(void)
 {
 	return (!fw_config_is_provisioned() ||
+		fw_config_probe(FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_UNKNOWN)) ||
 		fw_config_probe(FW_CONFIG(STORAGE_TYPE, STORAGE_TYPE_UFS)));
 }
 
