@@ -2074,11 +2074,15 @@ static vb2_error_t diagnostics_init(struct ui_context *ui)
 	struct ui_menu_state *ms = &ui->state->menu_state;
 	uint32_t storage_test_support = diag_storage_test_supported();
 
+	/*
+	 * Hide the storage self-tests that the storage doesn't support, as they
+	 * can't become available on this device.
+	 */
 	if (!(storage_test_support & BLOCKDEV_TEST_OPS_TYPE_SHORT))
-		UI_SET_BIT(ms->disabled_item_mask,
+		UI_SET_BIT(ms->hidden_item_mask,
 			   DIAGNOSTICS_ITEM_STORAGE_TEST_SHORT);
 	if (!(storage_test_support & BLOCKDEV_TEST_OPS_TYPE_EXTENDED))
-		UI_SET_BIT(ms->disabled_item_mask,
+		UI_SET_BIT(ms->hidden_item_mask,
 			   DIAGNOSTICS_ITEM_STORAGE_TEST_EXTENDED);
 
 	ms->focused_item = DIAGNOSTICS_ITEM_STORAGE_HEALTH;

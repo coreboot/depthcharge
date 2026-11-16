@@ -214,7 +214,7 @@ static void test_diagnostics_screen_no_storage_self_test(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DIAGNOSTICS, MOCK_IGNORE, MOCK_IGNORE,
-			  0xc, 0x0); /* 0xc = 0b1100 */
+			  0x0, 0xc); /* 0xc = 0b1100 */
 	WILL_DUMP_REPORT(mock_report_data);
 	EXPECT_DIAG_DUMP_AND_ELOG();
 
@@ -232,7 +232,7 @@ static void test_diagnostics_screen_no_storage_extended_test(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DIAGNOSTICS, MOCK_IGNORE, MOCK_IGNORE,
-			  0x8, 0x0); /* 0x4 = 0b1000 */
+			  0x0, 0x8); /* 0x8 = 0b1000 */
 	WILL_DUMP_REPORT(mock_report_data);
 	EXPECT_DIAG_DUMP_AND_ELOG();
 
