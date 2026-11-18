@@ -21,12 +21,13 @@
 #include "mtk_dsi.h"
 
 enum {
-	DISP_REG_OVL_STA     = 0x0000,
-	DISP_REG_OVL_EN      = 0x000C,
-	DISP_REG_OVL_L0_ADDR = 0x0f40,
-	DISP_REG_OVL0_2L_EN  = 0x100C,
-	DISP_REG_EXDMA_EN    = 0x0020,
-	DISP_REG_EXDMA_L_EN  = 0x0040,
+	DISP_REG_OVL_STA          = 0x0000,
+	DISP_REG_OVL_EN           = 0x000C,
+	DISP_REG_OVL_L0_ADDR      = 0x0f40,
+	DISP_REG_OVL0_2L_EN       = 0x100C,
+	DISP_REG_EXDMA_EN         = 0x0020,
+	DISP_REG_EXDMA_L_EN       = 0x0040,
+	DISP_REG_EXDMA_RDMA0_CTRL = 0x0100,
 };
 
 static int mtk_display_init(DisplayOps *me)
@@ -43,6 +44,7 @@ static int mtk_display_init(DisplayOps *me)
 	} else {
 		write32p(mtk->ovl_base + DISP_REG_OVL_L0_ADDR, phys_addr);
 		setbits32p(mtk->ovl_base + DISP_REG_EXDMA_EN, BIT(0));
+		setbits32p(mtk->ovl_base + DISP_REG_EXDMA_RDMA0_CTRL, BIT(0));
 		setbits32p(mtk->ovl_base + DISP_REG_EXDMA_L_EN, BIT(0));
 		setbits32p(mtk->blender_base + DISP_REG_EXDMA_L_EN, BIT(0));
 
@@ -53,6 +55,7 @@ static int mtk_display_init(DisplayOps *me)
 			 lib_sysinfo.framebuffer.bits_per_pixel / 8 / 2;
 		write32p(mtk->ovl_base1 + DISP_REG_OVL_L0_ADDR, phys_addr + offset);
 		setbits32p(mtk->ovl_base1 + DISP_REG_EXDMA_EN, BIT(0));
+		setbits32p(mtk->ovl_base1 + DISP_REG_EXDMA_RDMA0_CTRL, BIT(0));
 		setbits32p(mtk->ovl_base1 + DISP_REG_EXDMA_L_EN, BIT(0));
 		setbits32p(mtk->blender_base1 + DISP_REG_EXDMA_L_EN, BIT(0));
 	}
@@ -83,6 +86,7 @@ static int mtk_display_stop(DisplayOps *me)
 		clrbits32p(mtk->blender_base + DISP_REG_EXDMA_L_EN, BIT(0));
 		clrbits32p(mtk->ovl_base + DISP_REG_EXDMA_EN, BIT(0));
 		clrbits32p(mtk->ovl_base + DISP_REG_EXDMA_L_EN, BIT(0));
+		clrbits32p(mtk->ovl_base + DISP_REG_EXDMA_RDMA0_CTRL, BIT(0));
 
 		if (!mtk->ovl_base1)
 			return 0;
@@ -90,6 +94,7 @@ static int mtk_display_stop(DisplayOps *me)
 		clrbits32p(mtk->blender_base1 + DISP_REG_EXDMA_L_EN, BIT(0));
 		clrbits32p(mtk->ovl_base1 + DISP_REG_EXDMA_EN, BIT(0));
 		clrbits32p(mtk->ovl_base1 + DISP_REG_EXDMA_L_EN, BIT(0));
+		clrbits32p(mtk->ovl_base1 + DISP_REG_EXDMA_RDMA0_CTRL, BIT(0));
 	}
 
 	return 0;
